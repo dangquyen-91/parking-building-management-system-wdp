@@ -1,0 +1,490 @@
+openapi: 3.0.3
+info:
+  title: Parking Building Management System API
+  description: REST API for managing parking buildings, users, and bookings
+  version: 1.0.0
+  contact:
+    name: WDP301 Team
+
+servers:
+  - url: http://localhost:5000/api
+    description: Local development server
+
+tags:
+  - name: Auth
+    description: Authentication and authorization
+  - name: Users
+    description: User management (admin only)
+
+# ─── Security Schemes ────────────────────────────────────────────────────────
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  # ─── Schemas ───────────────────────────────────────────────────────────────
+  schemas:
+    User:
+      type: object
+      properties:
+        _id:
+          type: string
+          example: 664a1f2e8b2c3d4e5f6a7b8c
+        fullName:
+          type: string
+          example: Nguyen Van A
+        email:
+          type: string
+          format: email
+          example: nguyenvana@gmail.com
+        role:
+          type: string
+          enum: [admin, staff, customer]
+          example: customer
+        isActive:
+          type: boolean
+          example: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    RegisterRequest:
+      type: object
+      required: [fullName, email, password]
+      properties:
+        fullName:
+          type: string
+          example: Nguyen Van A
+        email:
+          type: string
+          format: email
+          example: nguyenvana@gmail.com
+        password:
+          type: string
+          minLength: 6
+          example: password123
+
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+          example: nguyenvana@gmail.com
+        password:
+          type: string
+          example: password123
+
+    RefreshTokenRequest:
+      type: object
+      required: [refreshToken]
+      properties:
+        refreshToken:
+          type: string
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+
+    UpdateUserRequest:
+      type: object
+      properties:
+        fullName:
+          type: string
+          example: Nguyen Van B
+        email:
+          type: string
+          format: email
+          example: nguyenvanb@gmail.com
+
+    TokensResponse:
+      type: object
+      properties:
+        accessToken:
+          type: string
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        refreshToken:
+          type: string
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+
+    PaginatedUsers:
+      type: object
+      properties:
+        users:
+          type: array
+          items:
+            $ref: '#/components/schemas/User'
+        total:
+          type: integer
+          example: 42
+        page:
+          type: integer
+          example: 1
+        limit:
+          type: integer
+          example: 10
+
+  # ─── Reusable Responses ────────────────────────────────────────────────────
+  responses:
+    Unauthorized:
+      description: Missing or invalid token
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+                example: fail
+              message:
+                type: string
+                example: No token provided
+    Forbidden:
+      description: Insufficient permissions
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+                example: fail
+              message:
+                type: string
+                example: You do not have permission to perform this action
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+                example: fail
+              message:
+                type: string
+                example: User not found
+    ValidationError:
+      description: Invalid request body
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+                example: fail
+              message:
+                type: string
+                example: "fullName is required, email must be a valid email"
+
+# ─── Paths ───────────────────────────────────────────────────────────────────
+paths:
+
+  # ── Auth ────────────────────────────────────────────────────────────────────
+  /auth/register:
+    post:
+      tags: [Auth]
+      summary: Register a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '201':
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  message:
+                    type: string
+                    example: Registration successful
+                  data:
+                    type: object
+                    properties:
+                      user:
+                        $ref: '#/components/schemas/User'
+        '400':
+          description: Email already in use or validation error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: fail
+                  message:
+                    type: string
+                    example: Email already in use
+
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Login and receive access + refresh tokens
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  message:
+                    type: string
+                    example: Login successful
+                  data:
+                    allOf:
+                      - $ref: '#/components/schemas/TokensResponse'
+                      - type: object
+                        properties:
+                          user:
+                            $ref: '#/components/schemas/User'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: fail
+                  message:
+                    type: string
+                    example: Invalid email or password
+
+  /auth/refresh-token:
+    post:
+      tags: [Auth]
+      summary: Get a new access token using refresh token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshTokenRequest'
+      responses:
+        '200':
+          description: Token refreshed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  message:
+                    type: string
+                    example: Token refreshed
+                  data:
+                    $ref: '#/components/schemas/TokensResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /auth/logout:
+    post:
+      tags: [Auth]
+      summary: Logout and invalidate refresh token
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Logged out successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  message:
+                    type: string
+                    example: Logged out successfully
+                  data:
+                    nullable: true
+                    example: null
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  # ── Users ───────────────────────────────────────────────────────────────────
+  /users:
+    get:
+      tags: [Users]
+      summary: Get all users (admin only)
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+          description: Page number
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 10
+          description: Items per page
+      responses:
+        '200':
+          description: Users retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  message:
+                    type: string
+                    example: Users retrieved
+                  data:
+                    $ref: '#/components/schemas/PaginatedUsers'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /users/{id}:
+    get:
+      tags: [Users]
+      summary: Get a user by ID (admin, staff)
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: MongoDB ObjectId of the user
+      responses:
+        '200':
+          description: User retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  message:
+                    type: string
+                    example: User retrieved
+                  data:
+                    type: object
+                    properties:
+                      user:
+                        $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    patch:
+      tags: [Users]
+      summary: Update a user (admin only)
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUserRequest'
+      responses:
+        '200':
+          description: User updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  message:
+                    type: string
+                    example: User updated
+                  data:
+                    type: object
+                    properties:
+                      user:
+                        $ref: '#/components/schemas/User'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags: [Users]
+      summary: Deactivate a user (admin only)
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: User deactivated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  message:
+                    type: string
+                    example: User deactivated
+                  data:
+                    nullable: true
+                    example: null
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
