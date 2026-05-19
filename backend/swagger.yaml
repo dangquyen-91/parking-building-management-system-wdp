@@ -7,14 +7,14 @@ info:
     name: WDP301 Team
 
 servers:
-  - url: http://localhost:5000/api
+  - url: http://localhost:5000/api/v1
     description: Local development server
 
 tags:
   - name: Auth
     description: Authentication and authorization
   - name: Users
-    description: User management (admin only)
+    description: User management
 
 # ─── Security Schemes ────────────────────────────────────────────────────────
 components:
@@ -39,10 +39,13 @@ components:
           type: string
           format: email
           example: nguyenvana@gmail.com
+        phone:
+          type: string
+          example: '0901234567'
         role:
           type: string
-          enum: [admin, staff, customer]
-          example: customer
+          enum: [admin, manager, staff, resident]
+          example: resident
         isActive:
           type: boolean
           example: true
@@ -89,16 +92,50 @@ components:
           type: string
           example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 
+    UpdateMeRequest:
+      type: object
+      properties:
+        fullName:
+          type: string
+          minLength: 2
+          maxLength: 100
+          example: Nguyen Van B
+        phone:
+          type: string
+          example: '0901234567'
+
     UpdateUserRequest:
       type: object
       properties:
         fullName:
           type: string
+          minLength: 2
+          maxLength: 100
           example: Nguyen Van B
         email:
           type: string
           format: email
           example: nguyenvanb@gmail.com
+        phone:
+          type: string
+          example: '0901234567'
+
+    ChangeRoleRequest:
+      type: object
+      required: [role]
+      properties:
+        role:
+          type: string
+          enum: [admin, manager, staff, resident]
+          example: staff
+
+    UpdateStatusRequest:
+      type: object
+      required: [isActive]
+      properties:
+        isActive:
+          type: boolean
+          example: false
 
     TokensResponse:
       type: object
@@ -180,7 +217,7 @@ components:
                 example: fail
               message:
                 type: string
-                example: "fullName is required, email must be a valid email"
+                example: '"role" must be one of [admin, manager, staff, resident]'
 
 # ─── Paths ───────────────────────────────────────────────────────────────────
 paths:
@@ -217,17 +254,6 @@ paths:
                         $ref: '#/components/schemas/User'
         '400':
           description: Email already in use or validation error
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-                    example: fail
-                  message:
-                    type: string
-                    example: Email already in use
 
   /auth/login:
     post:
@@ -250,9 +276,6 @@ paths:
                   status:
                     type: string
                     example: success
-                  message:
-                    type: string
-                    example: Login successful
                   data:
                     allOf:
                       - $ref: '#/components/schemas/TokensResponse'
@@ -262,17 +285,6 @@ paths:
                             $ref: '#/components/schemas/User'
         '401':
           description: Invalid credentials
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-                    example: fail
-                  message:
-                    type: string
-                    example: Invalid email or password
 
   /auth/refresh-token:
     post:
@@ -295,9 +307,6 @@ paths:
                   status:
                     type: string
                     example: success
-                  message:
-                    type: string
-                    example: Token refreshed
                   data:
                     $ref: '#/components/schemas/TokensResponse'
         '401':
@@ -312,6 +321,24 @@ paths:
       responses:
         '200':
           description: Logged out successfully
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  # ── Users ───────────────────────────────────────────────────────────────────
+  /users/me:
+    get:
+      tags: [Users]
+      summary: Get current user profile
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Profile retrieved
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                example: private, max-age=60
           content:
             application/json:
               schema:
@@ -320,20 +347,50 @@ paths:
                   status:
                     type: string
                     example: success
-                  message:
-                    type: string
-                    example: Logged out successfully
                   data:
-                    nullable: true
-                    example: null
+                    type: object
+                    properties:
+                      user:
+                        $ref: '#/components/schemas/User'
         '401':
           $ref: '#/components/responses/Unauthorized'
 
-  # ── Users ───────────────────────────────────────────────────────────────────
+    patch:
+      tags: [Users]
+      summary: Update current user profile (fullName, phone only)
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateMeRequest'
+      responses:
+        '200':
+          description: Profile updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    type: object
+                    properties:
+                      user:
+                        $ref: '#/components/schemas/User'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
   /users:
     get:
       tags: [Users]
-      summary: Get all users (admin only)
+      summary: Get all users (admin, manager)
       security:
         - BearerAuth: []
       parameters:
@@ -342,16 +399,40 @@ paths:
           schema:
             type: integer
             default: 1
-          description: Page number
         - in: query
           name: limit
           schema:
             type: integer
             default: 10
-          description: Items per page
+        - in: query
+          name: role
+          schema:
+            type: string
+            enum: [admin, manager, staff, resident]
+        - in: query
+          name: isActive
+          schema:
+            type: boolean
+        - in: query
+          name: sort
+          schema:
+            type: string
+            enum: [fullName, email, createdAt, role]
+            default: createdAt
+        - in: query
+          name: order
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: desc
       responses:
         '200':
           description: Users retrieved
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                example: private, max-age=30
           content:
             application/json:
               schema:
@@ -360,9 +441,6 @@ paths:
                   status:
                     type: string
                     example: success
-                  message:
-                    type: string
-                    example: Users retrieved
                   data:
                     $ref: '#/components/schemas/PaginatedUsers'
         '401':
@@ -373,7 +451,7 @@ paths:
   /users/{id}:
     get:
       tags: [Users]
-      summary: Get a user by ID (admin, staff)
+      summary: Get a user by ID (admin, manager)
       security:
         - BearerAuth: []
       parameters:
@@ -382,10 +460,14 @@ paths:
           required: true
           schema:
             type: string
-          description: MongoDB ObjectId of the user
       responses:
         '200':
           description: User retrieved
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                example: private, max-age=30
           content:
             application/json:
               schema:
@@ -394,9 +476,6 @@ paths:
                   status:
                     type: string
                     example: success
-                  message:
-                    type: string
-                    example: User retrieved
                   data:
                     type: object
                     properties:
@@ -411,7 +490,7 @@ paths:
 
     patch:
       tags: [Users]
-      summary: Update a user (admin only)
+      summary: Update user info (admin only)
       security:
         - BearerAuth: []
       parameters:
@@ -429,22 +508,6 @@ paths:
       responses:
         '200':
           description: User updated
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-                    example: success
-                  message:
-                    type: string
-                    example: User updated
-                  data:
-                    type: object
-                    properties:
-                      user:
-                        $ref: '#/components/schemas/User'
         '400':
           $ref: '#/components/responses/ValidationError'
         '401':
@@ -454,9 +517,10 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-    delete:
+  /users/{id}/role:
+    patch:
       tags: [Users]
-      summary: Deactivate a user (admin only)
+      summary: Change user role (admin only)
       security:
         - BearerAuth: []
       parameters:
@@ -465,9 +529,45 @@ paths:
           required: true
           schema:
             type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangeRoleRequest'
       responses:
         '200':
-          description: User deactivated
+          description: Role updated
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /users/{id}/status:
+    patch:
+      tags: [Users]
+      summary: Activate or deactivate a user (admin only)
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateStatusRequest'
+      responses:
+        '200':
+          description: User status updated
           content:
             application/json:
               schema:
@@ -480,8 +580,12 @@ paths:
                     type: string
                     example: User deactivated
                   data:
-                    nullable: true
-                    example: null
+                    type: object
+                    properties:
+                      user:
+                        $ref: '#/components/schemas/User'
+        '400':
+          $ref: '#/components/responses/ValidationError'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
