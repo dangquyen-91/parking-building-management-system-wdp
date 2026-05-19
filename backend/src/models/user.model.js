@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
+import { ROLES } from '../constants/roles.js';
 
 const userSchema = new mongoose.Schema(
   {
@@ -14,19 +15,19 @@ const userSchema = new mongoose.Schema(
     password: { type: String, required: true, select: false },
     role: {
       type: String,
-      enum: ['admin', 'staff', 'customer'],
-      default: 'customer',
+      enum: ROLES,
+      default: 'resident',
     },
+    phone: { type: String, trim: true },
     isActive: { type: Boolean, default: true },
     refreshToken: { type: String, select: false },
   },
   { timestamps: true }
 );
 
-userSchema.pre('save', async function (next) {
-  if (!this.isModified('password')) return next();
+userSchema.pre('save', async function () {
+  if (!this.isModified('password')) return;
   this.password = await bcrypt.hash(this.password, 12);
-  next();
 });
 
 userSchema.methods.comparePassword = async function (candidatePassword) {
