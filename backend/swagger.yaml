@@ -15,6 +15,8 @@ tags:
     description: Authentication and authorization
   - name: Users
     description: User management
+  - name: Buildings
+    description: Building management
 
 # ─── Security Schemes ────────────────────────────────────────────────────────
 components:
@@ -160,6 +162,42 @@ components:
         total:
           type: integer
           example: 42
+
+    Building:
+      type: object
+      properties:
+        _id:
+          type: string
+          example: 664a1f2e8b2c3d4e5f6a7b8c
+        name:
+          type: string
+          example: Toa nha A
+        address:
+          type: string
+          example: 123 Nguyen Van Linh, Da Nang
+        description:
+          type: string
+          example: Toa nha van phong 10 tang
+        isActive:
+          type: boolean
+          example: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    PaginatedBuildings:
+      type: object
+      properties:
+        buildings:
+          type: array
+          items:
+            $ref: '#/components/schemas/Building'
+        total:
+          type: integer
+          example: 5
         page:
           type: integer
           example: 1
@@ -589,6 +627,212 @@ paths:
                         $ref: '#/components/schemas/User'
         '400':
           $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ── Buildings ────────────────────────────────────────────────────────────────
+  /buildings:
+    get:
+      tags: [Buildings]
+      summary: Get all buildings (admin, manager, staff)
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 10
+        - in: query
+          name: isActive
+          schema:
+            type: boolean
+        - in: query
+          name: sort
+          schema:
+            type: string
+            enum: [name, address, createdAt]
+            default: createdAt
+        - in: query
+          name: order
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: desc
+      responses:
+        '200':
+          description: Buildings retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    $ref: '#/components/schemas/PaginatedBuildings'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+    post:
+      tags: [Buildings]
+      summary: Create a new building (admin, manager)
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, address]
+              properties:
+                name:
+                  type: string
+                  example: Toa nha A
+                address:
+                  type: string
+                  example: 123 Nguyen Van Linh, Da Nang
+                description:
+                  type: string
+                  example: Toa nha van phong 10 tang
+      responses:
+        '201':
+          description: Building created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    type: object
+                    properties:
+                      building:
+                        $ref: '#/components/schemas/Building'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /buildings/{id}:
+    get:
+      tags: [Buildings]
+      summary: Get a building by ID (admin, manager, staff)
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Building retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    type: object
+                    properties:
+                      building:
+                        $ref: '#/components/schemas/Building'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    patch:
+      tags: [Buildings]
+      summary: Update a building (admin, manager)
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: Toa nha A (updated)
+                address:
+                  type: string
+                  example: 456 Le Duan, Da Nang
+                description:
+                  type: string
+      responses:
+        '200':
+          description: Building updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    type: object
+                    properties:
+                      building:
+                        $ref: '#/components/schemas/Building'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags: [Buildings]
+      summary: Deactivate a building (admin only)
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Building deactivated
+        '400':
+          description: Building still has active floors
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
