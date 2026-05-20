@@ -17,6 +17,8 @@ tags:
     description: User management
   - name: Buildings
     description: Building management
+  - name: Floors
+    description: Floor management
 
 # ─── Security Schemes ────────────────────────────────────────────────────────
 components:
@@ -204,6 +206,46 @@ components:
         limit:
           type: integer
           example: 10
+
+    Floor:
+      type: object
+      properties:
+        _id:
+          type: string
+          example: 664a1f2e8b2c3d4e5f6a7b8c
+        buildingId:
+          type: object
+          properties:
+            _id:
+              type: string
+            name:
+              type: string
+              example: Toa nha A
+            address:
+              type: string
+              example: 123 Nguyen Van Linh, Da Nang
+        floorNumber:
+          type: integer
+          example: 1
+        vehicleType:
+          type: string
+          enum: [motorcycle, car]
+          example: motorcycle
+        totalSlots:
+          type: integer
+          example: 50
+        description:
+          type: string
+          example: Tang 1 danh cho xe may
+        isActive:
+          type: boolean
+          example: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
 
   # ─── Reusable Responses ────────────────────────────────────────────────────
   responses:
@@ -833,6 +875,249 @@ paths:
           description: Building deactivated
         '400':
           description: Building still has active floors
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ── Floors ───────────────────────────────────────────────────────────────────
+  /floors:
+    get:
+      tags: [Floors]
+      summary: Get all floors (admin, manager, staff)
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: query
+          name: buildingId
+          schema:
+            type: string
+          description: Filter by building
+        - in: query
+          name: vehicleType
+          schema:
+            type: string
+            enum: [motorcycle, car]
+        - in: query
+          name: isActive
+          schema:
+            type: boolean
+        - in: query
+          name: sort
+          schema:
+            type: string
+            enum: [floorNumber, vehicleType, createdAt]
+            default: floorNumber
+        - in: query
+          name: order
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: asc
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: Floors retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    type: object
+                    properties:
+                      floors:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Floor'
+                      total:
+                        type: integer
+                        example: 5
+                      page:
+                        type: integer
+                        example: 1
+                      limit:
+                        type: integer
+                        example: 10
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+    post:
+      tags: [Floors]
+      summary: Create a new floor (admin, manager)
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [buildingId, floorNumber, vehicleType, totalSlots]
+              properties:
+                buildingId:
+                  type: string
+                  example: 664a1f2e8b2c3d4e5f6a7b8c
+                floorNumber:
+                  type: integer
+                  example: 1
+                vehicleType:
+                  type: string
+                  enum: [motorcycle, car]
+                  example: motorcycle
+                totalSlots:
+                  type: integer
+                  example: 50
+                description:
+                  type: string
+                  example: Tang 1 danh cho xe may
+      responses:
+        '201':
+          description: Floor created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    type: object
+                    properties:
+                      floor:
+                        $ref: '#/components/schemas/Floor'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /floors/{id}:
+    get:
+      tags: [Floors]
+      summary: Get a floor by ID with slot stats (admin, manager, staff)
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Floor retrieved with slot statistics
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    type: object
+                    properties:
+                      floor:
+                        allOf:
+                          - $ref: '#/components/schemas/Floor'
+                          - type: object
+                            properties:
+                              slotStats:
+                                type: object
+                                properties:
+                                  empty:
+                                    type: integer
+                                    example: 30
+                                  occupied:
+                                    type: integer
+                                    example: 15
+                                  reserved:
+                                    type: integer
+                                    example: 3
+                                  maintenance:
+                                    type: integer
+                                    example: 2
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    patch:
+      tags: [Floors]
+      summary: Update a floor (admin, manager)
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                floorNumber:
+                  type: integer
+                vehicleType:
+                  type: string
+                  enum: [motorcycle, car]
+                totalSlots:
+                  type: integer
+                description:
+                  type: string
+      responses:
+        '200':
+          description: Floor updated
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags: [Floors]
+      summary: Deactivate a floor (admin only)
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Floor deactivated
+        '400':
+          description: Floor still has parking slots
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
