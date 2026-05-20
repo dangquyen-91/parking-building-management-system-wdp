@@ -44,8 +44,8 @@ components:
           example: '0901234567'
         role:
           type: string
-          enum: [admin, manager, staff, resident]
-          example: resident
+          enum: [admin, manager, staff, user]
+          example: user
         isActive:
           type: boolean
           example: true
@@ -71,6 +71,9 @@ components:
           type: string
           minLength: 6
           example: password123
+        phone:
+          type: string
+          example: '0901234567'
 
     LoginRequest:
       type: object
@@ -126,7 +129,7 @@ components:
       properties:
         role:
           type: string
-          enum: [admin, manager, staff, resident]
+          enum: [admin, manager, staff, user]
           example: staff
 
     UpdateStatusRequest:
@@ -217,7 +220,7 @@ components:
                 example: fail
               message:
                 type: string
-                example: '"role" must be one of [admin, manager, staff, resident]'
+                example: '"role" must be one of [admin, manager, staff, user]'
 
 # ─── Paths ───────────────────────────────────────────────────────────────────
 paths:
@@ -408,7 +411,7 @@ paths:
           name: role
           schema:
             type: string
-            enum: [admin, manager, staff, resident]
+            enum: [admin, manager, staff, user]
         - in: query
           name: isActive
           schema:

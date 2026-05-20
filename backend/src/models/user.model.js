@@ -16,7 +16,7 @@ const userSchema = new mongoose.Schema(
     role: {
       type: String,
       enum: ROLES,
-      default: 'resident',
+      default: 'user',
     },
     phone: { type: String, trim: true },
     isActive: { type: Boolean, default: true },
