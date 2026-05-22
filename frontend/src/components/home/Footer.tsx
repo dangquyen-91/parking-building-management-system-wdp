@@ -1,91 +1,62 @@
-import { LogoIcon, SocialIcon } from './icons'
+import { motion } from 'framer-motion'
+import { Link } from 'react-router-dom'
+import { fadeIn } from '../../assets/motion/variants'
 
-const QUICK_LINKS = [
-  { href: '#about', label: 'About Us' },
-  { href: '#features', label: 'Features' },
+const FOOTER_LINKS = [
+  { href: '#about', label: 'About' },
   { href: '#how-it-works', label: 'How It Works' },
-  { href: '#search', label: 'Slot Browser' },
-  { href: '#demo', label: 'Book Demo' },
+  { href: '#features', label: 'Features' },
+  { href: '#resources', label: 'Resources' },
+  { href: '#blog', label: 'Blog' },
+  { to: '/login', label: 'Login' },
+  { to: '/register', label: 'Register' },
 ] as const
 
-const SOCIAL = [
-  { type: 'facebook' as const, href: 'https://facebook.com', label: 'Facebook' },
-  { type: 'twitter' as const, href: 'https://twitter.com', label: 'Twitter' },
-  { type: 'linkedin' as const, href: 'https://linkedin.com', label: 'LinkedIn' },
-  { type: 'instagram' as const, href: 'https://instagram.com', label: 'Instagram' },
-]
-
 export function Footer() {
-  const year = new Date().getFullYear()
-
   return (
-    <footer id="about" className="home-footer">
-      <div className="landing__container">
-        <div className="home-footer__grid">
-          <div className="home-footer__brand">
-            <a href="/" className="home-header__logo" aria-label="Parking — home">
-              <span className="home-header__logo-icon" aria-hidden="true">
-                <LogoIcon />
-              </span>
-              Parking
-            </a>
-            <p>
-              Building parking management for a single property — basement maps,
-              tenant slots, and live occupancy for your operations team.
-            </p>
-          </div>
-
-          <div className="home-footer__col">
-            <h3>Quick Links</h3>
-            <ul>
-              {QUICK_LINKS.map(({ href, label }) => (
-                <li key={href}>
-                  <a href={href}>{label}</a>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div className="home-footer__col">
-            <h3>Contact</h3>
-            <ul>
-              <li>
-                <a href="mailto:hello@parking.app">hello@parking.app</a>
-              </li>
-              <li>
-                <a href="tel:+18005551234">+1 (800) 555-1234</a>
-              </li>
-              <li>88 Central Tower, Basement Ops, Floor 1</li>
-            </ul>
-          </div>
-
-          <div className="home-footer__col">
-            <h3>Follow Us</h3>
-            <div className="home-footer__social">
-              {SOCIAL.map(({ type, href, label }) => (
-                <a
-                  key={type}
-                  href={href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label={`Follow Parking on ${label}`}
-                >
-                  <SocialIcon type={type} />
-                </a>
-              ))}
-            </div>
-          </div>
+    <footer className="section-surface-alt border-t border-white/[0.06] px-6 md:px-12 lg:px-16 py-12">
+      <motion.div
+        className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center md:justify-between gap-8"
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true }}
+        variants={fadeIn}
+      >
+        <div>
+          <p className="text-sm font-medium text-white">Parking Simulator</p>
+          <p className="mt-1 text-xs text-gray-400">
+            Building parking, managed in one place.
+          </p>
+          <p className="mt-4 text-[10px] text-gray-500 uppercase tracking-[0.15em]">
+            © {new Date().getFullYear()} Parking Simulator
+          </p>
         </div>
 
-        <div className="home-footer__bottom">
-          <p>© {year} Parking. All rights reserved.</p>
-          <nav className="home-footer__legal" aria-label="Legal">
-            <a href="#privacy">Privacy Policy</a>
-            <a href="#terms">Terms of Service</a>
-            <a href="#cookies">Cookie Policy</a>
-          </nav>
-        </div>
-      </div>
+        <nav
+          className="flex flex-wrap gap-x-6 gap-y-2"
+          aria-label="Footer navigation"
+        >
+          {FOOTER_LINKS.map((link) =>
+            'to' in link ? (
+              <Link
+                key={link.to}
+                to={link.to}
+                className="text-xs text-gray-300 hover:text-white transition-colors"
+              >
+                {link.label}
+              </Link>
+            ) : (
+              <a
+                key={link.href}
+                href={link.href}
+                className="text-xs text-gray-300 hover:text-white transition-colors"
+              >
+                {link.label}
+              </a>
+            ),
+          )}
+        </nav>
+      </motion.div>
     </footer>
   )
 }

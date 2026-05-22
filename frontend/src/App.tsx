@@ -1,6 +1,14 @@
-import { HomePage } from './components/home'
+import { BrowserRouter } from 'react-router-dom'
+import { QueryProvider } from './providers/QueryProvider'
+import { AppRoutes } from './routes/AppRoutes'
 
 function App() {
-  return <HomePage />
+  return (
+    <QueryProvider>
+      <BrowserRouter>
+        <AppRoutes />
+      </BrowserRouter>
+    </QueryProvider>
+  )
 }
 export default App
