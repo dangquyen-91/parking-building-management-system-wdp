@@ -1,5 +1,6 @@
 import ParkingSession from '../models/parking-session.model.js';
 import ParkingSlot from '../models/parking-slot.model.js';
+import Floor from '../models/floor.model.js';
 import User from '../models/user.model.js';
 import AppError from '../utils/appError.js';
 
@@ -16,22 +17,26 @@ const SESSION_POPULATE = [
 export const checkIn = async ({ licensePlate, vehicleType, staffId, userId, note }) => {
   const normalizedPlate = licensePlate.toUpperCase().replace(/\s/g, '');
 
-  // Block if vehicle already has an active session
   const existing = await ParkingSession.findOne({ licensePlate: normalizedPlate, status: 'active' });
   if (existing) {
     throw new AppError(`Vehicle ${normalizedPlate} already has an active parking session`, 400);
   }
 
-  // Validate resident account if provided
   if (userId) {
     const user = await User.findById(userId);
     if (!user) throw new AppError('Resident account not found', 404);
     if (!user.isActive) throw new AppError('Resident account is inactive', 400);
   }
 
-  // Atomically find and lock an empty slot matching vehicleType
+  const activeFloors = await Floor.find({ isActive: true })
+    .populate({ path: 'buildingId', select: 'isActive' })
+    .select('_id buildingId');
+  const validFloorIds = activeFloors
+    .filter((f) => f.buildingId?.isActive)
+    .map((f) => f._id);
+
   const slot = await ParkingSlot.findOneAndUpdate(
-    { vehicleType, status: 'empty' },
+    { vehicleType, status: 'empty', floorId: { $in: validFloorIds } },
     { status: 'occupied' },
     { new: true }
   );
@@ -51,27 +56,41 @@ export const checkIn = async ({ licensePlate, vehicleType, staffId, userId, note
 
     return session.populate(SESSION_POPULATE);
   } catch (err) {
-    // Rollback slot if session creation fails
     await ParkingSlot.findByIdAndUpdate(slot._id, { status: 'empty' });
     throw err;
   }
 };
 
-export const getActiveSessions = async ({ page = 1, limit = 20, vehicleType, licensePlate }) => {
+export const getActiveSessions = async ({ page = 1, limit = 20, vehicleType, licensePlate, floorId, buildingId } = {}) => {
+  const pageNum = Math.max(1, parseInt(page));
+  const limitNum = Math.min(100, Math.max(1, parseInt(limit)));
+
   const filter = { status: 'active' };
   if (vehicleType) filter.vehicleType = vehicleType;
   if (licensePlate) filter.licensePlate = new RegExp(licensePlate.toUpperCase(), 'i');
 
-  const skip = (Number(page) - 1) * Number(limit);
+  if (floorId || buildingId) {
+    const slotFilter = {};
+    if (floorId) {
+      slotFilter.floorId = floorId;
+    } else {
+      const floors = await Floor.find({ buildingId }).select('_id');
+      slotFilter.floorId = { $in: floors.map((f) => f._id) };
+    }
+    const slots = await ParkingSlot.find(slotFilter).select('_id');
+    filter.slotId = { $in: slots.map((s) => s._id) };
+  }
+
+  const skip = (pageNum - 1) * limitNum;
   const [sessions, total] = await Promise.all([
     ParkingSession.find(filter)
       .populate(SESSION_POPULATE)
       .skip(skip)
-      .limit(Number(limit))
+      .limit(limitNum)
       .sort({ entryTime: -1 }),
     ParkingSession.countDocuments(filter),
   ]);
-  return { sessions, total, page: Number(page), limit: Number(limit) };
+  return { sessions, total, page: pageNum, limit: limitNum, totalPages: Math.ceil(total / limitNum) };
 };
 
 export const getById = async (id) => {
@@ -80,22 +99,14 @@ export const getById = async (id) => {
   return session;
 };
 
-/**
- * Lookup a license plate before check-in so staff can confirm:
- *  - Is the vehicle already parked? (active session)
- *  - Which resident was linked last time? (hint for userId)
- *  - How many slots are still available for that vehicle type?
- */
 export const lookup = async (licensePlate) => {
   const normalizedPlate = licensePlate.toUpperCase().replace(/\s/g, '');
 
-  // 1. Check for an existing active session
   const activeSession = await ParkingSession.findOne({
     licensePlate: normalizedPlate,
     status: 'active',
   }).populate(SESSION_POPULATE);
 
-  // 2. Find the most recent completed session → get linked resident hint
   const lastSession = await ParkingSession.findOne({
     licensePlate: normalizedPlate,
     status: { $in: ['completed', 'cancelled'] },
@@ -104,7 +115,6 @@ export const lookup = async (licensePlate) => {
     .populate('userId', 'fullName phone email')
     .select('userId entryTime exitTime vehicleType fee');
 
-  // 3. Count available slots per vehicleType (helps staff see capacity at a glance)
   const [availableMotorcycle, availableCar] = await Promise.all([
     ParkingSlot.countDocuments({ vehicleType: 'motorcycle', status: 'empty' }),
     ParkingSlot.countDocuments({ vehicleType: 'car', status: 'empty' }),
@@ -112,7 +122,6 @@ export const lookup = async (licensePlate) => {
 
   return {
     licensePlate: normalizedPlate,
-    // 'already_active' means cannot check-in; 'available' means good to go
     status: activeSession ? 'already_active' : 'available',
     activeSession: activeSession || null,
     hint: {

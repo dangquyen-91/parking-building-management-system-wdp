@@ -23,7 +23,7 @@ export const getAll = async ({ buildingId, vehicleType, isActive, sort, order, p
       .sort({ [sortField]: sortOrder }),
     Floor.countDocuments(filter),
   ]);
-  return { floors, total, page: Number(page), limit: Number(limit) };
+  return { floors, total, page: Number(page), limit: Number(limit), totalPages: Math.ceil(total / Number(limit)) };
 };
 
 export const getById = async (id) => {
@@ -45,13 +45,26 @@ export const create = async (data) => {
   const building = await Building.findById(data.buildingId);
   if (!building) throw new AppError('Building not found', 404);
   if (!building.isActive) throw new AppError('Building is inactive', 400);
+
+  const existing = await Floor.findOne({ buildingId: data.buildingId, floorNumber: data.floorNumber });
+  if (existing) throw new AppError(`Floor ${data.floorNumber} already exists in this building`, 409);
+
   return Floor.create(data);
 };
 
 export const update = async (id, data) => {
-  const floor = await Floor.findByIdAndUpdate(id, data, { new: true, runValidators: true });
+  const floor = await Floor.findById(id);
   if (!floor) throw new AppError('Floor not found', 404);
-  return floor;
+
+  if (data.floorNumber !== undefined) {
+    const conflict = await Floor.findOne({ buildingId: floor.buildingId, floorNumber: data.floorNumber });
+    if (conflict && conflict._id.toString() !== id) {
+      throw new AppError(`Floor ${data.floorNumber} already exists in this building`, 409);
+    }
+  }
+
+  Object.assign(floor, data);
+  return floor.save();
 };
 
 export const remove = async (id) => {

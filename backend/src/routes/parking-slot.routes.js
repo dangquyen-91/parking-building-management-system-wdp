@@ -19,7 +19,6 @@ router.get('/:id', authorize('admin', 'manager', 'staff'), privateCache(30), get
 router.post('/', authorize('admin', 'manager'), noCache, validate(createSlotSchema), create);
 router.post('/bulk', authorize('admin', 'manager'), noCache, validate(bulkCreateSchema), bulkCreate);
 
-// Staff can update status (e.g. mark maintenance), admin/manager can do everything
 router.patch('/:id', authorize('admin', 'manager', 'staff'), noCache, validate(updateSlotSchema), update);
 router.delete('/:id', authorize('admin', 'manager'), noCache, remove);
 

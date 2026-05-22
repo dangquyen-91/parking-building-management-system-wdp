@@ -8,7 +8,6 @@ export const createSlotSchema = Joi.object({
   note: Joi.string().trim().max(300),
 });
 
-// ── Bulk: Format A — auto-generate slotCodes by quantity ───────────────────
 const bulkByQuantitySchema = Joi.object({
   floorId: Joi.string().hex().length(24).required(),
   quantity: Joi.number().integer().min(1).max(200).required(),
@@ -16,7 +15,6 @@ const bulkByQuantitySchema = Joi.object({
   startFrom: Joi.number().integer().min(1),               // override start number
 });
 
-// ── Bulk: Format B — explicit list with custom slotCode per slot ───────────
 const bulkByListSchema = Joi.object({
   floorId: Joi.string().hex().length(24).required(),
   slots: Joi.array()
@@ -37,6 +35,8 @@ export const bulkCreateSchema = Joi.alternatives()
   .messages({ 'alternatives.match': 'Provide either "quantity" (number) or "slots" (array)' });
 
 export const updateSlotSchema = Joi.object({
+  slotCode: Joi.string().trim().min(1).max(20),
+  vehicleType: Joi.string().valid('motorcycle', 'car'),
   status: Joi.string().valid(...SLOT_STATUSES),
   note: Joi.string().trim().max(300).allow(''),
 }).min(1);

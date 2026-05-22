@@ -11,7 +11,6 @@ router.use(authenticate);
 
 router.post('/check-in', authorize('admin', 'staff'), noCache, validate(checkInSchema), checkIn);
 
-// Must be before /:id to avoid being treated as an id param
 router.get('/lookup', authorize('admin', 'manager', 'staff'), noCache, validate(lookupSchema, 'query'), lookup);
 
 router.get('/', authorize('admin', 'manager', 'staff'), privateCache(15), getActiveSessions);

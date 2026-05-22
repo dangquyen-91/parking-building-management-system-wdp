@@ -3,12 +3,6 @@ import Floor from '../models/floor.model.js';
 import Building from '../models/building.model.js';
 import AppError from '../utils/appError.js';
 
-// ─── helpers ────────────────────────────────────────────────────────────────
-
-/**
- * Load floor + its building in one query.
- * Throws 404 / 400 if floor or building is missing / inactive.
- */
 const loadActiveFloor = async (floorId) => {
   const floor = await Floor.findById(floorId).populate('buildingId', 'isActive');
   if (!floor) throw new AppError('Floor not found', 404);
@@ -16,8 +10,6 @@ const loadActiveFloor = async (floorId) => {
   if (!floor.buildingId?.isActive) throw new AppError('Building is inactive', 400);
   return floor;
 };
-
-// ─── getAll ─────────────────────────────────────────────────────────────────
 
 const SORT_WHITELIST = ['slotCode', 'vehicleType', 'status', 'createdAt'];
 
@@ -38,7 +30,6 @@ export const getAll = async ({
   if (vehicleType) filter.vehicleType = vehicleType;
   if (status) filter.status = status;
 
-  // filter by floorId directly, or resolve all floorIds under a building
   if (floorId) {
     filter.floorId = floorId;
   } else if (buildingId) {
@@ -65,8 +56,6 @@ export const getAll = async ({
   return { slots, total, page: pageNum, limit: limitNum, totalPages: Math.ceil(total / limitNum) };
 };
 
-// ─── getById ─────────────────────────────────────────────────────────────────
-
 export const getById = async (id) => {
   const slot = await ParkingSlot.findById(id).populate({
     path: 'floorId',
@@ -77,17 +66,13 @@ export const getById = async (id) => {
   return slot;
 };
 
-// ─── create ──────────────────────────────────────────────────────────────────
-
 export const create = async (data) => {
   const floor = await loadActiveFloor(data.floorId);
 
-  // Enforce vehicleType must match the floor
   if (data.vehicleType !== floor.vehicleType) {
     throw new AppError(`This floor only accepts "${floor.vehicleType}" slots`, 400);
   }
 
-  // Check floor capacity
   const currentCount = await ParkingSlot.countDocuments({ floorId: data.floorId });
   if (currentCount >= floor.totalSlots) {
     throw new AppError(
@@ -96,15 +81,12 @@ export const create = async (data) => {
     );
   }
 
-  // Duplicate slotCode check (also enforced by unique index, but give nicer error)
   const normalizedCode = data.slotCode.trim().toUpperCase();
   const conflict = await ParkingSlot.findOne({ floorId: data.floorId, slotCode: normalizedCode });
   if (conflict) throw new AppError(`Slot code "${normalizedCode}" already exists on this floor`, 409);
 
   return ParkingSlot.create({ ...data, slotCode: normalizedCode });
 };
-
-// ─── bulkCreate ───────────────────────────────────────────────────────────────
 
 export const bulkCreate = async ({ floorId, quantity, prefix = 'A', startFrom, slots }) => {
   const floor = await loadActiveFloor(floorId);
@@ -113,8 +95,6 @@ export const bulkCreate = async ({ floorId, quantity, prefix = 'A', startFrom, s
   let docs;
 
   if (slots) {
-    // ── Mode B: explicit list ─────────────────────────────────────────────
-    // vehicleType per slot must match floor
     const mismatch = slots.find((s) => s.vehicleType && s.vehicleType !== floor.vehicleType);
     if (mismatch) {
       throw new AppError(
@@ -124,7 +104,6 @@ export const bulkCreate = async ({ floorId, quantity, prefix = 'A', startFrom, s
       );
     }
 
-    // Capacity check
     if (currentCount + slots.length > floor.totalSlots) {
       throw new AppError(
         `Floor capacity exceeded. Current: ${currentCount}, adding: ${slots.length}, max: ${floor.totalSlots}`,
@@ -132,7 +111,6 @@ export const bulkCreate = async ({ floorId, quantity, prefix = 'A', startFrom, s
       );
     }
 
-    // Duplicate within the request
     const incomingCodes = slots.map((s) => s.slotCode.trim().toUpperCase());
     const uniqueIncoming = new Set(incomingCodes);
     if (uniqueIncoming.size !== incomingCodes.length) {
@@ -140,7 +118,6 @@ export const bulkCreate = async ({ floorId, quantity, prefix = 'A', startFrom, s
       throw new AppError(`Duplicate slotCode in request: "${dup}"`, 400);
     }
 
-    // Duplicate vs existing DB slots
     const conflicts = await ParkingSlot.find({
       floorId,
       slotCode: { $in: [...uniqueIncoming] },
@@ -160,7 +137,6 @@ export const bulkCreate = async ({ floorId, quantity, prefix = 'A', startFrom, s
       status: 'empty',
     }));
   } else {
-    // ── Mode A: auto-generate by quantity ────────────────────────────────
     if (currentCount + quantity > floor.totalSlots) {
       throw new AppError(
         `Floor capacity exceeded. Current: ${currentCount}, adding: ${quantity}, max: ${floor.totalSlots}`,
@@ -200,18 +176,29 @@ export const bulkCreate = async ({ floorId, quantity, prefix = 'A', startFrom, s
   return ParkingSlot.insertMany(docs);
 };
 
-// ─── update ───────────────────────────────────────────────────────────────────
-
 export const update = async (id, data) => {
-  const slot = await ParkingSlot.findById(id);
+  const slot = await ParkingSlot.findById(id).populate('floorId', 'vehicleType');
   if (!slot) throw new AppError('Parking slot not found', 404);
+
   if (data.status === 'empty' && slot.status === 'occupied') {
     throw new AppError('Cannot manually set occupied slot to empty — use check-out instead', 400);
   }
-  return ParkingSlot.findByIdAndUpdate(id, data, { new: true, runValidators: true });
-};
 
-// ─── remove ───────────────────────────────────────────────────────────────────
+  if (data.vehicleType && data.vehicleType !== slot.floorId.vehicleType) {
+    throw new AppError(`This floor only accepts "${slot.floorId.vehicleType}" slots`, 400);
+  }
+
+  if (data.slotCode) {
+    data.slotCode = data.slotCode.trim().toUpperCase();
+    const conflict = await ParkingSlot.findOne({ floorId: slot.floorId._id, slotCode: data.slotCode });
+    if (conflict && conflict._id.toString() !== id) {
+      throw new AppError(`Slot code "${data.slotCode}" already exists on this floor`, 409);
+    }
+  }
+
+  Object.assign(slot, data);
+  return slot.save();
+};
 
 export const remove = async (id) => {
   const slot = await ParkingSlot.findById(id);
