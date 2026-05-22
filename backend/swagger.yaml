@@ -1,4 +1,4 @@
-openapi: 3.0.3
+﻿openapi: 3.0.3
 info:
   title: Parking Building Management System API
   description: REST API for managing parking buildings, users, and bookings
@@ -21,8 +21,9 @@ tags:
     description: Floor management
   - name: Slots
     description: Parking slot management
+  - name: Sessions
+    description: Vehicle check-in and check-out
 
-# ─── Security Schemes ────────────────────────────────────────────────────────
 components:
   securitySchemes:
     BearerAuth:
@@ -30,7 +31,6 @@ components:
       scheme: bearer
       bearerFormat: JWT
 
-  # ─── Schemas ───────────────────────────────────────────────────────────────
   schemas:
     User:
       type: object
@@ -286,7 +286,62 @@ components:
           type: string
           format: date-time
 
-  # ─── Reusable Responses ────────────────────────────────────────────────────
+    ParkingSession:
+      type: object
+      properties:
+        _id:
+          type: string
+          example: 664a1f2e8b2c3d4e5f6a7b8c
+        slotId:
+          $ref: '#/components/schemas/ParkingSlot'
+        licensePlate:
+          type: string
+          example: 51A-12345
+        vehicleType:
+          type: string
+          enum: [motorcycle, car]
+          example: motorcycle
+        entryTime:
+          type: string
+          format: date-time
+        exitTime:
+          type: string
+          format: date-time
+          nullable: true
+        fee:
+          type: number
+          example: 0
+        staffId:
+          type: object
+          properties:
+            _id:
+              type: string
+            fullName:
+              type: string
+              example: Nguyen Van Staff
+            email:
+              type: string
+        userId:
+          type: object
+          nullable: true
+          properties:
+            _id:
+              type: string
+            fullName:
+              type: string
+              example: Nguyen Van A
+            phone:
+              type: string
+        status:
+          type: string
+          enum: [active, completed, cancelled]
+          example: active
+        note:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+
   responses:
     Unauthorized:
       description: Missing or invalid token
@@ -341,10 +396,8 @@ components:
                 type: string
                 example: '"role" must be one of [admin, manager, staff, user]'
 
-# ─── Paths ───────────────────────────────────────────────────────────────────
 paths:
 
-  # ── Auth ────────────────────────────────────────────────────────────────────
   /auth/register:
     post:
       tags: [Auth]
@@ -446,7 +499,6 @@ paths:
         '401':
           $ref: '#/components/responses/Unauthorized'
 
-  # ── Users ───────────────────────────────────────────────────────────────────
   /users/me:
     get:
       tags: [Users]
@@ -715,7 +767,6 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  # ── Buildings ────────────────────────────────────────────────────────────────
   /buildings:
     get:
       tags: [Buildings]
@@ -921,7 +972,6 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  # ── Floors ───────────────────────────────────────────────────────────────────
   /floors:
     get:
       tags: [Floors]
@@ -1164,7 +1214,6 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  # ── Slots ────────────────────────────────────────────────────────────────────
   /slots:
     get:
       tags: [Slots]
@@ -1378,7 +1427,7 @@ paths:
 
     delete:
       tags: [Slots]
-      summary: Delete a slot (admin, manager) — blocked if occupied
+      summary: Delete a slot (admin, manager) - blocked if occupied
       security:
         - BearerAuth: []
       parameters:
@@ -1392,6 +1441,153 @@ paths:
           description: Slot deleted
         '400':
           description: Cannot delete an occupied slot
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /sessions/check-in:
+    post:
+      tags: [Sessions]
+      summary: Check in a vehicle (admin, staff)
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [licensePlate, vehicleType]
+              properties:
+                licensePlate:
+                  type: string
+                  example: 51A-12345
+                vehicleType:
+                  type: string
+                  enum: [motorcycle, car]
+                  example: motorcycle
+                userId:
+                  type: string
+                  description: Resident account ID (optional, null for walk-in guests)
+                  example: 664a1f2e8b2c3d4e5f6a7b8c
+                note:
+                  type: string
+                  example: Khach vang lai
+      responses:
+        '201':
+          description: Vehicle checked in â€” slot assigned, session created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  message:
+                    type: string
+                    example: Vehicle checked in successfully
+                  data:
+                    type: object
+                    properties:
+                      session:
+                        $ref: '#/components/schemas/ParkingSession'
+        '400':
+          description: Vehicle already has an active session
+        '404':
+          description: No available slots for the vehicle type
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /sessions:
+    get:
+      tags: [Sessions]
+      summary: Get active sessions (admin, manager, staff)
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: query
+          name: vehicleType
+          schema:
+            type: string
+            enum: [motorcycle, car]
+        - in: query
+          name: licensePlate
+          schema:
+            type: string
+          description: Partial match
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Active sessions retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    type: object
+                    properties:
+                      sessions:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/ParkingSession'
+                      total:
+                        type: integer
+                      page:
+                        type: integer
+                      limit:
+                        type: integer
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /sessions/{id}:
+    get:
+      tags: [Sessions]
+      summary: Get a session by ID (admin, manager, staff)
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Session retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    type: object
+                    properties:
+                      session:
+                        $ref: '#/components/schemas/ParkingSession'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
