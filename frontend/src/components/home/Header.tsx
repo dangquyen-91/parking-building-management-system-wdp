@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 
 const NAV_LINKS = [
   { href: '#about', label: 'About Us' },
@@ -37,8 +38,8 @@ export function Header() {
   return (
     <header className="fixed top-4 left-0 right-0 z-50 px-4 md:px-12 lg:px-16">
       <div className="liquid-glass rounded-full flex items-center justify-between gap-3 h-14 px-4 md:px-6 max-w-7xl mx-auto">
-        <a
-          href="/"
+        <Link
+          to="/"
           className="flex items-center gap-2 text-white font-medium text-sm shrink-0"
           aria-label="Parking System — home"
         >
@@ -46,7 +47,7 @@ export function Header() {
             <LogoIcon />
           </span>
           Parking System
-        </a>
+        </Link>
 
         <nav
           className="hidden lg:flex items-center gap-1"
@@ -64,12 +65,18 @@ export function Header() {
         </nav>
 
         <div className="flex items-center gap-2 shrink-0">
-          <a
-            href="#login"
+          <Link
+            to="/login"
             className="hidden sm:inline-flex text-xs text-gray-300 hover:text-white transition-colors duration-200 px-3 py-1.5"
           >
             Login
-          </a>
+          </Link>
+          <Link
+            to="/register"
+            className="hidden md:inline-flex text-xs text-gray-300 hover:text-white transition-colors duration-200 px-3 py-1.5"
+          >
+            Register
+          </Link>
           <a
             href="#demo"
             className="inline-flex items-center text-xs font-medium text-black bg-white hover:bg-gray-100 transition-colors duration-200 rounded-full px-4 py-2"
@@ -103,13 +110,20 @@ export function Header() {
               {label}
             </a>
           ))}
-          <a
-            href="#login"
-            className="text-sm text-gray-300 hover:text-white py-2 px-2 rounded-lg hover:bg-white/10 transition-colors sm:hidden"
+          <Link
+            to="/login"
+            className="text-sm text-gray-300 hover:text-white py-2 px-2 rounded-lg hover:bg-white/10 transition-colors"
             onClick={() => setMenuOpen(false)}
           >
             Login
-          </a>
+          </Link>
+          <Link
+            to="/register"
+            className="text-sm text-gray-300 hover:text-white py-2 px-2 rounded-lg hover:bg-white/10 transition-colors"
+            onClick={() => setMenuOpen(false)}
+          >
+            Register
+          </Link>
         </nav>
       )}
     </header>

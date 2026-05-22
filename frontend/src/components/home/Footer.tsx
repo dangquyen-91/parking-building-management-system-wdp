@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion'
+import { Link } from 'react-router-dom'
 import { fadeIn } from '../../assets/motion/variants'
 
 const FOOTER_LINKS = [
@@ -7,7 +8,8 @@ const FOOTER_LINKS = [
   { href: '#features', label: 'Features' },
   { href: '#resources', label: 'Resources' },
   { href: '#blog', label: 'Blog' },
-  { href: '#login', label: 'Login' },
+  { to: '/login', label: 'Login' },
+  { to: '/register', label: 'Register' },
 ] as const
 
 export function Footer() {
@@ -34,15 +36,25 @@ export function Footer() {
           className="flex flex-wrap gap-x-6 gap-y-2"
           aria-label="Footer navigation"
         >
-          {FOOTER_LINKS.map((link) => (
-            <a
-              key={link.href}
-              href={link.href}
-              className="text-xs text-gray-300 hover:text-white transition-colors"
-            >
-              {link.label}
-            </a>
-          ))}
+          {FOOTER_LINKS.map((link) =>
+            'to' in link ? (
+              <Link
+                key={link.to}
+                to={link.to}
+                className="text-xs text-gray-300 hover:text-white transition-colors"
+              >
+                {link.label}
+              </Link>
+            ) : (
+              <a
+                key={link.href}
+                href={link.href}
+                className="text-xs text-gray-300 hover:text-white transition-colors"
+              >
+                {link.label}
+              </a>
+            ),
+          )}
         </nav>
       </motion.div>
     </footer>

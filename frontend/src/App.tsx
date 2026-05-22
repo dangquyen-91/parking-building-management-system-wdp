@@ -1,9 +1,13 @@
+import { BrowserRouter } from 'react-router-dom'
 import { QueryProvider } from './providers/QueryProvider'
 import { AppRoutes } from './routes/AppRoutes'
+
 function App() {
   return (
     <QueryProvider>
-      <AppRoutes />
+      <BrowserRouter>
+        <AppRoutes />
+      </BrowserRouter>
     </QueryProvider>
   )
 }

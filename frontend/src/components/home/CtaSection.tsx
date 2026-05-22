@@ -1,5 +1,6 @@
 import { motion, useInView, useReducedMotion } from 'framer-motion'
 import { useRef } from 'react'
+import { Link } from 'react-router-dom'
 import { fadeUp } from '../../assets/motion/variants'
 
 export function CtaSection() {
@@ -42,13 +43,18 @@ export function CtaSection() {
             >
               Book Demo
             </a>
-            <a
-              id="login"
-              href="#login"
+            <Link
+              to="/login"
               className="inline-flex text-sm font-medium text-white border border-white/20 hover:border-white/50 transition-colors rounded-full px-6 py-3"
             >
               Login
-            </a>
+            </Link>
+            <Link
+              to="/register"
+              className="inline-flex text-sm font-medium text-zinc-300 hover:text-white transition-colors rounded-full px-6 py-3"
+            >
+              Register
+            </Link>
           </motion.div>
         </motion.div>
       </div>

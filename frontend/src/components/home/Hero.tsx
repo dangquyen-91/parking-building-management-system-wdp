@@ -7,69 +7,15 @@ import {
   heroStagger,
   tabPanel,
 } from '../../assets/motion/variants'
+import { HERO_TAB_CONTENT, HERO_TABS, type HeroTab } from '../../data/homeData'
 
 const HERO_BG_PNG = '/hero-bg.png'
 
-const TABS = ['Overview', 'Intelligence', 'Modernize'] as const
-type Tab = (typeof TABS)[number]
-
-type TabContent = {
-  eyebrow: string
-  headingLines: string[]
-  subheading: string
-  card: {
-    body: string
-  } | null
-}
-
-const TAB_CONTENT: Record<Tab, TabContent> = {
-  Overview: {
-    eyebrow: 'Perspective // Overview',
-    headingLines: [
-      'Parking system ,',
-      'for your building.',
-    ],
-    subheading:
-      'A unified system to monitor, control, and optimize all vehicular access points effortlessly.',
-    card: {
-      body: 'Consolidate your security gates, live clearance telemetry, and occupancy status in a single high-contrast interface designed specifically for premium residential and commercial facilities.',
-    },
-  },
-  Intelligence: {
-    eyebrow: 'Perspective / Intelligence',
-    headingLines: [
-      'End the',
-      'basement',
-      'parking',
-      'chaos.',
-    ],
-    subheading:
-      'Eliminate bottleneck queues, lost paper tickets, and directional frustration instantly.',
-    card: {
-      body: 'With real-time video validation and automated slot mapping, occupants flow seamlessly to open bays. No ticket machines, no physical access cards—just pure structural harmony.',
-    },
-  },
-  Modernize: {
-    eyebrow: 'Perspective // Modernize',
-    headingLines: [
-      'Ready to',
-      'modernize',
-      'parking in',
-      'your building?',
-    ],
-    subheading:
-      'Transform legacy infrastructure into a quiet, integrated spatial asset.',
-    card: {
-      body: "Connect our intelligent camera telemetry and license plate sensory nodes directly to your building's core setup. Simplify guest validation and maximize total space utilization seamlessly.",
-    },
-  },
-}
-
 export function Hero() {
-  const [activeTab, setActiveTab] = useState<Tab>('Modernize')
+  const [activeTab, setActiveTab] = useState<HeroTab>('Modernize')
   const reduceMotion = useReducedMotion()
 
-  const content = TAB_CONTENT[activeTab]
+  const content = HERO_TAB_CONTENT[activeTab]
 
   const motionProps = reduceMotion
     ? {}
@@ -140,7 +86,7 @@ export function Hero() {
               variants={reduceMotion ? undefined : heroItem}
               className="flex items-center gap-2 flex-wrap"
             >
-              {TABS.map((tab) => (
+              {HERO_TABS.map((tab) => (
                 <motion.button
                   key={tab}
                   type="button"
