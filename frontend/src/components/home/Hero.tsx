@@ -8,7 +8,6 @@ import {
   tabPanel,
 } from '../../assets/motion/variants'
 
-const HERO_BG_WEBP = '/hero-bg.webp'
 const HERO_BG_PNG = '/hero-bg.png'
 
 const TABS = ['Overview', 'Intelligence', 'Modernize'] as const
@@ -20,7 +19,6 @@ type TabContent = {
   subheading: string
   card: {
     body: string
-    status: string
   } | null
 }
 
@@ -28,15 +26,13 @@ const TAB_CONTENT: Record<Tab, TabContent> = {
   Overview: {
     eyebrow: 'Perspective // Overview',
     headingLines: [
-      'Building parking,',
-      'managed in one',
-      'place.',
+      'Parking system ,',
+      'for your building.',
     ],
     subheading:
       'A unified system to monitor, control, and optimize all vehicular access points effortlessly.',
     card: {
       body: 'Consolidate your security gates, live clearance telemetry, and occupancy status in a single high-contrast interface designed specifically for premium residential and commercial facilities.',
-      status: 'FLOW // ACTIVE',
     },
   },
   Intelligence: {
@@ -51,7 +47,6 @@ const TAB_CONTENT: Record<Tab, TabContent> = {
       'Eliminate bottleneck queues, lost paper tickets, and directional frustration instantly.',
     card: {
       body: 'With real-time video validation and automated slot mapping, occupants flow seamlessly to open bays. No ticket machines, no physical access cards—just pure structural harmony.',
-      status: 'FLOW // ACTIVE',
     },
   },
   Modernize: {
@@ -66,7 +61,6 @@ const TAB_CONTENT: Record<Tab, TabContent> = {
       'Transform legacy infrastructure into a quiet, integrated spatial asset.',
     card: {
       body: "Connect our intelligent camera telemetry and license plate sensory nodes directly to your building's core setup. Simplify guest validation and maximize total space utilization seamlessly.",
-      status: 'FLOW // ACTIVE',
     },
   },
 }
@@ -92,7 +86,7 @@ export function Hero() {
         {...motionProps}
       >
         <picture className="block w-full h-full">
-          <source srcSet={HERO_BG_WEBP} type="image/webp" />
+          {/* <source srcSet={HERO_BG_WEBP} type="image/webp" /> */}
           <img
             className="w-full h-full object-cover object-center"
             src={HERO_BG_PNG}
@@ -178,15 +172,6 @@ export function Hero() {
                 <p className="text-xs text-gray-300 leading-relaxed mb-4">
                   {content.card.body}
                 </p>
-
-                <div className="flex items-center justify-between pt-4 border-t border-white/10">
-                  <span className="text-[10px] tracking-[0.15em] text-gray-400 uppercase">
-                    System Render
-                  </span>
-                  <span className="text-[10px] font-semibold tracking-[0.1em] text-white uppercase bg-white/10 rounded-full px-2.5 py-1">
-                    {content.card.status}
-                  </span>
-                </div>
               </motion.div>
             )}
           </AnimatePresence>

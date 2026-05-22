@@ -40,12 +40,12 @@ export function Header() {
         <a
           href="/"
           className="flex items-center gap-2 text-white font-medium text-sm shrink-0"
-          aria-label="Parking Simulator — home"
+          aria-label="Parking System — home"
         >
           <span className="flex items-center justify-center" aria-hidden="true">
             <LogoIcon />
           </span>
-          Parking Simulator
+          Parking System
         </a>
 
         <nav
