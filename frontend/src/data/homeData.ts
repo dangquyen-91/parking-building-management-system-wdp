@@ -1,6 +1,19 @@
 export const HERO_TABS = ['Overview', 'Intelligence', 'Modernize'] as const
 export type HeroTab = (typeof HERO_TABS)[number]
 
+export const HERO_TAB_SLUGS: Record<HeroTab, string> = {
+  Overview: 'overview',
+  Intelligence: 'intelligence',
+  Modernize: 'modernize',
+}
+
+export function heroTabFromSlug(slug: string | null): HeroTab {
+  const match = (Object.entries(HERO_TAB_SLUGS) as [HeroTab, string][]).find(
+    ([, s]) => s === slug,
+  )
+  return match?.[0] ?? 'Modernize'
+}
+
 export type HeroTabContent = {
   eyebrow: string
   headingLines: string[]

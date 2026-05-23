@@ -54,13 +54,13 @@ export function FeaturesSection() {
             whileHover={reduceMotion ? undefined : { y: -4, transition: { duration: 0.2 } }}
             className="liquid-glass-card rounded-2xl p-6 group"
           >
-            <span className="text-[10px] tracking-[0.15em] text-gray-400 uppercase bg-white/5 rounded-full px-2.5 py-1">
+            <span className="text-[10px] tracking-[0.15em] text-subtle uppercase bg-badge rounded-full px-2.5 py-1">
               {f.tag}
             </span>
-            <h3 className="mt-4 text-base font-semibold text-white uppercase tracking-tight">
+            <h3 className="mt-4 text-base font-semibold text-fg uppercase tracking-tight">
               {f.title}
             </h3>
-            <p className="mt-2 text-sm text-gray-300 leading-relaxed">{f.body}</p>
+            <p className="mt-2 text-sm text-muted leading-relaxed">{f.body}</p>
           </motion.article>
         ))}
       </motion.div>

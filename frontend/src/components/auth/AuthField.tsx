@@ -12,7 +12,7 @@ export function AuthField({ id, label, error, helper, className = '', ...inputPr
 
   return (
     <div className="flex flex-col gap-2">
-      <label htmlFor={id} className="text-xs font-medium tracking-wide text-zinc-300 uppercase">
+      <label htmlFor={id} className="text-xs font-medium tracking-wide text-muted uppercase">
         {label}
       </label>
       <input
@@ -20,17 +20,17 @@ export function AuthField({ id, label, error, helper, className = '', ...inputPr
         aria-invalid={error ? true : undefined}
         aria-describedby={describedBy}
         className={[
-          'w-full rounded-xl bg-zinc-900/80 border px-4 py-3 text-sm text-white placeholder:text-zinc-500',
+          'auth-input w-full rounded-xl border px-4 py-3 text-sm text-fg placeholder:text-faint',
           'transition-[border-color,box-shadow,transform] duration-200',
-          'focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/50',
+          'outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--focus-ring)]',
           'active:scale-[0.995]',
-          error ? 'border-rose-500/60' : 'border-zinc-700/80 hover:border-zinc-600',
+          error ? 'border-rose-500/60' : '',
           className,
         ].join(' ')}
         {...inputProps}
       />
       {helper && !error && (
-        <p id={`${id}-helper`} className="text-xs text-zinc-500 leading-relaxed">
+        <p id={`${id}-helper`} className="text-xs text-faint leading-relaxed">
           {helper}
         </p>
       )}

@@ -1,8 +1,18 @@
-import { motion, useReducedMotion } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { type FormEvent, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { fadeUp, staggerContainer } from '../../assets/motion/variants'
+import { useStaggerFormMotion } from '../../hooks/useStaggerFormMotion'
+import { focusFirstFormError } from '../../utils/focusFirstFormError'
+import { requireEmail, requirePassword } from '../../utils/validation'
 import { AuthField } from './AuthField'
+import { AuthSubmitButton } from './AuthSubmitButton'
+
+const REGISTER_FIELDS = [
+  { key: 'fullName', id: 'register-name' },
+  { key: 'email', id: 'register-email' },
+  { key: 'password', id: 'register-password' },
+  { key: 'confirmPassword', id: 'register-confirm' },
+] as const
 
 type RegisterValues = {
   fullName: string
@@ -20,16 +30,10 @@ function validate(values: RegisterValues): RegisterErrors {
   } else if (values.fullName.trim().length < 2) {
     errors.fullName = 'Enter your full name.'
   }
-  if (!values.email.trim()) {
-    errors.email = 'Email is required.'
-  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email)) {
-    errors.email = 'Enter a valid email address.'
-  }
-  if (!values.password) {
-    errors.password = 'Password is required.'
-  } else if (values.password.length < 8) {
-    errors.password = 'Use at least 8 characters.'
-  }
+  const emailError = requireEmail(values.email)
+  if (emailError) errors.email = emailError
+  const passwordError = requirePassword(values.password)
+  if (passwordError) errors.password = passwordError
   if (!values.confirmPassword) {
     errors.confirmPassword = 'Confirm your password.'
   } else if (values.confirmPassword !== values.password) {
@@ -39,7 +43,7 @@ function validate(values: RegisterValues): RegisterErrors {
 }
 
 export function RegisterForm() {
-  const reduceMotion = useReducedMotion()
+  const { motionForm, fieldVariants } = useStaggerFormMotion()
   const [values, setValues] = useState<RegisterValues>({
     fullName: '',
     email: '',
@@ -49,11 +53,18 @@ export function RegisterForm() {
   const [errors, setErrors] = useState<RegisterErrors>({})
   const [status, setStatus] = useState<'idle' | 'loading' | 'success'>('idle')
 
+  const clearFieldError = (field: keyof RegisterValues) => {
+    if (errors[field]) setErrors((err) => ({ ...err, [field]: undefined }))
+  }
+
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     const nextErrors = validate(values)
     setErrors(nextErrors)
-    if (Object.keys(nextErrors).length > 0) return
+    if (Object.keys(nextErrors).length > 0) {
+      focusFirstFormError(nextErrors, [...REGISTER_FIELDS])
+      return
+    }
 
     setStatus('loading')
     window.setTimeout(() => {
@@ -61,22 +72,10 @@ export function RegisterForm() {
     }, 1400)
   }
 
-  const motionForm = reduceMotion
-    ? {}
-    : {
-        initial: 'hidden' as const,
-        animate: 'visible' as const,
-        variants: staggerContainer,
-      }
-
-  const clearFieldError = (field: keyof RegisterValues) => {
-    if (errors[field]) setErrors((err) => ({ ...err, [field]: undefined }))
-  }
-
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-6" noValidate>
       <motion.div className="flex flex-col gap-5" {...motionForm}>
-        <motion.div variants={reduceMotion ? undefined : fadeUp} custom={0}>
+        <motion.div variants={fieldVariants} custom={0}>
           <AuthField
             id="register-name"
             label="Full name"
@@ -94,7 +93,7 @@ export function RegisterForm() {
           />
         </motion.div>
 
-        <motion.div variants={reduceMotion ? undefined : fadeUp} custom={0.05}>
+        <motion.div variants={fieldVariants} custom={0.05}>
           <AuthField
             id="register-email"
             label="Work email"
@@ -113,7 +112,7 @@ export function RegisterForm() {
           />
         </motion.div>
 
-        <motion.div variants={reduceMotion ? undefined : fadeUp} custom={0.1}>
+        <motion.div variants={fieldVariants} custom={0.1}>
           <AuthField
             id="register-password"
             label="Password"
@@ -131,7 +130,7 @@ export function RegisterForm() {
           />
         </motion.div>
 
-        <motion.div variants={reduceMotion ? undefined : fadeUp} custom={0.14}>
+        <motion.div variants={fieldVariants} custom={0.14}>
           <AuthField
             id="register-confirm"
             label="Confirm password"
@@ -150,28 +149,26 @@ export function RegisterForm() {
         </motion.div>
       </motion.div>
 
-      {status === 'success' && (
-        <p role="status" className="text-xs text-gray-300">
-          Account created locally — wire this form to your registration API when ready.
-        </p>
-      )}
+      <div aria-live="polite" aria-atomic="true" className="min-h-[1.25rem]">
+        {status === 'success' && (
+          <p className="text-xs text-muted">
+            Account created locally — wire this form to your registration API when ready.
+          </p>
+        )}
+      </div>
 
-      <button
-        type="submit"
-        disabled={status === 'loading' || status === 'success'}
-        className={[
-          'w-full rounded-full py-3.5 text-sm font-medium transition-[transform,background-color,opacity] duration-200',
-          'bg-white text-black hover:bg-gray-100',
-          'active:scale-[0.98] disabled:opacity-60 disabled:pointer-events-none',
-          status === 'loading' ? 'animate-pulse' : '',
-        ].join(' ')}
-      >
-        {status === 'loading' ? 'Creating account…' : status === 'success' ? 'Account ready' : 'Create account'}
-      </button>
+      <AuthSubmitButton
+        status={status}
+        labels={{
+          idle: 'Create account',
+          loading: 'Creating account…',
+          success: 'Account ready',
+        }}
+      />
 
-      <p className="text-center text-xs text-zinc-500">
+      <p className="text-center text-xs text-faint">
         Already have access?{' '}
-        <Link to="/login" className="text-white hover:text-gray-200 transition-colors">
+        <Link to="/login" className="text-fg hover:text-fg transition-colors">
           Sign in
         </Link>
       </p>

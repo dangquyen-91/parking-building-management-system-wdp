@@ -9,7 +9,7 @@ export function CtaSection() {
   const reduceMotion = useReducedMotion()
 
   return (
-    <section id="demo" className="section-surface px-6 md:px-12 lg:px-16 py-20 lg:py-28 border-t border-white/[0.06]">
+    <section id="demo" className="section-surface px-6 md:px-12 lg:px-16 py-20 lg:py-28 border-t border-theme">
       <div className="max-w-7xl mx-auto">
         <motion.div
           ref={ref}
@@ -18,16 +18,16 @@ export function CtaSection() {
           animate={inView ? 'visible' : 'hidden'}
           variants={reduceMotion ? undefined : fadeUp}
         >
-          <p className="text-[10px] tracking-[0.2em] text-gray-400 uppercase mb-4">
+          <p className="text-[10px] tracking-[0.2em] text-subtle uppercase mb-4">
             Deploy // Demo
           </p>
           <h2
-            className="text-3xl md:text-4xl lg:text-5xl font-bold text-white uppercase leading-tight max-w-2xl mx-auto"
+            className="text-3xl md:text-4xl lg:text-5xl font-bold text-fg uppercase leading-tight max-w-2xl mx-auto"
             style={{ letterSpacing: '-0.02em' }}
           >
             See your building on Parking Simulator
           </h2>
-          <p className="mt-4 text-sm md:text-base text-gray-300 max-w-xl mx-auto">
+          <p className="mt-4 text-sm md:text-base text-muted max-w-xl mx-auto">
             Book a walkthrough with your floor plans. We model bays, gates, and
             tenant rules before you commit to a rollout.
           </p>
@@ -39,19 +39,19 @@ export function CtaSection() {
           >
             <a
               href="#demo"
-              className="inline-flex text-sm font-medium text-black bg-white hover:bg-gray-100 transition-colors rounded-full px-6 py-3"
+              className="inline-flex text-sm font-medium bg-btn-primary text-btn-primary-fg hover:opacity-90 transition-opacity rounded-full px-6 py-3"
             >
               Book Demo
             </a>
             <Link
               to="/login"
-              className="inline-flex text-sm font-medium text-white border border-white/20 hover:border-white/50 transition-colors rounded-full px-6 py-3"
+              className="inline-flex text-sm font-medium text-fg border border-theme-strong hover:opacity-80 transition-opacity rounded-full px-6 py-3"
             >
               Login
             </Link>
             <Link
               to="/register"
-              className="inline-flex text-sm font-medium text-zinc-300 hover:text-white transition-colors rounded-full px-6 py-3"
+              className="inline-flex text-sm font-medium text-muted hover:text-fg transition-colors rounded-full px-6 py-3"
             >
               Register
             </Link>

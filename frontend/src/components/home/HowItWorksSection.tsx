@@ -48,17 +48,17 @@ export function HowItWorksSection() {
             variants={reduceMotion ? undefined : fadeUp}
             className="liquid-glass-card rounded-2xl p-6 flex flex-col"
           >
-            <span className="text-[10px] tracking-[0.2em] text-gray-400 font-mono">
+            <span className="text-[10px] tracking-[0.2em] text-subtle font-mono">
               {item.step}
             </span>
-            <h3 className="mt-4 text-lg font-semibold text-white uppercase tracking-tight">
+            <h3 className="mt-4 text-lg font-semibold text-fg uppercase tracking-tight">
               {item.title}
             </h3>
-            <p className="mt-3 text-sm text-gray-300 leading-relaxed flex-1">
+            <p className="mt-3 text-sm text-muted leading-relaxed flex-1">
               {item.body}
             </p>
             <motion.span
-              className="mt-6 inline-block w-8 h-px bg-white/30"
+              className="mt-6 inline-block w-8 h-px bg-line-accent"
               initial={{ scaleX: 0 }}
               animate={inView ? { scaleX: 1 } : { scaleX: 0 }}
               transition={{ duration: 0.6, delay: 0.3 + i * 0.15 }}
