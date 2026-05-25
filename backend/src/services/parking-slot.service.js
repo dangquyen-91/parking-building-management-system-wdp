@@ -69,6 +69,10 @@ export const getById = async (id) => {
 export const create = async (data) => {
   const floor = await loadActiveFloor(data.floorId);
 
+  if (floor.vehicleType !== 'car') {
+    throw new AppError('Parking slots can only be created on car floors. Use parking rows for motorcycle floors.', 400);
+  }
+
   if (data.vehicleType !== floor.vehicleType) {
     throw new AppError(`This floor only accepts "${floor.vehicleType}" slots`, 400);
   }
@@ -90,6 +94,10 @@ export const create = async (data) => {
 
 export const bulkCreate = async ({ floorId, quantity, prefix = 'A', startFrom, slots }) => {
   const floor = await loadActiveFloor(floorId);
+
+  if (floor.vehicleType !== 'car') {
+    throw new AppError('Parking slots can only be created on car floors. Use parking rows for motorcycle floors.', 400);
+  }
 
   const currentCount = await ParkingSlot.countDocuments({ floorId });
   let docs;
@@ -153,7 +161,6 @@ export const bulkCreate = async ({ floorId, quantity, prefix = 'A', startFrom, s
       (_, i) => `${pre}${String(from + i).padStart(padLen, '0')}`
     );
 
-    // Conflict check against DB
     const conflicts = await ParkingSlot.find({
       floorId,
       slotCode: { $in: generatedCodes },

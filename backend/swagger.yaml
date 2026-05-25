@@ -23,6 +23,8 @@ tags:
     description: Parking slot management
   - name: Sessions
     description: Vehicle check-in and check-out
+  - name: Parking Rows
+    description: Motorcycle parking row management
 
 components:
   securitySchemes:
@@ -286,6 +288,45 @@ components:
           type: string
           format: date-time
 
+    ParkingRow:
+      type: object
+      properties:
+        _id:
+          type: string
+          example: 664a1f2e8b2c3d4e5f6a7b8c
+        floorId:
+          type: object
+          properties:
+            _id:
+              type: string
+            floorNumber:
+              type: integer
+              example: 1
+            vehicleType:
+              type: string
+              example: motorcycle
+        rowCode:
+          type: string
+          example: R01
+        capacity:
+          type: integer
+          example: 20
+        occupiedCount:
+          type: integer
+          example: 5
+        status:
+          type: string
+          enum: [available, full, maintenance]
+          example: available
+        note:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
     ParkingSession:
       type: object
       properties:
@@ -293,7 +334,11 @@ components:
           type: string
           example: 664a1f2e8b2c3d4e5f6a7b8c
         slotId:
+          nullable: true
           $ref: '#/components/schemas/ParkingSlot'
+        rowId:
+          nullable: true
+          $ref: '#/components/schemas/ParkingRow'
         licensePlate:
           type: string
           example: 51A-12345
@@ -1517,7 +1562,7 @@ paths:
   /sessions/check-in:
     post:
       tags: [Sessions]
-      summary: Check in a vehicle (admin, staff)
+      summary: Check in a vehicle (admin, manager, staff)
       security:
         - BearerAuth: []
       requestBody:
@@ -1525,23 +1570,43 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              required: [licensePlate, vehicleType]
-              properties:
-                licensePlate:
-                  type: string
-                  example: 51A-12345
-                vehicleType:
-                  type: string
-                  enum: [motorcycle, car]
-                  example: motorcycle
-                userId:
-                  type: string
-                  description: Resident account ID (optional, null for walk-in guests)
-                  example: 664a1f2e8b2c3d4e5f6a7b8c
-                note:
-                  type: string
-                  example: Khach vang lai
+              oneOf:
+                - title: Car check-in
+                  type: object
+                  required: [vehicleType, licensePlate, slotId]
+                  properties:
+                    vehicleType:
+                      type: string
+                      enum: [car]
+                    licensePlate:
+                      type: string
+                      example: 51A-12345
+                    slotId:
+                      type: string
+                      example: 664a1f2e8b2c3d4e5f6a7b8c
+                    userId:
+                      type: string
+                      nullable: true
+                    note:
+                      type: string
+                - title: Motorcycle check-in
+                  type: object
+                  required: [vehicleType, licensePlate, rowId]
+                  properties:
+                    vehicleType:
+                      type: string
+                      enum: [motorcycle]
+                    licensePlate:
+                      type: string
+                      example: 59X1-23456
+                    rowId:
+                      type: string
+                      example: 664a1f2e8b2c3d4e5f6a7b8c
+                    userId:
+                      type: string
+                      nullable: true
+                    note:
+                      type: string
       responses:
         '201':
           description: Vehicle checked in â€” slot assigned, session created
@@ -1748,6 +1813,262 @@ paths:
                     properties:
                       session:
                         $ref: '#/components/schemas/ParkingSession'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /parking-rows:
+    get:
+      tags: [Parking Rows]
+      summary: Get all parking rows (motorcycle floors only)
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: query
+          name: floorId
+          schema:
+            type: string
+        - in: query
+          name: buildingId
+          schema:
+            type: string
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum: [available, full, maintenance]
+        - in: query
+          name: sortBy
+          schema:
+            type: string
+            enum: [rowCode, capacity, occupiedCount, status, createdAt]
+            default: rowCode
+        - in: query
+          name: sortOrder
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: asc
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: Rows retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    type: object
+                    properties:
+                      rows:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/ParkingRow'
+                      total:
+                        type: integer
+                      page:
+                        type: integer
+                      limit:
+                        type: integer
+                      totalPages:
+                        type: integer
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+    post:
+      tags: [Parking Rows]
+      summary: Create a parking row on a motorcycle floor (admin, manager)
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [floorId, rowCode, capacity]
+              properties:
+                floorId:
+                  type: string
+                  example: 664a1f2e8b2c3d4e5f6a7b8c
+                rowCode:
+                  type: string
+                  example: R01
+                capacity:
+                  type: integer
+                  minimum: 1
+                  maximum: 500
+                  example: 20
+                note:
+                  type: string
+      responses:
+        '201':
+          description: Row created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    type: object
+                    properties:
+                      row:
+                        $ref: '#/components/schemas/ParkingRow'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /parking-rows/{id}:
+    get:
+      tags: [Parking Rows]
+      summary: Get a parking row by ID
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Row retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    type: object
+                    properties:
+                      row:
+                        $ref: '#/components/schemas/ParkingRow'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    patch:
+      tags: [Parking Rows]
+      summary: Update a parking row (admin, manager)
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                rowCode:
+                  type: string
+                  example: R01
+                capacity:
+                  type: integer
+                  minimum: 1
+                  maximum: 500
+                note:
+                  type: string
+      responses:
+        '200':
+          description: Row updated
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags: [Parking Rows]
+      summary: Delete a parking row (admin) — blocked if has active session
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Row deleted
+        '409':
+          description: Cannot delete row with an active parking session
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /parking-rows/{id}/status:
+    patch:
+      tags: [Parking Rows]
+      summary: Update row status (admin, manager, staff)
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status:
+                  type: string
+                  enum: [available, full, maintenance]
+                note:
+                  type: string
+      responses:
+        '200':
+          description: Row status updated
+        '400':
+          $ref: '#/components/responses/ValidationError'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
