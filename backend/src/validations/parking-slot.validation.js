@@ -4,7 +4,7 @@ import { SLOT_STATUSES } from '../models/parking-slot.model.js';
 export const createSlotSchema = Joi.object({
   floorId: Joi.string().hex().length(24).required(),
   slotCode: Joi.string().trim().max(20).required(),
-  vehicleType: Joi.string().valid('motorcycle', 'car').required(), // must match floor's type
+  vehicleType: Joi.string().valid('car').required(), // slots only exist on car floors
   note: Joi.string().trim().max(300),
 });
 
@@ -21,7 +21,7 @@ const bulkByListSchema = Joi.object({
     .items(
       Joi.object({
         slotCode: Joi.string().trim().max(20).required(),
-        vehicleType: Joi.string().valid('motorcycle', 'car'), // optional — service enforces floor match
+        // vehicleType không cần truyền — service tự lấy từ floor.vehicleType
         note: Joi.string().trim().max(300),
       })
     )
