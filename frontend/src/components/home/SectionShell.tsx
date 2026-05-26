@@ -26,20 +26,20 @@ export function SectionShell({
   return (
     <section
       id={id}
-      className={`${surface} px-6 md:px-12 lg:px-16 py-20 lg:py-28 border-t border-white/[0.06] ${className}`}
+      className={`${surface} px-6 md:px-12 lg:px-16 py-20 lg:py-28 border-t border-theme ${className}`}
     >
       <div className="max-w-7xl mx-auto">
-        <p className="text-[10px] tracking-[0.2em] text-gray-400 uppercase mb-3">
+        <p className="text-[10px] tracking-[0.2em] text-subtle uppercase mb-3">
           {eyebrow}
         </p>
         <h2
-          className="text-3xl md:text-4xl lg:text-5xl font-bold text-white uppercase leading-tight max-w-3xl"
+          className="text-3xl md:text-4xl lg:text-5xl font-bold text-fg uppercase leading-tight max-w-3xl"
           style={{ letterSpacing: '-0.02em' }}
         >
           {title}
         </h2>
         {description && (
-          <p className="mt-4 text-sm md:text-base text-gray-300 max-w-2xl">
+          <p className="mt-4 text-sm md:text-base text-muted max-w-2xl">
             {description}
           </p>
         )}

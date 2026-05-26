@@ -36,12 +36,12 @@ export function AboutSection() {
     >
       <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-start">
         <Reveal delay={0.1}>
-          <p className="text-sm md:text-base text-gray-300 leading-relaxed">
+          <p className="text-sm md:text-base text-muted leading-relaxed">
             Security teams, property managers, and residents all see the same source
             of truth. From basement clearance queues to rooftop visitor bays, every
             access point feeds into a single high-contrast operational layer.
           </p>
-          <p className="mt-4 text-sm md:text-base text-gray-300 leading-relaxed">
+          <p className="mt-4 text-sm md:text-base text-muted leading-relaxed">
             Deploy floor maps, automated slot assignment, and occupancy alerts in
             days—not quarters. Your building keeps its existing infrastructure; we
             add the intelligence on top.
@@ -62,11 +62,11 @@ export function AboutSection() {
               variants={reduceMotion ? undefined : fadeUp}
               className="liquid-glass-card rounded-2xl p-5"
             >
-              <p className="text-[10px] tracking-[0.15em] text-gray-400 uppercase">
+              <p className="text-[10px] tracking-[0.15em] text-subtle uppercase">
                 {item.label}
               </p>
-              <p className="mt-2 text-xl font-semibold text-white">{item.value}</p>
-              <p className="mt-2 text-xs text-gray-300 leading-relaxed">
+              <p className="mt-2 text-xl font-semibold text-fg">{item.value}</p>
+              <p className="mt-2 text-xs text-muted leading-relaxed">
                 {item.detail}
               </p>
             </motion.article>

@@ -16,7 +16,7 @@ export function RegisterPage() {
       footer={
         <>
           Returning user?{' '}
-          <Link to="/login" className="text-white hover:text-gray-200 transition-colors">
+          <Link to="/login" className="text-fg hover:text-fg transition-colors">
             Sign in
           </Link>
         </>

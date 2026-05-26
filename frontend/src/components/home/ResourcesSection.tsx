@@ -63,13 +63,13 @@ export function ResourcesSection() {
               whileHover={reduceMotion ? undefined : { y: -3 }}
               className="liquid-glass-card rounded-2xl p-6 block group"
             >
-              <p className="text-[10px] tracking-[0.15em] text-gray-400 uppercase">
+              <p className="text-[10px] tracking-[0.15em] text-subtle uppercase">
                 {r.meta}
               </p>
-              <h3 className="mt-3 text-sm font-semibold text-white group-hover:text-gray-100">
+              <h3 className="mt-3 text-sm font-semibold text-fg group-hover:text-fg">
                 {r.title}
               </h3>
-              <span className="mt-4 inline-flex text-xs text-gray-300 group-hover:text-white transition-colors">
+              <span className="mt-4 inline-flex text-xs text-muted group-hover:text-fg transition-colors">
                 Read →
               </span>
             </motion.a>
@@ -97,12 +97,12 @@ export function ResourcesSection() {
               href={post.href}
               custom={i * 0.1}
               variants={reduceMotion ? undefined : fadeUp}
-              className="rounded-2xl border border-white/20 p-6 hover:border-white/40 transition-colors block"
+              className="rounded-2xl border border-theme-strong p-6 hover:border-white/40 transition-colors block"
             >
-              <p className="text-[10px] text-gray-400 uppercase tracking-[0.15em]">
+              <p className="text-[10px] text-subtle uppercase tracking-[0.15em]">
                 {post.date}
               </p>
-              <h3 className="mt-2 text-base font-medium text-white">{post.title}</h3>
+              <h3 className="mt-2 text-base font-medium text-fg">{post.title}</h3>
             </motion.a>
           ))}
         </motion.div>

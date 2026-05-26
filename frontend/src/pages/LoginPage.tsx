@@ -13,7 +13,7 @@ export function LoginPage() {
       footer={
         <>
           Need an account?{' '}
-          <Link to="/register" className="text-white hover:text-gray-200 transition-colors">
+          <Link to="/register" className="text-fg hover:text-fg transition-colors">
             Register your property
           </Link>
         </>

@@ -2,6 +2,7 @@ import { motion, useReducedMotion } from 'framer-motion'
 import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { fadeUp, staggerContainer } from '../../assets/motion/variants'
+import { ThemeToggle } from '../common/ThemeToggle'
 import { AuthBrand } from './AuthBrand'
 
 const DEFAULT_PANEL_IMAGE = '/hello.png'
@@ -44,22 +45,23 @@ export function AuthLayout({
       }
 
   return (
-    <div className="min-h-[100dvh] bg-[#121212] text-white font-['Outfit',system-ui,sans-serif]">
+    <div className="min-h-[100dvh] bg-page text-fg font-['Outfit',system-ui,sans-serif]">
       <div className="grid min-h-[100dvh] lg:grid-cols-2">
         <div className="flex flex-col px-4 py-8 sm:px-8 lg:px-14 lg:py-12">
-          <div className="mb-10">
+          <div className="mb-10 flex items-center justify-between gap-4">
             <AuthBrand />
+            <ThemeToggle />
           </div>
 
           <motion.div className="flex flex-1 flex-col justify-center max-w-md w-full mx-auto lg:mx-0" {...motionRoot}>
             <motion.div variants={reduceMotion ? undefined : fadeUp} custom={0}>
-              <p className="text-[10px] tracking-[0.2em] text-gray-400 uppercase mb-3 select-none">
+              <p className="text-[10px] tracking-[0.2em] text-subtle uppercase mb-3 select-none">
                 Secure access
               </p>
-              <h1 className="text-3xl md:text-4xl font-semibold tracking-tighter leading-none text-white mb-3">
+              <h1 className="text-3xl md:text-4xl font-semibold tracking-tighter leading-none text-fg mb-3">
                 {title}
               </h1>
-              <p className="text-sm text-zinc-400 leading-relaxed max-w-[42ch] mb-8">{subtitle}</p>
+              <p className="text-sm text-muted leading-relaxed max-w-[42ch] mb-8">{subtitle}</p>
             </motion.div>
 
             <motion.div
@@ -71,7 +73,7 @@ export function AuthLayout({
             </motion.div>
 
             <motion.div
-              className="mt-8 text-sm text-zinc-500"
+              className="mt-8 text-sm text-faint"
               variants={reduceMotion ? undefined : fadeUp}
               custom={0.16}
             >
@@ -79,8 +81,8 @@ export function AuthLayout({
             </motion.div>
           </motion.div>
 
-          <p className="mt-auto pt-10 text-[11px] text-zinc-600">
-            <Link to="/" className="hover:text-zinc-400 transition-colors">
+          <p className="mt-auto pt-10 text-[11px] text-faint">
+            <Link to="/" className="hover:text-muted transition-colors">
               Back to site
             </Link>
           </p>
@@ -88,7 +90,7 @@ export function AuthLayout({
 
         <aside
           className={[
-            'relative hidden lg:flex flex-col overflow-hidden border-l border-white/5',
+            'relative hidden lg:flex flex-col overflow-hidden border-l border-theme',
             panelAlign === 'center' ? 'justify-center' : 'justify-end',
           ].join(' ')}
           aria-hidden="true"
@@ -96,7 +98,7 @@ export function AuthLayout({
           <img
             src={panelImage}
             alt=""
-            className="absolute inset-0 h-full w-full object-cover object-center"
+            className="auth-panel-image absolute inset-0 h-full w-full object-cover object-center"
             width={1200}
             height={1600}
             decoding="async"
@@ -105,9 +107,7 @@ export function AuthLayout({
           <div
             className={[
               'absolute inset-0',
-              panelAlign === 'center'
-                ? 'bg-gradient-to-r from-[#121212]/90 via-[#121212]/50 to-[#121212]/30'
-                : 'bg-gradient-to-t from-[#121212] via-[#121212]/75 to-[#121212]/20',
+              panelAlign === 'center' ? 'auth-panel-overlay-center' : 'auth-panel-overlay',
             ].join(' ')}
           />
 
@@ -117,16 +117,16 @@ export function AuthLayout({
               panelAlign === 'center' ? 'py-16' : 'pb-16',
             ].join(' ')}
           >
-            <p className="text-[10px] tracking-[0.2em] text-gray-400 uppercase mb-4">{panelEyebrow}</p>
-            <h2 className="text-5xl font-semibold tracking-tighter leading-[1.02] mb-4">{panelHeading}</h2>
-            <p className="text-sm text-zinc-300 leading-relaxed max-w-[38ch]">{panelBody}</p>
+            <p className="text-[10px] tracking-[0.2em] text-auth-subtle uppercase mb-4">{panelEyebrow}</p>
+            <h2 className="text-5xl font-semibold tracking-tighter leading-[1.02] text-auth-fg mb-4">{panelHeading}</h2>
+            <p className="text-sm text-auth-muted leading-relaxed max-w-[38ch]">{panelBody}</p>
 
             {panelStats.length > 0 && (
-              <ul className="grid grid-cols-2 gap-6 border-t border-white/10 pt-8 mt-10">
+              <ul className="grid grid-cols-2 gap-6 border-t border-auth-panel pt-8 mt-10">
                 {panelStats.map(({ value, label }) => (
                   <li key={label}>
-                    <p className="text-2xl font-semibold tracking-tight text-white tabular-nums">{value}</p>
-                    <p className="text-xs text-zinc-500 mt-1">{label}</p>
+                    <p className="text-2xl font-semibold tracking-tight text-auth-fg tabular-nums">{value}</p>
+                    <p className="text-xs text-auth-faint mt-1">{label}</p>
                   </li>
                 ))}
               </ul>

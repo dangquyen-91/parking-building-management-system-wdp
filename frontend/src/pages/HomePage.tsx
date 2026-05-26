@@ -1,3 +1,4 @@
+import { SkipLink } from '../components/common/SkipLink'
 import { AboutSection } from '../components/home/AboutSection'
 import { CtaSection } from '../components/home/CtaSection'
 import { FeaturesSection } from '../components/home/FeaturesSection'
@@ -10,9 +11,10 @@ import { StatsSection } from '../components/home/StatsSection'
 
 export function HomePage() {
   return (
-    <div className="bg-[#121212] text-white min-h-screen">
+    <div className="bg-page text-fg min-h-screen">
+      <SkipLink />
       <Header />
-      <main>
+      <main id="main" tabIndex={-1}>
         <Hero />
         <AboutSection />
         <HowItWorksSection />

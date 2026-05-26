@@ -83,14 +83,14 @@ export function StatsSection() {
             variants={reduceMotion ? undefined : fadeUp}
             className="liquid-glass-card rounded-2xl p-6 text-center"
           >
-            <p className="text-3xl md:text-4xl font-bold text-white tracking-tight">
+            <p className="text-3xl md:text-4xl font-bold text-fg tracking-tight">
               <AnimatedNumber
                 value={stat.value}
                 suffix={stat.suffix}
                 inView={inView}
               />
             </p>
-            <p className="mt-2 text-xs text-gray-400 uppercase tracking-[0.12em]">
+            <p className="mt-2 text-xs text-subtle uppercase tracking-[0.12em]">
               {stat.label}
             </p>
           </motion.div>
