@@ -12,10 +12,11 @@ const generateTokens = (userId) => {
   return { accessToken, refreshToken };
 };
 
-export const register = async ({ fullName, email, password }) => {
+export const register = async ({ fullName, email, password, phone }) => {
   const existing = await User.findOne({ email });
   if (existing) throw new AppError('Email already in use', 400);
-  const user = await User.create({ fullName, email, password });
+  const user = await User.create({ fullName, email, password, phone });
+  user.password = undefined;
   return user;
 };
 
