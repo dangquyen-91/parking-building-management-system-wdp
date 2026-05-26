@@ -37,13 +37,17 @@ export const checkIn = async ({ slotId, rowId, licensePlate, vehicleType, staffI
   if (vehicleType === 'car') {
     const slot = await ParkingSlot.findById(slotId).populate({
       path: 'floorId',
-      select: 'isActive vehicleType buildingId',
+      select: 'isActive vehicleType floorType buildingId',
       populate: { path: 'buildingId', select: 'isActive' },
     });
     if (!slot) throw new AppError('Parking slot not found', 404);
     if (!slot.floorId.isActive) throw new AppError('Floor is inactive', 400);
     if (!slot.floorId.buildingId?.isActive) throw new AppError('Building is inactive', 400);
     if (slot.floorId.vehicleType !== 'car') throw new AppError('This slot only accepts car', 400);
+    if (slot.floorId.floorType === 'resident' && !userId)
+      throw new AppError('This floor is for residents only. userId is required.', 403);
+    if (slot.floorId.floorType === 'visitor' && userId)
+      throw new AppError('This floor is for visitors only. Do not provide userId.', 403);
 
     const locked = await ParkingSlot.findOneAndUpdate(
       { _id: slotId, status: 'empty' },
@@ -73,13 +77,17 @@ export const checkIn = async ({ slotId, rowId, licensePlate, vehicleType, staffI
 
   const row = await ParkingRow.findById(rowId).populate({
     path: 'floorId',
-    select: 'isActive vehicleType buildingId',
+    select: 'isActive vehicleType floorType buildingId',
     populate: { path: 'buildingId', select: 'isActive' },
   });
   if (!row) throw new AppError('Parking row not found', 404);
   if (!row.floorId.isActive) throw new AppError('Floor is inactive', 400);
   if (!row.floorId.buildingId?.isActive) throw new AppError('Building is inactive', 400);
   if (row.floorId.vehicleType !== 'motorcycle') throw new AppError('This row only accepts motorcycle', 400);
+  if (row.floorId.floorType === 'resident' && !userId)
+    throw new AppError('This floor is for residents only. userId is required.', 403);
+  if (row.floorId.floorType === 'visitor' && userId)
+    throw new AppError('This floor is for visitors only. Do not provide userId.', 403);
 
   const newOccupied = row.occupiedCount + 1;
 

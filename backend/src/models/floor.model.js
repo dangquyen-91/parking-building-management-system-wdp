@@ -1,15 +1,17 @@
 import mongoose from 'mongoose';
 
-const VEHICLE_TYPES = ['motorcycle', 'car'];
+export const VEHICLE_TYPES = ['motorcycle', 'car'];
+export const FLOOR_TYPES   = ['resident', 'visitor'];
 
 const floorSchema = new mongoose.Schema(
   {
-    buildingId: { type: mongoose.Schema.Types.ObjectId, ref: 'Building', required: true },
+    buildingId:  { type: mongoose.Schema.Types.ObjectId, ref: 'Building', required: true },
     floorNumber: { type: Number, required: true },
     vehicleType: { type: String, enum: VEHICLE_TYPES, required: true },
-    totalSlots: { type: Number, required: true, min: 1 },
+    floorType:   { type: String, enum: FLOOR_TYPES,   required: true },
+    totalSlots:  { type: Number, required: true, min: 1 },
     description: { type: String, trim: true },
-    isActive: { type: Boolean, default: true },
+    isActive:    { type: Boolean, default: true },
   },
   { timestamps: true }
 );
