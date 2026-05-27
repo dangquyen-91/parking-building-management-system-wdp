@@ -235,6 +235,13 @@ components:
           type: string
           enum: [motorcycle, car]
           example: motorcycle
+        floorType:
+          type: string
+          enum: [resident, visitor]
+          example: resident
+          description: >
+            resident floors require a userId (linked resident) on check-in.
+            visitor floors must NOT have a userId on check-in.
         totalSlots:
           type: integer
           example: 50
@@ -1040,6 +1047,12 @@ paths:
             type: string
             enum: [motorcycle, car]
         - in: query
+          name: floorType
+          schema:
+            type: string
+            enum: [resident, visitor]
+          description: Filter by floor type (resident or visitor)
+        - in: query
           name: isActive
           schema:
             type: boolean
@@ -1111,7 +1124,7 @@ paths:
           application/json:
             schema:
               type: object
-              required: [buildingId, floorNumber, vehicleType, totalSlots]
+              required: [buildingId, floorNumber, vehicleType, floorType, totalSlots]
               properties:
                 buildingId:
                   type: string
@@ -1123,6 +1136,11 @@ paths:
                   type: string
                   enum: [motorcycle, car]
                   example: motorcycle
+                floorType:
+                  type: string
+                  enum: [resident, visitor]
+                  example: resident
+                  description: resident requires userId on check-in; visitor must not have userId.
                 totalSlots:
                   type: integer
                   minimum: 1
@@ -1233,6 +1251,9 @@ paths:
                 vehicleType:
                   type: string
                   enum: [motorcycle, car]
+                floorType:
+                  type: string
+                  enum: [resident, visitor]
                 totalSlots:
                   type: integer
                 description:

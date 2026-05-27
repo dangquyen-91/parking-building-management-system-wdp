@@ -6,13 +6,14 @@ import AppError from '../utils/appError.js';
 
 const SORTABLE_FIELDS = ['floorNumber', 'vehicleType', 'createdAt'];
 
-export const getAll = async ({ buildingId, vehicleType, isActive, sort, order, page = 1, limit = 10 }) => {
+export const getAll = async ({ buildingId, vehicleType, floorType, isActive, sort, order, page = 1, limit = 10 }) => {
   const pageNum = Math.max(1, parseInt(page));
   const limitNum = Math.min(100, Math.max(1, parseInt(limit)));
 
   const filter = {};
   if (buildingId) filter.buildingId = buildingId;
   if (vehicleType) filter.vehicleType = vehicleType;
+  if (floorType) filter.floorType = floorType;
   if (isActive !== undefined) filter.isActive = isActive === 'true';
 
   const sortField = SORTABLE_FIELDS.includes(sort) ? sort : 'floorNumber';
