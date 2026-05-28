@@ -1,38 +1,21 @@
 import { forwardRef } from 'react'
 import { NavLink } from 'react-router-dom'
-import { LogoIcon } from './icons'
+import { LogoIcon } from '../common/icons'
 
-const NAV_ITEMS = [
+const STAFF_NAV_ITEMS = [
   {
-    to: '/dashboard',
-    label: 'Dashboard',
+    to: '/staff-gate',
+    label: 'Gate Check-in/out',
     icon: (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-        <rect x="3" y="3" width="8" height="8" rx="1.5" stroke="currentColor" strokeWidth="1.5" />
-        <rect x="13" y="3" width="8" height="5" rx="1.5" stroke="currentColor" strokeWidth="1.5" />
-        <rect x="13" y="10" width="8" height="11" rx="1.5" stroke="currentColor" strokeWidth="1.5" />
-        <rect x="3" y="13" width="8" height="8" rx="1.5" stroke="currentColor" strokeWidth="1.5" />
-      </svg>
-    ),
-  },
-  {
-    to: '/user-management',
-    label: 'User Management',
-    icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-        <circle cx="9" cy="8" r="3.5" stroke="currentColor" strokeWidth="1.5" />
         <path
-          d="M3 19c0-3.3 2.7-6 6-6s6 2.7 6 6"
+          d="M4 18V8.5A2.5 2.5 0 0 1 6.5 6h11A2.5 2.5 0 0 1 20 8.5V18"
           stroke="currentColor"
           strokeWidth="1.5"
           strokeLinecap="round"
         />
-        <path
-          d="M16 11h5M18.5 8.5v5"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-        />
+        <path d="M7 18v-6h10v6M9 10h6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+        <path d="M3 18h18" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
       </svg>
     ),
   },
@@ -47,19 +30,19 @@ function linkClassName({ isActive }: { isActive: boolean }) {
   ].join(' ')
 }
 
-type SidebarProps = {
+type StaffSidebarProps = {
   isOpen: boolean
   onNavigate?: () => void
 }
 
-export const Sidebar = forwardRef<HTMLElement, SidebarProps>(function Sidebar(
+export const StaffSidebar = forwardRef<HTMLElement, StaffSidebarProps>(function StaffSidebar(
   { isOpen, onNavigate },
   ref,
 ) {
   return (
     <aside
       ref={ref}
-      id="admin-sidebar"
+      id="staff-sidebar"
       className={[
         'liquid-glass-card flex flex-col border-r border-theme rounded-none',
         'max-lg:fixed max-lg:inset-y-0 max-lg:left-0 max-lg:z-50',
@@ -73,25 +56,25 @@ export const Sidebar = forwardRef<HTMLElement, SidebarProps>(function Sidebar(
     >
       <div className="px-4 py-5 border-b border-theme flex items-center justify-between gap-2">
         <NavLink
-          to="/dashboard"
+          to="/staff-gate"
           className="flex items-center gap-2 text-fg font-medium text-sm min-w-0"
-          aria-label="Parking Simulator admin"
+          aria-label="Parking staff workspace"
           onClick={onNavigate}
         >
           <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-badge shrink-0">
             <LogoIcon size={18} />
           </span>
           <span className="leading-tight truncate">
-            Parking
+            Staff
             <span className="block text-[10px] font-normal text-subtle tracking-wide">
-              Simulator
+              Parking Gate
             </span>
           </span>
         </NavLink>
       </div>
 
-      <nav className="flex-1 px-3 py-4 flex flex-col gap-1 overflow-y-auto" aria-label="Admin navigation">
-        {NAV_ITEMS.map(({ to, label, icon }) => (
+      <nav className="flex-1 px-3 py-4 flex flex-col gap-1 overflow-y-auto" aria-label="Staff navigation">
+        {STAFF_NAV_ITEMS.map(({ to, label, icon }) => (
           <NavLink key={to} to={to} className={linkClassName} end onClick={onNavigate}>
             <span className="shrink-0">{icon}</span>
             {label}
@@ -114,9 +97,10 @@ export const Sidebar = forwardRef<HTMLElement, SidebarProps>(function Sidebar(
               strokeLinejoin="round"
             />
           </svg>
-          Back to site
+          Back to Home
         </NavLink>
       </div>
     </aside>
   )
 })
+

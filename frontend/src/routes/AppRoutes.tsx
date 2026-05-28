@@ -1,5 +1,6 @@
 import { Route, Routes } from 'react-router-dom'
 import { DashboardLayout } from '../layouts/DashboardLayout'
+import { StaffLayout } from '../layouts/StaffLayout'
 import { BookingPage } from '../pages/BookingPage'
 import { DashboardPage } from '../pages/DashboardPage'
 import { HomePage } from '../pages/HomePage'
@@ -19,8 +20,10 @@ export const AppRoutes = () => {
       <Route path="/my-bookings" element={<MyBookingsPage />} />
       <Route element={<DashboardLayout />}>
         <Route path="/dashboard" element={<DashboardPage />} />
-        <Route path="/staff-gate" element={<StaffGatePage />} />
         <Route path="/user-management" element={<UserManagementPage />} />
+      </Route>
+      <Route element={<StaffLayout />}>
+        <Route path="/staff-gate" element={<StaffGatePage />} />
       </Route>
     </Routes>
   )
