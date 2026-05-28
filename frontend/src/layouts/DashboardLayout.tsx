@@ -5,6 +5,7 @@ import { useOverlayPanel } from '../hooks/useOverlayPanel'
 
 const PAGE_TITLES: Record<string, string> = {
   '/dashboard': 'Dashboard',
+  '/staff-gate': 'Staff Gate',
   '/user-management': 'User Management',
 }
 

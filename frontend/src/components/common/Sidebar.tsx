@@ -16,6 +16,22 @@ const NAV_ITEMS = [
     ),
   },
   {
+    to: '/staff-gate',
+    label: 'Staff Gate',
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path
+          d="M4 18V8.5A2.5 2.5 0 0 1 6.5 6h11A2.5 2.5 0 0 1 20 8.5V18"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+        />
+        <path d="M7 18v-6h10v6M9 10h6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+        <path d="M3 18h18" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      </svg>
+    ),
+  },
+  {
     to: '/user-management',
     label: 'User Management',
     icon: (

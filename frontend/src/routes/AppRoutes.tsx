@@ -6,6 +6,7 @@ import { HomePage } from '../pages/HomePage'
 import { LoginPage } from '../pages/LoginPage'
 import { MyBookingsPage } from '../pages/MyBookingsPage'
 import { RegisterPage } from '../pages/RegisterPage'
+import { StaffGatePage } from '../pages/StaffGatePage'
 import { UserManagementPage } from '../pages/UserManagementPage'
 
 export const AppRoutes = () => {
@@ -18,6 +19,7 @@ export const AppRoutes = () => {
       <Route path="/my-bookings" element={<MyBookingsPage />} />
       <Route element={<DashboardLayout />}>
         <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/staff-gate" element={<StaffGatePage />} />
         <Route path="/user-management" element={<UserManagementPage />} />
       </Route>
     </Routes>
