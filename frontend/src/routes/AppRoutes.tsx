@@ -2,6 +2,9 @@ import { Navigate, Route, Routes } from 'react-router-dom'
 import { DashboardLayout } from '../layouts/DashboardLayout'
 import { ManagerLayout } from '../layouts/ManagerLayout'
 import { StaffLayout } from '../layouts/StaffLayout'
+import { AdminBookingsPage } from '../pages/AdminBookingsPage'
+import { AdminFloorsPage } from '../pages/AdminFloorsPage'
+import { AdminSlotsPage } from '../pages/AdminSlotsPage'
 import { BookingPage } from '../pages/BookingPage'
 import { DashboardPage } from '../pages/DashboardPage'
 import { HomePage } from '../pages/HomePage'
@@ -30,9 +33,14 @@ export const AppRoutes = () => {
       <Route path="/booking" element={<BookingPage />} />
       <Route path="/my-bookings" element={<MyBookingsPage />} />
       <Route element={<DashboardLayout />}>
-        <Route path="/dashboard" element={<DashboardPage />} />
-        <Route path="/user-management" element={<UserManagementPage />} />
+        <Route path="/admin" element={<DashboardPage />} />
+        <Route path="/admin/users" element={<UserManagementPage />} />
+        <Route path="/admin/floors" element={<AdminFloorsPage />} />
+        <Route path="/admin/bookings" element={<AdminBookingsPage />} />
+        <Route path="/admin/slots" element={<AdminSlotsPage />} />
       </Route>
+      <Route path="/dashboard" element={<Navigate to="/admin" replace />} />
+      <Route path="/user-management" element={<Navigate to="/admin/users" replace />} />
       <Route element={<StaffLayout />}>
         <Route path="/staff" element={<StaffGatePage />} />
         <Route path="/staff/vehicles" element={<StaffVehiclesPage />} />

@@ -1,11 +1,15 @@
 import { useEffect, useRef, useState } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
-import { MenuIcon, OverlayBackdrop, Sidebar, SkipLink, ThemeToggle } from '../components/common'
+import { AdminSidebar } from '../components/admin'
+import { MenuIcon, OverlayBackdrop, SkipLink, ThemeToggle } from '../components/common'
 import { useOverlayPanel } from '../hooks/useOverlayPanel'
 
 const PAGE_TITLES: Record<string, string> = {
-  '/dashboard': 'Dashboard',
-  '/user-management': 'User Management',
+  '/admin': 'Dashboard',
+  '/admin/users': 'User Management',
+  '/admin/floors': 'Floors',
+  '/admin/bookings': 'Bookings',
+  '/admin/slots': 'Slots',
 }
 
 export function DashboardLayout() {
@@ -36,7 +40,7 @@ export function DashboardLayout() {
 
       <div className="flex min-h-screen w-full">
         <div className="max-lg:w-0 max-lg:min-w-0 max-lg:shrink-0 max-lg:overflow-visible lg:w-60 lg:shrink-0">
-          <Sidebar ref={sidebarRef} isOpen={sidebarOpen} onNavigate={closeSidebar} />
+          <AdminSidebar ref={sidebarRef} isOpen={sidebarOpen} onNavigate={closeSidebar} />
         </div>
 
         <div className="flex w-full flex-1 flex-col min-w-0 min-h-screen lg:min-h-0">

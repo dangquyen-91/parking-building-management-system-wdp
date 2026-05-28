@@ -1,15 +1,31 @@
+import type { ReactNode } from 'react'
+
 type AdminPageShellProps = {
   eyebrow: string
   title: string
   description: string
+  actions?: ReactNode
+  children?: ReactNode
 }
 
-export function AdminPageShell({ eyebrow, title, description }: AdminPageShellProps) {
+export function AdminPageShell({
+  eyebrow,
+  title,
+  description,
+  actions,
+  children,
+}: AdminPageShellProps) {
   return (
-    <div className="p-6 md:p-10 lg:p-12">
-      <p className="text-[10px] tracking-[0.2em] text-subtle uppercase mb-3">{eyebrow}</p>
-      <h1 className="text-3xl md:text-4xl font-bold text-fg tracking-tight">{title}</h1>
-      <p className="mt-3 text-sm text-muted max-w-xl">{description}</p>
+    <div className="p-4 md:p-8 lg:p-10">
+      <div className="mb-6 flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
+        <div>
+          <p className="mb-3 text-[10px] uppercase tracking-[0.2em] text-subtle">{eyebrow}</p>
+          <h1 className="text-3xl font-bold tracking-tight text-fg md:text-4xl">{title}</h1>
+          <p className="mt-3 max-w-2xl text-sm text-muted">{description}</p>
+        </div>
+        {actions}
+      </div>
+      {children}
     </div>
   )
 }
