@@ -1,4 +1,4 @@
-import { Route, Routes } from 'react-router-dom'
+import { Navigate, Route, Routes } from 'react-router-dom'
 import { DashboardLayout } from '../layouts/DashboardLayout'
 import { ManagerLayout } from '../layouts/ManagerLayout'
 import { StaffLayout } from '../layouts/StaffLayout'
@@ -15,6 +15,10 @@ import { ManagerStaffPage } from '../pages/ManagerStaffPage'
 import { MyBookingsPage } from '../pages/MyBookingsPage'
 import { RegisterPage } from '../pages/RegisterPage'
 import { StaffGatePage } from '../pages/StaffGatePage'
+import { StaffIncidentsPage } from '../pages/StaffIncidentsPage'
+import { StaffLostTicketPage } from '../pages/StaffLostTicketPage'
+import { StaffShiftPage } from '../pages/StaffShiftPage'
+import { StaffVehiclesPage } from '../pages/StaffVehiclesPage'
 import { UserManagementPage } from '../pages/UserManagementPage'
 
 export const AppRoutes = () => {
@@ -30,8 +34,13 @@ export const AppRoutes = () => {
         <Route path="/user-management" element={<UserManagementPage />} />
       </Route>
       <Route element={<StaffLayout />}>
-        <Route path="/staff-gate" element={<StaffGatePage />} />
+        <Route path="/staff" element={<StaffGatePage />} />
+        <Route path="/staff/vehicles" element={<StaffVehiclesPage />} />
+        <Route path="/staff/lost-ticket" element={<StaffLostTicketPage />} />
+        <Route path="/staff/incidents" element={<StaffIncidentsPage />} />
+        <Route path="/staff/shift" element={<StaffShiftPage />} />
       </Route>
+      <Route path="/staff-gate" element={<Navigate to="/staff" replace />} />
       <Route element={<ManagerLayout />}>
         <Route path="/manager" element={<ManagerDashboardPage />} />
         <Route path="/manager/slots" element={<ManagerSlotsPage />} />

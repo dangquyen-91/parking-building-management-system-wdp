@@ -5,7 +5,11 @@ import { StaffSidebar } from '../components/staff/StaffSidebar'
 import { useOverlayPanel } from '../hooks/useOverlayPanel'
 
 const STAFF_PAGE_TITLES: Record<string, string> = {
-  '/staff-gate': 'Staff Gate',
+  '/staff': 'Staff Gate',
+  '/staff/vehicles': 'Active Vehicles',
+  '/staff/lost-ticket': 'Lost Ticket',
+  '/staff/incidents': 'Incidents',
+  '/staff/shift': 'Shift Summary',
 }
 
 export function StaffLayout() {

@@ -1,6 +1,7 @@
 export type VisitorType = 'walkIn' | 'user'
 export type GateMode = 'checkin' | 'checkout'
 export type TicketStatus = 'active' | 'completed'
+export type IncidentStatus = 'open' | 'reviewing' | 'resolved'
 
 export type ParkingTicket = {
   id: string
@@ -13,6 +14,16 @@ export type ParkingTicket = {
   checkOutAt?: string
   status: TicketStatus
   note?: string
+}
+
+export type StaffIncident = {
+  id: string
+  title: string
+  plate: string
+  category: string
+  reportedAt: string
+  status: IncidentStatus
+  note: string
 }
 
 export const STAFF_ZONES = [
@@ -57,9 +68,51 @@ export const INITIAL_TICKETS: ParkingTicket[] = [
   },
 ]
 
+export const STAFF_INCIDENTS: StaffIncident[] = [
+  {
+    id: 'INC-301',
+    title: 'Khach bao mat ve xe',
+    plate: '59X2-481.22',
+    category: 'Lost ticket',
+    reportedAt: '2026-05-28T10:20:00',
+    status: 'open',
+    note: 'Da doi chieu bien so va gio vao, cho manager xac nhan.',
+  },
+  {
+    id: 'INC-302',
+    title: 'Sai bien so khi check-in',
+    plate: '51K7-902.16',
+    category: 'Plate correction',
+    reportedAt: '2026-05-28T09:48:00',
+    status: 'reviewing',
+    note: 'Can sua tu 51K7-902.61 thanh 51K7-902.16.',
+  },
+  {
+    id: 'INC-298',
+    title: 'Khu B2-A tam khoa 1 vi tri',
+    plate: 'N/A',
+    category: 'Maintenance',
+    reportedAt: '2026-05-27T18:05:00',
+    status: 'resolved',
+    note: 'Da gan bien bao va mo lai sau khi ve sinh san.',
+  },
+]
+
 export const visitorTypeLabel: Record<VisitorType, string> = {
   walkIn: 'Khach vang lai',
   user: 'User',
+}
+
+export const incidentStatusLabel: Record<IncidentStatus, string> = {
+  open: 'Dang mo',
+  reviewing: 'Dang xem xet',
+  resolved: 'Da xu ly',
+}
+
+export const incidentStatusClass: Record<IncidentStatus, string> = {
+  open: 'border-rose-400/40 bg-rose-500/10 text-rose-200',
+  reviewing: 'border-amber-400/40 bg-amber-500/10 text-amber-100',
+  resolved: 'border-emerald-400/40 bg-emerald-500/10 text-emerald-200',
 }
 
 export function formatGateTime(value: string) {
@@ -79,3 +132,6 @@ export function calculateMotorbikeFee(checkInAt: string, checkOutAt = new Date()
   return { hours, fee }
 }
 
+export function formatStaffCurrency(value: number) {
+  return `${value.toLocaleString('vi-VN')} VND`
+}
