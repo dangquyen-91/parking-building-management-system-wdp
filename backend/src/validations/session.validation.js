@@ -16,7 +16,6 @@ export const checkInSchema = Joi.object({
     otherwise: Joi.forbidden(),
   }),
 
-  userId: Joi.string().hex().length(24).allow(null),
   note: Joi.string().trim().max(300).allow('', null),
 });
 

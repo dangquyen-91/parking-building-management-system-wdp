@@ -2,7 +2,7 @@ import ParkingSession from '../models/parking-session.model.js';
 import ParkingSlot from '../models/parking-slot.model.js';
 import ParkingRow from '../models/parking-row.model.js';
 import Floor from '../models/floor.model.js';
-import User from '../models/user.model.js';
+import Subscription from '../models/subscription.model.js';
 import AppError from '../utils/appError.js';
 
 const SESSION_POPULATE = [
@@ -20,7 +20,7 @@ const SESSION_POPULATE = [
   { path: 'userId',  select: 'fullName phone email' },
 ];
 
-export const checkIn = async ({ slotId, rowId, licensePlate, vehicleType, staffId, userId, note }) => {
+export const checkIn = async ({ slotId, rowId, licensePlate, vehicleType, staffId, note }) => {
   const normalizedPlate = licensePlate.toUpperCase().replace(/\s/g, '');
 
   const existing = await ParkingSession.findOne({ licensePlate: normalizedPlate, status: 'active' });
@@ -28,11 +28,14 @@ export const checkIn = async ({ slotId, rowId, licensePlate, vehicleType, staffI
     throw new AppError(`Vehicle ${normalizedPlate} already has an active parking session`, 400);
   }
 
-  if (userId) {
-    const user = await User.findById(userId);
-    if (!user) throw new AppError('Resident account not found', 404);
-    if (!user.isActive) throw new AppError('Resident account is inactive', 400);
+  const activeSub = await Subscription.findOne({ licensePlate: normalizedPlate, status: 'active' });
+  if (activeSub && activeSub.vehicleType !== vehicleType) {
+    throw new AppError(
+      `License plate ${normalizedPlate} has a ${activeSub.vehicleType} subscription, cannot check in as ${vehicleType}`,
+      400
+    );
   }
+  const userId = activeSub ? activeSub.userId : null;
 
   if (vehicleType === 'car') {
     const slot = await ParkingSlot.findById(slotId).populate({
@@ -44,10 +47,10 @@ export const checkIn = async ({ slotId, rowId, licensePlate, vehicleType, staffI
     if (!slot.floorId.isActive) throw new AppError('Floor is inactive', 400);
     if (!slot.floorId.buildingId?.isActive) throw new AppError('Building is inactive', 400);
     if (slot.floorId.vehicleType !== 'car') throw new AppError('This slot only accepts car', 400);
-    if (slot.floorId.floorType === 'resident' && !userId)
-      throw new AppError('This floor is for residents only. userId is required.', 403);
-    if (slot.floorId.floorType === 'visitor' && userId)
-      throw new AppError('This floor is for visitors only. Do not provide userId.', 403);
+    if (slot.floorId.floorType === 'resident' && !activeSub)
+      throw new AppError('This floor is for residents only. License plate has no active subscription.', 403);
+    if (slot.floorId.floorType === 'visitor' && activeSub)
+      throw new AppError('This floor is for visitors only. Residents must park on resident floor.', 403);
 
     const locked = await ParkingSlot.findOneAndUpdate(
       { _id: slotId, status: 'empty' },
@@ -84,10 +87,10 @@ export const checkIn = async ({ slotId, rowId, licensePlate, vehicleType, staffI
   if (!row.floorId.isActive) throw new AppError('Floor is inactive', 400);
   if (!row.floorId.buildingId?.isActive) throw new AppError('Building is inactive', 400);
   if (row.floorId.vehicleType !== 'motorcycle') throw new AppError('This row only accepts motorcycle', 400);
-  if (row.floorId.floorType === 'resident' && !userId)
-    throw new AppError('This floor is for residents only. userId is required.', 403);
-  if (row.floorId.floorType === 'visitor' && userId)
-    throw new AppError('This floor is for visitors only. Do not provide userId.', 403);
+  if (row.floorId.floorType === 'resident' && !activeSub)
+    throw new AppError('This floor is for residents only. License plate has no active subscription.', 403);
+  if (row.floorId.floorType === 'visitor' && activeSub)
+    throw new AppError('This floor is for visitors only. Residents must park on resident floor.', 403);
 
   const newOccupied = row.occupiedCount + 1;
 
@@ -168,33 +171,40 @@ export const getById = async (id) => {
 export const lookup = async (licensePlate) => {
   const normalizedPlate = licensePlate.toUpperCase().replace(/\s/g, '');
 
-  const activeSession = await ParkingSession.findOne({
-    licensePlate: normalizedPlate,
-    status: 'active',
-  }).populate(SESSION_POPULATE);
-
-  const lastSession = await ParkingSession.findOne({
-    licensePlate: normalizedPlate,
-    status: { $in: ['completed', 'cancelled'] },
-  })
-    .sort({ exitTime: -1 })
-    .populate('userId', 'fullName phone email')
-    .select('userId entryTime exitTime vehicleType fee');
-
-  const availableCar = await ParkingSlot.countDocuments({ vehicleType: 'car', status: 'empty' });
-
-  const motoAgg = await ParkingRow.aggregate([
-    { $match: { status: 'available' } },
-    { $group: { _id: null, available: { $sum: { $subtract: ['$capacity', '$occupiedCount'] } } } },
+  const [activeSession, activeSub, lastSession, availableCar, motoAgg] = await Promise.all([
+    ParkingSession.findOne({ licensePlate: normalizedPlate, status: 'active' }).populate(SESSION_POPULATE),
+    Subscription.findOne({ licensePlate: normalizedPlate, status: 'active' })
+      .populate('planId', 'code name vehicleType durationDays price')
+      .populate('userId', 'fullName phone email'),
+    ParkingSession.findOne({ licensePlate: normalizedPlate, status: { $in: ['completed', 'cancelled'] } })
+      .sort({ exitTime: -1 })
+      .populate('userId', 'fullName phone email')
+      .select('userId entryTime exitTime vehicleType fee'),
+    ParkingSlot.countDocuments({ vehicleType: 'car', status: 'empty' }),
+    ParkingRow.aggregate([
+      { $match: { status: 'available' } },
+      { $group: { _id: null, available: { $sum: { $subtract: ['$capacity', '$occupiedCount'] } } } },
+    ]),
   ]);
+
   const availableMotorcycle = motoAgg[0]?.available || 0;
 
   return {
     licensePlate: normalizedPlate,
     status: activeSession ? 'already_active' : 'available',
+    customerType: activeSub ? 'resident' : 'walk_in',
     activeSession: activeSession || null,
+    subscription: activeSub
+      ? {
+          _id: activeSub._id,
+          plan: activeSub.planId,
+          owner: activeSub.userId,
+          startDate: activeSub.startDate,
+          endDate: activeSub.endDate,
+          vehicleType: activeSub.vehicleType,
+        }
+      : null,
     hint: {
-      linkedResident: lastSession?.userId || null,
       lastVisit: lastSession
         ? {
             vehicleType: lastSession.vehicleType,
