@@ -1,10 +1,17 @@
 import { Route, Routes } from 'react-router-dom'
 import { DashboardLayout } from '../layouts/DashboardLayout'
+import { ManagerLayout } from '../layouts/ManagerLayout'
 import { StaffLayout } from '../layouts/StaffLayout'
 import { BookingPage } from '../pages/BookingPage'
 import { DashboardPage } from '../pages/DashboardPage'
 import { HomePage } from '../pages/HomePage'
 import { LoginPage } from '../pages/LoginPage'
+import { ManagerBookingsPage } from '../pages/ManagerBookingsPage'
+import { ManagerDashboardPage } from '../pages/ManagerDashboardPage'
+import { ManagerGateLogsPage } from '../pages/ManagerGateLogsPage'
+import { ManagerReportsPage } from '../pages/ManagerReportsPage'
+import { ManagerSlotsPage } from '../pages/ManagerSlotsPage'
+import { ManagerStaffPage } from '../pages/ManagerStaffPage'
 import { MyBookingsPage } from '../pages/MyBookingsPage'
 import { RegisterPage } from '../pages/RegisterPage'
 import { StaffGatePage } from '../pages/StaffGatePage'
@@ -24,6 +31,14 @@ export const AppRoutes = () => {
       </Route>
       <Route element={<StaffLayout />}>
         <Route path="/staff-gate" element={<StaffGatePage />} />
+      </Route>
+      <Route element={<ManagerLayout />}>
+        <Route path="/manager" element={<ManagerDashboardPage />} />
+        <Route path="/manager/slots" element={<ManagerSlotsPage />} />
+        <Route path="/manager/bookings" element={<ManagerBookingsPage />} />
+        <Route path="/manager/gate-logs" element={<ManagerGateLogsPage />} />
+        <Route path="/manager/staff" element={<ManagerStaffPage />} />
+        <Route path="/manager/reports" element={<ManagerReportsPage />} />
       </Route>
     </Routes>
   )
