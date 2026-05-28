@@ -54,12 +54,12 @@ export function Header() {
             Register
           </Link>
           <ThemeToggle />
-          <a
-            href="#demo"
+          <Link
+            to="/booking"
             className="inline-flex items-center text-xs font-medium bg-btn-primary text-btn-primary-fg hover:opacity-90 transition-opacity duration-200 rounded-full px-4 py-2"
           >
-            Book Demo
-          </a>
+            Book Slot
+          </Link>
           <button
             ref={menuButtonRef}
             type="button"
@@ -106,6 +106,13 @@ export function Header() {
               onClick={closeMenu}
             >
               Register
+            </Link>
+            <Link
+              to="/booking"
+              className="text-sm text-muted hover:text-fg py-2 px-2 rounded-lg hover:bg-ghost transition-colors"
+              onClick={closeMenu}
+            >
+              Book Slot
             </Link>
           </nav>
         </>
