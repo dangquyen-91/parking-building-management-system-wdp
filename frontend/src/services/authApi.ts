@@ -25,9 +25,20 @@ type LoginResponse = {
   user: AuthUser
 }
 
+type RegisterResponse = {
+  user: AuthUser
+}
+
 export type LoginPayload = {
   email: string
   password: string
+}
+
+export type RegisterPayload = {
+  fullName: string
+  email: string
+  password: string
+  phone?: string
 }
 
 export const AUTH_STORAGE_KEYS = {
@@ -84,6 +95,16 @@ export function getDefaultRouteForRole(role?: AuthRole) {
 }
 
 export const authApi = {
+  async register(payload: RegisterPayload) {
+    try {
+      const response = await authHttp.post<ApiEnvelope<RegisterResponse>>('/auth/register', payload)
+
+      return response.data.data
+    } catch (error) {
+      throw getApiError(error)
+    }
+  },
+
   async login(payload: LoginPayload) {
     try {
       const response = await authHttp.post<ApiEnvelope<LoginResponse>>('/auth/login', payload)
@@ -105,4 +126,3 @@ export const authApi = {
     }
   },
 }
-
