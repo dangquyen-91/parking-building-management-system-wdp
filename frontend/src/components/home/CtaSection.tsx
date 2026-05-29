@@ -37,12 +37,12 @@ export function CtaSection() {
             animate={inView ? { opacity: 1, y: 0 } : {}}
             transition={{ delay: 0.25, duration: 0.5 }}
           >
-            <a
-              href="#demo"
+            <Link
+              to="/booking"
               className="inline-flex text-sm font-medium bg-btn-primary text-btn-primary-fg hover:opacity-90 transition-opacity rounded-full px-6 py-3"
             >
-              Book Demo
-            </a>
+              Book Slot
+            </Link>
             <Link
               to="/login"
               className="inline-flex text-sm font-medium text-fg border border-theme-strong hover:opacity-80 transition-opacity rounded-full px-6 py-3"

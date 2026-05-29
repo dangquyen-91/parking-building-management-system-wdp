@@ -1,21 +1,21 @@
-import { useEffect, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
-import { AdminSidebar } from '../components/admin'
 import { MenuIcon, OverlayBackdrop, SkipLink, ThemeToggle } from '../components/common'
+import { StaffSidebar } from '../components/staff/StaffSidebar'
 import { useOverlayPanel } from '../hooks/useOverlayPanel'
 
-const PAGE_TITLES: Record<string, string> = {
-  '/admin': 'Dashboard',
-  '/admin/users': 'User Management',
-  '/admin/floors': 'Floors',
-  '/admin/bookings': 'Bookings',
-  '/admin/slots': 'Slots',
+const STAFF_PAGE_TITLES: Record<string, string> = {
+  '/staff': 'Staff Gate',
+  '/staff/vehicles': 'Active Vehicles',
+  '/staff/lost-ticket': 'Lost Ticket',
+  '/staff/incidents': 'Incidents',
+  '/staff/shift': 'Shift Summary',
 }
 
-export function DashboardLayout() {
+export function StaffLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const { pathname } = useLocation()
-  const pageTitle = PAGE_TITLES[pathname] ?? 'Admin'
+  const pageTitle = STAFF_PAGE_TITLES[pathname] ?? 'Staff'
   const sidebarRef = useRef<HTMLElement>(null)
   const menuButtonRef = useRef<HTMLButtonElement>(null)
 
@@ -26,21 +26,17 @@ export function DashboardLayout() {
     onClose: () => setSidebarOpen(false),
   })
 
-  useEffect(() => {
-    setSidebarOpen(false)
-  }, [pathname])
-
   return (
     <div className="min-h-screen bg-page text-fg">
       <SkipLink />
 
       {sidebarOpen && (
-        <OverlayBackdrop onClose={closeSidebar} label="Close navigation menu" />
+        <OverlayBackdrop onClose={closeSidebar} label="Close staff navigation menu" />
       )}
 
       <div className="flex min-h-screen w-full">
         <div className="max-lg:w-0 max-lg:min-w-0 max-lg:shrink-0 max-lg:overflow-visible lg:w-60 lg:shrink-0">
-          <AdminSidebar ref={sidebarRef} isOpen={sidebarOpen} onNavigate={closeSidebar} />
+          <StaffSidebar ref={sidebarRef} isOpen={sidebarOpen} onNavigate={closeSidebar} />
         </div>
 
         <div className="flex w-full flex-1 flex-col min-w-0 min-h-screen lg:min-h-0">
@@ -50,8 +46,8 @@ export function DashboardLayout() {
               type="button"
               className="flex items-center justify-center w-10 h-10 rounded-xl text-muted hover:text-fg hover:bg-ghost transition-colors"
               aria-expanded={sidebarOpen}
-              aria-controls="admin-sidebar"
-              aria-label="Open navigation menu"
+              aria-controls="staff-sidebar"
+              aria-label="Open staff navigation menu"
               onClick={() => setSidebarOpen(true)}
             >
               <MenuIcon />

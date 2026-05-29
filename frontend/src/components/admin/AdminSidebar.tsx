@@ -1,11 +1,10 @@
 import { forwardRef } from 'react'
 import { NavLink } from 'react-router-dom'
-import { LogoutButton } from './LogoutButton'
-import { LogoIcon } from './icons'
+import { LogoIcon } from '../common/icons'
 
-const NAV_ITEMS = [
+const ADMIN_NAV_ITEMS = [
   {
-    to: '/dashboard',
+    to: '/admin',
     label: 'Dashboard',
     icon: (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -17,7 +16,7 @@ const NAV_ITEMS = [
     ),
   },
   {
-    to: '/user-management',
+    to: '/admin/users',
     label: 'User Management',
     icon: (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -37,23 +36,51 @@ const NAV_ITEMS = [
       </svg>
     ),
   },
+  {
+    to: '/admin/floors',
+    label: 'Floors',
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M5 20V4h14v16" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+        <path d="M8 8h3M13 8h3M8 12h3M13 12h3M8 16h3M13 16h3M3 20h18" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      </svg>
+    ),
+  },
+  {
+    to: '/admin/bookings',
+    label: 'Bookings',
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <rect x="4" y="5" width="16" height="15" rx="2" stroke="currentColor" strokeWidth="1.5" />
+        <path d="M8 3v4M16 3v4M4 10h16" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      </svg>
+    ),
+  },
+  {
+    to: '/admin/slots',
+    label: 'Slots',
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M4 18V8.5A2.5 2.5 0 0 1 6.5 6h11A2.5 2.5 0 0 1 20 8.5V18" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+        <path d="M7 18v-6h10v6M9 10h6M3 18h18" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      </svg>
+    ),
+  },
 ] as const
 
 function linkClassName({ isActive }: { isActive: boolean }) {
   return [
     'flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors duration-200',
-    isActive
-      ? 'bg-btn-primary text-btn-primary-fg'
-      : 'text-muted hover:text-fg hover:bg-ghost',
+    isActive ? 'bg-btn-primary text-btn-primary-fg' : 'text-muted hover:text-fg hover:bg-ghost',
   ].join(' ')
 }
 
-type SidebarProps = {
+type AdminSidebarProps = {
   isOpen: boolean
   onNavigate?: () => void
 }
 
-export const Sidebar = forwardRef<HTMLElement, SidebarProps>(function Sidebar(
+export const AdminSidebar = forwardRef<HTMLElement, AdminSidebarProps>(function AdminSidebar(
   { isOpen, onNavigate },
   ref,
 ) {
@@ -72,27 +99,27 @@ export const Sidebar = forwardRef<HTMLElement, SidebarProps>(function Sidebar(
           : 'max-lg:-translate-x-full max-lg:invisible max-lg:pointer-events-none',
       ].join(' ')}
     >
-      <div className="px-4 py-5 border-b border-theme flex items-center justify-between gap-2">
+      <div className="flex items-center justify-between gap-2 border-b border-theme px-4 py-5">
         <NavLink
-          to="/dashboard"
-          className="flex items-center gap-2 text-fg font-medium text-sm min-w-0"
-          aria-label="Parking Simulator admin"
+          to="/admin"
+          className="flex min-w-0 items-center gap-2 text-sm font-medium text-fg"
+          aria-label="Parking admin workspace"
           onClick={onNavigate}
         >
-          <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-badge shrink-0">
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-badge">
             <LogoIcon size={18} />
           </span>
-          <span className="leading-tight truncate">
-            Parking
-            <span className="block text-[10px] font-normal text-subtle tracking-wide">
-              Simulator
+          <span className="truncate leading-tight">
+            Admin
+            <span className="block text-[10px] font-normal tracking-wide text-subtle">
+              Control Panel
             </span>
           </span>
         </NavLink>
       </div>
 
-      <nav className="flex-1 px-3 py-4 flex flex-col gap-1 overflow-y-auto" aria-label="Admin navigation">
-        {NAV_ITEMS.map(({ to, label, icon }) => (
+      <nav className="flex flex-1 flex-col gap-1 overflow-y-auto px-3 py-4" aria-label="Admin navigation">
+        {ADMIN_NAV_ITEMS.map(({ to, label, icon }) => (
           <NavLink key={to} to={to} className={linkClassName} end onClick={onNavigate}>
             <span className="shrink-0">{icon}</span>
             {label}
@@ -100,11 +127,10 @@ export const Sidebar = forwardRef<HTMLElement, SidebarProps>(function Sidebar(
         ))}
       </nav>
 
-      <div className="px-3 py-4 border-t border-theme">
-        <LogoutButton />
+      <div className="border-t border-theme px-3 py-4">
         <NavLink
           to="/"
-          className="flex items-center gap-2 rounded-xl px-3 py-2 text-xs text-subtle hover:text-fg hover:bg-ghost transition-colors"
+          className="flex items-center gap-2 rounded-xl px-3 py-2 text-xs text-subtle transition-colors hover:bg-ghost hover:text-fg"
           onClick={onNavigate}
         >
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
