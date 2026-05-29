@@ -1,7 +1,8 @@
 import { motion } from 'framer-motion'
 import { type FormEvent, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useStaggerFormMotion } from '../../hooks/useStaggerFormMotion'
+import { authApi, getDefaultRouteForRole } from '../../services/authApi'
 import { focusFirstFormError } from '../../utils/focusFirstFormError'
 import { requireEmail, requirePassword } from '../../utils/validation'
 import { AuthField } from './AuthField'
@@ -29,6 +30,7 @@ function validate(values: LoginValues): LoginErrors {
 }
 
 export function LoginForm() {
+  const navigate = useNavigate()
   const { motionForm, fieldVariants } = useStaggerFormMotion()
   const [values, setValues] = useState<LoginValues>({ email: '', password: '' })
   const [errors, setErrors] = useState<LoginErrors>({})
@@ -36,10 +38,12 @@ export function LoginForm() {
   const [remember, setRemember] = useState(false)
 
   const clearError = (field: keyof LoginValues) => {
-    if (errors[field]) setErrors((err) => ({ ...err, [field]: undefined }))
+    if (errors[field] || errors.form) {
+      setErrors((err) => ({ ...err, [field]: undefined, form: undefined }))
+    }
   }
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     const nextErrors = validate(values)
     setErrors(nextErrors)
@@ -48,10 +52,20 @@ export function LoginForm() {
       return
     }
 
-    setStatus('loading')
-    window.setTimeout(() => {
+    try {
+      setStatus('loading')
+      const session = await authApi.login({
+        email: values.email,
+        password: values.password,
+      })
       setStatus('success')
-    }, 1200)
+      navigate(getDefaultRouteForRole(session.user.role), { replace: true })
+    } catch (error) {
+      setStatus('idle')
+      setErrors({
+        form: error instanceof Error ? error.message : 'Unable to sign in. Please try again.',
+      })
+    }
   }
 
   return (
@@ -121,7 +135,7 @@ export function LoginForm() {
         )}
         {status === 'success' && (
           <p className="text-xs text-muted">
-            Signed in locally — connect your API endpoint when the backend is ready.
+            Signed in successfully. Redirecting...
           </p>
         )}
       </div>
@@ -130,7 +144,7 @@ export function LoginForm() {
         status={status}
         labels={{
           idle: 'Sign in',
-          loading: 'Signing in…',
+          loading: 'Signing in...',
           success: 'Welcome back',
         }}
       />
@@ -144,3 +158,4 @@ export function LoginForm() {
     </form>
   )
 }
+

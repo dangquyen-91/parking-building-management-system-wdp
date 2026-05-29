@@ -1,7 +1,8 @@
 import { motion } from 'framer-motion'
 import { type FormEvent, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useStaggerFormMotion } from '../../hooks/useStaggerFormMotion'
+import { authApi } from '../../services/authApi'
 import { focusFirstFormError } from '../../utils/focusFirstFormError'
 import { requireEmail, requirePassword } from '../../utils/validation'
 import { AuthField } from './AuthField'
@@ -43,6 +44,7 @@ function validate(values: RegisterValues): RegisterErrors {
 }
 
 export function RegisterForm() {
+  const navigate = useNavigate()
   const { motionForm, fieldVariants } = useStaggerFormMotion()
   const [values, setValues] = useState<RegisterValues>({
     fullName: '',
@@ -54,10 +56,12 @@ export function RegisterForm() {
   const [status, setStatus] = useState<'idle' | 'loading' | 'success'>('idle')
 
   const clearFieldError = (field: keyof RegisterValues) => {
-    if (errors[field]) setErrors((err) => ({ ...err, [field]: undefined }))
+    if (errors[field] || errors.form) {
+      setErrors((err) => ({ ...err, [field]: undefined, form: undefined }))
+    }
   }
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     const nextErrors = validate(values)
     setErrors(nextErrors)
@@ -66,10 +70,23 @@ export function RegisterForm() {
       return
     }
 
-    setStatus('loading')
-    window.setTimeout(() => {
+    try {
+      setStatus('loading')
+      await authApi.register({
+        fullName: values.fullName.trim(),
+        email: values.email.trim(),
+        password: values.password,
+      })
       setStatus('success')
-    }, 1400)
+      window.setTimeout(() => {
+        navigate('/login', { replace: true })
+      }, 700)
+    } catch (error) {
+      setStatus('idle')
+      setErrors({
+        form: error instanceof Error ? error.message : 'Unable to create account. Please try again.',
+      })
+    }
   }
 
   return (
@@ -150,9 +167,14 @@ export function RegisterForm() {
       </motion.div>
 
       <div aria-live="polite" aria-atomic="true" className="min-h-[1.25rem]">
+        {errors.form && (
+          <p role="alert" className="text-xs text-rose-400">
+            {errors.form}
+          </p>
+        )}
         {status === 'success' && (
           <p className="text-xs text-muted">
-            Account created locally — wire this form to your registration API when ready.
+            Account created. Redirecting to sign in...
           </p>
         )}
       </div>
@@ -161,7 +183,7 @@ export function RegisterForm() {
         status={status}
         labels={{
           idle: 'Create account',
-          loading: 'Creating account…',
+          loading: 'Creating account...',
           success: 'Account ready',
         }}
       />
@@ -175,3 +197,4 @@ export function RegisterForm() {
     </form>
   )
 }
+

@@ -1,6 +1,7 @@
 import { forwardRef } from 'react'
 import { NavLink } from 'react-router-dom'
 import { LogoIcon } from '../common/icons'
+import { LogoutButton } from '../common/LogoutButton'
 
 const STAFF_NAV_ITEMS = [
   {
@@ -145,6 +146,7 @@ export const StaffSidebar = forwardRef<HTMLElement, StaffSidebarProps>(function 
       </nav>
 
       <div className="px-3 py-4 border-t border-theme">
+        <LogoutButton />
         <NavLink
           to="/"
           className="flex items-center gap-2 rounded-xl px-3 py-2 text-xs text-subtle hover:text-fg hover:bg-ghost transition-colors"
