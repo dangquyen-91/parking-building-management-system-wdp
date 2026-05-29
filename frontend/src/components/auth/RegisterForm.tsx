@@ -11,6 +11,7 @@ import { AuthSubmitButton } from './AuthSubmitButton'
 const REGISTER_FIELDS = [
   { key: 'fullName', id: 'register-name' },
   { key: 'email', id: 'register-email' },
+  { key: 'phone', id: 'register-phone' },
   { key: 'password', id: 'register-password' },
   { key: 'confirmPassword', id: 'register-confirm' },
 ] as const
@@ -18,6 +19,7 @@ const REGISTER_FIELDS = [
 type RegisterValues = {
   fullName: string
   email: string
+  phone: string
   password: string
   confirmPassword: string
 }
@@ -33,6 +35,9 @@ function validate(values: RegisterValues): RegisterErrors {
   }
   const emailError = requireEmail(values.email)
   if (emailError) errors.email = emailError
+  if (values.phone.trim() && values.phone.trim().length < 8) {
+    errors.phone = 'Enter a valid phone number.'
+  }
   const passwordError = requirePassword(values.password)
   if (passwordError) errors.password = passwordError
   if (!values.confirmPassword) {
@@ -49,6 +54,7 @@ export function RegisterForm() {
   const [values, setValues] = useState<RegisterValues>({
     fullName: '',
     email: '',
+    phone: '',
     password: '',
     confirmPassword: '',
   })
@@ -75,6 +81,7 @@ export function RegisterForm() {
       await authApi.register({
         fullName: values.fullName.trim(),
         email: values.email.trim(),
+        phone: values.phone.trim() || undefined,
         password: values.password,
       })
       setStatus('success')
@@ -99,7 +106,7 @@ export function RegisterForm() {
             type="text"
             name="fullName"
             autoComplete="name"
-            placeholder="Mira Chen"
+            placeholder="Enter your full name"
             value={values.fullName}
             disabled={status === 'loading'}
             onChange={(e) => {
@@ -117,7 +124,7 @@ export function RegisterForm() {
             type="email"
             name="email"
             autoComplete="email"
-            placeholder="mira.chen@riverside-tower.vn"
+            placeholder="Enter your email"
             value={values.email}
             disabled={status === 'loading'}
             onChange={(e) => {
@@ -130,6 +137,25 @@ export function RegisterForm() {
         </motion.div>
 
         <motion.div variants={fieldVariants} custom={0.1}>
+          <AuthField
+            id="register-phone"
+            label="Phone"
+            type="tel"
+            name="phone"
+            autoComplete="tel"
+            placeholder="Enter your phone number"
+            value={values.phone}
+            disabled={status === 'loading'}
+            onChange={(e) => {
+              setValues((v) => ({ ...v, phone: e.target.value }))
+              clearFieldError('phone')
+            }}
+            error={errors.phone}
+            helper="Optional, saved to your user profile."
+          />
+        </motion.div>
+
+        <motion.div variants={fieldVariants} custom={0.15}>
           <AuthField
             id="register-password"
             label="Password"
@@ -147,7 +173,7 @@ export function RegisterForm() {
           />
         </motion.div>
 
-        <motion.div variants={fieldVariants} custom={0.14}>
+        <motion.div variants={fieldVariants} custom={0.2}>
           <AuthField
             id="register-confirm"
             label="Confirm password"
@@ -197,4 +223,3 @@ export function RegisterForm() {
     </form>
   )
 }
-
