@@ -86,12 +86,25 @@ export function clearAuthSession() {
   localStorage.removeItem('parking_access_token')
 }
 
+export function getStoredAuthUser() {
+  const rawUser = localStorage.getItem(AUTH_STORAGE_KEYS.user)
+
+  if (!rawUser) return undefined
+
+  try {
+    return JSON.parse(rawUser) as AuthUser
+  } catch {
+    clearAuthSession()
+    return undefined
+  }
+}
+
 export function getDefaultRouteForRole(role?: AuthRole) {
   if (role === 'admin') return '/dashboard'
   if (role === 'manager') return '/manager'
   if (role === 'staff') return '/staff'
 
-  return '/booking'
+  return '/'
 }
 
 export const authApi = {

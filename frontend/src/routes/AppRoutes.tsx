@@ -23,6 +23,7 @@ import { StaffLostTicketPage } from '../pages/StaffLostTicketPage'
 import { StaffShiftPage } from '../pages/StaffShiftPage'
 import { StaffVehiclesPage } from '../pages/StaffVehiclesPage'
 import { UserManagementPage } from '../pages/UserManagementPage'
+import { ProtectedRoute } from './ProtectedRoute'
 
 export const AppRoutes = () => {
   return (
@@ -32,30 +33,36 @@ export const AppRoutes = () => {
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/booking" element={<BookingPage />} />
       <Route path="/my-bookings" element={<MyBookingsPage />} />
-      <Route element={<DashboardLayout />}>
-        <Route path="/admin" element={<DashboardPage />} />
-        <Route path="/admin/users" element={<UserManagementPage />} />
-        <Route path="/admin/floors" element={<AdminFloorsPage />} />
-        <Route path="/admin/bookings" element={<AdminBookingsPage />} />
-        <Route path="/admin/slots" element={<AdminSlotsPage />} />
+      <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
+        <Route element={<DashboardLayout />}>
+          <Route path="/admin" element={<DashboardPage />} />
+          <Route path="/admin/users" element={<UserManagementPage />} />
+          <Route path="/admin/floors" element={<AdminFloorsPage />} />
+          <Route path="/admin/bookings" element={<AdminBookingsPage />} />
+          <Route path="/admin/slots" element={<AdminSlotsPage />} />
+        </Route>
       </Route>
       <Route path="/dashboard" element={<Navigate to="/admin" replace />} />
       <Route path="/user-management" element={<Navigate to="/admin/users" replace />} />
-      <Route element={<StaffLayout />}>
-        <Route path="/staff" element={<StaffGatePage />} />
-        <Route path="/staff/vehicles" element={<StaffVehiclesPage />} />
-        <Route path="/staff/lost-ticket" element={<StaffLostTicketPage />} />
-        <Route path="/staff/incidents" element={<StaffIncidentsPage />} />
-        <Route path="/staff/shift" element={<StaffShiftPage />} />
+      <Route element={<ProtectedRoute allowedRoles={['staff']} />}>
+        <Route element={<StaffLayout />}>
+          <Route path="/staff" element={<StaffGatePage />} />
+          <Route path="/staff/vehicles" element={<StaffVehiclesPage />} />
+          <Route path="/staff/lost-ticket" element={<StaffLostTicketPage />} />
+          <Route path="/staff/incidents" element={<StaffIncidentsPage />} />
+          <Route path="/staff/shift" element={<StaffShiftPage />} />
+        </Route>
       </Route>
       <Route path="/staff-gate" element={<Navigate to="/staff" replace />} />
-      <Route element={<ManagerLayout />}>
-        <Route path="/manager" element={<ManagerDashboardPage />} />
-        <Route path="/manager/slots" element={<ManagerSlotsPage />} />
-        <Route path="/manager/bookings" element={<ManagerBookingsPage />} />
-        <Route path="/manager/gate-logs" element={<ManagerGateLogsPage />} />
-        <Route path="/manager/staff" element={<ManagerStaffPage />} />
-        <Route path="/manager/reports" element={<ManagerReportsPage />} />
+      <Route element={<ProtectedRoute allowedRoles={['manager']} />}>
+        <Route element={<ManagerLayout />}>
+          <Route path="/manager" element={<ManagerDashboardPage />} />
+          <Route path="/manager/slots" element={<ManagerSlotsPage />} />
+          <Route path="/manager/bookings" element={<ManagerBookingsPage />} />
+          <Route path="/manager/gate-logs" element={<ManagerGateLogsPage />} />
+          <Route path="/manager/staff" element={<ManagerStaffPage />} />
+          <Route path="/manager/reports" element={<ManagerReportsPage />} />
+        </Route>
       </Route>
     </Routes>
   )
