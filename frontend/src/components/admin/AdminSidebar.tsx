@@ -37,6 +37,16 @@ const ADMIN_NAV_ITEMS = [
     ),
   },
   {
+    to: '/admin/buildings',
+    label: 'Buildings',
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M4 20V5.5A1.5 1.5 0 0 1 5.5 4h8A1.5 1.5 0 0 1 15 5.5V20" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+        <path d="M15 9h3.5A1.5 1.5 0 0 1 20 10.5V20M7 8h2M11 8h1M7 12h2M11 12h1M7 16h2M11 16h1M3 20h18" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      </svg>
+    ),
+  },
+  {
     to: '/admin/floors',
     label: 'Floors',
     icon: (

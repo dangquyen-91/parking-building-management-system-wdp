@@ -5,10 +5,14 @@ export type AdminStatus =
   | 'enabled'
   | 'warning'
   | 'critical'
+  | 'empty'
   | 'available'
+  | 'full'
   | 'occupied'
   | 'reserved'
   | 'maintenance'
+  | 'active-session'
+  | 'completed'
   | 'confirmed'
   | 'cancelled'
 
@@ -358,10 +362,14 @@ export const adminStatusTone: Record<AdminStatus, string> = {
   enabled: 'border-sky-400/40 bg-sky-500/10 text-sky-200',
   warning: 'border-amber-400/40 bg-amber-500/10 text-amber-100',
   critical: 'border-rose-400/40 bg-rose-500/10 text-rose-200',
+  empty: 'border-emerald-400/40 bg-emerald-500/10 text-emerald-200',
   available: 'border-emerald-400/40 bg-emerald-500/10 text-emerald-200',
+  full: 'border-amber-400/40 bg-amber-500/10 text-amber-100',
   occupied: 'border-sky-400/40 bg-sky-500/10 text-sky-200',
   reserved: 'border-amber-400/40 bg-amber-500/10 text-amber-100',
   maintenance: 'border-rose-400/40 bg-rose-500/10 text-rose-200',
+  'active-session': 'border-sky-400/40 bg-sky-500/10 text-sky-200',
+  completed: 'border-emerald-400/40 bg-emerald-500/10 text-emerald-200',
   confirmed: 'border-emerald-400/40 bg-emerald-500/10 text-emerald-200',
   cancelled: 'border-rose-400/40 bg-rose-500/10 text-rose-200',
 }

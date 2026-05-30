@@ -2,6 +2,7 @@ import { Navigate, Route, Routes } from 'react-router-dom'
 import { DashboardLayout } from '../layouts/DashboardLayout'
 import { ManagerLayout } from '../layouts/ManagerLayout'
 import { StaffLayout } from '../layouts/StaffLayout'
+import { AdminBuildingsPage } from '../pages/AdminBuildingsPage'
 import { AdminBookingsPage } from '../pages/AdminBookingsPage'
 import { AdminFloorsPage } from '../pages/AdminFloorsPage'
 import { AdminSlotsPage } from '../pages/AdminSlotsPage'
@@ -37,6 +38,7 @@ export const AppRoutes = () => {
         <Route element={<DashboardLayout />}>
           <Route path="/admin" element={<DashboardPage />} />
           <Route path="/admin/users" element={<UserManagementPage />} />
+          <Route path="/admin/buildings" element={<AdminBuildingsPage />} />
           <Route path="/admin/floors" element={<AdminFloorsPage />} />
           <Route path="/admin/bookings" element={<AdminBookingsPage />} />
           <Route path="/admin/slots" element={<AdminSlotsPage />} />
