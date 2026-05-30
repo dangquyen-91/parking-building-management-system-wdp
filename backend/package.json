@@ -6,7 +6,9 @@
   "scripts": {
     "start": "node --env-file=.env src/app.js",
     "dev": "nodemon --exec \"node --env-file=.env src/app.js\"",
-    "seed:plans": "node --env-file=.env src/seeds/plan.seed.js"
+    "seed:plans": "node --env-file=.env src/seeds/plan.seed.js",
+    "seed:pricing": "node --env-file=.env src/seeds/pricing.seed.js",
+    "seed:users": "node --env-file=.env src/seeds/user.seed.js"
   },
   "keywords": [],
   "author": "",

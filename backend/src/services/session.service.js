@@ -3,7 +3,12 @@ import ParkingSlot from '../models/parking-slot.model.js';
 import ParkingRow from '../models/parking-row.model.js';
 import Floor from '../models/floor.model.js';
 import Subscription from '../models/subscription.model.js';
+import Payment from '../models/payment.model.js';
+import User from '../models/user.model.js';
+import * as pricingService from './pricing.service.js';
+import * as payosService from './payos.service.js';
 import AppError from '../utils/appError.js';
+import logger from '../utils/logger.js';
 
 const SESSION_POPULATE = [
   {
@@ -65,10 +70,13 @@ export const checkIn = async ({ slotId, rowId, licensePlate, vehicleType, staffI
         rowId: null,
         licensePlate: normalizedPlate,
         vehicleType,
+        customerType: activeSub ? 'resident' : 'walk_in',
+        subscriptionId: activeSub?._id || null,
         entryTime: new Date(),
         staffId,
         userId: userId || null,
         status: 'active',
+        paymentStatus: activeSub ? 'paid' : 'unpaid',
         note,
       });
       return session.populate(SESSION_POPULATE);
@@ -110,10 +118,13 @@ export const checkIn = async ({ slotId, rowId, licensePlate, vehicleType, staffI
       rowId,
       licensePlate: normalizedPlate,
       vehicleType,
+      customerType: activeSub ? 'resident' : 'walk_in',
+      subscriptionId: activeSub?._id || null,
       entryTime: new Date(),
       staffId,
       userId: userId || null,
       status: 'active',
+      paymentStatus: activeSub ? 'paid' : 'unpaid',
       note,
     });
     return session.populate(SESSION_POPULATE);
@@ -219,4 +230,244 @@ export const lookup = async (licensePlate) => {
       car: availableCar,
     },
   };
+};
+
+const releaseSpot = async (session) => {
+  if (session.slotId) {
+    await ParkingSlot.findByIdAndUpdate(session.slotId, { status: 'empty' });
+    return;
+  }
+  if (!session.rowId) return;
+
+  await ParkingRow.findOneAndUpdate(
+    { _id: session.rowId, occupiedCount: { $gt: 0 }, status: { $ne: 'maintenance' } },
+    { $inc: { occupiedCount: -1 }, $set: { status: 'available' } }
+  );
+};
+
+const loadActiveSession = async (id) => {
+  const session = await ParkingSession.findById(id);
+  if (!session) throw new AppError('Session not found', 404);
+  if (session.status !== 'active')
+    throw new AppError(`Session is already ${session.status}`, 400);
+  return session;
+};
+
+export const previewCheckout = async (id) => {
+  const session = await loadActiveSession(id);
+  const exitTime = new Date();
+
+  if (session.customerType === 'resident') {
+    return {
+      sessionId: session._id,
+      customerType: 'resident',
+      entryTime: session.entryTime,
+      exitTime,
+      fee: 0,
+      breakdown: null,
+      pricing: null,
+      note: 'Resident with active subscription — no fee',
+    };
+  }
+
+  const calc = await pricingService.calculateFee({
+    vehicleType: session.vehicleType,
+    entryTime: session.entryTime,
+    exitTime,
+  });
+
+  return {
+    sessionId: session._id,
+    customerType: 'walk_in',
+    entryTime: session.entryTime,
+    exitTime,
+    fee: calc.total,
+    breakdown: calc.breakdown,
+    pricing: calc.pricing,
+  };
+};
+
+const closeSessionPaid = async (session, { method, exitTime, fee, breakdown, paidAt, collectorId }) => {
+  const updated = await ParkingSession.findOneAndUpdate(
+    { _id: session._id, status: 'active' },
+    {
+      status: 'completed',
+      exitTime,
+      fee,
+      feeBreakdown: breakdown || {},
+      paymentMethod: method,
+      paymentStatus: 'paid',
+      paidAt,
+      cashCollectedBy: method === 'cash' ? collectorId : null,
+      checkOutStaffId: collectorId,
+    },
+    { new: true }
+  );
+  if (!updated) throw new AppError('Session was not active when closing', 409);
+
+  await releaseSpot(session);
+  return updated.populate(SESSION_POPULATE);
+};
+
+export const checkOutCash = async (id, staffId) => {
+  const session = await loadActiveSession(id);
+  const exitTime = new Date();
+  const collectorId = staffId;
+
+  if (session.customerType === 'resident') {
+    return closeSessionPaid(session, {
+      method: 'cash',
+      exitTime,
+      fee: 0,
+      breakdown: {},
+      paidAt: exitTime,
+      collectorId,
+    });
+  }
+
+  const calc = await pricingService.calculateFee({
+    vehicleType: session.vehicleType,
+    entryTime: session.entryTime,
+    exitTime,
+  });
+
+  return closeSessionPaid(session, {
+    method: 'cash',
+    exitTime,
+    fee: calc.total,
+    breakdown: calc.breakdown,
+    paidAt: exitTime,
+    collectorId,
+  });
+};
+
+export const checkOutTransfer = async (id, staffId) => {
+  const session = await loadActiveSession(id);
+
+  if (session.customerType === 'resident') {
+    return {
+      session: await closeSessionPaid(session, {
+        method: 'transfer',
+        exitTime: new Date(),
+        fee: 0,
+        breakdown: {},
+        paidAt: new Date(),
+        collectorId: staffId,
+      }),
+      payment: null,
+      note: 'Resident with active subscription — no payment needed; session closed.',
+    };
+  }
+
+  const existingPending = await Payment.findOne({
+    sessionId: session._id,
+    status: 'pending',
+  });
+  if (existingPending) {
+    return {
+      session,
+      payment: {
+        orderCode: existingPending.orderCode,
+        amount: existingPending.amount,
+        checkoutUrl: existingPending.checkoutUrl,
+        paymentLinkId: existingPending.paymentLinkId,
+        qrCode: existingPending.providerData?.qrCode || null,
+      },
+      note: 'A pending PayOS link already exists for this session; reuse it.',
+    };
+  }
+
+  const exitTime = new Date();
+  const calc = await pricingService.calculateFee({
+    vehicleType: session.vehicleType,
+    entryTime: session.entryTime,
+    exitTime,
+  });
+
+  await ParkingSession.findByIdAndUpdate(session._id, {
+    paymentMethod: 'transfer',
+    paymentStatus: 'pending',
+    fee: calc.total,
+    feeBreakdown: calc.breakdown,
+    checkOutStaffId: staffId,
+  });
+
+  const orderCode = payosService.generateOrderCode();
+  const staff = await User.findById(staffId).select('fullName email phone');
+
+  let payosResponse;
+  try {
+    payosResponse = await payosService.createPaymentLink({
+      orderCode,
+      amount: calc.total,
+      description: `Park ${session.licensePlate}`,
+      items: [{ name: `Parking ${session.vehicleType}`, quantity: 1, price: calc.total }],
+      buyerName: staff?.fullName,
+      buyerEmail: staff?.email,
+      buyerPhone: staff?.phone,
+    });
+  } catch (err) {
+    await ParkingSession.findByIdAndUpdate(session._id, {
+      paymentMethod: null,
+      paymentStatus: 'unpaid',
+      fee: 0,
+      feeBreakdown: {},
+      checkOutStaffId: null,
+    });
+    throw err;
+  }
+
+  const payment = await Payment.create({
+    targetType: 'session',
+    sessionId: session._id,
+    userId: session.userId || null,
+    provider: 'payos',
+    orderCode,
+    amount: calc.total,
+    description: `Park ${session.licensePlate} ${session.vehicleType}`,
+    status: 'pending',
+    checkoutUrl: payosResponse.checkoutUrl,
+    paymentLinkId: payosResponse.paymentLinkId,
+    providerData: payosResponse,
+  });
+
+  return {
+    session: await session.populate(SESSION_POPULATE),
+    payment: {
+      orderCode: payment.orderCode,
+      amount: payment.amount,
+      checkoutUrl: payment.checkoutUrl,
+      paymentLinkId: payment.paymentLinkId,
+      qrCode: payosResponse.qrCode,
+      accountNumber: payosResponse.accountNumber,
+      accountName: payosResponse.accountName,
+      bin: payosResponse.bin,
+    },
+    fee: calc.total,
+    breakdown: calc.breakdown,
+  };
+};
+
+export const activateSessionFromWebhook = async (paymentId) => {
+  const payment = await Payment.findById(paymentId);
+  if (!payment || payment.targetType !== 'session') return null;
+
+  const session = await ParkingSession.findById(payment.sessionId);
+  if (!session) {
+    logger.error('Session missing for paid payment', { paymentId });
+    return null;
+  }
+  if (session.status !== 'active') {
+    return { alreadyClosed: true, sessionId: session._id };
+  }
+
+  const closed = await closeSessionPaid(session, {
+    method: 'transfer',
+    exitTime: new Date(),
+    fee: payment.amount,
+    breakdown: session.feeBreakdown,
+    paidAt: payment.paidAt || new Date(),
+    collectorId: session.checkOutStaffId,
+  });
+  return { closed: true, sessionId: closed._id };
 };

@@ -73,6 +73,7 @@ export const purchase = async ({ userId, planId, licensePlate }) => {
   }
 
   const payment = await Payment.create({
+    targetType: 'subscription',
     subscriptionId: subscription._id,
     userId,
     provider: 'payos',
@@ -124,7 +125,16 @@ export const handleWebhook = async (webhookBody) => {
   }
 
   if (!isSuccess) {
-    return { processed: true, status: 'failed' };
+    return { processed: true, status: 'failed', targetType: payment.targetType };
+  }
+
+  if (payment.targetType === 'session') {
+    const { activateSessionFromWebhook } = await import('./session.service.js');
+    const result = await activateSessionFromWebhook(payment._id);
+    if (!result) return { processed: true, status: 'paid_but_no_session' };
+    if (result.alreadyClosed)
+      return { processed: true, status: 'already_processed', sessionId: result.sessionId };
+    return { processed: true, status: 'session_closed', sessionId: result.sessionId };
   }
 
   const subscription = await Subscription.findById(payment.subscriptionId).populate('planId');
