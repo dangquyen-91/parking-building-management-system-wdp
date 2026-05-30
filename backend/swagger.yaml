@@ -2038,6 +2038,182 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
+  /sessions/{id}/checkout/preview:
+    get:
+      tags: [Sessions]
+      summary: Preview checkout fee before collecting payment (admin, manager, staff)
+      description: |
+        Calculates fee for an active session WITHOUT closing it.
+        - Resident (active subscription): fee = 0.
+        - Walk-in: calculates fee based on active Pricing for the vehicleType.
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Preview result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      sessionId:
+                        type: string
+                      customerType:
+                        type: string
+                        enum: [resident, walk_in]
+                      entryTime:
+                        type: string
+                        format: date-time
+                      exitTime:
+                        type: string
+                        format: date-time
+                      fee:
+                        type: integer
+                        example: 25000
+                      breakdown:
+                        type: object
+                        nullable: true
+                        properties:
+                          durationMs:
+                            type: integer
+                          turns:
+                            type: integer
+                          hours:
+                            type: integer
+                          nights:
+                            type: integer
+                          baseFee:
+                            type: integer
+                          overnightFee:
+                            type: integer
+                          cappedAt:
+                            type: integer
+                            nullable: true
+                      pricing:
+                        type: object
+                        nullable: true
+        '400':
+          description: Session is already completed or cancelled
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /sessions/{id}/checkout/cash:
+    post:
+      tags: [Sessions]
+      summary: Complete checkout with CASH payment (admin, staff)
+      description: |
+        Staff confirms they have collected cash from the driver.
+        Calculates final fee, marks session as completed + paid, releases slot/row immediately.
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Session closed; slot/row released
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      session:
+                        $ref: '#/components/schemas/ParkingSession'
+        '400':
+          description: Session is not active
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /sessions/{id}/checkout/transfer:
+    post:
+      tags: [Sessions]
+      summary: Create PayOS payment link for TRANSFER checkout (admin, staff)
+      description: |
+        Calculates fee, creates a PayOS payment link, returns checkoutUrl + QR.
+        Session stays `active` with `paymentStatus: pending` until the PayOS webhook arrives.
+        On webhook success the session is auto-closed + slot/row released.
+        Resident sessions skip PayOS — they are closed immediately with fee=0.
+        If a pending payment already exists, the same link is reused.
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: PayOS link created (or reused) — driver scans QR to pay
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      session:
+                        $ref: '#/components/schemas/ParkingSession'
+                      payment:
+                        type: object
+                        nullable: true
+                        properties:
+                          orderCode:
+                            type: integer
+                          amount:
+                            type: integer
+                          checkoutUrl:
+                            type: string
+                            example: https://pay.payos.vn/web/xxxxxxxx
+                          paymentLinkId:
+                            type: string
+                          qrCode:
+                            type: string
+                          accountNumber:
+                            type: string
+                          accountName:
+                            type: string
+                          bin:
+                            type: string
+                      fee:
+                        type: integer
+                      breakdown:
+                        type: object
+        '400':
+          description: Session is not active
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '502':
+          description: PayOS API error
+
   /parking-rows:
     get:
       tags: [Parking Rows]

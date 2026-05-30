@@ -40,3 +40,30 @@ export const lookup = async (req, res, next) => {
     next(err);
   }
 };
+
+export const previewCheckout = async (req, res, next) => {
+  try {
+    const result = await sessionService.previewCheckout(req.params.id);
+    success(res, result, 'Checkout preview');
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const checkOutCash = async (req, res, next) => {
+  try {
+    const session = await sessionService.checkOutCash(req.params.id, req.user._id);
+    success(res, { session }, 'Vehicle checked out (cash) successfully');
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const checkOutTransfer = async (req, res, next) => {
+  try {
+    const result = await sessionService.checkOutTransfer(req.params.id, req.user._id);
+    success(res, result, 'PayOS payment link created for transfer');
+  } catch (err) {
+    next(err);
+  }
+};
