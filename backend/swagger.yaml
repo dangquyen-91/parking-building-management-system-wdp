@@ -25,6 +25,10 @@ tags:
     description: Vehicle check-in and check-out
   - name: Parking Rows
     description: Motorcycle parking row management
+  - name: Plans
+    description: Subscription plans for residents
+  - name: Subscriptions
+    description: Resident subscription purchase via PayOS
 
 components:
   securitySchemes:
@@ -452,6 +456,176 @@ components:
               message:
                 type: string
                 example: '"role" must be one of [admin, manager, staff, user]'
+
+    Plan:
+      type: object
+      properties:
+        _id:
+          type: string
+          example: 68a0b1c2d3e4f5a6b7c8d9e0
+        code:
+          type: string
+          enum: [MOTO_MONTHLY, MOTO_QUARTERLY, CAR_MONTHLY, CAR_QUARTERLY]
+          example: MOTO_MONTHLY
+        name:
+          type: string
+          example: Xe máy - Gói tháng
+        vehicleType:
+          type: string
+          enum: [motorcycle, car]
+          example: motorcycle
+        durationDays:
+          type: integer
+          example: 30
+        price:
+          type: integer
+          example: 150000
+        description:
+          type: string
+        isActive:
+          type: boolean
+          example: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    UpdatePlanRequest:
+      type: object
+      minProperties: 1
+      properties:
+        name:
+          type: string
+        price:
+          type: integer
+          minimum: 0
+        durationDays:
+          type: integer
+          minimum: 1
+        description:
+          type: string
+        isActive:
+          type: boolean
+
+    Subscription:
+      type: object
+      properties:
+        _id:
+          type: string
+        userId:
+          oneOf:
+            - type: string
+            - $ref: '#/components/schemas/User'
+        planId:
+          oneOf:
+            - type: string
+            - $ref: '#/components/schemas/Plan'
+        licensePlate:
+          type: string
+          example: 59A-12345
+        vehicleType:
+          type: string
+          enum: [motorcycle, car]
+        startDate:
+          type: string
+          format: date-time
+          nullable: true
+        endDate:
+          type: string
+          format: date-time
+          nullable: true
+        status:
+          type: string
+          enum: [pending, active, expired, cancelled]
+          example: pending
+        note:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    PurchaseSubscriptionRequest:
+      type: object
+      required: [planId, licensePlate]
+      properties:
+        planId:
+          type: string
+          example: 68a0b1c2d3e4f5a6b7c8d9e0
+        licensePlate:
+          type: string
+          minLength: 4
+          maxLength: 20
+          example: 59A-12345
+
+    SubscriptionPurchaseResponse:
+      type: object
+      properties:
+        subscription:
+          $ref: '#/components/schemas/Subscription'
+        payment:
+          type: object
+          properties:
+            orderCode:
+              type: integer
+              example: 123456789012
+            amount:
+              type: integer
+              example: 150000
+            checkoutUrl:
+              type: string
+              example: https://pay.payos.vn/web/xxxxxxxx
+            paymentLinkId:
+              type: string
+            qrCode:
+              type: string
+              description: EMVCo VietQR string
+            accountNumber:
+              type: string
+            accountName:
+              type: string
+            bin:
+              type: string
+
+    PayOSWebhookBody:
+      type: object
+      description: Body sent by PayOS to /webhooks/payos. Signature is verified server-side.
+      properties:
+        code:
+          type: string
+          example: '00'
+        desc:
+          type: string
+          example: success
+        success:
+          type: boolean
+        data:
+          type: object
+          properties:
+            orderCode:
+              type: integer
+            amount:
+              type: integer
+            description:
+              type: string
+            accountNumber:
+              type: string
+            reference:
+              type: string
+            transactionDateTime:
+              type: string
+            paymentLinkId:
+              type: string
+            code:
+              type: string
+            desc:
+              type: string
+        signature:
+          type: string
 
 paths:
 
@@ -1598,6 +1772,10 @@ paths:
     post:
       tags: [Sessions]
       summary: Check in a vehicle (admin, manager, staff)
+      description: |
+        Staff enters the license plate. The system auto-detects whether the plate has an active Subscription:
+        - Has active Subscription → `customerType: resident`, `userId` filled from subscription owner, must use resident floor.
+        - No subscription → `customerType: walk_in`, must use visitor floor; fee charged at exit time.
       security:
         - BearerAuth: []
       requestBody:
@@ -1619,9 +1797,6 @@ paths:
                     slotId:
                       type: string
                       example: 664a1f2e8b2c3d4e5f6a7b8c
-                    userId:
-                      type: string
-                      nullable: true
                     note:
                       type: string
                 - title: Motorcycle check-in
@@ -1637,9 +1812,6 @@ paths:
                     rowId:
                       type: string
                       example: 664a1f2e8b2c3d4e5f6a7b8c
-                    userId:
-                      type: string
-                      nullable: true
                     note:
                       type: string
       responses:
@@ -1704,24 +1876,35 @@ paths:
                         type: string
                         enum: [already_active, available]
                         example: available
+                      customerType:
+                        type: string
+                        enum: [resident, walk_in]
+                        example: walk_in
                       activeSession:
                         nullable: true
                         $ref: '#/components/schemas/ParkingSession'
+                      subscription:
+                        nullable: true
+                        type: object
+                        properties:
+                          _id:
+                            type: string
+                          plan:
+                            $ref: '#/components/schemas/Plan'
+                          owner:
+                            $ref: '#/components/schemas/User'
+                          startDate:
+                            type: string
+                            format: date-time
+                          endDate:
+                            type: string
+                            format: date-time
+                          vehicleType:
+                            type: string
+                            enum: [motorcycle, car]
                       hint:
                         type: object
                         properties:
-                          linkedResident:
-                            nullable: true
-                            type: object
-                            properties:
-                              _id:
-                                type: string
-                              fullName:
-                                type: string
-                              phone:
-                                type: string
-                              email:
-                                type: string
                           lastVisit:
                             nullable: true
                             type: object
@@ -2147,3 +2330,279 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
+
+  /plans:
+    get:
+      tags: [Plans]
+      summary: List subscription plans
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: query
+          name: vehicleType
+          schema:
+            type: string
+            enum: [motorcycle, car]
+        - in: query
+          name: isActive
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Plans retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    properties:
+                      plans:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Plan'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /plans/{id}:
+    get:
+      tags: [Plans]
+      summary: Get plan by id
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Plan retrieved
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    patch:
+      tags: [Plans]
+      summary: Update plan (admin, manager)
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePlanRequest'
+      responses:
+        '200':
+          description: Plan updated
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /subscriptions:
+    post:
+      tags: [Subscriptions]
+      summary: Purchase a subscription (creates PayOS payment link)
+      description: |
+        Authenticated user buys a subscription plan for a specific license plate.
+        Returns a PayOS `checkoutUrl` (and QR string) to complete payment.
+        The subscription stays `pending` until the PayOS webhook confirms payment.
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PurchaseSubscriptionRequest'
+      responses:
+        '201':
+          description: Subscription created, awaiting payment
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  data:
+                    $ref: '#/components/schemas/SubscriptionPurchaseResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '502':
+          description: PayOS API error
+    get:
+      tags: [Subscriptions]
+      summary: List subscriptions (admin, manager, staff)
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 20
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum: [pending, active, expired, cancelled]
+        - in: query
+          name: vehicleType
+          schema:
+            type: string
+            enum: [motorcycle, car]
+        - in: query
+          name: licensePlate
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Subscriptions retrieved
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /subscriptions/me:
+    get:
+      tags: [Subscriptions]
+      summary: My subscriptions
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum: [pending, active, expired, cancelled]
+      responses:
+        '200':
+          description: My subscriptions retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      subscriptions:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Subscription'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /subscriptions/{id}:
+    get:
+      tags: [Subscriptions]
+      summary: Get subscription by id (admin, manager, staff)
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Subscription retrieved
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /subscriptions/{id}/cancel:
+    patch:
+      tags: [Subscriptions]
+      summary: Cancel a pending subscription (owner only)
+      description: Cancels the subscription AND the associated PayOS payment link. Only works while status = pending.
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Subscription cancelled
+        '400':
+          description: Only pending subscriptions can be cancelled
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: You can only cancel your own subscription
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /webhooks/payos:
+    servers:
+      - url: http://localhost:5000
+        description: Webhook endpoint mounted outside /api/v1 to bypass rate limit
+    post:
+      tags: [Subscriptions]
+      summary: PayOS webhook callback (NO auth — signature verified)
+      description: |
+        Called by PayOS after a payment attempt. Server verifies the HMAC signature using PAYOS_CHECKSUM_KEY.
+        On success, the matching Subscription is activated (startDate=now, endDate=now+durationDays).
+        Full URL: `http://localhost:5000/webhooks/payos` (note: NOT under `/api/v1`).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PayOSWebhookBody'
+      responses:
+        '200':
+          description: Webhook processed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  processed:
+                    type: boolean
+                  status:
+                    type: string
+                    enum: [activated, failed, paid_but_no_sub]
+        '400':
+          description: Invalid signature
