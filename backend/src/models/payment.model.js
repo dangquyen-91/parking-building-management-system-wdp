@@ -24,14 +24,13 @@ const paymentSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-paymentSchema.pre('validate', function (next) {
+paymentSchema.pre('validate', async function () {
   if (this.targetType === 'subscription' && !this.subscriptionId) {
-    return next(new Error('subscriptionId is required when targetType=subscription'));
+    throw new Error('subscriptionId is required when targetType=subscription');
   }
   if (this.targetType === 'session' && !this.sessionId) {
-    return next(new Error('sessionId is required when targetType=session'));
+    throw new Error('sessionId is required when targetType=session');
   }
-  next();
 });
 
 paymentSchema.index({ subscriptionId: 1 });

@@ -1,6 +1,5 @@
 import ParkingSlot from '../models/parking-slot.model.js';
 import Floor from '../models/floor.model.js';
-import Building from '../models/building.model.js';
 import AppError from '../utils/appError.js';
 
 const loadActiveFloor = async (floorId) => {
@@ -12,6 +11,80 @@ const loadActiveFloor = async (floorId) => {
 };
 
 const SORT_WHITELIST = ['slotCode', 'vehicleType', 'status', 'createdAt'];
+
+export const getAvailableForSubscription = async ({ vehicleType = 'car', buildingId } = {}) => {
+  if (!['car', 'motorcycle'].includes(vehicleType)) {
+    throw new AppError('vehicleType must be "car" or "motorcycle"', 400);
+  }
+
+  const floorFilter = { floorType: 'resident', vehicleType, isActive: true };
+  if (buildingId) floorFilter.buildingId = buildingId;
+
+  const floors = await Floor.find(floorFilter)
+    .populate('buildingId', 'name address isActive')
+    .select('_id floorNumber buildingId vehicleType floorType totalSlots description');
+
+  const activeFloors = floors.filter((f) => f.buildingId?.isActive);
+  const floorIds = activeFloors.map((f) => f._id);
+
+  if (vehicleType === 'motorcycle') {
+    const { default: Subscription } = await import('../models/subscription.model.js');
+    const totalCapacity = activeFloors.reduce((sum, f) => sum + f.totalSlots, 0);
+    const soldCount = await Subscription.countDocuments({
+      vehicleType: 'motorcycle',
+      status: { $in: ['pending', 'active'] },
+    });
+    return {
+      vehicleType: 'motorcycle',
+      floors: activeFloors.map((f) => ({
+        _id: f._id,
+        floorNumber: f.floorNumber,
+        description: f.description,
+        totalSlots: f.totalSlots,
+        building: f.buildingId,
+      })),
+      totalCapacity,
+      soldCount,
+      availableCount: Math.max(0, totalCapacity - soldCount),
+      note: 'Motorcycle subscriptions do not lock a specific slot — first-come-first-served on the floor.',
+    };
+  }
+
+  if (floorIds.length === 0) return { vehicleType: 'car', floors: [] };
+
+  const slots = await ParkingSlot.find({
+    floorId: { $in: floorIds },
+    vehicleType,
+  })
+    .select('slotCode status floorId')
+    .sort({ floorId: 1, slotCode: 1 });
+
+  const slotsByFloor = new Map();
+  for (const slot of slots) {
+    const key = slot.floorId.toString();
+    if (!slotsByFloor.has(key)) slotsByFloor.set(key, []);
+    slotsByFloor.get(key).push({
+      _id: slot._id,
+      slotCode: slot.slotCode,
+      status: slot.status,
+      available: slot.status === 'empty',
+    });
+  }
+
+  const result = activeFloors.map((floor) => ({
+    floor: {
+      _id: floor._id,
+      floorNumber: floor.floorNumber,
+      description: floor.description,
+      totalSlots: floor.totalSlots,
+      building: floor.buildingId,
+    },
+    slots: slotsByFloor.get(floor._id.toString()) || [],
+    availableCount: (slotsByFloor.get(floor._id.toString()) || []).filter((s) => s.available).length,
+  }));
+
+  return { vehicleType: 'car', floors: result };
+};
 
 export const getAll = async ({
   page = 1,
