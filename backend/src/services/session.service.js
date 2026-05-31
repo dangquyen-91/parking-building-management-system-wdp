@@ -43,7 +43,23 @@ export const checkIn = async ({ slotId, rowId, licensePlate, vehicleType, staffI
   const userId = activeSub ? activeSub.userId : null;
 
   if (vehicleType === 'car') {
-    const slot = await ParkingSlot.findById(slotId).populate({
+    const isResident = !!activeSub;
+    const resolvedSlotId = isResident ? activeSub.slotId?.toString() : slotId;
+
+    if (isResident && !resolvedSlotId) {
+      throw new AppError('Resident subscription has no slot assigned. Contact admin.', 500);
+    }
+    if (!isResident && !slotId) {
+      throw new AppError('slotId is required for walk-in car check-in', 400);
+    }
+    if (isResident && slotId && slotId !== resolvedSlotId) {
+      throw new AppError(
+        `This plate is bound to slot ${activeSub.slotId} via subscription. slotId in body does not match.`,
+        400
+      );
+    }
+
+    const slot = await ParkingSlot.findById(resolvedSlotId).populate({
       path: 'floorId',
       select: 'isActive vehicleType floorType buildingId',
       populate: { path: 'buildingId', select: 'isActive' },
@@ -52,36 +68,41 @@ export const checkIn = async ({ slotId, rowId, licensePlate, vehicleType, staffI
     if (!slot.floorId.isActive) throw new AppError('Floor is inactive', 400);
     if (!slot.floorId.buildingId?.isActive) throw new AppError('Building is inactive', 400);
     if (slot.floorId.vehicleType !== 'car') throw new AppError('This slot only accepts car', 400);
-    if (slot.floorId.floorType === 'resident' && !activeSub)
+    if (slot.floorId.floorType === 'resident' && !isResident)
       throw new AppError('This floor is for residents only. License plate has no active subscription.', 403);
-    if (slot.floorId.floorType === 'visitor' && activeSub)
-      throw new AppError('This floor is for visitors only. Residents must park on resident floor.', 403);
+    if (slot.floorId.floorType === 'visitor' && isResident)
+      throw new AppError('This floor is for visitors only. Residents must park on their reserved slot.', 403);
 
+    const expectedSlotStatus = isResident ? 'reserved' : 'empty';
     const locked = await ParkingSlot.findOneAndUpdate(
-      { _id: slotId, status: 'empty' },
+      { _id: resolvedSlotId, status: expectedSlotStatus },
       { status: 'occupied' },
       { new: true }
     );
-    if (!locked) throw new AppError(`Slot is not available (current status: ${slot.status})`, 409);
+    if (!locked)
+      throw new AppError(
+        `Slot is not available for check-in (expected status: ${expectedSlotStatus}, current: ${slot.status})`,
+        409
+      );
 
     try {
       const session = await ParkingSession.create({
-        slotId,
+        slotId: resolvedSlotId,
         rowId: null,
         licensePlate: normalizedPlate,
         vehicleType,
-        customerType: activeSub ? 'resident' : 'walk_in',
+        customerType: isResident ? 'resident' : 'walk_in',
         subscriptionId: activeSub?._id || null,
         entryTime: new Date(),
         staffId,
         userId: userId || null,
         status: 'active',
-        paymentStatus: activeSub ? 'paid' : 'unpaid',
+        paymentStatus: isResident ? 'paid' : 'unpaid',
         note,
       });
       return session.populate(SESSION_POPULATE);
     } catch (err) {
-      await ParkingSlot.findByIdAndUpdate(slotId, { status: 'empty' });
+      await ParkingSlot.findByIdAndUpdate(resolvedSlotId, { status: expectedSlotStatus });
       throw err;
     }
   }
@@ -234,7 +255,8 @@ export const lookup = async (licensePlate) => {
 
 const releaseSpot = async (session) => {
   if (session.slotId) {
-    await ParkingSlot.findByIdAndUpdate(session.slotId, { status: 'empty' });
+    const targetStatus = session.customerType === 'resident' ? 'reserved' : 'empty';
+    await ParkingSlot.findByIdAndUpdate(session.slotId, { status: targetStatus });
     return;
   }
   if (!session.rowId) return;

@@ -1,5 +1,13 @@
 import { Router } from 'express';
-import { getAll, getOne, create, bulkCreate, update, remove } from '../controllers/parking-slot.controller.js';
+import {
+  getAll,
+  getOne,
+  create,
+  bulkCreate,
+  update,
+  remove,
+  getAvailableForSubscription,
+} from '../controllers/parking-slot.controller.js';
 import { authenticate, authorize } from '../middlewares/auth.middleware.js';
 import validate from '../middlewares/validate.middleware.js';
 import { privateCache, noCache } from '../middlewares/cache.middleware.js';
@@ -12,6 +20,8 @@ import {
 const router = Router();
 
 router.use(authenticate);
+
+router.get('/available-for-subscription', privateCache(15), getAvailableForSubscription);
 
 router.get('/', authorize('admin', 'manager', 'staff'), privateCache(30), getAll);
 router.get('/:id', authorize('admin', 'manager', 'staff'), privateCache(30), getOne);

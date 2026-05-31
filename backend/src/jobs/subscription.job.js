@@ -1,18 +1,30 @@
 import cron from 'node-cron';
 import Subscription from '../models/subscription.model.js';
 import Payment from '../models/payment.model.js';
+import ParkingSlot from '../models/parking-slot.model.js';
 import logger from '../utils/logger.js';
 
 const PENDING_TTL_MINUTES = 60;
 
 const expireActiveSubscriptions = async () => {
-  const result = await Subscription.updateMany(
-    { status: 'active', endDate: { $lt: new Date() } },
-    { status: 'expired' }
-  );
-  if (result.modifiedCount > 0) {
-    logger.info(`Expired ${result.modifiedCount} active subscription(s) past endDate`);
+  const subsToExpire = await Subscription.find({
+    status: 'active',
+    endDate: { $lt: new Date() },
+  }).select('_id slotId');
+
+  if (subsToExpire.length === 0) return;
+
+  for (const sub of subsToExpire) {
+    if (sub.slotId) {
+      await ParkingSlot.findOneAndUpdate(
+        { _id: sub.slotId, status: 'reserved' },
+        { status: 'empty' }
+      );
+    }
+    sub.status = 'expired';
+    await sub.save();
   }
+  logger.info(`Expired ${subsToExpire.length} active subscription(s) past endDate; released slots`);
 };
 
 const cancelStalePending = async () => {
@@ -21,6 +33,12 @@ const cancelStalePending = async () => {
   if (stale.length === 0) return;
 
   for (const sub of stale) {
+    if (sub.slotId) {
+      await ParkingSlot.findOneAndUpdate(
+        { _id: sub.slotId, status: 'reserved' },
+        { status: 'empty' }
+      );
+    }
     sub.status = 'cancelled';
     await sub.save();
     await Payment.updateMany(

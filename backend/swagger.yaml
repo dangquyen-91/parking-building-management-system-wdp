@@ -528,6 +528,13 @@ components:
         vehicleType:
           type: string
           enum: [motorcycle, car]
+        slotId:
+          nullable: true
+          oneOf:
+            - type: string
+            - $ref: '#/components/schemas/ParkingSlot'
+          description: >
+            Fixed parking slot for car subscriptions. Null for motorcycle subs.
         startDate:
           type: string
           format: date-time
@@ -561,6 +568,12 @@ components:
           minLength: 4
           maxLength: 20
           example: 59A-12345
+        slotId:
+          type: string
+          example: 6a14155afdb8625aa398c428
+          description: >
+            Required for CAR subscriptions (fixed parking spot on resident floor).
+            Forbidden for motorcycle subscriptions.
 
     SubscriptionPurchaseResponse:
       type: object
@@ -1467,6 +1480,111 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
+  /slots/available-for-subscription:
+    get:
+      tags: [Slots]
+      summary: Get availability for resident subscription (any role)
+      description: |
+        - `vehicleType=car`: returns slots grouped by floor (slot picker UI).
+        - `vehicleType=motorcycle`: returns capacity summary (no individual slots — moto subs
+          do not lock a slot, only access to the resident floor).
+        Available to all authenticated users.
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: query
+          name: vehicleType
+          schema:
+            type: string
+            enum: [car, motorcycle]
+            default: car
+        - in: query
+          name: buildingId
+          schema:
+            type: string
+          description: Filter by specific building (optional)
+      responses:
+        '200':
+          description: Availability info
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - title: Car (slot picker)
+                    type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          vehicleType:
+                            type: string
+                            example: car
+                          floors:
+                            type: array
+                            items:
+                              type: object
+                              properties:
+                                floor:
+                                  type: object
+                                  properties:
+                                    _id:
+                                      type: string
+                                    floorNumber:
+                                      type: integer
+                                      example: -2
+                                    description:
+                                      type: string
+                                    totalSlots:
+                                      type: integer
+                                    building:
+                                      type: object
+                                slots:
+                                  type: array
+                                  items:
+                                    type: object
+                                    properties:
+                                      _id:
+                                        type: string
+                                      slotCode:
+                                        type: string
+                                        example: BC2-01
+                                      status:
+                                        type: string
+                                        enum: [empty, occupied, reserved, maintenance]
+                                      available:
+                                        type: boolean
+                                availableCount:
+                                  type: integer
+                                  example: 28
+                  - title: Motorcycle (capacity summary)
+                    type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          vehicleType:
+                            type: string
+                            example: motorcycle
+                          totalCapacity:
+                            type: integer
+                            example: 100
+                          soldCount:
+                            type: integer
+                            example: 23
+                          availableCount:
+                            type: integer
+                            example: 77
+                          floors:
+                            type: array
+                            items:
+                              type: object
+                          note:
+                            type: string
+        '400':
+          description: Invalid vehicleType
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
   /slots:
     get:
       tags: [Slots]
@@ -1775,7 +1893,9 @@ paths:
       description: |
         Staff enters the license plate. The system auto-detects whether the plate has an active Subscription:
         - Has active Subscription → `customerType: resident`, `userId` filled from subscription owner, must use resident floor.
+          For CAR resident, slot is auto-resolved from `subscription.slotId` — staff does NOT pass slotId.
         - No subscription → `customerType: walk_in`, must use visitor floor; fee charged at exit time.
+          For CAR walk-in, slotId is REQUIRED.
       security:
         - BearerAuth: []
       requestBody:
@@ -1786,7 +1906,7 @@ paths:
               oneOf:
                 - title: Car check-in
                   type: object
-                  required: [vehicleType, licensePlate, slotId]
+                  required: [vehicleType, licensePlate]
                   properties:
                     vehicleType:
                       type: string
@@ -1797,6 +1917,7 @@ paths:
                     slotId:
                       type: string
                       example: 664a1f2e8b2c3d4e5f6a7b8c
+                      description: Required for walk-in. Optional/auto-resolved for resident.
                     note:
                       type: string
                 - title: Motorcycle check-in
