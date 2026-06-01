@@ -8,11 +8,11 @@ type ManagerBuildingCardProps = {
 }
 
 function formatVehicleType(value: ManagerBuildingSummary['floors'][number]['vehicleType']) {
-  return value === 'motorcycle' ? 'Motorcycle' : 'Car'
+  return value === 'motorcycle' ? 'Xe máy' : 'Ô tô'
 }
 
 function formatFloorType(value: ManagerBuildingSummary['floors'][number]['floorType']) {
-  return value === 'resident' ? 'Resident' : 'Visitor'
+  return value === 'resident' ? 'Cư dân' : 'Khách'
 }
 
 export function ManagerBuildingCard({ building, onEdit, onEditFloor }: ManagerBuildingCardProps) {
@@ -30,30 +30,30 @@ export function ManagerBuildingCard({ building, onEdit, onEditFloor }: ManagerBu
               <p className="mt-2 text-xs text-muted">{building.description}</p>
             )}
             <p className="mt-2 text-xs text-subtle">
-              {building.isActive ? 'Active' : 'Inactive'}
+              {building.isActive ? 'Đang hoạt động' : 'Ngừng hoạt động'}
             </p>
           </div>
           {onEdit && (
             <button
               type="button"
-              className="h-8 rounded-lg border border-theme px-3 text-xs font-medium text-subtle transition-colors hover:text-fg"
+              className="h-9 rounded-lg border border-btn-primary/40 bg-btn-primary/10 px-4 text-sm font-semibold text-btn-primary transition hover:border-btn-primary hover:bg-btn-primary hover:text-btn-primary-fg focus:outline-none focus:ring-2 focus:ring-btn-primary/50"
               onClick={() => onEdit(building)}
             >
-              Edit
+              Sửa
             </button>
           )}
         </div>
 
         <div className="grid grid-cols-2 gap-3 text-right">
           <div>
-            <p className="text-xs text-subtle">Floors</p>
+            <p className="text-xs text-subtle">Tầng</p>
             <p className="mt-1 text-base font-semibold text-fg">{building.floorCount}</p>
-            <p className="mt-1 text-[11px] text-muted">{building.activeFloors} active</p>
+            <p className="mt-1 text-[11px] text-muted">{building.activeFloors} đang hoạt động</p>
           </div>
           <div>
-            <p className="text-xs text-subtle">Total slots</p>
+            <p className="text-xs text-subtle">Tổng chỗ đỗ</p>
             <p className="mt-1 text-base font-semibold text-fg">{building.totalSlots}</p>
-            <p className="mt-1 text-[11px] text-muted">Total capacity</p>
+            <p className="mt-1 text-[11px] text-muted">Tổng sức chứa</p>
           </div>
         </div>
       </div>
@@ -65,9 +65,9 @@ export function ManagerBuildingCard({ building, onEdit, onEditFloor }: ManagerBu
         aria-controls={contentId}
         onClick={() => setIsOpen((prev) => !prev)}
       >
-        <span>{isOpen ? 'Hide floor list' : 'View floor list'}</span>
+        <span>{isOpen ? 'Ẩn danh sách tầng' : 'Xem danh sách tầng'}</span>
         <span className="text-xs text-subtle">
-          {building.floors.length} floor
+          {building.floors.length} tầng
         </span>
       </button>
 
@@ -75,7 +75,7 @@ export function ManagerBuildingCard({ building, onEdit, onEditFloor }: ManagerBu
         <div id={contentId} className="mt-3 grid gap-2">
           {building.floors.length === 0 ? (
             <div className="rounded-lg border border-theme bg-page/40 px-3 py-2 text-xs text-muted">
-              No floors have been created.
+              Chưa có tầng nào được tạo.
             </div>
           ) : (
             building.floors.map((floor) => (
@@ -84,7 +84,7 @@ export function ManagerBuildingCard({ building, onEdit, onEditFloor }: ManagerBu
                 className="flex flex-col gap-2 rounded-lg border border-theme bg-page/40 px-3 py-2 sm:flex-row sm:items-center sm:justify-between"
               >
                 <div>
-                  <p className="text-sm font-medium text-fg">Floor {floor.floorNumber}</p>
+                  <p className="text-sm font-medium text-fg">Tầng {floor.floorNumber}</p>
                   <p className="mt-1 text-xs text-subtle">
                     {formatFloorType(floor.floorType)} / {formatVehicleType(floor.vehicleType)}
                   </p>
@@ -93,14 +93,14 @@ export function ManagerBuildingCard({ building, onEdit, onEditFloor }: ManagerBu
                   {onEditFloor && (
                     <button
                       type="button"
-                      className="h-8 rounded-lg border border-theme px-3 text-xs font-medium text-subtle transition-colors hover:text-fg"
+                      className="h-8 rounded-lg border border-btn-primary/40 bg-btn-primary/10 px-3 text-xs font-semibold text-btn-primary transition hover:border-btn-primary hover:bg-btn-primary hover:text-btn-primary-fg focus:outline-none focus:ring-2 focus:ring-btn-primary/50"
                       onClick={() => onEditFloor(floor)}
                     >
-                      Edit
+                      Sửa
                     </button>
                   )}
                   <div>
-                    <p className="text-xs text-subtle">Total slots</p>
+                    <p className="text-xs text-subtle">Tổng chỗ đỗ</p>
                     <p className="mt-1 text-sm font-semibold text-fg">{floor.totalSlots}</p>
                   </div>
                 </div>

@@ -93,7 +93,7 @@ export function ManagerBuildingsPage() {
       await reload()
       setModalOpen(false)
     } catch (err) {
-      setSubmitError(err instanceof Error ? err.message : 'Khong the luu building.')
+      setSubmitError(err instanceof Error ? err.message : 'Không thể lưu tòa nhà.')
     } finally {
       setIsSubmitting(false)
     }
@@ -113,7 +113,7 @@ export function ManagerBuildingsPage() {
       await reload()
       setFloorModalOpen(false)
     } catch (err) {
-      setFloorSubmitError(err instanceof Error ? err.message : 'Khong the tao floor.')
+      setFloorSubmitError(err instanceof Error ? err.message : 'Không thể tạo tầng.')
     } finally {
       setIsFloorSubmitting(false)
     }
@@ -122,64 +122,68 @@ export function ManagerBuildingsPage() {
   return (
     <div className="p-4 md:p-8 lg:p-10">
       <ManagerPageHeader
-        eyebrow="Manager // Buildings"
-        title="Building Overview"
-        description="View building details, floor list, and total capacity."
+        eyebrow="Quản lý // Tòa nhà"
+        title="Tổng quan tòa nhà"
+        description="Xem chi tiết tòa nhà, danh sách tầng và tổng sức chứa."
         actions={
-          <div className="flex flex-col gap-3 sm:items-end">
-            <div className="flex flex-wrap gap-2">
-              <button
-                type="button"
-                className="h-10 rounded-lg bg-btn-primary px-4 text-sm font-semibold text-btn-primary-fg"
-                onClick={handleOpenCreate}
-              >
-                Create building
-              </button>
-              <button
-                type="button"
-                className="h-10 rounded-lg border border-theme px-4 text-sm font-semibold text-fg"
-                onClick={handleOpenCreateFloor}
-              >
-                Create floor
-              </button>
-            </div>
-            <div className="grid gap-2 sm:grid-cols-3 sm:min-w-[30rem]">
-              <ManagerStatCard label="Buildings" value={buildingValue} detail="All buildings" />
-              <ManagerStatCard label="Floors" value={floorValue} detail="Total floors" />
-              <ManagerStatCard label="Total slots" value={slotValue} detail="Total capacity" />
-            </div>
-            <div className="grid gap-2 sm:grid-cols-2">
-              <label className="grid gap-1 text-xs text-subtle">
-                Status
-                <select
-                  className="h-10 rounded-lg border border-theme bg-page px-3 text-sm text-fg"
-                  value={statusFilter}
-                  onChange={(event) => setStatusFilter(event.target.value as typeof statusFilter)}
+          <div className="grid w-full gap-3 lg:min-w-[36rem] lg:max-w-[42rem]">
+            <div className="flex flex-col gap-3 rounded-lg border border-theme bg-badge/60 p-3 sm:flex-row sm:items-end sm:justify-between">
+              <div className="grid flex-1 gap-3 sm:grid-cols-2">
+                <label className="grid gap-1 text-xs font-medium text-subtle">
+                  Trạng thái
+                  <select
+                    className="h-10 w-full rounded-lg border border-theme bg-page px-3 text-sm text-fg outline-none transition focus:border-btn-primary"
+                    value={statusFilter}
+                    onChange={(event) => setStatusFilter(event.target.value as typeof statusFilter)}
+                  >
+                    <option value="all">Tất cả</option>
+                    <option value="active">Đang hoạt động</option>
+                    <option value="inactive">Ngừng hoạt động</option>
+                  </select>
+                </label>
+                <label className="grid gap-1 text-xs font-medium text-subtle">
+                  Tên tòa nhà
+                  <select
+                    className="h-10 w-full rounded-lg border border-theme bg-page px-3 text-sm text-fg outline-none transition focus:border-btn-primary"
+                    value={buildingFilter}
+                    onChange={(event) => setBuildingFilter(event.target.value)}
+                  >
+                    <option value="all">Tất cả</option>
+                    {summaries.map((building) => (
+                      <option key={building.id} value={building.id}>
+                        {building.name}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              </div>
+
+              <div className="flex flex-col gap-2 sm:flex-row">
+                <button
+                  type="button"
+                  className="h-10 rounded-lg bg-btn-primary px-4 text-sm font-semibold text-btn-primary-fg transition hover:opacity-90"
+                  onClick={handleOpenCreate}
                 >
-                  <option value="all">All</option>
-                  <option value="active">Active</option>
-                  <option value="inactive">Inactive</option>
-                </select>
-              </label>
-              <label className="grid gap-1 text-xs text-subtle">
-                Building name
-                <select
-                  className="h-10 rounded-lg border border-theme bg-page px-3 text-sm text-fg"
-                  value={buildingFilter}
-                  onChange={(event) => setBuildingFilter(event.target.value)}
+                  Tạo tòa nhà
+                </button>
+                <button
+                  type="button"
+                  className="h-10 rounded-lg border border-theme px-4 text-sm font-semibold text-fg transition hover:bg-badge"
+                  onClick={handleOpenCreateFloor}
                 >
-                  <option value="all">All</option>
-                  {summaries.map((building) => (
-                    <option key={building.id} value={building.id}>
-                      {building.name}
-                    </option>
-                  ))}
-                </select>
-              </label>
+                  Tạo tầng
+                </button>
+              </div>
             </div>
           </div>
         }
       />
+
+      <div className="mb-6 grid gap-3 sm:grid-cols-3">
+        <ManagerStatCard label="Tòa nhà" value={buildingValue} detail="Tất cả tòa nhà" />
+        <ManagerStatCard label="Tầng" value={floorValue} detail="Tổng số tầng" />
+        <ManagerStatCard label="Tổng chỗ đỗ" value={slotValue} detail="Tổng sức chứa" />
+      </div>
 
       {error && (
         <div className="liquid-glass-card rounded-lg border border-theme bg-badge p-4 text-sm text-rose-100">
@@ -189,13 +193,13 @@ export function ManagerBuildingsPage() {
 
       {!error && isLoading && (
         <div className="liquid-glass-card rounded-lg border border-theme bg-badge p-4 text-sm text-muted">
-          Loading building data...
+          Đang tải dữ liệu tòa nhà...
         </div>
       )}
 
       {!error && !isLoading && filteredSummaries.length === 0 && (
         <div className="liquid-glass-card rounded-lg border border-theme bg-badge p-4 text-sm text-muted">
-          No buildings match the current filters.
+          Không có tòa nhà nào phù hợp với bộ lọc hiện tại.
         </div>
       )}
 
