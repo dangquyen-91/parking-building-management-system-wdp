@@ -4,17 +4,17 @@ import { AuthLayout, LoginForm } from '../components/auth'
 export function LoginPage() {
   return (
     <AuthLayout
-      title="Sign in to your building"
-      subtitle="Monitor gates, occupancy, and resident parking from one secure console."
+      title="Đăng nhập vào hệ thống tòa nhà"
+      subtitle="Theo dõi cổng, chỗ trống và bãi đỗ cư dân từ một bảng điều khiển an toàn."
       panelAlign="center"
-      panelEyebrow="Hello"
-      panelHeading="Welcome back."
-      panelBody="Your building parking console is ready. Sign in to pick up where you left off."
+      panelEyebrow="Xin chào"
+      panelHeading="Chào mừng trở lại."
+      panelBody="Bảng điều khiển bãi đỗ của tòa nhà đã sẵn sàng. Đăng nhập để tiếp tục công việc của bạn."
       footer={
         <>
-          Need an account?{' '}
+          Cần tài khoản?{' '}
           <Link to="/register" className="text-fg hover:text-fg transition-colors">
-            Register your property
+            Đăng ký tài khoản
           </Link>
         </>
       }

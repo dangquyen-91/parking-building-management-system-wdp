@@ -96,7 +96,7 @@ export function BookingPage() {
               to="/login"
               className="hidden rounded-lg px-3 py-2 text-xs text-muted transition-colors hover:bg-ghost hover:text-fg sm:inline-flex"
             >
-              Login
+              Đăng nhập
             </Link>
             <Link
               to="/my-bookings"

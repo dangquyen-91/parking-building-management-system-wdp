@@ -8,8 +8,8 @@ const FOOTER_LINKS = [
   { href: '#features', label: 'Features' },
   { href: '#resources', label: 'Resources' },
   { href: '#blog', label: 'Blog' },
-  { to: '/login', label: 'Login' },
-  { to: '/register', label: 'Register' },
+  { to: '/login', label: 'Đăng nhập' },
+  { to: '/register', label: 'Đăng ký' },
 ] as const
 
 export function Footer() {

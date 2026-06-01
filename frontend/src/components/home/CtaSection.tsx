@@ -47,13 +47,13 @@ export function CtaSection() {
               to="/login"
               className="inline-flex text-sm font-medium text-fg border border-theme-strong hover:opacity-80 transition-opacity rounded-full px-6 py-3"
             >
-              Login
+              Đăng nhập
             </Link>
             <Link
               to="/register"
               className="inline-flex text-sm font-medium text-muted hover:text-fg transition-colors rounded-full px-6 py-3"
             >
-              Register
+              Đăng ký
             </Link>
           </motion.div>
         </motion.div>

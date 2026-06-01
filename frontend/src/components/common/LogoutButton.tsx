@@ -15,7 +15,7 @@ export function LogoutButton() {
       await authApi.logout()
       navigate('/login', { replace: true })
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Logout failed')
+      setError(err instanceof Error ? err.message : 'Đăng xuất thất bại')
     } finally {
       setStatus('idle')
     }
@@ -44,7 +44,7 @@ export function LogoutButton() {
             strokeLinecap="round"
           />
         </svg>
-        {status === 'loading' ? 'Logging out...' : 'Logout'}
+        {status === 'loading' ? 'Đang đăng xuất...' : 'Đăng xuất'}
       </button>
       {error && <p className="px-3 text-[11px] text-rose-300">{error}</p>}
     </div>

@@ -5,13 +5,13 @@ export function isValidEmail(value: string): boolean {
 }
 
 export function requireEmail(value: string): string | undefined {
-  if (!value.trim()) return 'Email is required.'
-  if (!isValidEmail(value)) return 'Enter a valid email address.'
+  if (!value.trim()) return 'Vui lòng nhập email.'
+  if (!isValidEmail(value)) return 'Vui lòng nhập địa chỉ email hợp lệ.'
   return undefined
 }
 
 export function requirePassword(value: string, minLength = 8): string | undefined {
-  if (!value) return 'Password is required.'
-  if (value.length < minLength) return `Use at least ${minLength} characters.`
+  if (!value) return 'Vui lòng nhập mật khẩu.'
+  if (value.length < minLength) return `Mật khẩu cần ít nhất ${minLength} ký tự.`
   return undefined
 }

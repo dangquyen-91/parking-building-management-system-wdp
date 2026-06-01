@@ -81,7 +81,7 @@ export function Header() {
                 disabled={logoutStatus === 'loading'}
                 className="hidden text-xs text-muted transition-colors duration-200 hover:text-fg disabled:cursor-not-allowed disabled:opacity-60 sm:inline-flex"
               >
-                {logoutStatus === 'loading' ? 'Logging out...' : 'Logout'}
+                {logoutStatus === 'loading' ? 'Đang đăng xuất...' : 'Đăng xuất'}
               </button>
             </>
           ) : (
@@ -90,13 +90,13 @@ export function Header() {
                 to="/login"
                 className="hidden sm:inline-flex text-xs text-muted hover:text-fg transition-colors duration-200 px-3 py-1.5"
               >
-                Login
+                Đăng nhập
               </Link>
               <Link
                 to="/register"
                 className="hidden md:inline-flex text-xs text-muted hover:text-fg transition-colors duration-200 px-3 py-1.5"
               >
-                Register
+                Đăng ký
               </Link>
             </>
           )}
@@ -152,7 +152,7 @@ export function Header() {
                   onClick={handleLogout}
                   disabled={logoutStatus === 'loading'}
                 >
-                  {logoutStatus === 'loading' ? 'Logging out...' : 'Logout'}
+                  {logoutStatus === 'loading' ? 'Đang đăng xuất...' : 'Đăng xuất'}
                 </button>
               </>
             ) : (
@@ -162,14 +162,14 @@ export function Header() {
                   className="text-sm text-muted hover:text-fg py-2 px-2 rounded-lg hover:bg-ghost transition-colors"
                   onClick={closeMenu}
                 >
-                  Login
+                  Đăng nhập
                 </Link>
                 <Link
                   to="/register"
                   className="text-sm text-muted hover:text-fg py-2 px-2 rounded-lg hover:bg-ghost transition-colors"
                   onClick={closeMenu}
                 >
-                  Register
+                  Đăng ký
                 </Link>
               </>
             )}
