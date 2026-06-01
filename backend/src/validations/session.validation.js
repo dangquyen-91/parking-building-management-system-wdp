@@ -6,7 +6,7 @@ export const checkInSchema = Joi.object({
 
   slotId: Joi.string().hex().length(24).when('vehicleType', {
     is: 'car',
-    then: Joi.required(),
+    then: Joi.optional(),
     otherwise: Joi.forbidden(),
   }),
 
@@ -16,7 +16,6 @@ export const checkInSchema = Joi.object({
     otherwise: Joi.forbidden(),
   }),
 
-  userId: Joi.string().hex().length(24).allow(null),
   note: Joi.string().trim().max(300).allow('', null),
 });
 

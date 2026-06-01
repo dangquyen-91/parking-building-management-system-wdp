@@ -54,3 +54,12 @@ export const remove = async (req, res, next) => {
     next(err);
   }
 };
+
+export const getAvailableForSubscription = async (req, res, next) => {
+  try {
+    const result = await slotService.getAvailableForSubscription(req.query);
+    success(res, result, 'Available slots for subscription');
+  } catch (err) {
+    next(err);
+  }
+};

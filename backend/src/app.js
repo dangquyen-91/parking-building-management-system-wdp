@@ -1,4 +1,3 @@
-import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
@@ -17,6 +16,13 @@ import floorRoutes from './routes/floor.routes.js';
 import slotRoutes from './routes/parking-slot.routes.js';
 import sessionRoutes from './routes/session.routes.js';
 import parkingRowRoutes from './routes/parking-row.routes.js';
+import planRoutes from './routes/plan.routes.js';
+import subscriptionRoutes from './routes/subscription.routes.js';
+import bookingRoutes from './routes/booking.routes.js';
+import reportRoutes from './routes/report.routes.js';
+import webhookRoutes from './routes/webhook.routes.js';
+import { startSubscriptionJobs } from './jobs/subscription.job.js';
+import { startBookingJobs } from './jobs/booking.job.js';
 import logger from './utils/logger.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -36,6 +42,8 @@ app.use(express.json());
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument, { explorer: true }));
 
+app.use('/webhooks', webhookRoutes);
+
 app.use('/api/v1', apiLimiter);
 app.use('/api/v1/auth', authLimiter, authRoutes);
 app.use('/api/v1/users', userRoutes);
@@ -44,6 +52,10 @@ app.use('/api/v1/floors', floorRoutes);
 app.use('/api/v1/slots', slotRoutes);
 app.use('/api/v1/sessions', sessionRoutes);
 app.use('/api/v1/parking-rows', parkingRowRoutes);
+app.use('/api/v1/plans', planRoutes);
+app.use('/api/v1/subscriptions', subscriptionRoutes);
+app.use('/api/v1/bookings', bookingRoutes);
+app.use('/api/v1/reports', reportRoutes);
 
 app.get('/health', (_req, res) =>
   res.json({ success: true, message: 'OK', data: { env: process.env.NODE_ENV } })
@@ -57,6 +69,8 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   logger.info(`Server running on port ${PORT} in ${process.env.NODE_ENV} mode`);
   logger.info(`Swagger UI available at http://localhost:${PORT}/api-docs`);
+  startSubscriptionJobs();
+  startBookingJobs();
 });
 
 export default app;
