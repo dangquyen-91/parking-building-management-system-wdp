@@ -31,6 +31,8 @@ tags:
     description: Resident subscription purchase via PayOS
   - name: Bookings
     description: Car parking booking for walk-in customers (anonymous or logged-in)
+  - name: Reports
+    description: Manager dashboard — revenue, occupancy, peak hours (admin/manager)
 
 components:
   securitySchemes:
@@ -3155,3 +3157,127 @@ paths:
           description: Not the owner / wrong verification info
         '404':
           $ref: '#/components/responses/NotFound'
+
+  /reports/dashboard:
+    get:
+      tags: [Reports]
+      summary: Overview dashboard (admin, manager)
+      description: |
+        Quick overview for today: revenue split by source, activity counts, occupancy %.
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Dashboard data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      date: { type: string, format: date-time }
+                      revenueToday:
+                        type: object
+                        properties:
+                          subscription: { type: integer }
+                          booking: { type: integer }
+                          sessionTransfer: { type: integer }
+                          sessionCash: { type: integer }
+                          total: { type: integer }
+                      activity:
+                        type: object
+                        properties:
+                          activeSessions: { type: integer }
+                          activeSubscriptions: { type: integer }
+                          pendingBookings: { type: integer }
+                          checkinsToday: { type: integer }
+                          checkoutsToday: { type: integer }
+                      occupancy:
+                        type: object
+                        properties:
+                          currentVehicles: { type: integer }
+                          totalCapacity: { type: integer }
+                          utilizationPercent: { type: integer, example: 65 }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /reports/revenue:
+    get:
+      tags: [Reports]
+      summary: Revenue breakdown by date range (admin, manager)
+      description: |
+        Daily revenue grouped by source. Defaults to last 30 days.
+        Revenue sources:
+        - subscription: resident plan purchases
+        - booking: pre-paid walk-in car bookings
+        - sessionTransfer: PayOS payment at exit (walk-in/overtime)
+        - sessionCash: cash collected at exit
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: query
+          name: from
+          schema: { type: string, format: date }
+          example: '2026-05-01'
+        - in: query
+          name: to
+          schema: { type: string, format: date }
+          example: '2026-05-31'
+      responses:
+        '200':
+          description: Revenue report
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /reports/sessions:
+    get:
+      tags: [Reports]
+      summary: Session count stats by date range (admin, manager)
+      description: Total check-ins by vehicle type, customer type, and daily breakdown. Default last 7 days.
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: query
+          name: from
+          schema: { type: string, format: date }
+        - in: query
+          name: to
+          schema: { type: string, format: date }
+      responses:
+        '200':
+          description: Session stats
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /reports/occupancy:
+    get:
+      tags: [Reports]
+      summary: Current occupancy by floor (admin, manager)
+      description: Real-time occupancy per floor + overall utilization %.
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Occupancy report
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /reports/peak-hours:
+    get:
+      tags: [Reports]
+      summary: Peak hour analysis (admin, manager)
+      description: Hourly check-in distribution over last N days (default 7). Helps identify rush hours.
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: query
+          name: days
+          schema: { type: integer, default: 7 }
+      responses:
+        '200':
+          description: Peak hours
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
