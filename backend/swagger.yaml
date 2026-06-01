@@ -29,6 +29,8 @@ tags:
     description: Subscription plans for residents
   - name: Subscriptions
     description: Resident subscription purchase via PayOS
+  - name: Bookings
+    description: Car parking booking for walk-in customers (anonymous or logged-in)
 
 components:
   securitySchemes:
@@ -639,6 +641,102 @@ components:
               type: string
         signature:
           type: string
+
+    Booking:
+      type: object
+      properties:
+        _id:
+          type: string
+        phoneNumber:
+          type: string
+          example: '0912345678'
+        licensePlate:
+          type: string
+          example: 51F-12345
+        vehicleType:
+          type: string
+          enum: [car]
+        expectedArrivalTime:
+          type: string
+          format: date-time
+        expectedExitTime:
+          type: string
+          format: date-time
+        durationHours:
+          type: integer
+          example: 3
+        amount:
+          type: integer
+          example: 60000
+        status:
+          type: string
+          enum: [pending, paid, used, expired, cancelled]
+        paymentId:
+          type: string
+          nullable: true
+        userId:
+          type: string
+          nullable: true
+          description: null if anonymous booking
+        sessionId:
+          type: string
+          nullable: true
+          description: set when matched to a session at check-in
+        usedAt:
+          type: string
+          format: date-time
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+
+    CreateBookingRequest:
+      type: object
+      required: [phoneNumber, licensePlate, expectedArrivalTime, expectedExitTime]
+      properties:
+        phoneNumber:
+          type: string
+          minLength: 8
+          maxLength: 15
+          example: '0912345678'
+        licensePlate:
+          type: string
+          minLength: 4
+          maxLength: 20
+          example: 51F-12345
+        expectedArrivalTime:
+          type: string
+          format: date-time
+          example: '2026-06-01T08:00:00Z'
+        expectedExitTime:
+          type: string
+          format: date-time
+          example: '2026-06-01T11:00:00Z'
+
+    CreateBookingResponse:
+      type: object
+      properties:
+        booking:
+          $ref: '#/components/schemas/Booking'
+        payment:
+          type: object
+          properties:
+            orderCode:
+              type: integer
+            amount:
+              type: integer
+            checkoutUrl:
+              type: string
+            paymentLinkId:
+              type: string
+            qrCode:
+              type: string
+            accountNumber:
+              type: string
+            accountName:
+              type: string
+            bin:
+              type: string
 
 paths:
 
@@ -2903,3 +3001,157 @@ paths:
                     enum: [activated, failed, paid_but_no_sub]
         '400':
           description: Invalid signature
+
+  /bookings:
+    post:
+      tags: [Bookings]
+      summary: Create a car booking (anonymous OR logged-in)
+      description: |
+        Walk-in car booking. Anyone (logged-in or anonymous) can book.
+        - Only `car`, on visitor floor.
+        - Pre-pay = durationHours × 20,000đ, cap 120,000đ per 24h.
+        - Capacity check is time-based: counts overlapping bookings + (if today) current active sessions.
+        - Booking can be made up to 24 hours in advance.
+        - Min 1h, max 24h duration.
+        - No-show grace: until `expectedExitTime`, then expired.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateBookingRequest'
+      responses:
+        '201':
+          description: Booking created, awaiting payment
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/CreateBookingResponse'
+        '400':
+          description: Validation error (time out of range, plate has active session, etc)
+        '409':
+          description: No availability OR plate has overlapping booking
+        '502':
+          description: PayOS error
+    get:
+      tags: [Bookings]
+      summary: List bookings (admin, manager, staff)
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: query
+          name: page
+          schema: { type: integer, default: 1 }
+        - in: query
+          name: limit
+          schema: { type: integer, default: 20 }
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum: [pending, paid, used, expired, cancelled]
+        - in: query
+          name: licensePlate
+          schema: { type: string }
+        - in: query
+          name: phoneNumber
+          schema: { type: string }
+      responses:
+        '200':
+          description: List of bookings
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /bookings/check:
+    get:
+      tags: [Bookings]
+      summary: Lookup bookings by phone + plate (anonymous OK)
+      description: For anonymous customers to find their own bookings.
+      parameters:
+        - in: query
+          name: phoneNumber
+          required: true
+          schema: { type: string }
+        - in: query
+          name: licensePlate
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Bookings found
+
+  /bookings/me:
+    get:
+      tags: [Bookings]
+      summary: My bookings (logged-in user)
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum: [pending, paid, used, expired, cancelled]
+      responses:
+        '200':
+          description: My bookings
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /bookings/{id}:
+    get:
+      tags: [Bookings]
+      summary: Get booking by id (admin, manager, staff)
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Booking detail
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /bookings/{id}/cancel:
+    patch:
+      tags: [Bookings]
+      summary: Cancel a pending booking (owner only)
+      description: |
+        Cancel a pending booking. Paid bookings cannot be cancelled (no refund).
+        - Logged-in user: cancels their own bookings.
+        - Anonymous: must provide phoneNumber + licensePlate in body for verification.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                phoneNumber:
+                  type: string
+                  description: Required for anonymous booking
+                licensePlate:
+                  type: string
+                  description: Required for anonymous booking
+      responses:
+        '200':
+          description: Booking cancelled
+        '400':
+          description: Cannot cancel paid/used/expired booking
+        '403':
+          description: Not the owner / wrong verification info
+        '404':
+          $ref: '#/components/responses/NotFound'

@@ -224,6 +224,15 @@ export const handleWebhook = async (webhookBody) => {
     return { processed: true, status: 'session_closed', sessionId: result.sessionId };
   }
 
+  if (payment.targetType === 'booking') {
+    const { activateBookingFromWebhook } = await import('./booking.service.js');
+    const result = await activateBookingFromWebhook(payment._id);
+    if (!result) return { processed: true, status: 'paid_but_no_booking' };
+    if (result.alreadyProcessed)
+      return { processed: true, status: 'already_processed' };
+    return { processed: true, status: 'booking_activated', bookingId: result.bookingId };
+  }
+
   const subscription = await Subscription.findById(payment.subscriptionId).populate('planId');
   if (!subscription) {
     logger.error('Subscription missing for paid payment', { paymentId: payment._id });
