@@ -9,6 +9,7 @@ import { BookingPage } from '../pages/BookingPage'
 import { DashboardPage } from '../pages/DashboardPage'
 import { HomePage } from '../pages/HomePage'
 import { LoginPage } from '../pages/LoginPage'
+import { ManagerBuildingsPage } from '../pages/ManagerBuildingsPage'
 import { ManagerBookingsPage } from '../pages/ManagerBookingsPage'
 import { ManagerDashboardPage } from '../pages/ManagerDashboardPage'
 import { ManagerGateLogsPage } from '../pages/ManagerGateLogsPage'
@@ -57,6 +58,7 @@ export const AppRoutes = () => {
       <Route element={<ProtectedRoute allowedRoles={['manager']} />}>
         <Route element={<ManagerLayout />}>
           <Route path="/manager" element={<ManagerDashboardPage />} />
+          <Route path="/manager/buildings" element={<ManagerBuildingsPage />} />
           <Route path="/manager/slots" element={<ManagerSlotsPage />} />
           <Route path="/manager/bookings" element={<ManagerBookingsPage />} />
           <Route path="/manager/gate-logs" element={<ManagerGateLogsPage />} />

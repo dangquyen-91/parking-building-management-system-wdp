@@ -5,6 +5,7 @@ import { LogoutButton } from '../common/LogoutButton'
 
 const MANAGER_NAV_ITEMS = [
   { to: '/manager', label: 'Overview', icon: 'grid' },
+  { to: '/manager/buildings', label: 'Buildings', icon: 'building' },
   { to: '/manager/slots', label: 'Slots & Zones', icon: 'slots' },
   { to: '/manager/bookings', label: 'Bookings', icon: 'calendar' },
   { to: '/manager/gate-logs', label: 'Gate Logs', icon: 'gate' },
@@ -52,6 +53,15 @@ function ManagerIcon({ name }: { name: (typeof MANAGER_NAV_ITEMS)[number]['icon'
     )
   }
 
+  if (name === 'building') {
+    return (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M4 20V5.5A1.5 1.5 0 0 1 5.5 4H14l4 4v12H4Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+        <path d="M8 9h2M8 13h2M8 17h2M14 13h2M14 17h2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      </svg>
+    )
+  }
+
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
       <path d="M4 18V8.5A2.5 2.5 0 0 1 6.5 6h11A2.5 2.5 0 0 1 20 8.5V18" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
@@ -84,7 +94,7 @@ export const ManagerSidebar = forwardRef<HTMLElement, ManagerSidebarProps>(funct
         'liquid-glass-card flex flex-col border-r border-theme rounded-none',
         'max-lg:fixed max-lg:inset-y-0 max-lg:left-0 max-lg:z-50',
         'max-lg:w-[min(18rem,85vw)] max-lg:max-h-screen max-lg:overscroll-contain',
-        'lg:static lg:z-auto lg:w-full lg:min-h-screen lg:translate-x-0 lg:visible lg:pointer-events-auto',
+        'lg:fixed lg:inset-y-0 lg:left-0 lg:z-30 lg:w-60 lg:h-screen lg:translate-x-0 lg:visible lg:pointer-events-auto',
         'transition-transform duration-300 ease-out lg:transition-none',
         isOpen
           ? 'max-lg:translate-x-0 max-lg:visible max-lg:pointer-events-auto'

@@ -6,6 +6,7 @@ import { useOverlayPanel } from '../hooks/useOverlayPanel'
 
 const MANAGER_PAGE_TITLES: Record<string, string> = {
   '/manager': 'Manager Overview',
+  '/manager/buildings': 'Buildings',
   '/manager/slots': 'Slots & Zones',
   '/manager/bookings': 'Bookings',
   '/manager/gate-logs': 'Gate Logs',
@@ -28,19 +29,19 @@ export function ManagerLayout() {
   })
 
   return (
-    <div className="min-h-screen bg-page text-fg">
+    <div className="h-screen overflow-hidden bg-page text-fg">
       <SkipLink />
 
       {sidebarOpen && (
         <OverlayBackdrop onClose={closeSidebar} label="Close manager navigation menu" />
       )}
 
-      <div className="flex min-h-screen w-full">
+      <div className="flex h-full w-full">
         <div className="max-lg:w-0 max-lg:min-w-0 max-lg:shrink-0 max-lg:overflow-visible lg:w-60 lg:shrink-0">
           <ManagerSidebar ref={sidebarRef} isOpen={sidebarOpen} onNavigate={closeSidebar} />
         </div>
 
-        <div className="flex w-full flex-1 flex-col min-w-0 min-h-screen lg:min-h-0">
+        <div className="flex w-full flex-1 flex-col min-w-0 h-full">
           <header className="lg:hidden sticky top-0 z-30 flex items-center gap-3 h-14 px-4 border-b border-theme bg-page/95 backdrop-blur-md shrink-0">
             <button
               ref={menuButtonRef}
