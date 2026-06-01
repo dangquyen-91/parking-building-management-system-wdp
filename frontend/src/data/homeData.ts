@@ -1,17 +1,17 @@
-export const HERO_TABS = ['Overview', 'Intelligence', 'Modernize'] as const
+export const HERO_TABS = ['Tổng quan', 'Thông minh', 'Hiện đại hóa'] as const
 export type HeroTab = (typeof HERO_TABS)[number]
 
 export const HERO_TAB_SLUGS: Record<HeroTab, string> = {
-  Overview: 'overview',
-  Intelligence: 'intelligence',
-  Modernize: 'modernize',
+  'Tổng quan': 'overview',
+  'Thông minh': 'intelligence',
+  'Hiện đại hóa': 'modernize',
 }
 
 export function heroTabFromSlug(slug: string | null): HeroTab {
   const match = (Object.entries(HERO_TAB_SLUGS) as [HeroTab, string][]).find(
     ([, s]) => s === slug,
   )
-  return match?.[0] ?? 'Modernize'
+  return match?.[0] ?? 'Hiện đại hóa'
 }
 
 export type HeroTabContent = {
@@ -24,44 +24,45 @@ export type HeroTabContent = {
 }
 
 export const HERO_TAB_CONTENT: Record<HeroTab, HeroTabContent> = {
-  Overview: {
-    eyebrow: 'Perspective // Overview',
+  'Tổng quan': {
+    eyebrow: 'Góc nhìn // Tổng quan',
     headingLines: [
-      'Parking system ,',
-      'for your building.',
+      'Hệ thống',
+      'bãi đỗ cho',
+      'tòa nhà của bạn.',
     ],
     subheading:
-      'A unified system to monitor, control, and optimize all vehicular access points effortlessly.',
+      'Một hệ thống thống nhất để giám sát, kiểm soát và tối ưu mọi điểm ra vào của phương tiện.',
     card: {
-      body: 'Consolidate your security gates, live clearance telemetry, and occupancy status in a single high-contrast interface designed specifically for premium residential and commercial facilities.',
+      body: 'Hợp nhất cổng an ninh, dữ liệu ra vào trực tiếp và trạng thái chỗ đỗ trong một giao diện rõ ràng, được thiết kế cho tòa nhà dân cư và thương mại cao cấp.',
     },
   },
-  Intelligence: {
-    eyebrow: 'Perspective / Intelligence',
+  'Thông minh': {
+    eyebrow: 'Góc nhìn // Thông minh',
     headingLines: [
-      'End the',
-      'basement',
-      'parking',
-      'chaos.',
+      'Chấm dứt',
+      'cảnh hỗn loạn',
+      'ở bãi đỗ',
+      'tầng hầm.',
     ],
     subheading:
-      'Eliminate bottleneck queues, lost paper tickets, and directional frustration instantly.',
+      'Loại bỏ hàng chờ ùn tắc, vé giấy thất lạc và sự khó chịu khi tìm hướng di chuyển.',
     card: {
-      body: 'With real-time video validation and automated slot mapping, occupants flow seamlessly to open bays. No ticket machines, no physical access cards—just pure structural harmony.',
+      body: 'Với xác thực video thời gian thực và bản đồ chỗ đỗ tự động, cư dân di chuyển mượt mà đến ô trống. Không cần máy in vé, không cần thẻ vật lý, chỉ còn một quy trình vận hành gọn gàng.',
     },
   },
-  Modernize: {
-    eyebrow: 'Perspective // Modernize',
+  'Hiện đại hóa': {
+    eyebrow: 'Góc nhìn // Hiện đại hóa',
     headingLines: [
-      'Ready to',
-      'modernize',
-      'parking in',
-      'your building?',
+      'Sẵn sàng',
+      'hiện đại hóa',
+      'bãi đỗ trong',
+      'tòa nhà?',
     ],
     subheading:
-      'Transform legacy infrastructure into a quiet, integrated spatial asset.',
+      'Biến hạ tầng cũ thành một tài sản không gian thông minh, liền mạch và dễ vận hành.',
     card: {
-      body: "Connect our intelligent camera telemetry and license plate sensory nodes directly to your building's core setup. Simplify guest validation and maximize total space utilization seamlessly.",
+      body: 'Kết nối dữ liệu camera thông minh và nhận diện biển số trực tiếp vào hệ thống lõi của tòa nhà. Đơn giản hóa xác thực khách và tối đa hóa hiệu quả sử dụng không gian.',
     },
   },
 }

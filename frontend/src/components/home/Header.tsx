@@ -5,10 +5,10 @@ import { useOverlayPanel } from '../../hooks/useOverlayPanel'
 import { authApi, getStoredAuthUser, type AuthUser } from '../../services/authApi'
 
 const NAV_LINKS = [
-  { href: '#about', label: 'About Us' },
-  { href: '#how-it-works', label: 'How It Works' },
-  { href: '#features', label: 'Features' },
-  { href: '#resources', label: 'Resources' },
+  { href: '#about', label: 'Giới thiệu' },
+  { href: '#how-it-works', label: 'Cách hoạt động' },
+  { href: '#features', label: 'Tính năng' },
+  { href: '#resources', label: 'Tài nguyên' },
   { href: '#blog', label: 'Blog' },
 ] as const
 
@@ -57,7 +57,7 @@ export function Header() {
       <div className="liquid-glass rounded-full flex items-center justify-between gap-3 h-14 px-4 md:px-6 max-w-7xl mx-auto">
         <BrandLink className="flex items-center gap-2 text-fg font-medium text-sm shrink-0 hover:text-fg" />
 
-        <nav className="hidden lg:flex items-center gap-1" aria-label="Main navigation">
+        <nav className="hidden lg:flex items-center gap-1" aria-label="Điều hướng chính">
           {NAV_LINKS.map(({ href, label }) => (
             <a
               key={href}
@@ -105,7 +105,7 @@ export function Header() {
             to="/booking"
             className="inline-flex items-center text-xs font-medium bg-btn-primary text-btn-primary-fg hover:opacity-90 transition-opacity duration-200 rounded-full px-4 py-2"
           >
-            Book Slot
+            Đặt chỗ
           </Link>
           <button
             ref={menuButtonRef}
@@ -113,7 +113,7 @@ export function Header() {
             className="lg:hidden w-8 h-8 flex items-center justify-center text-muted hover:text-fg rounded-full hover:bg-ghost"
             aria-expanded={menuOpen}
             aria-controls="mobile-nav"
-            aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+            aria-label={menuOpen ? 'Đóng menu' : 'Mở menu'}
             onClick={() => setMenuOpen((o) => !o)}
           >
             <MenuIcon size={18} />
@@ -123,12 +123,12 @@ export function Header() {
 
       {menuOpen && (
         <>
-          <OverlayBackdrop onClose={closeMenu} label="Close navigation menu" />
+          <OverlayBackdrop onClose={closeMenu} label="Đóng menu điều hướng" />
           <nav
             ref={mobileNavRef}
             id="mobile-nav"
             className="liquid-glass rounded-2xl mt-2 p-4 flex flex-col gap-1 max-w-7xl mx-auto lg:hidden relative z-50 overscroll-contain max-h-[min(70vh,24rem)] overflow-y-auto"
-            aria-label="Mobile navigation"
+            aria-label="Điều hướng trên di động"
           >
             {NAV_LINKS.map(({ href, label }) => (
               <a
@@ -178,7 +178,7 @@ export function Header() {
               className="text-sm text-muted hover:text-fg py-2 px-2 rounded-lg hover:bg-ghost transition-colors"
               onClick={closeMenu}
             >
-              Book Slot
+              Đặt chỗ
             </Link>
           </nav>
         </>

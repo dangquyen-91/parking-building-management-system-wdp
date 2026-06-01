@@ -3,10 +3,10 @@ import { Link } from 'react-router-dom'
 import { fadeIn } from '../../assets/motion/variants'
 
 const FOOTER_LINKS = [
-  { href: '#about', label: 'About' },
-  { href: '#how-it-works', label: 'How It Works' },
-  { href: '#features', label: 'Features' },
-  { href: '#resources', label: 'Resources' },
+  { href: '#about', label: 'Giới thiệu' },
+  { href: '#how-it-works', label: 'Cách hoạt động' },
+  { href: '#features', label: 'Tính năng' },
+  { href: '#resources', label: 'Tài nguyên' },
   { href: '#blog', label: 'Blog' },
   { to: '/login', label: 'Đăng nhập' },
   { to: '/register', label: 'Đăng ký' },
@@ -25,7 +25,7 @@ export function Footer() {
         <div>
           <p className="text-sm font-medium text-fg">Parking Simulator</p>
           <p className="mt-1 text-xs text-subtle">
-            Building parking, managed in one place.
+            Quản lý bãi đỗ tòa nhà tại một nơi.
           </p>
           <p className="mt-4 text-[10px] text-faint uppercase tracking-[0.15em]">
             © {new Date().getFullYear()} Parking Simulator
@@ -34,7 +34,7 @@ export function Footer() {
 
         <nav
           className="flex flex-wrap gap-x-6 gap-y-2"
-          aria-label="Footer navigation"
+          aria-label="Điều hướng chân trang"
         >
           {FOOTER_LINKS.map((link) =>
             'to' in link ? (

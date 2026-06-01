@@ -19,17 +19,17 @@ export function CtaSection() {
           variants={reduceMotion ? undefined : fadeUp}
         >
           <p className="text-[10px] tracking-[0.2em] text-subtle uppercase mb-4">
-            Deploy // Demo
+            Triển khai // Bản mẫu
           </p>
           <h2
             className="text-3xl md:text-4xl lg:text-5xl font-bold text-fg uppercase leading-tight max-w-2xl mx-auto"
             style={{ letterSpacing: '-0.02em' }}
           >
-            See your building on Parking Simulator
+            Xem tòa nhà của bạn trên Parking Simulator
           </h2>
           <p className="mt-4 text-sm md:text-base text-muted max-w-xl mx-auto">
-            Book a walkthrough with your floor plans. We model bays, gates, and
-            tenant rules before you commit to a rollout.
+            Đặt lịch xem thử cùng sơ đồ tầng của bạn. Chúng tôi mô phỏng ô đỗ,
+            cổng và quy tắc cư dân trước khi bạn triển khai chính thức.
           </p>
           <motion.div
             className="mt-8 flex flex-wrap items-center justify-center gap-3"
@@ -41,7 +41,7 @@ export function CtaSection() {
               to="/booking"
               className="inline-flex text-sm font-medium bg-btn-primary text-btn-primary-fg hover:opacity-90 transition-opacity rounded-full px-6 py-3"
             >
-              Book Slot
+              Đặt chỗ
             </Link>
             <Link
               to="/login"
