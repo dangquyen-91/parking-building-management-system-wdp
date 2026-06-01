@@ -7,6 +7,7 @@ import Payment from '../models/payment.model.js';
 import User from '../models/user.model.js';
 import * as pricingService from './pricing.service.js';
 import * as payosService from './payos.service.js';
+import * as bookingService from './booking.service.js';
 import AppError from '../utils/appError.js';
 import logger from '../utils/logger.js';
 
@@ -44,19 +45,36 @@ export const checkIn = async ({ slotId, rowId, licensePlate, vehicleType, staffI
 
   if (vehicleType === 'car') {
     const isResident = !!activeSub;
-    const resolvedSlotId = isResident ? activeSub.slotId?.toString() : slotId;
+    const paidBooking = !isResident ? await bookingService.findPaidBookingForCheckIn(normalizedPlate) : null;
+
+    let resolvedSlotId = isResident ? activeSub.slotId?.toString() : slotId;
 
     if (isResident && !resolvedSlotId) {
       throw new AppError('Resident subscription has no slot assigned. Contact admin.', 500);
-    }
-    if (!isResident && !slotId) {
-      throw new AppError('slotId is required for walk-in car check-in', 400);
     }
     if (isResident && slotId && slotId !== resolvedSlotId) {
       throw new AppError(
         `This plate is bound to slot ${activeSub.slotId} via subscription. slotId in body does not match.`,
         400
       );
+    }
+
+    if (!isResident && !slotId) {
+      const visitorFloors = await Floor.find({
+        vehicleType: 'car',
+        floorType: 'visitor',
+        isActive: true,
+      }).select('_id');
+      const floorIds = visitorFloors.map((f) => f._id);
+      const autoSlot = await ParkingSlot.findOne({
+        floorId: { $in: floorIds },
+        vehicleType: 'car',
+        status: 'empty',
+      }).sort({ slotCode: 1 });
+      if (!autoSlot) {
+        throw new AppError('No empty visitor car slot available. Parking lot is full.', 409);
+      }
+      resolvedSlotId = autoSlot._id.toString();
     }
 
     const slot = await ParkingSlot.findById(resolvedSlotId).populate({
@@ -93,13 +111,21 @@ export const checkIn = async ({ slotId, rowId, licensePlate, vehicleType, staffI
         vehicleType,
         customerType: isResident ? 'resident' : 'walk_in',
         subscriptionId: activeSub?._id || null,
+        bookingId: paidBooking?._id || null,
+        prepaidAmount: paidBooking?.amount || 0,
+        prepaidHours: paidBooking?.durationHours || 0,
         entryTime: new Date(),
         staffId,
-        userId: userId || null,
+        userId: userId || paidBooking?.userId || null,
         status: 'active',
-        paymentStatus: isResident ? 'paid' : 'unpaid',
+        paymentStatus: isResident || paidBooking ? 'paid' : 'unpaid',
         note,
       });
+
+      if (paidBooking) {
+        await bookingService.markUsed(paidBooking._id, session._id);
+      }
+
       return session.populate(SESSION_POPULATE);
     } catch (err) {
       await ParkingSlot.findByIdAndUpdate(resolvedSlotId, { status: expectedSlotStatus });
@@ -275,20 +301,67 @@ const loadActiveSession = async (id) => {
   return session;
 };
 
-export const previewCheckout = async (id) => {
-  const session = await loadActiveSession(id);
-  const exitTime = new Date();
+const HOUR_MS = 60 * 60 * 1000;
 
+const computeCheckoutFee = async (session, exitTime) => {
   if (session.customerType === 'resident') {
     return {
-      sessionId: session._id,
-      customerType: 'resident',
-      entryTime: session.entryTime,
-      exitTime,
-      fee: 0,
-      breakdown: null,
+      total: 0,
+      toCollect: 0,
+      prepaidAmount: 0,
+      prepaidHours: 0,
+      overtimeHours: 0,
+      overtimeFee: 0,
+      breakdown: {},
       pricing: null,
       note: 'Resident with active subscription — no fee',
+    };
+  }
+
+  if (session.bookingId && session.prepaidHours > 0) {
+    const actualHours = Math.max(
+      1,
+      Math.ceil((exitTime.getTime() - new Date(session.entryTime).getTime()) / HOUR_MS)
+    );
+    const overtimeHours = Math.max(0, actualHours - session.prepaidHours);
+    let overtimeFee = 0;
+    let breakdown = {
+      durationMs: exitTime.getTime() - new Date(session.entryTime).getTime(),
+      hours: actualHours,
+      nights: 0,
+      baseFee: session.prepaidAmount,
+      overnightFee: 0,
+      cappedAt: null,
+      turns: 0,
+    };
+
+    if (overtimeHours > 0) {
+      const calc = await pricingService.calculateFee({
+        vehicleType: session.vehicleType,
+        entryTime: new Date(exitTime.getTime() - overtimeHours * HOUR_MS),
+        exitTime,
+      });
+      overtimeFee = calc.total;
+      breakdown = {
+        ...breakdown,
+        baseFee: session.prepaidAmount + calc.breakdown.baseFee,
+        overnightFee: calc.breakdown.overnightFee,
+        cappedAt: calc.breakdown.cappedAt,
+      };
+    }
+
+    return {
+      total: session.prepaidAmount + overtimeFee,
+      toCollect: overtimeFee,
+      prepaidAmount: session.prepaidAmount,
+      prepaidHours: session.prepaidHours,
+      overtimeHours,
+      overtimeFee,
+      breakdown,
+      pricing: null,
+      note: overtimeHours > 0
+        ? `Booking prepaid ${session.prepaidHours}h, overtime ${overtimeHours}h. Collect ${overtimeFee}đ.`
+        : `Booking prepaid covers full stay. Free check-out.`,
     };
   }
 
@@ -299,13 +372,37 @@ export const previewCheckout = async (id) => {
   });
 
   return {
+    total: calc.total,
+    toCollect: calc.total,
+    prepaidAmount: 0,
+    prepaidHours: 0,
+    overtimeHours: 0,
+    overtimeFee: 0,
+    breakdown: calc.breakdown,
+    pricing: calc.pricing,
+    note: 'Walk-in pay-at-exit',
+  };
+};
+
+export const previewCheckout = async (id) => {
+  const session = await loadActiveSession(id);
+  const exitTime = new Date();
+  const calc = await computeCheckoutFee(session, exitTime);
+
+  return {
     sessionId: session._id,
-    customerType: 'walk_in',
+    customerType: session.customerType,
+    bookingId: session.bookingId || null,
     entryTime: session.entryTime,
     exitTime,
     fee: calc.total,
+    toCollect: calc.toCollect,
+    prepaidAmount: calc.prepaidAmount,
+    overtimeHours: calc.overtimeHours,
+    overtimeFee: calc.overtimeFee,
     breakdown: calc.breakdown,
     pricing: calc.pricing,
+    note: calc.note,
   };
 };
 
@@ -334,24 +431,7 @@ const closeSessionPaid = async (session, { method, exitTime, fee, breakdown, pai
 export const checkOutCash = async (id, staffId) => {
   const session = await loadActiveSession(id);
   const exitTime = new Date();
-  const collectorId = staffId;
-
-  if (session.customerType === 'resident') {
-    return closeSessionPaid(session, {
-      method: 'cash',
-      exitTime,
-      fee: 0,
-      breakdown: {},
-      paidAt: exitTime,
-      collectorId,
-    });
-  }
-
-  const calc = await pricingService.calculateFee({
-    vehicleType: session.vehicleType,
-    entryTime: session.entryTime,
-    exitTime,
-  });
+  const calc = await computeCheckoutFee(session, exitTime);
 
   return closeSessionPaid(session, {
     method: 'cash',
@@ -359,25 +439,27 @@ export const checkOutCash = async (id, staffId) => {
     fee: calc.total,
     breakdown: calc.breakdown,
     paidAt: exitTime,
-    collectorId,
+    collectorId: staffId,
   });
 };
 
 export const checkOutTransfer = async (id, staffId) => {
   const session = await loadActiveSession(id);
+  const exitTime = new Date();
+  const calc = await computeCheckoutFee(session, exitTime);
 
-  if (session.customerType === 'resident') {
+  if (calc.toCollect === 0) {
     return {
       session: await closeSessionPaid(session, {
         method: 'transfer',
-        exitTime: new Date(),
-        fee: 0,
-        breakdown: {},
-        paidAt: new Date(),
+        exitTime,
+        fee: calc.total,
+        breakdown: calc.breakdown,
+        paidAt: exitTime,
         collectorId: staffId,
       }),
       payment: null,
-      note: 'Resident with active subscription — no payment needed; session closed.',
+      note: calc.note,
     };
   }
 
@@ -399,13 +481,6 @@ export const checkOutTransfer = async (id, staffId) => {
     };
   }
 
-  const exitTime = new Date();
-  const calc = await pricingService.calculateFee({
-    vehicleType: session.vehicleType,
-    entryTime: session.entryTime,
-    exitTime,
-  });
-
   await ParkingSession.findByIdAndUpdate(session._id, {
     paymentMethod: 'transfer',
     paymentStatus: 'pending',
@@ -421,9 +496,9 @@ export const checkOutTransfer = async (id, staffId) => {
   try {
     payosResponse = await payosService.createPaymentLink({
       orderCode,
-      amount: calc.total,
+      amount: calc.toCollect,
       description: `Park ${session.licensePlate}`,
-      items: [{ name: `Parking ${session.vehicleType}`, quantity: 1, price: calc.total }],
+      items: [{ name: `Parking ${session.vehicleType} overtime`, quantity: 1, price: calc.toCollect }],
       buyerName: staff?.fullName,
       buyerEmail: staff?.email,
       buyerPhone: staff?.phone,
@@ -445,7 +520,7 @@ export const checkOutTransfer = async (id, staffId) => {
     userId: session.userId || null,
     provider: 'payos',
     orderCode,
-    amount: calc.total,
+    amount: calc.toCollect,
     description: `Park ${session.licensePlate} ${session.vehicleType}`,
     status: 'pending',
     checkoutUrl: payosResponse.checkoutUrl,
@@ -466,6 +541,7 @@ export const checkOutTransfer = async (id, staffId) => {
       bin: payosResponse.bin,
     },
     fee: calc.total,
+    toCollect: calc.toCollect,
     breakdown: calc.breakdown,
   };
 };

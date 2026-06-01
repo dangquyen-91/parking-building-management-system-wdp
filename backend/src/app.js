@@ -18,8 +18,10 @@ import sessionRoutes from './routes/session.routes.js';
 import parkingRowRoutes from './routes/parking-row.routes.js';
 import planRoutes from './routes/plan.routes.js';
 import subscriptionRoutes from './routes/subscription.routes.js';
+import bookingRoutes from './routes/booking.routes.js';
 import webhookRoutes from './routes/webhook.routes.js';
 import { startSubscriptionJobs } from './jobs/subscription.job.js';
+import { startBookingJobs } from './jobs/booking.job.js';
 import logger from './utils/logger.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -51,6 +53,7 @@ app.use('/api/v1/sessions', sessionRoutes);
 app.use('/api/v1/parking-rows', parkingRowRoutes);
 app.use('/api/v1/plans', planRoutes);
 app.use('/api/v1/subscriptions', subscriptionRoutes);
+app.use('/api/v1/bookings', bookingRoutes);
 
 app.get('/health', (_req, res) =>
   res.json({ success: true, message: 'OK', data: { env: process.env.NODE_ENV } })
@@ -65,6 +68,7 @@ app.listen(PORT, () => {
   logger.info(`Server running on port ${PORT} in ${process.env.NODE_ENV} mode`);
   logger.info(`Swagger UI available at http://localhost:${PORT}/api-docs`);
   startSubscriptionJobs();
+  startBookingJobs();
 });
 
 export default app;
