@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { ManagerStatCard } from '../components/manager'
 import { ManagerParkingSpaceHeader } from '../components/manager/ManagerParkingSpaceHeader'
 import { ManagerParkingSpaceList } from '../components/manager/ManagerParkingSpaceList'
 import { ManagerRowFormModal } from '../components/manager/ManagerRowFormModal'
@@ -134,7 +135,6 @@ export function ManagerSlotsPage() {
       <ManagerParkingSpaceHeader
         buildings={buildings}
         floors={filteredFloorOptions}
-        stats={stats}
         buildingFilter={buildingFilter}
         floorFilter={floorFilter}
         onBuildingFilterChange={setBuildingFilter}
@@ -142,6 +142,13 @@ export function ManagerSlotsPage() {
         onCreateSlot={handleOpenCreateSlot}
         onCreateRow={handleOpenCreateRow}
       />
+
+      <div className="mb-6 grid gap-3 sm:grid-cols-4">
+        <ManagerStatCard label="Car slots" value={stats.totalSlots} detail={`${stats.occupiedSlots} occupied`} />
+        <ManagerStatCard label="Rows" value={stats.totalRows} detail="Motorcycle rows" />
+        <ManagerStatCard label="Moto capacity" value={stats.rowCapacity} detail={`${stats.rowOccupied} occupied`} />
+        <ManagerStatCard label="Maintenance" value={stats.maintenanceSlots} detail="Car slots" />
+      </div>
 
       {error && (
         <div className="liquid-glass-card rounded-lg border border-theme bg-badge p-4 text-sm text-rose-100">

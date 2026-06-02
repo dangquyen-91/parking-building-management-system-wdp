@@ -1,19 +1,9 @@
-import { ManagerPageHeader, ManagerStatCard } from './index'
+import { ManagerPageHeader } from './index'
 import type { Building, Floor } from '../../services/managerBuildingsApi'
-
-type ParkingSpaceStats = {
-  totalSlots: number
-  totalRows: number
-  maintenanceSlots: number
-  occupiedSlots: number
-  rowCapacity: number
-  rowOccupied: number
-}
 
 type ManagerParkingSpaceHeaderProps = {
   buildings: Building[]
   floors: Floor[]
-  stats: ParkingSpaceStats
   buildingFilter: string
   floorFilter: string
   onBuildingFilterChange: (value: string) => void
@@ -25,7 +15,6 @@ type ManagerParkingSpaceHeaderProps = {
 export function ManagerParkingSpaceHeader({
   buildings,
   floors,
-  stats,
   buildingFilter,
   floorFilter,
   onBuildingFilterChange,
@@ -39,34 +28,13 @@ export function ManagerParkingSpaceHeader({
       title="Slots & Zones"
       description="Manage parking slots, status, and assignment details."
       actions={
-        <div className="flex flex-col gap-3 sm:items-end">
-          <div className="flex flex-wrap justify-end gap-2">
-            <button
-              type="button"
-              className="h-10 rounded-lg border border-theme px-4 text-sm font-semibold text-fg hover:text-fg"
-              onClick={onCreateRow}
-            >
-              Create motorcycle row
-            </button>
-            <button
-              type="button"
-              className="h-10 rounded-lg bg-btn-primary px-4 text-sm font-semibold text-btn-primary-fg"
-              onClick={onCreateSlot}
-            >
-              Create car slot
-            </button>
-          </div>
-          <div className="grid grid-cols-2 gap-2 sm:min-w-[32rem] sm:grid-cols-4">
-            <ManagerStatCard label="Car slots" value={stats.totalSlots} detail={`${stats.occupiedSlots} occupied`} />
-            <ManagerStatCard label="Rows" value={stats.totalRows} detail="Motorcycle rows" />
-            <ManagerStatCard label="Moto capacity" value={stats.rowCapacity} detail={`${stats.rowOccupied} occupied`} />
-            <ManagerStatCard label="Maintenance" value={stats.maintenanceSlots} detail="Car slots" />
-          </div>
-          <div className="grid gap-2 sm:grid-cols-2">
-            <label className="grid gap-1 text-xs text-subtle">
+        <div className="grid w-full gap-3 lg:min-w-[36rem] lg:max-w-[42rem]">
+          <div className="flex flex-col gap-3 rounded-lg border border-theme bg-badge/60 p-3 sm:flex-row sm:items-end sm:justify-between">
+            <div className="grid flex-1 gap-3 sm:grid-cols-2">
+              <label className="grid gap-1 text-xs font-medium text-subtle">
               Building
               <select
-                className="h-10 rounded-lg border border-theme bg-page px-3 text-sm text-fg"
+                className="h-10 w-full rounded-lg border border-theme bg-page px-3 text-sm text-fg outline-none transition focus:border-btn-primary"
                 value={buildingFilter}
                 onChange={(event) => onBuildingFilterChange(event.target.value)}
               >
@@ -77,11 +45,11 @@ export function ManagerParkingSpaceHeader({
                   </option>
                 ))}
               </select>
-            </label>
-            <label className="grid gap-1 text-xs text-subtle">
+              </label>
+              <label className="grid gap-1 text-xs font-medium text-subtle">
               Floor
               <select
-                className="h-10 rounded-lg border border-theme bg-page px-3 text-sm text-fg"
+                className="h-10 w-full rounded-lg border border-theme bg-page px-3 text-sm text-fg outline-none transition focus:border-btn-primary"
                 value={floorFilter}
                 onChange={(event) => onFloorFilterChange(event.target.value)}
               >
@@ -92,7 +60,25 @@ export function ManagerParkingSpaceHeader({
                   </option>
                 ))}
               </select>
-            </label>
+              </label>
+            </div>
+
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <button
+                type="button"
+                className="h-10 rounded-lg bg-btn-primary px-4 text-sm font-semibold text-btn-primary-fg transition hover:opacity-90"
+                onClick={onCreateSlot}
+              >
+                Create car slot
+              </button>
+              <button
+                type="button"
+                className="h-10 rounded-lg border border-theme px-4 text-sm font-semibold text-fg transition hover:bg-badge"
+                onClick={onCreateRow}
+              >
+                Create motorcycle row
+              </button>
+            </div>
           </div>
         </div>
       }
