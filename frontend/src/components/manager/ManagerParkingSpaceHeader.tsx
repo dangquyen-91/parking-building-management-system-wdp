@@ -24,42 +24,42 @@ export function ManagerParkingSpaceHeader({
 }: ManagerParkingSpaceHeaderProps) {
   return (
     <ManagerPageHeader
-      eyebrow="Manager // Slots"
-      title="Slots & Zones"
-      description="Manage parking slots, status, and assignment details."
+      eyebrow="Quản lý // Chỗ đỗ"
+      title="Chỗ đỗ"
+      description="Quản lý ô đỗ ô tô, hàng xe máy, trạng thái và ghi chú vận hành."
       actions={
         <div className="grid w-full gap-3 lg:min-w-[36rem] lg:max-w-[42rem]">
           <div className="flex flex-col gap-3 rounded-lg border border-theme bg-badge/60 p-3 sm:flex-row sm:items-end sm:justify-between">
             <div className="grid flex-1 gap-3 sm:grid-cols-2">
               <label className="grid gap-1 text-xs font-medium text-subtle">
-              Building
-              <select
-                className="h-10 w-full rounded-lg border border-theme bg-page px-3 text-sm text-fg outline-none transition focus:border-btn-primary"
-                value={buildingFilter}
-                onChange={(event) => onBuildingFilterChange(event.target.value)}
-              >
-                <option value="all">All</option>
-                {buildings.map((building) => (
-                  <option key={building._id} value={building._id}>
-                    {building.name}
-                  </option>
-                ))}
-              </select>
+                Tòa nhà
+                <select
+                  className="h-10 w-full rounded-lg border border-theme bg-page px-3 text-sm text-fg outline-none transition focus:border-btn-primary"
+                  value={buildingFilter}
+                  onChange={(event) => onBuildingFilterChange(event.target.value)}
+                >
+                  <option value="all">Tất cả</option>
+                  {buildings.map((building) => (
+                    <option key={building._id} value={building._id}>
+                      {building.name}
+                    </option>
+                  ))}
+                </select>
               </label>
               <label className="grid gap-1 text-xs font-medium text-subtle">
-              Floor
-              <select
-                className="h-10 w-full rounded-lg border border-theme bg-page px-3 text-sm text-fg outline-none transition focus:border-btn-primary"
-                value={floorFilter}
-                onChange={(event) => onFloorFilterChange(event.target.value)}
-              >
-                <option value="all">All</option>
-                {floors.map((floor) => (
-                  <option key={floor._id} value={floor._id}>
-                    Floor {floor.floorNumber}
-                  </option>
-                ))}
-              </select>
+                Tầng
+                <select
+                  className="h-10 w-full rounded-lg border border-theme bg-page px-3 text-sm text-fg outline-none transition focus:border-btn-primary"
+                  value={floorFilter}
+                  onChange={(event) => onFloorFilterChange(event.target.value)}
+                >
+                  <option value="all">Tất cả</option>
+                  {floors.map((floor) => (
+                    <option key={floor._id} value={floor._id}>
+                      Tầng {floor.floorNumber}
+                    </option>
+                  ))}
+                </select>
               </label>
             </div>
 
@@ -69,14 +69,14 @@ export function ManagerParkingSpaceHeader({
                 className="h-10 rounded-lg bg-btn-primary px-4 text-sm font-semibold text-btn-primary-fg transition hover:opacity-90"
                 onClick={onCreateSlot}
               >
-                Create car slot
+                Tạo ô đỗ ô tô
               </button>
               <button
                 type="button"
                 className="h-10 rounded-lg border border-theme px-4 text-sm font-semibold text-fg transition hover:bg-badge"
                 onClick={onCreateRow}
               >
-                Create motorcycle row
+                Tạo hàng xe máy
               </button>
             </div>
           </div>

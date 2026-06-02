@@ -5,8 +5,8 @@ import { LogoutButton } from '../common/LogoutButton'
 
 const MANAGER_NAV_ITEMS = [
   { to: '/manager', label: 'Overview', icon: 'grid' },
-  { to: '/manager/buildings', label: 'Buildings', icon: 'building' },
-  { to: '/manager/slots', label: 'Slots & Zones', icon: 'slots' },
+  { to: '/manager/buildings', label: 'Tòa Nhà', icon: 'building' },
+  { to: '/manager/slots', label: 'Chỗ đỗ', icon: 'slots' },
   { to: '/manager/bookings', label: 'Bookings', icon: 'calendar' },
   { to: '/manager/gate-logs', label: 'Gate Logs', icon: 'gate' },
   { to: '/manager/staff', label: 'Staff', icon: 'staff' },

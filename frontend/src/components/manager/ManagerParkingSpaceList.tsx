@@ -43,7 +43,7 @@ export function ManagerParkingSpaceList({
   if (isLoading) {
     return (
       <div className="liquid-glass-card rounded-lg border border-theme bg-badge p-4 text-sm text-muted">
-        Loading parking spaces...
+        Đang tải dữ liệu chỗ đỗ...
       </div>
     )
   }
@@ -51,7 +51,7 @@ export function ManagerParkingSpaceList({
   if (filteredSlots.length === 0 && filteredRows.length === 0) {
     return (
       <div className="liquid-glass-card rounded-lg border border-theme bg-badge p-4 text-sm text-muted">
-        No parking spaces match the current filters.
+        Không có chỗ đỗ nào phù hợp với bộ lọc hiện tại.
       </div>
     )
   }

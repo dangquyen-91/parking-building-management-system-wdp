@@ -51,7 +51,7 @@ export function useManagerParkingSpaces() {
       setBuildings(buildingsResponse.buildings ?? [])
     } catch (err) {
       if (!isMountedRef.current) return
-      setError(err instanceof Error ? err.message : 'Failed to load parking data.')
+      setError(err instanceof Error ? err.message : 'Không thể tải dữ liệu chỗ đỗ.')
     } finally {
       if (!isMountedRef.current) return
       setIsLoading(false)

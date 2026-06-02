@@ -94,7 +94,7 @@ export function ManagerSlotsPage() {
       await reloadSlots()
       setSlotModalOpen(false)
     } catch (err) {
-      setSlotSubmitError(err instanceof Error ? err.message : 'Failed to save parking slot.')
+      setSlotSubmitError(err instanceof Error ? err.message : 'Không thể lưu ô đỗ ô tô.')
     } finally {
       setIsSubmitting(false)
     }
@@ -113,20 +113,20 @@ export function ManagerSlotsPage() {
       await reloadRows()
       setRowModalOpen(false)
     } catch (err) {
-      setRowSubmitError(err instanceof Error ? err.message : 'Failed to save motorcycle row.')
+      setRowSubmitError(err instanceof Error ? err.message : 'Không thể lưu hàng xe máy.')
     } finally {
       setIsSubmitting(false)
     }
   }
 
   async function handleDeleteSlot(slot: ParkingSlot) {
-    if (!window.confirm(`Delete slot ${slot.slotCode}?`)) return
+    if (!window.confirm(`Xóa ô đỗ ${slot.slotCode}?`)) return
 
     try {
       await parkingSlotApi.deleteSlot(slot._id)
       await reloadSlots()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to delete slot.')
+      setError(err instanceof Error ? err.message : 'Không thể xóa ô đỗ.')
     }
   }
 
@@ -144,10 +144,10 @@ export function ManagerSlotsPage() {
       />
 
       <div className="mb-6 grid gap-3 sm:grid-cols-4">
-        <ManagerStatCard label="Car slots" value={stats.totalSlots} detail={`${stats.occupiedSlots} occupied`} />
-        <ManagerStatCard label="Rows" value={stats.totalRows} detail="Motorcycle rows" />
-        <ManagerStatCard label="Moto capacity" value={stats.rowCapacity} detail={`${stats.rowOccupied} occupied`} />
-        <ManagerStatCard label="Maintenance" value={stats.maintenanceSlots} detail="Car slots" />
+        <ManagerStatCard label="Ô đỗ ô tô" value={stats.totalSlots} detail={`${stats.occupiedSlots} đang dùng`} />
+        <ManagerStatCard label="Hàng xe máy" value={stats.totalRows} detail="Tổng số hàng" />
+        <ManagerStatCard label="Sức chứa xe máy" value={stats.rowCapacity} detail={`${stats.rowOccupied} đang dùng`} />
+        <ManagerStatCard label="Bảo trì" value={stats.maintenanceSlots} detail="Ô đỗ ô tô" />
       </div>
 
       {error && (

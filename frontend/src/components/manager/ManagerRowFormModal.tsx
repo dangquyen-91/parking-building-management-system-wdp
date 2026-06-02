@@ -39,8 +39,8 @@ export function ManagerRowFormModal({
     return floors.map((floor) => {
       const buildingName = typeof floor.buildingId === 'string' ? '' : floor.buildingId?.name
       const label = buildingName
-        ? `${buildingName} / Floor ${floor.floorNumber}`
-        : `Floor ${floor.floorNumber}`
+        ? `${buildingName} / Tầng ${floor.floorNumber}`
+        : `Tầng ${floor.floorNumber}`
 
       return {
         id: floor._id,
@@ -105,26 +105,26 @@ export function ManagerRowFormModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center px-4 py-6">
       <OverlayBackdrop
         onClose={onClose}
-        label="Close row form"
+        label="Đóng form hàng xe máy"
         className="fixed inset-0 z-40 bg-overlay/80 backdrop-blur-[2px]"
       />
       <div className="relative z-50 w-full max-w-xl rounded-2xl border border-theme bg-page p-5 shadow-xl">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="text-[10px] uppercase tracking-[0.2em] text-subtle">Manager // Rows</p>
+            <p className="text-[10px] uppercase tracking-[0.2em] text-subtle">Quản lý // Hàng xe máy</p>
             <h2 className="mt-2 text-xl font-semibold text-fg">
-              {mode === 'create' ? 'Create motorcycle row' : 'Edit motorcycle row'}
+              {mode === 'create' ? 'Tạo hàng xe máy' : 'Chỉnh sửa hàng xe máy'}
             </h2>
-            <p className="mt-2 text-xs text-muted">Manage row code, capacity, and notes.</p>
+            <p className="mt-2 text-xs text-muted">Quản lý mã hàng, sức chứa và ghi chú.</p>
           </div>
           <button type="button" className="text-xs text-subtle hover:text-fg" onClick={onClose}>
-            Close
+            Đóng
           </button>
         </div>
 
         <form className="mt-5 grid gap-4" onSubmit={handleSubmit}>
           <label className="grid gap-2 text-xs text-subtle">
-            Motorcycle floor
+            Tầng xe máy
             <select
               className="h-10 rounded-lg border border-theme bg-page px-3 text-sm text-fg"
               value={floorId}
@@ -142,7 +142,7 @@ export function ManagerRowFormModal({
 
           <div className="grid gap-3 sm:grid-cols-2">
             <label className="grid gap-2 text-xs text-subtle">
-              Row code
+              Mã hàng
               <input
                 className="h-10 rounded-lg border border-theme bg-page px-3 text-sm text-fg"
                 value={rowCode}
@@ -152,7 +152,7 @@ export function ManagerRowFormModal({
               />
             </label>
             <label className="grid gap-2 text-xs text-subtle">
-              Capacity
+              Sức chứa
               <input
                 className="h-10 rounded-lg border border-theme bg-page px-3 text-sm text-fg"
                 value={capacity}
@@ -165,12 +165,12 @@ export function ManagerRowFormModal({
           </div>
 
           <label className="grid gap-2 text-xs text-subtle">
-            Note (optional)
+            Ghi chú (không bắt buộc)
             <textarea
               className="min-h-[96px] rounded-lg border border-theme bg-page px-3 py-2 text-sm text-fg"
               value={note}
               onChange={(event) => setNote(event.target.value)}
-              placeholder="Motorcycle row near gate"
+              placeholder="Ví dụ: Hàng xe máy gần cổng"
             />
           </label>
 
@@ -186,14 +186,14 @@ export function ManagerRowFormModal({
               className="h-10 rounded-lg border border-theme px-4 text-sm text-subtle hover:text-fg"
               onClick={onClose}
             >
-              Cancel
+              Hủy
             </button>
             <button
               type="submit"
               className="h-10 rounded-lg bg-btn-primary px-4 text-sm font-semibold text-btn-primary-fg transition-opacity disabled:cursor-not-allowed disabled:opacity-60"
               disabled={!isValid || isSubmitting}
             >
-              {isSubmitting ? 'Saving...' : mode === 'create' ? 'Create row' : 'Save changes'}
+              {isSubmitting ? 'Đang lưu...' : mode === 'create' ? 'Tạo hàng' : 'Lưu thay đổi'}
             </button>
           </div>
         </form>

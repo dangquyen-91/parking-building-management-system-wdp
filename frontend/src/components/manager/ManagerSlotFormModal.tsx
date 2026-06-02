@@ -29,6 +29,13 @@ type ManagerSlotFormModalProps = {
 
 const SLOT_STATUSES: SlotStatus[] = ['empty', 'occupied', 'reserved', 'maintenance']
 
+const SLOT_STATUS_LABELS: Record<SlotStatus, string> = {
+  empty: 'Trống',
+  occupied: 'Đang dùng',
+  reserved: 'Đã đặt',
+  maintenance: 'Bảo trì',
+}
+
 export function ManagerSlotFormModal({
   open,
   mode,
@@ -43,8 +50,8 @@ export function ManagerSlotFormModal({
     return floors.map((floor) => {
       const buildingName = typeof floor.buildingId === 'string' ? '' : floor.buildingId?.name
       const label = buildingName
-        ? `${buildingName} / Floor ${floor.floorNumber}`
-        : `Floor ${floor.floorNumber}`
+        ? `${buildingName} / Tầng ${floor.floorNumber}`
+        : `Tầng ${floor.floorNumber}`
 
       return {
         id: floor._id,
@@ -139,20 +146,20 @@ export function ManagerSlotFormModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center px-4 py-6">
       <OverlayBackdrop
         onClose={onClose}
-        label="Close slot form"
+        label="Đóng form ô đỗ"
         className="fixed inset-0 z-40 bg-overlay/80 backdrop-blur-[2px]"
       />
       <div className="relative z-50 w-full max-w-xl rounded-2xl border border-theme bg-page p-5 shadow-xl">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="text-[10px] uppercase tracking-[0.2em] text-subtle">Manager // Slots</p>
+            <p className="text-[10px] uppercase tracking-[0.2em] text-subtle">Quản lý // Ô đỗ</p>
             <h2 className="mt-2 text-xl font-semibold text-fg">
-              {mode === 'create' ? 'Create parking slot' : 'Edit parking slot'}
+              {mode === 'create' ? 'Tạo ô đỗ ô tô' : 'Chỉnh sửa ô đỗ ô tô'}
             </h2>
-            <p className="mt-2 text-xs text-muted">Manage slot code, status, and notes.</p>
+            <p className="mt-2 text-xs text-muted">Quản lý mã ô đỗ, trạng thái và ghi chú.</p>
           </div>
           <button type="button" className="text-xs text-subtle hover:text-fg" onClick={onClose}>
-            Close
+            Đóng
           </button>
         </div>
 
@@ -168,7 +175,7 @@ export function ManagerSlotFormModal({
                 }`}
                 onClick={() => setCreateMode('single')}
               >
-                Single slot
+                Một ô
               </button>
               <button
                 type="button"
@@ -179,12 +186,12 @@ export function ManagerSlotFormModal({
                 }`}
                 onClick={() => setCreateMode('bulk')}
               >
-                Bulk create
+                Tạo hàng loạt
               </button>
             </div>
           )}
           <label className="grid gap-2 text-xs text-subtle">
-            Floor
+            Tầng
             <select
               className="h-10 rounded-lg border border-theme bg-page px-3 text-sm text-fg"
               value={floorId}
@@ -203,7 +210,7 @@ export function ManagerSlotFormModal({
           {mode === 'create' && createMode === 'bulk' ? (
             <div className="grid gap-3 sm:grid-cols-2">
               <label className="grid gap-2 text-xs text-subtle">
-                Quantity
+                Số lượng
                 <input
                   className="h-10 rounded-lg border border-theme bg-page px-3 text-sm text-fg"
                   value={quantity}
@@ -214,7 +221,7 @@ export function ManagerSlotFormModal({
                 />
               </label>
               <label className="grid gap-2 text-xs text-subtle">
-                Start from
+                Bắt đầu từ
                 <input
                   className="h-10 rounded-lg border border-theme bg-page px-3 text-sm text-fg"
                   value={startFrom}
@@ -225,7 +232,7 @@ export function ManagerSlotFormModal({
                 />
               </label>
               <label className="grid gap-2 text-xs text-subtle sm:col-span-2">
-                Prefix
+                Tiền tố
                 <input
                   className="h-10 rounded-lg border border-theme bg-page px-3 text-sm text-fg"
                   value={prefix}
@@ -236,7 +243,7 @@ export function ManagerSlotFormModal({
             </div>
           ) : (
             <label className="grid gap-2 text-xs text-subtle">
-              Slot code
+              Mã ô đỗ
               <input
                 className="h-10 rounded-lg border border-theme bg-page px-3 text-sm text-fg"
                 value={slotCode}
@@ -250,19 +257,19 @@ export function ManagerSlotFormModal({
           {mode === 'edit' && (
             <div className="grid gap-3 sm:grid-cols-2">
               <label className="grid gap-2 text-xs text-subtle">
-                Vehicle type
+                Loại xe
                 <select
                   className="h-10 rounded-lg border border-theme bg-page px-3 text-sm text-fg"
                   value={vehicleType}
                   onChange={(event) => setVehicleType(event.target.value as 'car' | 'motorcycle')}
                 >
-                  <option value="car">Car</option>
-                  <option value="motorcycle">Motorcycle</option>
+                  <option value="car">Ô tô</option>
+                  <option value="motorcycle">Xe máy</option>
                 </select>
               </label>
 
               <label className="grid gap-2 text-xs text-subtle">
-                Status
+                Trạng thái
                 <select
                   className="h-10 rounded-lg border border-theme bg-page px-3 text-sm text-fg"
                   value={status}
@@ -270,7 +277,7 @@ export function ManagerSlotFormModal({
                 >
                   {SLOT_STATUSES.map((slotStatus) => (
                     <option key={slotStatus} value={slotStatus}>
-                      {slotStatus}
+                      {SLOT_STATUS_LABELS[slotStatus]}
                     </option>
                   ))}
                 </select>
@@ -279,12 +286,12 @@ export function ManagerSlotFormModal({
           )}
 
           <label className="grid gap-2 text-xs text-subtle">
-            Note (optional)
+            Ghi chú (không bắt buộc)
             <textarea
               className="min-h-[96px] rounded-lg border border-theme bg-page px-3 py-2 text-sm text-fg"
               value={note}
               onChange={(event) => setNote(event.target.value)}
-              placeholder="Reserved for VIP"
+              placeholder="Ví dụ: Dành riêng cho khách VIP"
             />
           </label>
 
@@ -300,7 +307,7 @@ export function ManagerSlotFormModal({
               className="h-10 rounded-lg border border-theme px-4 text-sm text-subtle hover:text-fg"
               onClick={onClose}
             >
-              Cancel
+              Hủy
             </button>
             <button
               type="submit"
@@ -308,12 +315,12 @@ export function ManagerSlotFormModal({
               disabled={!isValid || isSubmitting}
             >
               {isSubmitting
-                ? 'Saving...'
+                ? 'Đang lưu...'
                 : mode === 'create'
                 ? createMode === 'bulk'
-                  ? 'Create slots'
-                  : 'Create slot'
-                : 'Save changes'}
+                  ? 'Tạo các ô đỗ'
+                  : 'Tạo ô đỗ'
+                : 'Lưu thay đổi'}
             </button>
           </div>
         </form>
