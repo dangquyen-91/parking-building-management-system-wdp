@@ -1,4 +1,5 @@
 export type SlotStatus = 'available' | 'occupied' | 'reserved' | 'maintenance'
+export type ParkingRowStatus = 'full'
 export type BookingStatus = 'confirmed' | 'pending' | 'cancelled'
 export type GateLogStatus = 'checkin' | 'checkout'
 
@@ -70,18 +71,19 @@ export const MANAGER_STAFF: ManagerStaff[] = [
   { id: 'ST-04', name: 'Quyen Do', shift: '22:00 - 06:00', gate: 'Gate B', checkins: 0, checkouts: 0, status: 'offline' },
 ]
 
-export const statusTone: Record<SlotStatus | BookingStatus | GateLogStatus | ManagerStaff['status'], string> = {
-  available: 'border-emerald-400/40 bg-emerald-500/10 text-emerald-200',
-  occupied: 'border-sky-400/40 bg-sky-500/10 text-sky-200',
-  reserved: 'border-amber-400/40 bg-amber-500/10 text-amber-100',
-  maintenance: 'border-rose-400/40 bg-rose-500/10 text-rose-200',
-  confirmed: 'border-emerald-400/40 bg-emerald-500/10 text-emerald-200',
-  pending: 'border-amber-400/40 bg-amber-500/10 text-amber-100',
-  cancelled: 'border-rose-400/40 bg-rose-500/10 text-rose-200',
-  checkin: 'border-sky-400/40 bg-sky-500/10 text-sky-200',
-  checkout: 'border-violet-400/40 bg-violet-500/10 text-violet-100',
-  online: 'border-emerald-400/40 bg-emerald-500/10 text-emerald-200',
-  break: 'border-amber-400/40 bg-amber-500/10 text-amber-100',
+export const statusTone: Record<SlotStatus | ParkingRowStatus | BookingStatus | GateLogStatus | ManagerStaff['status'], string> = {
+  available: 'border-emerald-500/70 bg-emerald-100 text-emerald-800 dark:border-emerald-300/70 dark:bg-emerald-500/15 dark:text-emerald-100',
+  occupied: 'border-sky-500/70 bg-sky-100 text-sky-800 dark:border-sky-300/70 dark:bg-sky-500/15 dark:text-sky-100',
+  reserved: 'border-amber-500/80 bg-amber-100 text-amber-900 dark:border-amber-300/70 dark:bg-amber-500/15 dark:text-amber-100',
+  full: 'border-orange-500/80 bg-orange-100 text-orange-900 dark:border-orange-300/70 dark:bg-orange-500/15 dark:text-orange-100',
+  maintenance: 'border-rose-500/70 bg-rose-100 text-rose-800 dark:border-rose-300/70 dark:bg-rose-500/15 dark:text-rose-100',
+  confirmed: 'border-emerald-500/70 bg-emerald-100 text-emerald-800 dark:border-emerald-300/70 dark:bg-emerald-500/15 dark:text-emerald-100',
+  pending: 'border-amber-500/80 bg-amber-100 text-amber-900 dark:border-amber-300/70 dark:bg-amber-500/15 dark:text-amber-100',
+  cancelled: 'border-rose-500/70 bg-rose-100 text-rose-800 dark:border-rose-300/70 dark:bg-rose-500/15 dark:text-rose-100',
+  checkin: 'border-sky-500/70 bg-sky-100 text-sky-800 dark:border-sky-300/70 dark:bg-sky-500/15 dark:text-sky-100',
+  checkout: 'border-violet-500/70 bg-violet-100 text-violet-800 dark:border-violet-300/70 dark:bg-violet-500/15 dark:text-violet-100',
+  online: 'border-emerald-500/70 bg-emerald-100 text-emerald-800 dark:border-emerald-300/70 dark:bg-emerald-500/15 dark:text-emerald-100',
+  break: 'border-amber-500/80 bg-amber-100 text-amber-900 dark:border-amber-300/70 dark:bg-amber-500/15 dark:text-amber-100',
   offline: 'border-theme bg-badge text-subtle',
 }
 

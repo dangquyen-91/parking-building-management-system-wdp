@@ -1,12 +1,16 @@
 import { ManagerStatusBadge } from './ManagerStatusBadge'
 import type { ParkingRow } from '../../services/managerParkingRowApi'
 
-type RowBadgeStatus = 'available' | 'reserved' | 'maintenance'
-
 const ROW_STATUS_LABELS: Record<ParkingRow['status'], string> = {
   available: 'Còn chỗ',
   full: 'Đã đầy',
   maintenance: 'Bảo trì',
+}
+
+const ROW_STATUS_DETAILS: Record<ParkingRow['status'], string> = {
+  available: 'Có thể nhận thêm xe',
+  full: 'Không còn chỗ trống',
+  maintenance: 'Tạm ngưng sử dụng',
 }
 
 type ManagerRowGridSectionProps = {
@@ -36,8 +40,6 @@ export function ManagerRowGridSection({
 
       <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {rows.map((row) => {
-          const badgeStatus: RowBadgeStatus =
-            row.status === 'full' ? 'reserved' : row.status
           const availableCount = Math.max(0, row.capacity - row.occupiedCount)
 
           return (
@@ -49,8 +51,9 @@ export function ManagerRowGridSection({
                     {row.occupiedCount}/{row.capacity} đang dùng
                   </p>
                 </div>
-                <ManagerStatusBadge status={badgeStatus} label={ROW_STATUS_LABELS[row.status]} />
+                <ManagerStatusBadge status={row.status} label={ROW_STATUS_LABELS[row.status]} />
               </div>
+              <p className="text-[11px] font-medium text-subtle">{ROW_STATUS_DETAILS[row.status]}</p>
               <div className="grid grid-cols-2 gap-2 text-[11px] text-muted">
                 <span>Còn trống</span>
                 <span className="text-right font-semibold text-fg">{availableCount}</span>

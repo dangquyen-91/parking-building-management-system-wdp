@@ -10,6 +10,13 @@ const SLOT_STATUS_LABELS: Record<ParkingSlot['status'], string> = {
   maintenance: 'Bảo trì',
 }
 
+const SLOT_STATUS_DETAILS: Record<ParkingSlot['status'], string> = {
+  empty: 'Có thể nhận xe',
+  occupied: 'Đang có xe trong ô',
+  reserved: 'Đã giữ chỗ',
+  maintenance: 'Tạm ngưng sử dụng',
+}
+
 const VEHICLE_TYPE_LABELS: Record<ParkingSlot['vehicleType'], string> = {
   car: 'Ô tô',
   motorcycle: 'Xe máy',
@@ -55,6 +62,7 @@ export function ManagerSlotGridSection({
                 </div>
                 <ManagerStatusBadge status={badgeStatus} label={SLOT_STATUS_LABELS[slot.status]} />
               </div>
+              <p className="text-[11px] font-medium text-subtle">{SLOT_STATUS_DETAILS[slot.status]}</p>
               {slot.note && <p className="text-[11px] text-muted">{slot.note}</p>}
               <div className="mt-auto flex items-center justify-between gap-2 text-[11px]">
                 <button type="button" className="font-semibold text-fg hover:text-fg" onClick={() => onEdit(slot)}>
@@ -62,7 +70,7 @@ export function ManagerSlotGridSection({
                 </button>
                 <button
                   type="button"
-                  className="font-semibold text-rose-100 hover:text-rose-100"
+                  className="font-semibold text-rose-700 hover:text-rose-800 dark:text-rose-200 dark:hover:text-rose-100"
                   onClick={() => onDelete(slot)}
                 >
                   Xóa
