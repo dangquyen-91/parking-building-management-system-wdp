@@ -23,8 +23,8 @@ router.use(authenticate);
 
 router.get('/available-for-subscription', privateCache(15), getAvailableForSubscription);
 
-router.get('/', authorize('admin', 'manager', 'staff'), privateCache(30), getAll);
-router.get('/:id', authorize('admin', 'manager', 'staff'), privateCache(30), getOne);
+router.get('/', authorize('admin', 'manager', 'staff'), noCache, getAll);
+router.get('/:id', authorize('admin', 'manager', 'staff'), noCache, getOne);
 
 router.post('/', authorize('admin', 'manager'), noCache, validate(createSlotSchema), create);
 router.post('/bulk', authorize('admin', 'manager'), noCache, validate(bulkCreateSchema), bulkCreate);

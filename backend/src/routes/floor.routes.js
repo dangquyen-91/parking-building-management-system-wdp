@@ -9,8 +9,8 @@ const router = Router();
 
 router.use(authenticate);
 
-router.get('/', authorize('admin', 'manager', 'staff'), privateCache(60), getAll);
-router.get('/:id', authorize('admin', 'manager', 'staff'), privateCache(60), getOne);
+router.get('/', authorize('admin', 'manager', 'staff'), noCache, getAll);
+router.get('/:id', authorize('admin', 'manager', 'staff'), noCache, getOne);
 router.post('/', authorize('admin', 'manager'), noCache, validate(createFloorSchema), create);
 router.patch('/:id', authorize('admin', 'manager'), noCache, validate(updateFloorSchema), update);
 router.delete('/:id', authorize('admin'), noCache, remove);
