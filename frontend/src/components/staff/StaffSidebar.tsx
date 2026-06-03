@@ -108,7 +108,7 @@ export const StaffSidebar = forwardRef<HTMLElement, StaffSidebarProps>(function 
         'liquid-glass-card flex flex-col border-r border-theme rounded-none',
         'max-lg:fixed max-lg:inset-y-0 max-lg:left-0 max-lg:z-50',
         'max-lg:w-[min(18rem,85vw)] max-lg:max-h-screen max-lg:overscroll-contain',
-        'lg:static lg:z-auto lg:w-full lg:min-h-screen lg:translate-x-0 lg:visible lg:pointer-events-auto',
+        'lg:fixed lg:inset-y-0 lg:left-0 lg:z-30 lg:w-60 lg:h-screen lg:translate-x-0 lg:visible lg:pointer-events-auto',
         'transition-transform duration-300 ease-out lg:transition-none',
         isOpen
           ? 'max-lg:translate-x-0 max-lg:visible max-lg:pointer-events-auto'

@@ -27,14 +27,14 @@ export function StaffLayout() {
   })
 
   return (
-    <div className="min-h-screen bg-page text-fg">
+    <div className="h-screen overflow-hidden bg-page text-fg">
       <SkipLink />
 
       {sidebarOpen && (
         <OverlayBackdrop onClose={closeSidebar} label="Close staff navigation menu" />
       )}
 
-      <div className="flex min-h-screen w-full">
+      <div className="flex h-full w-full">
         <div className="max-lg:w-0 max-lg:min-w-0 max-lg:shrink-0 max-lg:overflow-visible lg:w-60 lg:shrink-0">
           <StaffSidebar ref={sidebarRef} isOpen={sidebarOpen} onNavigate={closeSidebar} />
         </div>
