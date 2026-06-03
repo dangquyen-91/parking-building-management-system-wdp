@@ -37,7 +37,7 @@ export function StaffCheckInPanel({
       plate: normalizedPlate,
       visitorType,
       vehicleType: 'Motorbike',
-      slot: `${zone.label.split(' - ')[0]}-${zone.label.endsWith('Zone A') ? 'A' : 'B'}-${ticketNumber
+      slot: `${zone.label.split(' - ')[0]}-${zone.label.endsWith('Khu A') ? 'A' : 'B'}-${ticketNumber
         .toString()
         .slice(-2)}`,
       zone: zone.label,
@@ -50,15 +50,15 @@ export function StaffCheckInPanel({
   return (
     <section className="liquid-glass-card rounded-lg p-4 md:p-5">
       <div className="flex flex-col gap-2 border-b border-theme pb-4">
-        <p className="text-[10px] uppercase tracking-[0.18em] text-subtle">Xe vao</p>
-        <h2 className="text-xl font-semibold text-fg">Tao ve gui xe may</h2>
+        <p className="text-[10px] uppercase tracking-[0.18em] text-subtle">Xe vào</p>
+        <h2 className="text-xl font-semibold text-fg">Tạo vé gửi xe máy</h2>
         <p className="text-sm text-muted">
-          Staff ghi nhan bien so, loai khach va khu de xe. Du lieu hien chi nam tren frontend.
+          Nhân viên ghi nhận biển số, loại khách và khu để xe. Dữ liệu hiện chỉ nằm trên frontend.
         </p>
       </div>
 
       <form className="mt-5 grid gap-4" onSubmit={handleSubmit}>
-        <StaffGateField label="Bien so xe">
+        <StaffGateField label="Biển số xe">
           <input
             required
             value={plate}
@@ -83,13 +83,13 @@ export function StaffCheckInPanel({
             >
               <span className="block text-sm font-semibold">{visitorTypeLabel[type]}</span>
               <span className="mt-1 block text-xs opacity-75">
-                {type === 'walkIn' ? 'Khach chi den gui xe va lay luc nao cung duoc' : 'Khach co tai khoan trong he thong'}
+                {type === 'walkIn' ? 'Khách chỉ đến gửi xe và lấy lúc nào cũng được' : 'Khách có tài khoản trong hệ thống'}
               </span>
             </button>
           ))}
         </div>
 
-        <StaffGateField label="Khu de xe">
+        <StaffGateField label="Khu để xe">
           <select
             value={zoneId}
             onChange={(event) => onZoneChange(event.target.value)}
@@ -97,18 +97,18 @@ export function StaffCheckInPanel({
           >
             {STAFF_ZONES.map((zone) => (
               <option key={zone.id} value={zone.id}>
-                {zone.label} - con {zone.available}/{zone.total}
+                {zone.label} - còn {zone.available}/{zone.total}
               </option>
             ))}
           </select>
         </StaffGateField>
 
-        <StaffGateField label="Ghi chu">
+        <StaffGateField label="Ghi chú">
           <textarea
             value={note}
             onChange={(event) => onNoteChange(event.target.value)}
             rows={3}
-            placeholder="VD: mu bao hiem, the tam, tinh trang xe..."
+            placeholder="VD: mũ bảo hiểm, thẻ tạm, tình trạng xe..."
             className="auth-input resize-none rounded-lg border px-3 py-3 text-sm text-fg"
           />
         </StaffGateField>
@@ -117,7 +117,7 @@ export function StaffCheckInPanel({
           type="submit"
           className="h-11 rounded-lg bg-btn-primary px-4 text-sm font-semibold text-btn-primary-fg transition-transform hover:-translate-y-0.5"
         >
-          Check-in xe vao
+          Ghi nhận xe vào
         </button>
       </form>
     </section>

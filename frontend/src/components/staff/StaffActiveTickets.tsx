@@ -15,8 +15,8 @@ export function StaffActiveTickets({
     <section className="liquid-glass-card rounded-lg p-4 md:p-5">
       <div className="mb-4 flex items-center justify-between gap-3">
         <div>
-          <p className="text-[10px] uppercase tracking-[0.18em] text-subtle">Trong bai</p>
-          <h2 className="mt-1 text-base font-semibold text-fg">Xe dang gui</h2>
+          <p className="text-[10px] uppercase tracking-[0.18em] text-subtle">Trong bãi</p>
+          <h2 className="mt-1 text-base font-semibold text-fg">Xe đang gửi</h2>
         </div>
         <span className="rounded-full border border-theme px-3 py-1 text-xs text-subtle">
           {tickets.length} xe

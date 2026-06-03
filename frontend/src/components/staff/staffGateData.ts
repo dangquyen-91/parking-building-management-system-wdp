@@ -27,9 +27,9 @@ export type StaffIncident = {
 }
 
 export const STAFF_ZONES = [
-  { id: 'M-B1-A', label: 'B1 - Zone A', available: 18, total: 40 },
-  { id: 'M-B1-B', label: 'B1 - Zone B', available: 11, total: 32 },
-  { id: 'M-B2-A', label: 'B2 - Zone A', available: 24, total: 46 },
+  { id: 'M-B1-A', label: 'B1 - Khu A', available: 18, total: 40 },
+  { id: 'M-B1-B', label: 'B1 - Khu B', available: 11, total: 32 },
+  { id: 'M-B2-A', label: 'B2 - Khu A', available: 24, total: 46 },
 ] as const
 
 export const INITIAL_TICKETS: ParkingTicket[] = [
@@ -39,10 +39,10 @@ export const INITIAL_TICKETS: ParkingTicket[] = [
     visitorType: 'walkIn',
     vehicleType: 'Motorbike',
     slot: 'B1-A-18',
-    zone: 'B1 - Zone A',
+    zone: 'B1 - Khu A',
     checkInAt: '2026-05-28T08:12:00',
     status: 'active',
-    note: 'Khach vang lai gui trong ngay',
+    note: 'Khách vãng lai gửi trong ngày',
   },
   {
     id: 'PK-MOTO-1025',
@@ -50,10 +50,10 @@ export const INITIAL_TICKETS: ParkingTicket[] = [
     visitorType: 'user',
     vehicleType: 'Motorbike',
     slot: 'B1-B-07',
-    zone: 'B1 - Zone B',
+    zone: 'B1 - Khu B',
     checkInAt: '2026-05-28T09:35:00',
     status: 'active',
-    note: 'User da co tai khoan',
+    note: 'Người dùng đã có tài khoản',
   },
   {
     id: 'PK-MOTO-1021',
@@ -61,7 +61,7 @@ export const INITIAL_TICKETS: ParkingTicket[] = [
     visitorType: 'walkIn',
     vehicleType: 'Motorbike',
     slot: 'B2-A-11',
-    zone: 'B2 - Zone A',
+    zone: 'B2 - Khu A',
     checkInAt: '2026-05-27T17:20:00',
     checkOutAt: '2026-05-27T20:05:00',
     status: 'completed',
@@ -71,42 +71,42 @@ export const INITIAL_TICKETS: ParkingTicket[] = [
 export const STAFF_INCIDENTS: StaffIncident[] = [
   {
     id: 'INC-301',
-    title: 'Khach bao mat ve xe',
+    title: 'Khách báo mất vé xe',
     plate: '59X2-481.22',
-    category: 'Lost ticket',
+    category: 'Mất vé',
     reportedAt: '2026-05-28T10:20:00',
     status: 'open',
-    note: 'Da doi chieu bien so va gio vao, cho manager xac nhan.',
+    note: 'Đã đối chiếu biển số và giờ vào, chờ quản lý xác nhận.',
   },
   {
     id: 'INC-302',
-    title: 'Sai bien so khi check-in',
+    title: 'Sai biển số khi ghi nhận xe vào',
     plate: '51K7-902.16',
-    category: 'Plate correction',
+    category: 'Sửa biển số',
     reportedAt: '2026-05-28T09:48:00',
     status: 'reviewing',
-    note: 'Can sua tu 51K7-902.61 thanh 51K7-902.16.',
+    note: 'Cần sửa từ 51K7-902.61 thành 51K7-902.16.',
   },
   {
     id: 'INC-298',
-    title: 'Khu B2-A tam khoa 1 vi tri',
+    title: 'Khu B2-A tạm khóa 1 vị trí',
     plate: 'N/A',
-    category: 'Maintenance',
+    category: 'Bảo trì',
     reportedAt: '2026-05-27T18:05:00',
     status: 'resolved',
-    note: 'Da gan bien bao va mo lai sau khi ve sinh san.',
+    note: 'Đã gắn biển báo và mở lại sau khi vệ sinh sàn.',
   },
 ]
 
 export const visitorTypeLabel: Record<VisitorType, string> = {
-  walkIn: 'Khach vang lai',
-  user: 'User',
+  walkIn: 'Khách vãng lai',
+  user: 'Người dùng',
 }
 
 export const incidentStatusLabel: Record<IncidentStatus, string> = {
-  open: 'Dang mo',
-  reviewing: 'Dang xem xet',
-  resolved: 'Da xu ly',
+  open: 'Đang mở',
+  reviewing: 'Đang xem xét',
+  resolved: 'Đã xử lý',
 }
 
 export const incidentStatusClass: Record<IncidentStatus, string> = {

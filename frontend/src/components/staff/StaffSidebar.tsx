@@ -6,27 +6,27 @@ import { LogoutButton } from '../common/LogoutButton'
 const STAFF_NAV_ITEMS = [
   {
     to: '/staff',
-    label: 'Gate Check-in/out',
+    label: 'Cổng xe vào/ra',
     icon: 'gate',
   },
   {
     to: '/staff/vehicles',
-    label: 'Active Vehicles',
+    label: 'Xe đang gửi',
     icon: 'vehicles',
   },
   {
     to: '/staff/lost-ticket',
-    label: 'Lost Ticket',
+    label: 'Mất vé',
     icon: 'ticket',
   },
   {
     to: '/staff/incidents',
-    label: 'Incidents',
+    label: 'Sự cố',
     icon: 'incident',
   },
   {
     to: '/staff/shift',
-    label: 'Shift Summary',
+    label: 'Tổng kết ca',
     icon: 'shift',
   },
 ] as const
@@ -119,22 +119,22 @@ export const StaffSidebar = forwardRef<HTMLElement, StaffSidebarProps>(function 
         <NavLink
           to="/staff"
           className="flex items-center gap-2 text-fg font-medium text-sm min-w-0"
-          aria-label="Parking staff workspace"
+          aria-label="Khu làm việc nhân viên bãi xe"
           onClick={onNavigate}
         >
           <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-badge shrink-0">
             <LogoIcon size={18} />
           </span>
           <span className="leading-tight truncate">
-            Staff
+            Nhân viên
             <span className="block text-[10px] font-normal text-subtle tracking-wide">
-              Parking Gate
+              Cổng bãi xe
             </span>
           </span>
         </NavLink>
       </div>
 
-      <nav className="flex-1 px-3 py-4 flex flex-col gap-1 overflow-y-auto" aria-label="Staff navigation">
+      <nav className="flex-1 px-3 py-4 flex flex-col gap-1 overflow-y-auto" aria-label="Điều hướng nhân viên">
         {STAFF_NAV_ITEMS.map(({ to, label, icon }) => (
           <NavLink key={to} to={to} className={linkClassName} end onClick={onNavigate}>
             <span className="shrink-0">
@@ -161,7 +161,7 @@ export const StaffSidebar = forwardRef<HTMLElement, StaffSidebarProps>(function 
               strokeLinejoin="round"
             />
           </svg>
-          Back to Home
+          Về trang chủ
         </NavLink>
       </div>
     </aside>

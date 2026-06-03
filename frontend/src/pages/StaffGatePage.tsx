@@ -105,7 +105,7 @@ export function StaffGatePage() {
       setSlots(slotsResponse.slots ?? [])
       setFloors(floorsResponse.floors ?? [])
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Khong tai duoc du lieu cong.')
+      setError(err instanceof Error ? err.message : 'Không tải được dữ liệu cổng.')
     } finally {
       setIsLoading(false)
     }
@@ -132,7 +132,7 @@ export function StaffGatePage() {
       } catch (err) {
         if (!ignore) {
           setCheckoutPreview(null)
-          setActionMessage(err instanceof Error ? err.message : 'Khong tinh duoc phi checkout.')
+          setActionMessage(err instanceof Error ? err.message : 'Không tính được phí xe ra.')
         }
       } finally {
         if (!ignore) setIsPreviewLoading(false)
@@ -167,7 +167,7 @@ export function StaffGatePage() {
       }
     } catch (err) {
       setLookupResult(null)
-      setActionMessage(err instanceof Error ? err.message : 'Tra cuu bien so that bai.')
+      setActionMessage(err instanceof Error ? err.message : 'Tra cứu biển số thất bại.')
     } finally {
       setIsLookupLoading(false)
     }
@@ -190,10 +190,10 @@ export function StaffGatePage() {
       resetCheckInForm()
       setCheckoutQuery(response.session.licensePlate)
       setMode('checkout')
-      setActionMessage(`Da check-in ${response.session.licensePlate}.`)
+      setActionMessage(`Đã ghi nhận xe vào ${response.session.licensePlate}.`)
       await loadGateData()
     } catch (err) {
-      setActionMessage(err instanceof Error ? err.message : 'Check-in that bai.')
+      setActionMessage(err instanceof Error ? err.message : 'Ghi nhận xe vào thất bại.')
     } finally {
       setIsSubmitting(false)
     }
@@ -206,10 +206,10 @@ export function StaffGatePage() {
     try {
       const response = await staffGateApi.checkoutCash(session._id)
       closeSessionLocally(session._id, response.session)
-      setActionMessage(`Da checkout ${response.session.licensePlate} bang tien mat.`)
+      setActionMessage(`Đã ghi nhận xe ra ${response.session.licensePlate} bằng tiền mặt.`)
       await loadGateData()
     } catch (err) {
-      setActionMessage(err instanceof Error ? err.message : 'Checkout tien mat that bai.')
+      setActionMessage(err instanceof Error ? err.message : 'Ghi nhận xe ra bằng tiền mặt thất bại.')
     } finally {
       setIsSubmitting(false)
     }
@@ -224,14 +224,14 @@ export function StaffGatePage() {
 
       if (response.payment?.checkoutUrl) {
         window.open(response.payment.checkoutUrl, '_blank', 'noopener,noreferrer')
-        setActionMessage('Da tao link chuyen khoan PayOS. Checkout se dong khi webhook thanh cong.')
+        setActionMessage('Đã tạo link chuyển khoản PayOS. Phiên gửi xe sẽ đóng khi webhook thành công.')
       } else {
         closeSessionLocally(session._id, response.session)
-        setActionMessage(response.note ?? `Da checkout ${response.session.licensePlate}.`)
+        setActionMessage(response.note ?? `Đã ghi nhận xe ra ${response.session.licensePlate}.`)
         await loadGateData()
       }
     } catch (err) {
-      setActionMessage(err instanceof Error ? err.message : 'Checkout chuyen khoan that bai.')
+      setActionMessage(err instanceof Error ? err.message : 'Ghi nhận xe ra bằng chuyển khoản thất bại.')
     } finally {
       setIsSubmitting(false)
     }
@@ -274,10 +274,10 @@ export function StaffGatePage() {
     <div className="p-4 md:p-8 lg:p-10">
       <div className="mb-6 flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
         <div>
-          <p className="mb-3 text-[10px] uppercase tracking-[0.2em] text-subtle">Staff // Gate</p>
-          <h1 className="text-3xl font-bold tracking-tight text-fg md:text-4xl">Check-in / Checkout</h1>
+          <p className="mb-3 text-[10px] uppercase tracking-[0.2em] text-subtle">Nhân viên // Cổng</p>
+          <h1 className="text-3xl font-bold tracking-tight text-fg md:text-4xl">Xe vào / Xe ra</h1>
           <p className="mt-3 max-w-2xl text-sm text-muted">
-            Tra cuu bien so de backend tu nhan dien cu dan hay khach vang lai, sau do ghi nhan xe vao/ra.
+            Tra cứu biển số để hệ thống tự nhận diện cư dân hoặc khách vãng lai, sau đó ghi nhận xe vào/ra.
           </p>
         </div>
 
@@ -297,7 +297,7 @@ export function StaffGatePage() {
       {error && <div className="mb-5 rounded-lg border border-theme bg-badge p-4 text-sm text-rose-100">{error}</div>}
 
       {isLoading ? (
-        <div className="rounded-lg border border-theme bg-badge p-5 text-sm text-muted">Dang tai du lieu cong...</div>
+        <div className="rounded-lg border border-theme bg-badge p-5 text-sm text-muted">Đang tải dữ liệu cổng...</div>
       ) : (
         <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_24rem]">
           <div className="grid gap-5">

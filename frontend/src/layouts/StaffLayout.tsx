@@ -5,17 +5,17 @@ import { StaffSidebar } from '../components/staff/StaffSidebar'
 import { useOverlayPanel } from '../hooks/useOverlayPanel'
 
 const STAFF_PAGE_TITLES: Record<string, string> = {
-  '/staff': 'Staff Gate',
-  '/staff/vehicles': 'Active Vehicles',
-  '/staff/lost-ticket': 'Lost Ticket',
-  '/staff/incidents': 'Incidents',
-  '/staff/shift': 'Shift Summary',
+  '/staff': 'Cổng xe vào/ra',
+  '/staff/vehicles': 'Xe đang gửi',
+  '/staff/lost-ticket': 'Mất vé',
+  '/staff/incidents': 'Sự cố',
+  '/staff/shift': 'Tổng kết ca',
 }
 
 export function StaffLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const { pathname } = useLocation()
-  const pageTitle = STAFF_PAGE_TITLES[pathname] ?? 'Staff'
+  const pageTitle = STAFF_PAGE_TITLES[pathname] ?? 'Nhân viên'
   const sidebarRef = useRef<HTMLElement>(null)
   const menuButtonRef = useRef<HTMLButtonElement>(null)
 

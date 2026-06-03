@@ -12,11 +12,11 @@ export function normalizePlate(value: string) {
 }
 
 export function formatCustomerType(value: GateCustomerType) {
-  return value === 'resident' ? 'Cu dan' : 'Khach vang lai'
+  return value === 'resident' ? 'Cư dân' : 'Khách vãng lai'
 }
 
 export function formatVehicleType(value: GateVehicleType) {
-  return value === 'car' ? 'O to' : 'Xe may'
+  return value === 'car' ? 'Ô tô' : 'Xe máy'
 }
 
 export function getFloorId(value: GateRow | GateSlot) {
@@ -38,5 +38,5 @@ export function formatSessionSpot(session: GateSession) {
     return `${row.rowCode} (${row.occupiedCount}/${row.capacity})`
   }
 
-  return 'Tu dong'
+  return 'Tự động'
 }

@@ -65,15 +65,15 @@ export function StaffGateCheckInForm({
   return (
     <section className="liquid-glass-card rounded-lg p-4 md:p-5">
       <div className="flex flex-col gap-2 border-b border-theme pb-4">
-        <p className="text-[10px] uppercase tracking-[0.18em] text-subtle">Xe vao</p>
-        <h2 className="text-xl font-semibold text-fg">Check-in xe</h2>
+        <p className="text-[10px] uppercase tracking-[0.18em] text-subtle">Xe vào</p>
+        <h2 className="text-xl font-semibold text-fg">Ghi nhận xe vào</h2>
         <p className="text-sm text-muted">
-          Staff nhap bien so, tra cuu de backend xac dinh cu dan/khach vang lai, roi chon vi tri phu hop.
+          Nhân viên nhập biển số, tra cứu để hệ thống xác định cư dân hoặc khách vãng lai, rồi chọn vị trí phù hợp.
         </p>
       </div>
 
       <div className="mt-5 grid gap-4">
-        <StaffGateField label="Bien so xe">
+        <StaffGateField label="Biển số xe">
           <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_8rem]">
             <input
               required
@@ -88,7 +88,7 @@ export function StaffGateCheckInForm({
               disabled={isLookupLoading || normalizePlate(plate).length < 4}
               className="h-11 rounded-lg bg-btn-primary px-4 text-sm font-semibold text-btn-primary-fg disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {isLookupLoading ? 'Dang tra' : 'Tra cuu'}
+              {isLookupLoading ? 'Đang tra' : 'Tra cứu'}
             </button>
           </div>
         </StaffGateField>
@@ -106,13 +106,13 @@ export function StaffGateCheckInForm({
                 </p>
               </div>
               <span className="w-fit rounded-full border border-theme px-3 py-1 text-[11px] text-subtle">
-                {lookupResult.status === 'already_active' ? 'Dang gui' : 'San sang check-in'}
+                {lookupResult.status === 'already_active' ? 'Đang gửi' : 'Sẵn sàng ghi nhận xe vào'}
               </span>
             </div>
           </div>
         )}
 
-        <StaffGateField label="Loai xe">
+        <StaffGateField label="Loại xe">
           <div className="grid gap-3 sm:grid-cols-2">
             {(['motorcycle', 'car'] as const).map((type) => (
               <button
@@ -129,7 +129,7 @@ export function StaffGateCheckInForm({
               >
                 <span className="block text-sm font-semibold">{formatVehicleType(type)}</span>
                 <span className="mt-1 block text-xs opacity-75">
-                  {type === 'motorcycle' ? 'Chon hang do xe may' : 'Khach vang lai chon slot o to'}
+                  {type === 'motorcycle' ? 'Chọn hàng đỗ xe máy' : 'Khách vãng lai chọn ô đỗ ô tô'}
                 </span>
               </button>
             ))}
@@ -137,20 +137,20 @@ export function StaffGateCheckInForm({
         </StaffGateField>
 
         {vehicleType === 'motorcycle' ? (
-          <StaffGateField label="Hang xe may">
+          <StaffGateField label="Hàng xe máy">
             <select
               value={rowId}
               onChange={(event) => onRowChange(event.target.value)}
               className="auth-input h-11 rounded-lg border px-3 text-sm text-fg"
             >
-              <option value="">Chon hang con cho</option>
+              <option value="">Chọn hàng còn chỗ</option>
               {rowOptions.map((row) => {
                 const floor = floorMap.get(getFloorId(row))
                 const buildingName = getBuildingName(floor)
                 return (
                   <option key={row._id} value={row._id}>
                     {buildingName ? `${buildingName} - ` : ''}
-                    Tang {floor?.floorNumber ?? '--'} - {row.rowCode} - con{' '}
+                    Tầng {floor?.floorNumber ?? '--'} - {row.rowCode} - còn{' '}
                     {Math.max(0, row.capacity - row.occupiedCount)}/{row.capacity}
                   </option>
                 )
@@ -159,23 +159,23 @@ export function StaffGateCheckInForm({
           </StaffGateField>
         ) : checkInCustomerType === 'resident' ? (
           <div className="rounded-lg border border-theme bg-badge p-4 text-sm text-muted">
-            Cu dan o to se dung slot co dinh tren subscription, frontend khong gui slotId.
+            Cư dân ô tô sẽ dùng ô đỗ cố định trong gói cư dân, frontend không gửi slotId.
           </div>
         ) : (
-          <StaffGateField label="Slot o to khach vang lai">
+          <StaffGateField label="Ô đỗ ô tô cho khách vãng lai">
             <select
               value={slotId}
               onChange={(event) => onSlotChange(event.target.value)}
               className="auth-input h-11 rounded-lg border px-3 text-sm text-fg"
             >
-              <option value="">Chon slot con trong</option>
+              <option value="">Chọn ô còn trống</option>
               {slotOptions.map((slot) => {
                 const floor = floorMap.get(getFloorId(slot))
                 const buildingName = getBuildingName(floor)
                 return (
                   <option key={slot._id} value={slot._id}>
                     {buildingName ? `${buildingName} - ` : ''}
-                    Tang {floor?.floorNumber ?? '--'} - {slot.slotCode}
+                    Tầng {floor?.floorNumber ?? '--'} - {slot.slotCode}
                   </option>
                 )
               })}
@@ -183,12 +183,12 @@ export function StaffGateCheckInForm({
           </StaffGateField>
         )}
 
-        <StaffGateField label="Ghi chu">
+        <StaffGateField label="Ghi chú">
           <textarea
             value={note}
             onChange={(event) => onNoteChange(event.target.value)}
             rows={3}
-            placeholder="VD: the tam, tinh trang xe, huong dan dac biet..."
+            placeholder="VD: thẻ tạm, tình trạng xe, hướng dẫn đặc biệt..."
             className="auth-input resize-none rounded-lg border px-3 py-3 text-sm text-fg"
           />
         </StaffGateField>
@@ -199,7 +199,7 @@ export function StaffGateCheckInForm({
           disabled={!canCheckIn || isSubmitting}
           className="h-11 rounded-lg bg-btn-primary px-4 text-sm font-semibold text-btn-primary-fg transition-transform hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0"
         >
-          {isSubmitting ? 'Dang check-in...' : 'Check-in xe vao'}
+          {isSubmitting ? 'Đang ghi nhận...' : 'Ghi nhận xe vào'}
         </button>
       </div>
     </section>

@@ -10,9 +10,9 @@ export function StaffGateSummary({
   availableCount,
 }: StaffGateSummaryProps) {
   const stats = [
-    { label: 'Dang gui', value: activeCount },
-    { label: 'Da checkout', value: completedCount },
-    { label: 'Cho trong', value: availableCount },
+    { label: 'Đang gửi', value: activeCount },
+    { label: 'Đã trả xe', value: completedCount },
+    { label: 'Chỗ trống', value: availableCount },
   ]
 
   return (

@@ -28,18 +28,18 @@ export function StaffGateCheckoutPanel({
     <section className="liquid-glass-card rounded-lg p-4 md:p-5">
       <div className="flex flex-col gap-2 border-b border-theme pb-4">
         <p className="text-[10px] uppercase tracking-[0.18em] text-subtle">Xe ra</p>
-        <h2 className="text-xl font-semibold text-fg">Tra cuu va checkout</h2>
+        <h2 className="text-xl font-semibold text-fg">Tra cứu và ghi nhận xe ra</h2>
         <p className="text-sm text-muted">
-          Tim session dang active, xem phi tam tinh, roi xac nhan thu tien mat hoac tao link chuyen khoan.
+          Tìm phiên gửi xe đang hoạt động, xem phí tạm tính, rồi xác nhận thu tiền mặt hoặc tạo link chuyển khoản.
         </p>
       </div>
 
       <div className="mt-5 grid gap-4">
-        <StaffGateField label="Bien so / ma session">
+        <StaffGateField label="Biển số / mã phiên">
           <input
             value={query}
             onChange={(event) => onQueryChange(event.target.value)}
-            placeholder="Nhap 59X2 hoac session id"
+            placeholder="Nhập 59X2 hoặc mã phiên"
             className="auth-input h-11 rounded-lg border px-3 text-sm font-semibold uppercase text-fg"
           />
         </StaffGateField>
@@ -52,35 +52,35 @@ export function StaffGateCheckoutPanel({
                 <p className="mt-1 text-xs text-subtle">{session._id}</p>
               </div>
               <span className="w-fit rounded-full border border-emerald-400/40 bg-emerald-500/10 px-3 py-1 text-[11px] font-medium text-emerald-200">
-                Dang gui
+                Đang gửi
               </span>
             </div>
 
             <dl className="mt-5 grid gap-3 text-sm sm:grid-cols-2">
               <div>
-                <dt className="text-subtle">Loai khach</dt>
+                <dt className="text-subtle">Loại khách</dt>
                 <dd className="mt-1 font-medium text-fg">{formatCustomerType(session.customerType)}</dd>
               </div>
               <div>
-                <dt className="text-subtle">Loai xe</dt>
+                <dt className="text-subtle">Loại xe</dt>
                 <dd className="mt-1 font-medium text-fg">{formatVehicleType(session.vehicleType)}</dd>
               </div>
               <div>
-                <dt className="text-subtle">Vi tri</dt>
+                <dt className="text-subtle">Vị trí</dt>
                 <dd className="mt-1 font-medium text-fg">{formatSessionSpot(session)}</dd>
               </div>
               <div>
-                <dt className="text-subtle">Gio vao</dt>
+                <dt className="text-subtle">Giờ vào</dt>
                 <dd className="mt-1 font-medium text-fg">{formatGateTime(session.entryTime)}</dd>
               </div>
               <div>
-                <dt className="text-subtle">Tam tinh</dt>
+                <dt className="text-subtle">Tạm tính</dt>
                 <dd className="mt-1 font-medium text-fg">
-                  {isPreviewLoading ? 'Dang tinh...' : formatStaffCurrency(preview?.fee ?? session.fee ?? 0)}
+                  {isPreviewLoading ? 'Đang tính...' : formatStaffCurrency(preview?.fee ?? session.fee ?? 0)}
                 </dd>
               </div>
               <div>
-                <dt className="text-subtle">Thanh toan</dt>
+                <dt className="text-subtle">Thanh toán</dt>
                 <dd className="mt-1 font-medium text-fg">{session.paymentStatus}</dd>
               </div>
             </dl>
@@ -92,7 +92,7 @@ export function StaffGateCheckoutPanel({
                 disabled={isSubmitting}
                 className="h-11 rounded-lg bg-btn-primary px-4 text-sm font-semibold text-btn-primary-fg transition-transform hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0"
               >
-                Thu tien mat
+                Thu tiền mặt
               </button>
               <button
                 type="button"
@@ -100,13 +100,13 @@ export function StaffGateCheckoutPanel({
                 disabled={isSubmitting}
                 className="h-11 rounded-lg border border-theme bg-badge px-4 text-sm font-semibold text-fg transition-colors hover:bg-ghost disabled:cursor-not-allowed disabled:opacity-60"
               >
-                Chuyen khoan
+                Chuyển khoản
               </button>
             </div>
           </div>
         ) : (
           <div className="rounded-lg border border-theme bg-badge p-5 text-sm text-muted">
-            Chua co xe dang gui khop voi thong tin tim kiem.
+            Chưa có xe đang gửi khớp với thông tin tìm kiếm.
           </div>
         )}
       </div>

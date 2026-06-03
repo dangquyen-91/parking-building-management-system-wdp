@@ -6,7 +6,7 @@ type StaffGateModeTabsProps = {
 }
 
 const gateModes = [
-  { value: 'checkin', label: 'Xe vao' },
+  { value: 'checkin', label: 'Xe vào' },
   { value: 'checkout', label: 'Xe ra' },
 ] as const
 
