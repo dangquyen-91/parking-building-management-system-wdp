@@ -1,0 +1,35 @@
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/preflight.css" layer(base);
+@import "tailwindcss/utilities.css";
+ 
+@import "nativewind/theme";
+
+@theme {
+  --font-sans: "Helvetica Neue", Arial, sans-serif;
+  --color-page: #121212;
+  --color-fg: #ffffff;
+  --color-muted: #d1d5db;
+  --color-subtle: #9ca3af;
+  --color-faint: #6b7280;
+  --color-surface: #161616;
+  --color-surface-alt: #1c1c1c;
+  --color-border-theme: rgba(255, 255, 255, 0.06);
+  --color-border-strong: rgba(255, 255, 255, 0.2);
+  --color-glass-card: rgba(255, 255, 255, 0.06);
+  --color-btn-primary: #ffffff;
+  --color-btn-primary-fg: #000000;
+  --color-badge: rgba(255, 255, 255, 0.05);
+  --color-input: rgba(24, 24, 27, 0.8);
+}
+
+@media android {
+  :root {
+    --font-sans: normal;
+  }
+}
+
+@media ios {
+  :root {
+    --font-sans: system-ui;
+  }
+}
