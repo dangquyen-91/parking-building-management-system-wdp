@@ -1,8 +1,38 @@
+import { useState } from "react";
 import Ionicons from "react-native-vector-icons/Ionicons";
+import { router } from "expo-router";
+import { toast } from "sonner-native";
 
+import { useLoginMutation } from "@/hooks/useAuth";
 import { Link, Pressable, ScrollView, Text, TextInput, View } from "../../tw";
 
 export default function Login() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const loginMutation = useLoginMutation();
+
+  const handleLogin = async () => {
+    if (!email.trim() || !password) {
+      toast.error("Missing information", {
+        description: "Please enter your email and password.",
+      });
+      return;
+    }
+
+    try {
+      await loginMutation.mutateAsync({ email: email.trim(), password });
+      toast.success("Signed in", {
+        description: "Welcome back.",
+      });
+      router.replace("/(tabs)");
+    } catch (error) {
+      toast.error("Sign in failed", {
+        description: error instanceof Error ? error.message : "Please try again.",
+      });
+    }
+  };
+
   return (
     <View className="flex-1 bg-page">
       <ScrollView
@@ -47,8 +77,10 @@ export default function Login() {
               <TextInput
                 autoCapitalize="none"
                 keyboardType="email-address"
+                onChangeText={setEmail}
                 placeholder="customer@example.com"
                 placeholderTextColor="#6b7280"
+                value={email}
                 className="rounded-[16px] border border-border-theme bg-input py-4 pl-5 pr-4 font-sans text-base text-fg"
               />
             </View>
@@ -57,12 +89,26 @@ export default function Login() {
               <Text className="font-sans text-sm font-bold text-muted">
                 Password
               </Text>
-              <TextInput
-                placeholder="Enter password"
-                placeholderTextColor="#6b7280"
-                secureTextEntry
-                className="rounded-[16px] border border-border-theme bg-input py-4 pl-5 pr-4 font-sans text-base text-fg"
-              />
+              <View className="flex-row items-center rounded-[16px] border border-border-theme bg-input">
+                <TextInput
+                  onChangeText={setPassword}
+                  placeholder="Enter password"
+                  placeholderTextColor="#6b7280"
+                  secureTextEntry={!showPassword}
+                  value={password}
+                  className="min-h-[56px] flex-1 py-4 pl-5 pr-2 font-sans text-base text-fg"
+                />
+                <Pressable
+                  className="h-12 w-12 items-center justify-center"
+                  onPress={() => setShowPassword((value) => !value)}
+                >
+                  <Ionicons
+                    name={showPassword ? "eye-off-outline" : "eye-outline"}
+                    color="#d1d5db"
+                    size={21}
+                  />
+                </Pressable>
+              </View>
             </View>
 
             <View className="flex-row items-center justify-between">
@@ -72,9 +118,13 @@ export default function Login() {
               </Text>
             </View>
 
-            <Pressable className="items-center rounded-full bg-btn-primary py-4">
+            <Pressable
+              className="items-center rounded-full bg-btn-primary py-4"
+              disabled={loginMutation.isPending}
+              onPress={handleLogin}
+            >
               <Text className="font-sans text-base font-extrabold text-btn-primary-fg">
-                Sign in
+                {loginMutation.isPending ? "Signing in..." : "Sign in"}
               </Text>
             </Pressable>
           </View>

@@ -1,6 +1,8 @@
 import Ionicons from "react-native-vector-icons/Ionicons";
+import { toast } from "sonner-native";
 
 import { GlassCard, Label } from "../../components/parking-ui";
+import { useCurrentUserQuery, useLogoutMutation } from "../../hooks/useAuth";
 import { Link, Pressable, ScrollView, Text, View } from "../../tw";
 
 const features = [
@@ -27,6 +29,22 @@ const features = [
 ];
 
 export default function Home() {
+  const { data: currentUser } = useCurrentUserQuery();
+  const logoutMutation = useLogoutMutation();
+
+  const handleLogout = async () => {
+    try {
+      await logoutMutation.mutateAsync();
+      toast.success("Logged out", {
+        description: "Your session has been cleared.",
+      });
+    } catch {
+      toast.info("Logged out", {
+        description: "Your local session has been cleared.",
+      });
+    }
+  };
+
   return (
     <View className="flex-1 bg-page">
       <ScrollView
@@ -40,22 +58,42 @@ export default function Home() {
                 <Ionicons name="business" color="#000000" size={24} />
               </View>
 
-              <View className="flex-row gap-2">
-                <Link href="/(auth)/login" asChild>
-                  <Pressable className="min-w-[80px] items-center rounded-full border border-border-strong bg-badge px-4 py-2.5">
-                    <Text className="font-sans text-sm font-bold text-fg">
-                      Sign in
+              {currentUser ? (
+                <View className="max-w-[250px] flex-row items-center gap-2">
+                  <View className="max-w-[188px] items-end">
+                    <Text
+                      numberOfLines={1}
+                      className="font-sans text-sm font-extrabold text-fg"
+                    >
+                      Hello, {currentUser.fullName}
                     </Text>
+                  </View>
+                  <Pressable
+                    className="h-10 w-10 items-center justify-center rounded-full border border-border-strong bg-badge"
+                    disabled={logoutMutation.isPending}
+                    onPress={handleLogout}
+                  >
+                    <Ionicons name="log-out-outline" color="#ffffff" size={20} />
                   </Pressable>
-                </Link>
-                <Link href="/(auth)/register" asChild>
-                  <Pressable className="min-w-[84px] items-center rounded-full bg-btn-primary px-4 py-2.5">
-                    <Text className="font-sans text-sm font-bold text-btn-primary-fg">
-                      Register
-                    </Text>
-                  </Pressable>
-                </Link>
-              </View>
+                </View>
+              ) : (
+                <View className="flex-row gap-2">
+                  <Link href="/(auth)/login" asChild>
+                    <Pressable className="min-w-[80px] items-center rounded-full border border-border-strong bg-badge px-4 py-2.5">
+                      <Text className="font-sans text-sm font-bold text-fg">
+                        Sign in
+                      </Text>
+                    </Pressable>
+                  </Link>
+                  <Link href="/(auth)/register" asChild>
+                    <Pressable className="min-w-[84px] items-center rounded-full bg-btn-primary px-4 py-2.5">
+                      <Text className="font-sans text-sm font-bold text-btn-primary-fg">
+                        Register
+                      </Text>
+                    </Pressable>
+                  </Link>
+                </View>
+              )}
             </View>
 
             <View className="gap-2">
