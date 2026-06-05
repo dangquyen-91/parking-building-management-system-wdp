@@ -8,6 +8,7 @@ const NAV_LINKS = [
   { href: '#about', label: 'Giới thiệu' },
   { href: '#how-it-works', label: 'Cách hoạt động' },
   { href: '#features', label: 'Tính năng' },
+  { href: '#resident-plans', label: 'Gói cư dân' },
   { href: '#resources', label: 'Tài nguyên' },
   { href: '#blog', label: 'Blog' },
 ] as const

@@ -17,7 +17,9 @@ import { ManagerReportsPage } from '../pages/ManagerReportsPage'
 import { ManagerSlotsPage } from '../pages/ManagerSlotsPage'
 import { ManagerStaffPage } from '../pages/ManagerStaffPage'
 import { MyBookingsPage } from '../pages/MyBookingsPage'
+import { MySubscriptionsPage } from '../pages/MySubscriptionsPage'
 import { RegisterPage } from '../pages/RegisterPage'
+import { ResidentSubscriptionPage } from '../pages/ResidentSubscriptionPage'
 import { StaffGatePage } from '../pages/StaffGatePage'
 import { StaffIncidentsPage } from '../pages/StaffIncidentsPage'
 import { StaffLostTicketPage } from '../pages/StaffLostTicketPage'
@@ -34,6 +36,10 @@ export const AppRoutes = () => {
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/booking" element={<BookingPage />} />
       <Route path="/my-bookings" element={<MyBookingsPage />} />
+      <Route element={<ProtectedRoute allowedRoles={['user']} />}>
+        <Route path="/subscriptions" element={<ResidentSubscriptionPage />} />
+        <Route path="/my-subscriptions" element={<MySubscriptionsPage />} />
+      </Route>
       <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
         <Route element={<DashboardLayout />}>
           <Route path="/admin" element={<DashboardPage />} />
