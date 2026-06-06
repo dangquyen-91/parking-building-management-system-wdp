@@ -105,7 +105,7 @@ export function Hero() {
             <motion.div
               variants={reduceMotion ? undefined : heroItem}
               role="tablist"
-              aria-label="Hero perspectives"
+              aria-label="Góc nhìn phần giới thiệu"
               className="flex items-center gap-2 flex-wrap"
             >
               {HERO_TABS.map((tab) => {

@@ -5,31 +5,31 @@ import { SectionShell } from './SectionShell'
 
 const RESOURCES = [
   {
-    title: 'Basement queue playbook',
-    meta: 'Guide // 8 min read',
+    title: 'Cẩm nang xử lý hàng chờ tầng hầm',
+    meta: 'Hướng dẫn // Đọc 8 phút',
     href: '#',
   },
   {
-    title: 'LPR integration checklist',
-    meta: 'Docs // API v2',
+    title: 'Checklist tích hợp nhận diện biển số',
+    meta: 'Tài liệu // API v2',
     href: '#',
   },
   {
-    title: 'Occupancy modeling 101',
-    meta: 'Webinar // On demand',
+    title: 'Cơ bản về mô hình hóa chỗ đỗ',
+    meta: 'Hội thảo // Xem lại',
     href: '#',
   },
 ] as const
 
 const POSTS = [
   {
-    title: 'Why paper tickets fail in high-rise towers',
-    date: 'May 2026',
+    title: 'Vì sao vé giấy không còn phù hợp với tòa nhà cao tầng',
+    date: 'Tháng 5/2026',
     href: '#blog',
   },
   {
-    title: 'Mapping EV lanes without losing tenant bays',
-    date: 'Apr 2026',
+    title: 'Quy hoạch làn xe điện mà không làm mất ô đỗ cư dân',
+    date: 'Tháng 4/2026',
     href: '#blog',
   },
 ] as const
@@ -43,8 +43,8 @@ export function ResourcesSection() {
     <>
       <SectionShell
         id="resources"
-        eyebrow="Library // Resources"
-        title="Guides for property and security teams"
+        eyebrow="Thư viện // Tài nguyên"
+        title="Hướng dẫn cho ban quản lý và đội bảo vệ"
         tone="base"
       >
         <motion.div
@@ -70,7 +70,7 @@ export function ResourcesSection() {
                 {r.title}
               </h3>
               <span className="mt-4 inline-flex text-xs text-muted group-hover:text-fg transition-colors">
-                Read →
+                Đọc →
               </span>
             </motion.a>
           ))}
@@ -79,8 +79,8 @@ export function ResourcesSection() {
 
       <SectionShell
         id="blog"
-        eyebrow="Journal // Blog"
-        title="Latest from the operations desk"
+        eyebrow="Nhật ký // Blog"
+        title="Tin mới từ bàn vận hành"
         tone="alt"
         className="pt-0"
       >

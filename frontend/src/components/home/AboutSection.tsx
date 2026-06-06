@@ -6,19 +6,19 @@ import { SectionShell } from './SectionShell'
 
 const HIGHLIGHTS = [
   {
-    label: 'Live occupancy',
-    value: 'Real-time',
-    detail: 'Floor-by-floor slot telemetry across every basement level.',
+    label: 'Chỗ trống trực tiếp',
+    value: 'Thời gian thực',
+    detail: 'Theo dõi từng ô đỗ theo từng tầng hầm.',
   },
   {
-    label: 'Access control',
-    value: 'Unified',
-    detail: 'Gates, LPR cameras, and tenant permissions in one console.',
+    label: 'Kiểm soát ra vào',
+    value: 'Hợp nhất',
+    detail: 'Cổng, camera nhận diện biển số và quyền cư dân trong một bảng điều khiển.',
   },
   {
-    label: 'Guest flow',
-    value: 'Automated',
-    detail: 'Digital validation with no paper tickets or guard bottlenecks.',
+    label: 'Luồng khách',
+    value: 'Tự động',
+    detail: 'Xác thực số, không cần vé giấy và giảm tải cho bảo vệ.',
   },
 ] as const
 
@@ -30,21 +30,21 @@ export function AboutSection() {
   return (
     <SectionShell
       id="about"
-      eyebrow="System // About"
-      title="One platform for every vehicle in your building"
-      description="Parking Simulator unifies monitoring, access, and reporting for premium residential and commercial properties—without replacing your existing gate hardware."
+      eyebrow="Hệ thống // Giới thiệu"
+      title="Một nền tảng cho mọi phương tiện trong tòa nhà"
+      description="Parking Simulator hợp nhất giám sát, ra vào và báo cáo cho tòa nhà dân cư và thương mại cao cấp mà không cần thay thế phần cứng cổng hiện có."
     >
       <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-start">
         <Reveal delay={0.1}>
           <p className="text-sm md:text-base text-muted leading-relaxed">
-            Security teams, property managers, and residents all see the same source
-            of truth. From basement clearance queues to rooftop visitor bays, every
-            access point feeds into a single high-contrast operational layer.
+            Đội bảo vệ, ban quản lý và cư dân cùng nhìn vào một nguồn dữ liệu thống nhất.
+            Từ hàng chờ ở tầng hầm đến khu đỗ khách trên cao, mọi điểm ra vào đều được
+            đưa về một lớp vận hành rõ ràng.
           </p>
           <p className="mt-4 text-sm md:text-base text-muted leading-relaxed">
-            Deploy floor maps, automated slot assignment, and occupancy alerts in
-            days—not quarters. Your building keeps its existing infrastructure; we
-            add the intelligence on top.
+            Triển khai bản đồ tầng, phân bổ ô đỗ tự động và cảnh báo chỗ trống chỉ trong
+            vài ngày. Tòa nhà vẫn giữ hạ tầng hiện có; hệ thống bổ sung lớp thông minh
+            phía trên.
           </p>
         </Reveal>
 

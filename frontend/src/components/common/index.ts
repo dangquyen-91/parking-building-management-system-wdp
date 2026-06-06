@@ -1,4 +1,5 @@
 export { BrandLink } from './BrandLink'
+export { LogoutButton } from './LogoutButton'
 export { LogoIcon, MenuIcon } from './icons'
 export { OverlayBackdrop } from './OverlayBackdrop'
 export { Sidebar } from './Sidebar'

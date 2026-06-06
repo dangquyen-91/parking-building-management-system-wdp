@@ -6,18 +6,18 @@ import { SectionShell } from './SectionShell'
 const STEPS = [
   {
     step: '01',
-    title: 'Connect telemetry',
-    body: 'Plug LPR cameras, gate controllers, and occupancy sensors into the building core via secure API endpoints.',
+    title: 'Kết nối dữ liệu',
+    body: 'Kết nối camera nhận diện biển số, bộ điều khiển cổng và cảm biến chỗ trống vào hệ thống lõi qua API bảo mật.',
   },
   {
     step: '02',
-    title: 'Map every bay',
-    body: 'Import floor plans and assign slots to tenants, visitors, and EV zones with live status on each space.',
+    title: 'Lập bản đồ từng ô',
+    body: 'Nhập sơ đồ tầng và gán ô đỗ cho cư dân, khách vãng lai và khu xe điện với trạng thái trực tiếp.',
   },
   {
     step: '03',
-    title: 'Operate in flow',
-    body: 'Route vehicles to open bays, validate guests digitally, and export utilization reports from one dashboard.',
+    title: 'Vận hành liền mạch',
+    body: 'Điều hướng xe đến ô trống, xác thực khách bằng dữ liệu số và xuất báo cáo sử dụng từ một bảng điều khiển.',
   },
 ] as const
 
@@ -29,9 +29,9 @@ export function HowItWorksSection() {
   return (
     <SectionShell
       id="how-it-works"
-      eyebrow="Process // How it works"
-      title="From legacy gates to live spatial control"
-      description="Three phases to modernize basement parking without ripping out existing hardware."
+      eyebrow="Quy trình // Cách hoạt động"
+      title="Từ cổng truyền thống đến kiểm soát không gian thời gian thực"
+      description="Ba giai đoạn để hiện đại hóa bãi đỗ tầng hầm mà không cần tháo bỏ phần cứng hiện có."
       tone="alt"
     >
       <motion.div

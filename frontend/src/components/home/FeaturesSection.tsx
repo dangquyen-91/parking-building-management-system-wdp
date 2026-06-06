@@ -5,24 +5,24 @@ import { SectionShell } from './SectionShell'
 
 const FEATURES = [
   {
-    title: 'Occupancy radar',
-    body: 'Live heatmaps per floor with color-coded bay status and dwell-time alerts.',
-    tag: 'MONITOR',
+    title: 'Theo dõi chỗ trống',
+    body: 'Bản đồ nhiệt theo từng tầng, trạng thái ô đỗ bằng màu sắc và cảnh báo thời gian lưu lại.',
+    tag: 'GIÁM SÁT',
   },
   {
-    title: 'Tenant assignments',
-    body: 'Bind slots to units, rotate overflow rules, and enforce reserved EV lanes.',
-    tag: 'CONTROL',
+    title: 'Phân bổ cho cư dân',
+    body: 'Gán ô đỗ cho căn hộ, xoay vòng quy tắc quá tải và quản lý làn sạc xe điện.',
+    tag: 'KIỂM SOÁT',
   },
   {
-    title: 'Guest validation',
-    body: 'QR and plate-based entry with automatic expiry—no ticket machines required.',
-    tag: 'ACCESS',
+    title: 'Xác thực khách',
+    body: 'Ra vào bằng mã QR và biển số với thời hạn tự động, không cần máy in vé.',
+    tag: 'RA VÀO',
   },
   {
-    title: 'Revenue reports',
-    body: 'Export utilization, overstay fees, and monthly occupancy PDFs for stakeholders.',
-    tag: 'REPORT',
+    title: 'Báo cáo doanh thu',
+    body: 'Xuất báo cáo sử dụng, phí quá giờ và tỷ lệ lấp đầy hằng tháng cho các bên liên quan.',
+    tag: 'BÁO CÁO',
   },
 ] as const
 
@@ -34,9 +34,9 @@ export function FeaturesSection() {
   return (
     <SectionShell
       id="features"
-      eyebrow="Capability // Features"
-      title="Built for operators who run tight ships"
-      description="Every module shares the same liquid-glass UI language and real-time data backbone."
+      eyebrow="Năng lực // Tính năng"
+      title="Thiết kế cho đội vận hành cần độ chính xác cao"
+      description="Mọi module dùng chung ngôn ngữ giao diện hiện đại và nền tảng dữ liệu thời gian thực."
       tone="base"
     >
       <motion.div
