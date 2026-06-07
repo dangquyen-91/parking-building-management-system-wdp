@@ -47,6 +47,10 @@ export type CreateBookingPayload = {
   expectedExitTime: string
 }
 
+export type GetMyBookingsParams = {
+  status?: BookingStatus
+}
+
 const bookingHttp = axios.create({
   baseURL: API_BASE_URL,
   headers: {
@@ -85,6 +89,16 @@ export const bookingApi = {
         '/bookings',
         payload,
       )
+
+      return response.data.data
+    } catch (error) {
+      throw getApiError(error)
+    }
+  },
+
+  async getMyBookings(params?: GetMyBookingsParams) {
+    try {
+      const response = await bookingHttp.get<ApiEnvelope<{ bookings: Booking[] }>>('/bookings/me', { params })
 
       return response.data.data
     } catch (error) {
