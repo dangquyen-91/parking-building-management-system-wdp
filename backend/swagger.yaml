@@ -7,8 +7,12 @@ info:
     name: WDP301 Team
 
 servers:
+  - url: /api/v1
+    description: Current server (auto-detected)
+  - url: https://pbms-backend.onrender.com/api/v1
+    description: Render production
   - url: http://localhost:5000/api/v1
-    description: Local development server
+    description: Local development
 
 tags:
   - name: Auth
