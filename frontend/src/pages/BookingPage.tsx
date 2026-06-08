@@ -58,7 +58,7 @@ export function BookingPage() {
       setCreatedBooking(result.booking)
       setPayment(result.payment)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Cannot create booking. Please try again.')
+      setError(err instanceof Error ? err.message : 'Không thể tạo đặt chỗ. Vui lòng thử lại.')
     } finally {
       setIsSubmitting(false)
     }

@@ -5,11 +5,11 @@ import { AUTH_STORAGE_KEYS } from '../services/authApi'
 import { bookingApi, type Booking, type BookingStatus } from '../services/bookingApi'
 
 const BOOKING_STATUS_LABELS: Record<BookingStatus, string> = {
-  pending: 'Pending payment',
-  paid: 'Paid',
-  used: 'Used',
-  expired: 'Expired',
-  cancelled: 'Cancelled',
+  pending: 'Chờ thanh toán',
+  paid: 'Đã thanh toán',
+  used: 'Đã sử dụng',
+  expired: 'Hết hạn',
+  cancelled: 'Đã hủy',
 }
 
 const BOOKING_STATUS_TONE: Record<BookingStatus, string> = {
@@ -51,7 +51,7 @@ export function MyBookingsPage() {
       const response = await bookingApi.getMyBookings()
       setBookings(response.bookings ?? [])
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Cannot load your booking history.')
+      setError(err instanceof Error ? err.message : 'Không thể tải lịch sử đặt chỗ.')
     } finally {
       setIsLoading(false)
     }
@@ -64,17 +64,17 @@ export function MyBookingsPage() {
       <main id="main" tabIndex={-1} className="mx-auto max-w-7xl p-4 md:p-8 lg:p-10">
         <div className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="mb-3 text-[10px] uppercase tracking-[0.2em] text-subtle">User // My Bookings</p>
-            <h1 className="text-3xl font-bold tracking-tight text-fg md:text-4xl">My Bookings</h1>
+            <p className="mb-3 text-[10px] uppercase tracking-[0.2em] text-subtle">Người dùng // Đặt chỗ của tôi</p>
+            <h1 className="text-3xl font-bold tracking-tight text-fg md:text-4xl">Đặt chỗ của tôi</h1>
             <p className="mt-3 max-w-2xl text-sm text-muted">
-              View the real booking history created by your account, including pending PayOS payments and paid bookings.
+              Xem lịch sử đặt chỗ được tạo bằng tài khoản của bạn, bao gồm đơn chờ thanh toán PayOS và đơn đã thanh toán.
             </p>
           </div>
 
           <div className="grid gap-2 text-center sm:min-w-96 sm:grid-cols-3">
-            <StatBox label="Paid" value={stats.paid} />
-            <StatBox label="Pending" value={stats.pending} />
-            <StatBox label="Total" value={stats.total} />
+            <StatBox label="Đã thanh toán" value={stats.paid} />
+            <StatBox label="Chờ thanh toán" value={stats.pending} />
+            <StatBox label="Tổng đơn" value={stats.total} />
           </div>
         </div>
 
@@ -89,46 +89,46 @@ export function MyBookingsPage() {
             to="/booking"
             className="inline-flex h-11 items-center justify-center rounded-lg bg-btn-primary px-5 text-sm font-semibold text-btn-primary-fg transition-transform hover:-translate-y-0.5"
           >
-            New booking
+            Đặt chỗ mới
           </Link>
         </div>
 
         {!token ? (
           <section className="liquid-glass-card rounded-lg p-8 text-center">
-            <h2 className="text-xl font-semibold text-fg">Login required</h2>
+            <h2 className="text-xl font-semibold text-fg">Cần đăng nhập</h2>
             <p className="mx-auto mt-2 max-w-md text-sm text-muted">
-              Your booking history is linked to your account. Login first to view bookings created while authenticated.
+              Lịch sử đặt chỗ được liên kết với tài khoản của bạn. Hãy đăng nhập để xem các đơn đã tạo.
             </p>
             <Link
               to="/login"
               className="mt-5 inline-flex h-11 items-center justify-center rounded-lg bg-btn-primary px-5 text-sm font-semibold text-btn-primary-fg"
             >
-              Login
+              Đăng nhập
             </Link>
           </section>
         ) : isLoading ? (
-          <div className="rounded-lg border border-theme bg-badge p-5 text-sm text-muted">Loading bookings...</div>
+          <div className="rounded-lg border border-theme bg-badge p-5 text-sm text-muted">Đang tải lịch sử đặt chỗ...</div>
         ) : bookings.length === 0 ? (
           <section className="liquid-glass-card rounded-lg p-8 text-center">
-            <h2 className="text-xl font-semibold text-fg">No bookings yet</h2>
+            <h2 className="text-xl font-semibold text-fg">Chưa có đặt chỗ</h2>
             <p className="mx-auto mt-2 max-w-md text-sm text-muted">
-              Create a prepaid visitor car booking and it will appear here after the backend saves it to your account.
+              Tạo một đơn đặt chỗ ô tô trả trước, đơn sẽ xuất hiện tại đây sau khi hệ thống lưu vào tài khoản của bạn.
             </p>
             <Link
               to="/booking"
               className="mt-5 inline-flex h-11 items-center justify-center rounded-lg bg-btn-primary px-5 text-sm font-semibold text-btn-primary-fg"
             >
-              Create booking
+              Tạo đặt chỗ
             </Link>
           </section>
         ) : (
           <section className="liquid-glass-card rounded-lg p-4 md:p-5">
             <div className="hidden grid-cols-[1.1fr_1fr_1.1fr_0.8fr_0.8fr] gap-4 border-b border-theme px-3 pb-3 text-xs font-medium uppercase tracking-[0.14em] text-subtle lg:grid">
-              <span>Booking</span>
-              <span>Vehicle</span>
-              <span>Schedule</span>
-              <span>Amount</span>
-              <span>Status</span>
+              <span>Đặt chỗ</span>
+              <span>Xe</span>
+              <span>Lịch</span>
+              <span>Số tiền</span>
+              <span>Trạng thái</span>
             </div>
 
             <div className="divide-y divide-[color:var(--border)]">
@@ -144,13 +144,13 @@ export function MyBookingsPage() {
 
                   <div>
                     <p className="text-sm font-medium text-fg">{booking.licensePlate}</p>
-                    <p className="mt-1 text-xs text-subtle">{booking.vehicleType.toUpperCase()}</p>
+                    <p className="mt-1 text-xs text-subtle">Ô tô</p>
                   </div>
 
                   <div>
                     <p className="text-sm font-medium text-fg">{formatBookingDateTime(booking.expectedArrivalTime)}</p>
                     <p className="mt-1 text-xs text-subtle">
-                      {booking.durationHours}h, exit {formatBookingDateTime(booking.expectedExitTime)}
+                      {booking.durationHours}h, ra lúc {formatBookingDateTime(booking.expectedExitTime)}
                     </p>
                   </div>
 
