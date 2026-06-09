@@ -1,15 +1,49 @@
-import {
-  ADMIN_ROLES,
-  ADMIN_USERS,
-  AdminPageShell,
-  AdminStatCard,
-  AdminStatusBadge,
-  getRoleCount,
-} from '../components/admin'
+import { useEffect, useMemo, useState } from 'react'
+import { AdminPageShell, AdminStatCard, AdminStatusBadge } from '../components/admin'
+import { adminApi, type AdminUser } from '../services/adminApi'
 
 export function UserManagementPage() {
-  const pendingUsers = ADMIN_USERS.filter((user) => user.status === 'pending').length
-  const staffUsers = getRoleCount('Staff') + getRoleCount('Manager')
+  const [users, setUsers] = useState<AdminUser[]>([])
+  const [total, setTotal] = useState(0)
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    let ignore = false
+
+    async function loadUsers() {
+      try {
+        setIsLoading(true)
+        setError('')
+        const response = await adminApi.getUsers({ limit: 100, sort: 'createdAt', order: 'desc' })
+        if (!ignore) {
+          setUsers(response.users)
+          setTotal(response.total)
+        }
+      } catch (loadError) {
+        if (!ignore) setError(loadError instanceof Error ? loadError.message : 'Cannot load users')
+      } finally {
+        if (!ignore) setIsLoading(false)
+      }
+    }
+
+    loadUsers()
+
+    return () => {
+      ignore = true
+    }
+  }, [])
+
+  const roleStats = useMemo(() => {
+    const roles = ['admin', 'manager', 'staff', 'user'] as const
+    return roles.map((role) => ({
+      role,
+      users: users.filter((user) => user.role === role).length,
+    }))
+  }, [users])
+
+  const activeUsers = users.filter((user) => user.isActive).length
+  const operationsUsers = users.filter((user) => user.role === 'manager' || user.role === 'staff').length
 
   return (
     <AdminPageShell
@@ -33,10 +67,16 @@ export function UserManagementPage() {
         </div>
       }
     >
+      {error && (
+        <div className="mb-4 rounded-lg border border-rose-400/40 bg-rose-500/10 p-3 text-sm text-rose-100">
+          {error}
+        </div>
+      )}
+
       <div className="grid gap-3 md:grid-cols-3">
-        <AdminStatCard label="All accounts" value={ADMIN_USERS.length} detail="Users, staff, manager and admin" />
-        <AdminStatCard label="Operations team" value={staffUsers} detail="Manager and staff accounts" />
-        <AdminStatCard label="Pending invites" value={pendingUsers} detail="Waiting for first login" />
+        <AdminStatCard label="All accounts" value={isLoading ? '-' : total} detail="Users, staff, manager and admin" />
+        <AdminStatCard label="Operations team" value={isLoading ? '-' : operationsUsers} detail="Manager and staff accounts" />
+        <AdminStatCard label="Active accounts" value={isLoading ? '-' : activeUsers} detail="Can access the system" />
       </div>
 
       <div className="mt-5 grid gap-5 xl:grid-cols-[minmax(0,1fr)_22rem]">
@@ -49,8 +89,8 @@ export function UserManagementPage() {
             <div className="flex gap-2">
               <select className="auth-input h-10 rounded-lg border px-3 text-sm text-fg" defaultValue="All roles">
                 <option>All roles</option>
-                {ADMIN_ROLES.map((role) => (
-                  <option key={role.name}>{role.name}</option>
+                {roleStats.map((role) => (
+                  <option key={role.role}>{role.role}</option>
                 ))}
               </select>
               <input
@@ -73,17 +113,27 @@ export function UserManagementPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-theme">
-                {ADMIN_USERS.map((user) => (
-                  <tr key={user.id} className="align-top">
+                {isLoading && (
+                  <tr>
+                    <td className="px-3 py-6 text-muted" colSpan={5}>Loading users...</td>
+                  </tr>
+                )}
+                {!isLoading && users.length === 0 && (
+                  <tr>
+                    <td className="px-3 py-6 text-muted" colSpan={5}>No users found.</td>
+                  </tr>
+                )}
+                {!isLoading && users.map((user) => (
+                  <tr key={user._id} className="align-top">
                     <td className="px-3 py-4">
-                      <p className="font-semibold text-fg">{user.name}</p>
+                      <p className="font-semibold text-fg">{user.fullName}</p>
                       <p className="mt-1 text-xs text-subtle">{user.email}</p>
                     </td>
                     <td className="px-3 py-4 font-medium text-fg">{user.role}</td>
-                    <td className="px-3 py-4 text-muted">{user.area}</td>
-                    <td className="px-3 py-4 text-muted">{user.lastSeen}</td>
+                    <td className="px-3 py-4 text-muted">{user.phone ?? '-'}</td>
+                    <td className="px-3 py-4 text-muted">{user.createdAt ? new Date(user.createdAt).toLocaleString('vi-VN') : '-'}</td>
                     <td className="px-3 py-4">
-                      <AdminStatusBadge status={user.status} />
+                      <AdminStatusBadge status={user.isActive ? 'active' : 'inactive'} />
                     </td>
                   </tr>
                 ))}
@@ -99,16 +149,16 @@ export function UserManagementPage() {
           </div>
 
           <div className="grid gap-3">
-            {ADMIN_ROLES.map((role) => (
-              <article key={role.name} className="rounded-lg border border-theme bg-badge p-4">
+            {roleStats.map((role) => (
+              <article key={role.role} className="rounded-lg border border-theme bg-badge p-4">
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <p className="font-semibold text-fg">{role.name}</p>
-                    <p className="mt-1 text-xs text-subtle">{role.scope}</p>
+                    <p className="font-semibold capitalize text-fg">{role.role}</p>
+                    <p className="mt-1 text-xs text-subtle">Live user role</p>
                   </div>
                   <span className="text-sm font-semibold text-fg">{role.users}</span>
                 </div>
-                <p className="mt-3 text-xs text-muted">{role.permissions.join(', ')}</p>
+                <p className="mt-3 text-xs text-muted">Fetched from /users</p>
               </article>
             ))}
           </div>

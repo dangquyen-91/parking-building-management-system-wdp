@@ -37,6 +37,16 @@ const ADMIN_NAV_ITEMS = [
     ),
   },
   {
+    to: '/admin/buildings',
+    label: 'Buildings',
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M4 20V5.5A1.5 1.5 0 0 1 5.5 4H14l4 4v12H4Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+        <path d="M8 9h2M8 13h2M8 17h2M14 13h2M14 17h2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      </svg>
+    ),
+  },
+  {
     to: '/admin/floors',
     label: 'Floors',
     icon: (
@@ -63,6 +73,37 @@ const ADMIN_NAV_ITEMS = [
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
         <path d="M4 18V8.5A2.5 2.5 0 0 1 6.5 6h11A2.5 2.5 0 0 1 20 8.5V18" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
         <path d="M7 18v-6h10v6M9 10h6M3 18h18" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      </svg>
+    ),
+  },
+  {
+    to: '/admin/gate-logs',
+    label: 'Gate Logs',
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M5 20V8a3 3 0 0 1 3-3h8a3 3 0 0 1 3 3v12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+        <path d="M9 20v-8h6v8M7 9h10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      </svg>
+    ),
+  },
+  {
+    to: '/admin/staff',
+    label: 'Staff',
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <circle cx="8" cy="8" r="3" stroke="currentColor" strokeWidth="1.5" />
+        <path d="M3 19c0-2.8 2.2-5 5-5s5 2.2 5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+        <path d="M16 7h5M16 12h5M16 17h5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      </svg>
+    ),
+  },
+  {
+    to: '/admin/reports',
+    label: 'Reports',
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M6 20V4h9l3 3v13H6Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+        <path d="M9 15h6M9 11h6M9 7h3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
       </svg>
     ),
   },
