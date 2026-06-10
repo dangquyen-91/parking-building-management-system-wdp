@@ -67,7 +67,7 @@ export function DashboardPage() {
         })
         setReport(dashboardReport)
       } catch (loadError) {
-        if (!ignore) setError(loadError instanceof Error ? loadError.message : 'Cannot load admin data')
+        if (!ignore) setError(loadError instanceof Error ? loadError.message : 'Không thể tải dữ liệu admin')
       } finally {
         if (!ignore) setIsLoading(false)
       }
@@ -82,19 +82,19 @@ export function DashboardPage() {
 
   const adminScope = useMemo(
     () => [
-      { title: 'Users', detail: `${summary.users} accounts across all roles`, status: summary.activeUsers > 0 ? 'active' : 'inactive' },
-      { title: 'Buildings & floors', detail: `${summary.buildings} buildings / ${summary.floors} floors`, status: summary.floors > 0 ? 'enabled' : 'warning' },
-      { title: 'Parking inventory', detail: `${summary.slots} car slots / ${summary.rows} motorcycle rows`, status: summary.slots + summary.rows > 0 ? 'available' : 'warning' },
-      { title: 'Revenue objects', detail: `${summary.bookings} bookings / ${summary.subscriptions} subscriptions / ${summary.plans} plans`, status: summary.plans > 0 ? 'paid' : 'warning' },
+      { title: 'Người dùng', detail: `${summary.users} tài khoản trên mọi vai trò`, status: summary.activeUsers > 0 ? 'active' : 'inactive' },
+      { title: 'Tòa nhà và tầng', detail: `${summary.buildings} tòa nhà / ${summary.floors} tầng`, status: summary.floors > 0 ? 'enabled' : 'warning' },
+      { title: 'Chỗ đỗ', detail: `${summary.slots} ô tô / ${summary.rows} hàng xe máy`, status: summary.slots + summary.rows > 0 ? 'available' : 'warning' },
+      { title: 'Doanh thu', detail: `${summary.bookings} đặt chỗ / ${summary.subscriptions} gói cư dân / ${summary.plans} gói giá`, status: summary.plans > 0 ? 'paid' : 'warning' },
     ] as const,
     [summary],
   )
 
   return (
     <AdminPageShell
-      eyebrow="Admin // Dashboard"
-      title="System Administration"
-      description="Quan ly tai khoan, phan quyen, cau hinh he thong va nhat ky bao mat cho toan bo parking platform."
+      eyebrow="Admin // Tổng quan"
+      title="Quản trị hệ thống"
+      description="Quản lý tài khoản, phân quyền, cấu hình hệ thống và nhật ký vận hành cho toàn bộ nền tảng bãi đỗ."
     >
       {error && (
         <div className="mb-4 rounded-lg border border-rose-400/40 bg-rose-500/10 p-3 text-sm text-rose-100">
@@ -103,17 +103,17 @@ export function DashboardPage() {
       )}
 
       <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-        <AdminStatCard label="Revenue today" value={isLoading ? '-' : formatAdminCurrency(report?.revenueToday.total ?? 0)} detail="Bookings, subscriptions and sessions" />
-        <AdminStatCard label="Occupancy" value={isLoading ? '-' : `${report?.occupancy.currentVehicles ?? 0}/${report?.occupancy.totalCapacity ?? 0}`} detail={`${report?.occupancy.utilizationPercent ?? 0}% utilization`} />
-        <AdminStatCard label="Active users" value={isLoading ? '-' : summary.activeUsers} detail={`${summary.users} total accounts`} />
-        <AdminStatCard label="Active sessions" value={isLoading ? '-' : report?.activity.activeSessions ?? 0} detail={`${report?.activity.checkinsToday ?? 0} check-ins today`} />
+        <AdminStatCard label="Doanh thu hôm nay" value={isLoading ? '-' : formatAdminCurrency(report?.revenueToday.total ?? 0)} detail="Đặt chỗ, gói cư dân và phiên gửi xe" />
+        <AdminStatCard label="Công suất" value={isLoading ? '-' : `${report?.occupancy.currentVehicles ?? 0}/${report?.occupancy.totalCapacity ?? 0}`} detail={`${report?.occupancy.utilizationPercent ?? 0}% sử dụng`} />
+        <AdminStatCard label="Tài khoản hoạt động" value={isLoading ? '-' : summary.activeUsers} detail={`${summary.users} tài khoản tổng cộng`} />
+        <AdminStatCard label="Phiên đang hoạt động" value={isLoading ? '-' : report?.activity.activeSessions ?? 0} detail={`${report?.activity.checkinsToday ?? 0} lượt vào hôm nay`} />
       </div>
 
       <div className="mt-5 grid gap-5 xl:grid-cols-[minmax(0,1fr)_24rem]">
         <section className="liquid-glass-card rounded-lg p-4 md:p-5">
           <div className="mb-4">
-            <p className="text-[10px] uppercase tracking-[0.18em] text-subtle">Admin Scope</p>
-            <h2 className="mt-1 text-base font-semibold text-fg">Nen quan ly nhung gi?</h2>
+            <p className="text-[10px] uppercase tracking-[0.18em] text-subtle">Phạm vi admin</p>
+            <h2 className="mt-1 text-base font-semibold text-fg">Admin đang quản lý những gì?</h2>
           </div>
 
           <div className="grid gap-3 md:grid-cols-2">
@@ -124,9 +124,9 @@ export function DashboardPage() {
                     <p className="text-sm font-semibold text-fg">{control.title}</p>
                     <p className="mt-2 text-sm text-muted">{control.detail}</p>
                   </div>
-                  <AdminStatusBadge status={control.status} label={control.status} />
+                  <AdminStatusBadge status={control.status} />
                 </div>
-                <p className="mt-4 text-xs text-subtle">Source: live API</p>
+                <p className="mt-4 text-xs text-subtle">Nguồn: API thực tế</p>
               </article>
             ))}
           </div>
@@ -134,15 +134,15 @@ export function DashboardPage() {
 
         <section className="liquid-glass-card rounded-lg p-4 md:p-5">
           <div className="mb-4">
-            <p className="text-[10px] uppercase tracking-[0.18em] text-subtle">Security</p>
-            <h2 className="mt-1 text-base font-semibold text-fg">Operational Activity</h2>
+            <p className="text-[10px] uppercase tracking-[0.18em] text-subtle">Vận hành</p>
+            <h2 className="mt-1 text-base font-semibold text-fg">Hoạt động gần đây</h2>
           </div>
 
           <div className="grid gap-2">
             {[
-              ['Pending bookings', report?.activity.pendingBookings ?? 0, 'pending'],
-              ['Active subscriptions', report?.activity.activeSubscriptions ?? 0, 'active'],
-              ['Checkouts today', report?.activity.checkoutsToday ?? 0, 'paid'],
+              ['Đặt chỗ chờ xử lý', report?.activity.pendingBookings ?? 0, 'pending'],
+              ['Gói cư dân đang hoạt động', report?.activity.activeSubscriptions ?? 0, 'active'],
+              ['Lượt xe ra hôm nay', report?.activity.checkoutsToday ?? 0, 'paid'],
             ].map(([label, value, status]) => (
               <div key={label} className="rounded-lg border border-theme bg-badge p-3">
                 <div className="flex items-start justify-between gap-3">
@@ -160,15 +160,15 @@ export function DashboardPage() {
 
       <section className="liquid-glass-card mt-5 rounded-lg p-4 md:p-5">
         <div className="mb-4">
-          <p className="text-[10px] uppercase tracking-[0.18em] text-subtle">Revenue</p>
-          <h2 className="mt-1 text-base font-semibold text-fg">Today Breakdown</h2>
+          <p className="text-[10px] uppercase tracking-[0.18em] text-subtle">Doanh thu</p>
+          <h2 className="mt-1 text-base font-semibold text-fg">Chi tiết hôm nay</h2>
         </div>
 
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-          <AdminStatCard label="Subscriptions" value={isLoading ? '-' : formatAdminCurrency(report?.revenueToday.subscription ?? 0)} detail="Paid plan purchases" />
-          <AdminStatCard label="Bookings" value={isLoading ? '-' : formatAdminCurrency(report?.revenueToday.booking ?? 0)} detail="Paid visitor bookings" />
-          <AdminStatCard label="Session transfer" value={isLoading ? '-' : formatAdminCurrency(report?.revenueToday.sessionTransfer ?? 0)} detail="Gate transfer payments" />
-          <AdminStatCard label="Session cash" value={isLoading ? '-' : formatAdminCurrency(report?.revenueToday.sessionCash ?? 0)} detail="Gate cash payments" />
+          <AdminStatCard label="Gói cư dân" value={isLoading ? '-' : formatAdminCurrency(report?.revenueToday.subscription ?? 0)} detail="Gói đã thanh toán" />
+          <AdminStatCard label="Đặt chỗ" value={isLoading ? '-' : formatAdminCurrency(report?.revenueToday.booking ?? 0)} detail="Đặt chỗ vãng lai đã thanh toán" />
+          <AdminStatCard label="Chuyển khoản tại cổng" value={isLoading ? '-' : formatAdminCurrency(report?.revenueToday.sessionTransfer ?? 0)} detail="Thanh toán chuyển khoản" />
+          <AdminStatCard label="Tiền mặt tại cổng" value={isLoading ? '-' : formatAdminCurrency(report?.revenueToday.sessionCash ?? 0)} detail="Thanh toán tiền mặt" />
         </div>
       </section>
     </AdminPageShell>

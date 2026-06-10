@@ -9,6 +9,16 @@ import {
   type AdminSessionStatsReport,
 } from '../services/adminApi'
 
+const vehicleTypeLabels: Record<'car' | 'motorcycle', string> = {
+  car: 'Ô tô',
+  motorcycle: 'Xe máy',
+}
+
+const floorTypeLabels: Record<'resident' | 'visitor', string> = {
+  resident: 'Cư dân',
+  visitor: 'Khách vãng lai',
+}
+
 export function AdminReportsPage() {
   const [dashboard, setDashboard] = useState<AdminDashboardReport | null>(null)
   const [occupancy, setOccupancy] = useState<AdminOccupancyReport | null>(null)
@@ -41,7 +51,7 @@ export function AdminReportsPage() {
           setPeakHours(peakHourReport)
         }
       } catch (loadError) {
-        if (!ignore) setError(loadError instanceof Error ? loadError.message : 'Cannot load reports')
+        if (!ignore) setError(loadError instanceof Error ? loadError.message : 'Không thể tải báo cáo')
       } finally {
         if (!ignore) setIsLoading(false)
       }
@@ -62,9 +72,9 @@ export function AdminReportsPage() {
 
   return (
     <AdminPageShell
-      eyebrow="Admin // Reports"
-      title="Revenue & Operations Report"
-      description="Admin xem cac bao cao manager dung de theo doi doanh thu, cong suat va luu luong xe."
+      eyebrow="Admin // Báo cáo"
+      title="Báo cáo doanh thu và vận hành"
+      description="Admin xem các báo cáo quản lý dùng để theo dõi doanh thu, công suất và lưu lượng xe."
     >
       {error && (
         <div className="mb-4 rounded-lg border border-rose-400/40 bg-rose-500/10 p-3 text-sm text-rose-100">
@@ -73,27 +83,27 @@ export function AdminReportsPage() {
       )}
 
       <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-        <AdminStatCard label="Revenue today" value={isLoading ? '-' : formatAdminCurrency(dashboard?.revenueToday.total ?? 0)} detail="Dashboard report" />
-        <AdminStatCard label="30-day revenue" value={isLoading ? '-' : formatAdminCurrency(revenue?.totals.total ?? 0)} detail={`${revenue?.totals.transactions ?? 0} transactions`} />
-        <AdminStatCard label="Sessions" value={isLoading ? '-' : sessions?.totalSessions ?? 0} detail="Recent session stats" />
-        <AdminStatCard label="Peak hour" value={isLoading ? '-' : `${peakHours?.peakHour.hour ?? 0}:00`} detail={`${peakHours?.peakHour.count ?? 0} entries`} />
+        <AdminStatCard label="Doanh thu hôm nay" value={isLoading ? '-' : formatAdminCurrency(dashboard?.revenueToday.total ?? 0)} detail="Báo cáo dashboard" />
+        <AdminStatCard label="Doanh thu 30 ngày" value={isLoading ? '-' : formatAdminCurrency(revenue?.totals.total ?? 0)} detail={`${revenue?.totals.transactions ?? 0} giao dịch`} />
+        <AdminStatCard label="Phiên gửi xe" value={isLoading ? '-' : sessions?.totalSessions ?? 0} detail="Thống kê phiên gần đây" />
+        <AdminStatCard label="Giờ cao điểm" value={isLoading ? '-' : `${peakHours?.peakHour.hour ?? 0}:00`} detail={`${peakHours?.peakHour.count ?? 0} lượt vào`} />
       </div>
 
       <div className="mt-5 grid gap-5 xl:grid-cols-[minmax(0,1fr)_24rem]">
         <section className="liquid-glass-card rounded-lg p-4 md:p-5">
           <div className="mb-4">
-            <p className="text-[10px] uppercase tracking-[0.18em] text-subtle">Occupancy</p>
-            <h2 className="mt-1 text-base font-semibold text-fg">Busiest Floors</h2>
+            <p className="text-[10px] uppercase tracking-[0.18em] text-subtle">Công suất</p>
+            <h2 className="mt-1 text-base font-semibold text-fg">Tầng đông nhất</h2>
           </div>
           <div className="grid gap-3">
-            {isLoading && <p className="text-sm text-muted">Loading occupancy...</p>}
-            {!isLoading && busiestFloors.length === 0 && <p className="text-sm text-muted">No occupancy data.</p>}
+            {isLoading && <p className="text-sm text-muted">Đang tải công suất...</p>}
+            {!isLoading && busiestFloors.length === 0 && <p className="text-sm text-muted">Không có dữ liệu công suất.</p>}
             {!isLoading && busiestFloors.map((floor) => (
               <article key={floor.floorId} className="rounded-lg border border-theme bg-badge p-4">
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <p className="font-semibold text-fg">{floor.building?.name ?? 'Building'} / Floor {floor.floorNumber}</p>
-                    <p className="mt-1 text-xs text-subtle">{floor.vehicleType} / {floor.floorType}</p>
+                    <p className="font-semibold text-fg">{floor.building?.name ?? 'Tòa nhà'} / Tầng {floor.floorNumber}</p>
+                    <p className="mt-1 text-xs text-subtle">{vehicleTypeLabels[floor.vehicleType]} / {floorTypeLabels[floor.floorType]}</p>
                   </div>
                   <p className="text-sm font-semibold text-fg">{floor.utilizationPercent}%</p>
                 </div>
@@ -107,13 +117,13 @@ export function AdminReportsPage() {
 
         <section className="liquid-glass-card rounded-lg p-4 md:p-5">
           <div className="mb-4">
-            <p className="text-[10px] uppercase tracking-[0.18em] text-subtle">Revenue</p>
-            <h2 className="mt-1 text-base font-semibold text-fg">Breakdown</h2>
+            <p className="text-[10px] uppercase tracking-[0.18em] text-subtle">Doanh thu</p>
+            <h2 className="mt-1 text-base font-semibold text-fg">Chi tiết</h2>
           </div>
           <div className="grid gap-3">
-            <AdminStatCard label="Subscriptions" value={isLoading ? '-' : formatAdminCurrency(revenue?.totals.subscription ?? 0)} detail="Plan payments" />
-            <AdminStatCard label="Bookings" value={isLoading ? '-' : formatAdminCurrency(revenue?.totals.booking ?? 0)} detail="Visitor bookings" />
-            <AdminStatCard label="Gate sessions" value={isLoading ? '-' : formatAdminCurrency((revenue?.totals.sessionCash ?? 0) + (revenue?.totals.sessionTransfer ?? 0))} detail="Cash and transfer" />
+            <AdminStatCard label="Gói cư dân" value={isLoading ? '-' : formatAdminCurrency(revenue?.totals.subscription ?? 0)} detail="Thanh toán gói" />
+            <AdminStatCard label="Đặt chỗ" value={isLoading ? '-' : formatAdminCurrency(revenue?.totals.booking ?? 0)} detail="Đặt chỗ vãng lai" />
+            <AdminStatCard label="Phiên tại cổng" value={isLoading ? '-' : formatAdminCurrency((revenue?.totals.sessionCash ?? 0) + (revenue?.totals.sessionTransfer ?? 0))} detail="Tiền mặt và chuyển khoản" />
           </div>
         </section>
       </div>

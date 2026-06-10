@@ -5,7 +5,7 @@ import { LogoIcon } from '../common/icons'
 const ADMIN_NAV_ITEMS = [
   {
     to: '/admin',
-    label: 'Dashboard',
+    label: 'Tổng quan',
     icon: (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
         <rect x="3" y="3" width="8" height="8" rx="1.5" stroke="currentColor" strokeWidth="1.5" />
@@ -17,7 +17,7 @@ const ADMIN_NAV_ITEMS = [
   },
   {
     to: '/admin/users',
-    label: 'User Management',
+    label: 'Người dùng',
     icon: (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
         <circle cx="9" cy="8" r="3.5" stroke="currentColor" strokeWidth="1.5" />
@@ -38,7 +38,7 @@ const ADMIN_NAV_ITEMS = [
   },
   {
     to: '/admin/buildings',
-    label: 'Buildings',
+    label: 'Tòa nhà',
     icon: (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
         <path d="M4 20V5.5A1.5 1.5 0 0 1 5.5 4H14l4 4v12H4Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
@@ -48,7 +48,7 @@ const ADMIN_NAV_ITEMS = [
   },
   {
     to: '/admin/floors',
-    label: 'Floors',
+    label: 'Tầng',
     icon: (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
         <path d="M5 20V4h14v16" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
@@ -58,7 +58,7 @@ const ADMIN_NAV_ITEMS = [
   },
   {
     to: '/admin/bookings',
-    label: 'Bookings',
+    label: 'Đặt chỗ',
     icon: (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
         <rect x="4" y="5" width="16" height="15" rx="2" stroke="currentColor" strokeWidth="1.5" />
@@ -68,7 +68,7 @@ const ADMIN_NAV_ITEMS = [
   },
   {
     to: '/admin/slots',
-    label: 'Slots',
+    label: 'Chỗ đỗ',
     icon: (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
         <path d="M4 18V8.5A2.5 2.5 0 0 1 6.5 6h11A2.5 2.5 0 0 1 20 8.5V18" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
@@ -78,7 +78,7 @@ const ADMIN_NAV_ITEMS = [
   },
   {
     to: '/admin/gate-logs',
-    label: 'Gate Logs',
+    label: 'Nhật ký cổng',
     icon: (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
         <path d="M5 20V8a3 3 0 0 1 3-3h8a3 3 0 0 1 3 3v12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
@@ -88,7 +88,7 @@ const ADMIN_NAV_ITEMS = [
   },
   {
     to: '/admin/staff',
-    label: 'Staff',
+    label: 'Nhân viên',
     icon: (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
         <circle cx="8" cy="8" r="3" stroke="currentColor" strokeWidth="1.5" />
@@ -99,7 +99,7 @@ const ADMIN_NAV_ITEMS = [
   },
   {
     to: '/admin/reports',
-    label: 'Reports',
+    label: 'Báo cáo',
     icon: (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
         <path d="M6 20V4h9l3 3v13H6Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
@@ -144,7 +144,7 @@ export const AdminSidebar = forwardRef<HTMLElement, AdminSidebarProps>(function 
         <NavLink
           to="/admin"
           className="flex min-w-0 items-center gap-2 text-sm font-medium text-fg"
-          aria-label="Parking admin workspace"
+          aria-label="Không gian quản trị bãi đỗ"
           onClick={onNavigate}
         >
           <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-badge">
@@ -153,13 +153,13 @@ export const AdminSidebar = forwardRef<HTMLElement, AdminSidebarProps>(function 
           <span className="truncate leading-tight">
             Admin
             <span className="block text-[10px] font-normal tracking-wide text-subtle">
-              Control Panel
+              Bảng điều khiển
             </span>
           </span>
         </NavLink>
       </div>
 
-      <nav className="flex flex-1 flex-col gap-1 overflow-y-auto px-3 py-4" aria-label="Admin navigation">
+      <nav className="flex flex-1 flex-col gap-1 overflow-y-auto px-3 py-4" aria-label="Điều hướng admin">
         {ADMIN_NAV_ITEMS.map(({ to, label, icon }) => (
           <NavLink key={to} to={to} className={linkClassName} end onClick={onNavigate}>
             <span className="shrink-0">{icon}</span>
@@ -183,7 +183,7 @@ export const AdminSidebar = forwardRef<HTMLElement, AdminSidebarProps>(function 
               strokeLinejoin="round"
             />
           </svg>
-          Back to site
+          Về trang chủ
         </NavLink>
       </div>
     </aside>

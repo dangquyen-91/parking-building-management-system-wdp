@@ -28,18 +28,18 @@ export function AdminBuildingsPage() {
 
   return (
     <AdminPageShell
-      eyebrow="Admin // Buildings"
-      title="Building Management View"
-      description="Admin xem toan bo toa nha, tang va suc chua ma manager dang quan ly."
+      eyebrow="Admin // Tòa nhà"
+      title="Quản lý tòa nhà"
+      description="Admin xem toàn bộ tòa nhà, tầng và sức chứa mà manager đang quản lý."
       actions={
         <select
           className="auth-input h-10 rounded-lg border px-3 text-sm text-fg"
           value={statusFilter}
           onChange={(event) => setStatusFilter(event.target.value as typeof statusFilter)}
         >
-          <option value="all">All buildings</option>
-          <option value="active">Active</option>
-          <option value="inactive">Inactive</option>
+          <option value="all">Tất cả tòa nhà</option>
+          <option value="active">Đang hoạt động</option>
+          <option value="inactive">Ngưng hoạt động</option>
         </select>
       }
     >
@@ -50,15 +50,15 @@ export function AdminBuildingsPage() {
       )}
 
       <div className="grid gap-3 md:grid-cols-3">
-        <AdminStatCard label="Buildings" value={isLoading ? '-' : filteredSummaries.length} detail={`${totals.activeBuildings} active`} />
-        <AdminStatCard label="Floors" value={isLoading ? '-' : totals.floors} detail="Managed by operations" />
-        <AdminStatCard label="Capacity" value={isLoading ? '-' : totals.slots} detail="Configured floor capacity" />
+        <AdminStatCard label="Tòa nhà" value={isLoading ? '-' : filteredSummaries.length} detail={`${totals.activeBuildings} đang hoạt động`} />
+        <AdminStatCard label="Tầng" value={isLoading ? '-' : totals.floors} detail="Được vận hành bởi manager" />
+        <AdminStatCard label="Sức chứa" value={isLoading ? '-' : totals.slots} detail="Tổng sức chứa đã cấu hình" />
       </div>
 
       <section className="mt-5 grid gap-4">
-        {isLoading && <p className="rounded-lg border border-theme bg-badge p-4 text-sm text-muted">Loading buildings...</p>}
+        {isLoading && <p className="rounded-lg border border-theme bg-badge p-4 text-sm text-muted">Đang tải tòa nhà...</p>}
         {!isLoading && filteredSummaries.length === 0 && (
-          <p className="rounded-lg border border-theme bg-badge p-4 text-sm text-muted">No buildings found.</p>
+          <p className="rounded-lg border border-theme bg-badge p-4 text-sm text-muted">Không tìm thấy tòa nhà.</p>
         )}
         {!isLoading && filteredSummaries.map((building) => (
           <div key={building.id} className="liquid-glass-card rounded-lg p-1">
