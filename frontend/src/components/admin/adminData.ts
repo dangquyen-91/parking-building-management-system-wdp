@@ -1,16 +1,24 @@
 export type AdminStatus =
   | 'active'
+  | 'inactive'
   | 'pending'
   | 'locked'
   | 'enabled'
   | 'warning'
   | 'critical'
+  | 'empty'
   | 'available'
   | 'occupied'
   | 'reserved'
   | 'maintenance'
   | 'confirmed'
+  | 'paid'
+  | 'unpaid'
+  | 'used'
+  | 'completed'
+  | 'expired'
   | 'cancelled'
+  | 'full'
 
 export type AdminUser = {
   id: string
@@ -353,17 +361,25 @@ export const ADMIN_BOOKINGS: AdminBooking[] = [
 
 export const adminStatusTone: Record<AdminStatus, string> = {
   active: 'border-emerald-400/40 bg-emerald-500/10 text-emerald-200',
+  inactive: 'border-slate-400/40 bg-slate-500/10 text-slate-200',
   pending: 'border-amber-400/40 bg-amber-500/10 text-amber-100',
   locked: 'border-rose-400/40 bg-rose-500/10 text-rose-200',
   enabled: 'border-sky-400/40 bg-sky-500/10 text-sky-200',
   warning: 'border-amber-400/40 bg-amber-500/10 text-amber-100',
   critical: 'border-rose-400/40 bg-rose-500/10 text-rose-200',
+  empty: 'border-emerald-400/40 bg-emerald-500/10 text-emerald-200',
   available: 'border-emerald-400/40 bg-emerald-500/10 text-emerald-200',
   occupied: 'border-sky-400/40 bg-sky-500/10 text-sky-200',
   reserved: 'border-amber-400/40 bg-amber-500/10 text-amber-100',
   maintenance: 'border-rose-400/40 bg-rose-500/10 text-rose-200',
   confirmed: 'border-emerald-400/40 bg-emerald-500/10 text-emerald-200',
+  paid: 'border-emerald-400/40 bg-emerald-500/10 text-emerald-200',
+  unpaid: 'border-amber-400/40 bg-amber-500/10 text-amber-100',
+  used: 'border-sky-400/40 bg-sky-500/10 text-sky-200',
+  completed: 'border-emerald-400/40 bg-emerald-500/10 text-emerald-200',
+  expired: 'border-slate-400/40 bg-slate-500/10 text-slate-200',
   cancelled: 'border-rose-400/40 bg-rose-500/10 text-rose-200',
+  full: 'border-amber-400/40 bg-amber-500/10 text-amber-100',
 }
 
 export function getRoleCount(role: AdminUser['role']) {

@@ -7,9 +7,13 @@ import { useOverlayPanel } from '../hooks/useOverlayPanel'
 const PAGE_TITLES: Record<string, string> = {
   '/admin': 'Dashboard',
   '/admin/users': 'User Management',
+  '/admin/buildings': 'Buildings',
   '/admin/floors': 'Floors',
   '/admin/bookings': 'Bookings',
   '/admin/slots': 'Slots',
+  '/admin/gate-logs': 'Gate Logs',
+  '/admin/staff': 'Staff',
+  '/admin/reports': 'Reports',
 }
 
 export function DashboardLayout() {

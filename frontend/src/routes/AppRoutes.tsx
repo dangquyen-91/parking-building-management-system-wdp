@@ -3,8 +3,12 @@ import { DashboardLayout } from '../layouts/DashboardLayout'
 import { ManagerLayout } from '../layouts/ManagerLayout'
 import { StaffLayout } from '../layouts/StaffLayout'
 import { AdminBookingsPage } from '../pages/AdminBookingsPage'
+import { AdminBuildingsPage } from '../pages/AdminBuildingsPage'
 import { AdminFloorsPage } from '../pages/AdminFloorsPage'
+import { AdminGateLogsPage } from '../pages/AdminGateLogsPage'
+import { AdminReportsPage } from '../pages/AdminReportsPage'
 import { AdminSlotsPage } from '../pages/AdminSlotsPage'
+import { AdminStaffPage } from '../pages/AdminStaffPage'
 import { BookingPage } from '../pages/BookingPage'
 import { DashboardPage } from '../pages/DashboardPage'
 import { HomePage } from '../pages/HomePage'
@@ -44,9 +48,13 @@ export const AppRoutes = () => {
         <Route element={<DashboardLayout />}>
           <Route path="/admin" element={<DashboardPage />} />
           <Route path="/admin/users" element={<UserManagementPage />} />
+          <Route path="/admin/buildings" element={<AdminBuildingsPage />} />
           <Route path="/admin/floors" element={<AdminFloorsPage />} />
           <Route path="/admin/bookings" element={<AdminBookingsPage />} />
           <Route path="/admin/slots" element={<AdminSlotsPage />} />
+          <Route path="/admin/gate-logs" element={<AdminGateLogsPage />} />
+          <Route path="/admin/staff" element={<AdminStaffPage />} />
+          <Route path="/admin/reports" element={<AdminReportsPage />} />
         </Route>
       </Route>
       <Route path="/dashboard" element={<Navigate to="/admin" replace />} />
