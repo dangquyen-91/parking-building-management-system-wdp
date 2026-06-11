@@ -10,7 +10,7 @@ const MANAGER_PAGE_TITLES: Record<string, string> = {
   '/manager/slots': 'Slots & Zones',
   '/manager/bookings': 'Quản lý booking',
   '/manager/gate-logs': 'Gate Logs',
-  '/manager/staff': 'Staff',
+  '/manager/staff': 'Quản lý nhân viên',
   '/manager/plans': 'Gói gửi xe',
   '/manager/reports': 'Reports',
 }
