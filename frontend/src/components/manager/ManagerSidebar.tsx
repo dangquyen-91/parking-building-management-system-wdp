@@ -4,7 +4,7 @@ import { LogoIcon } from '../common/icons'
 import { LogoutButton } from '../common/LogoutButton'
 
 const MANAGER_NAV_ITEMS = [
-  { to: '/manager', label: 'Overview', icon: 'grid' },
+  { to: '/manager', label: 'Tổng quan', icon: 'grid' },
   { to: '/manager/buildings', label: 'Tòa Nhà', icon: 'building' },
   { to: '/manager/slots', label: 'Chỗ đỗ', icon: 'slots' },
   { to: '/manager/bookings', label: 'Booking', icon: 'calendar' },

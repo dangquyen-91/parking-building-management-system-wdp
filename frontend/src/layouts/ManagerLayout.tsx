@@ -5,7 +5,7 @@ import { ManagerSidebar } from '../components/manager'
 import { useOverlayPanel } from '../hooks/useOverlayPanel'
 
 const MANAGER_PAGE_TITLES: Record<string, string> = {
-  '/manager': 'Manager Overview',
+  '/manager': 'Tổng quan vận hành',
   '/manager/buildings': 'Buildings',
   '/manager/slots': 'Slots & Zones',
   '/manager/bookings': 'Quản lý booking',
