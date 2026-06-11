@@ -1,5 +1,6 @@
 import { forwardRef } from 'react'
 import { NavLink } from 'react-router-dom'
+import { LogoutButton } from './LogoutButton'
 import { LogoIcon } from './icons'
 
 const NAV_ITEMS = [
@@ -100,6 +101,7 @@ export const Sidebar = forwardRef<HTMLElement, SidebarProps>(function Sidebar(
       </nav>
 
       <div className="px-3 py-4 border-t border-theme">
+        <LogoutButton />
         <NavLink
           to="/"
           className="flex items-center gap-2 rounded-xl px-3 py-2 text-xs text-subtle hover:text-fg hover:bg-ghost transition-colors"

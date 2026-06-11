@@ -1,7 +1,8 @@
 import { motion } from 'framer-motion'
 import { type FormEvent, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useStaggerFormMotion } from '../../hooks/useStaggerFormMotion'
+import { authApi } from '../../services/authApi'
 import { focusFirstFormError } from '../../utils/focusFirstFormError'
 import { requireEmail, requirePassword } from '../../utils/validation'
 import { AuthField } from './AuthField'
@@ -10,6 +11,7 @@ import { AuthSubmitButton } from './AuthSubmitButton'
 const REGISTER_FIELDS = [
   { key: 'fullName', id: 'register-name' },
   { key: 'email', id: 'register-email' },
+  { key: 'phone', id: 'register-phone' },
   { key: 'password', id: 'register-password' },
   { key: 'confirmPassword', id: 'register-confirm' },
 ] as const
@@ -17,6 +19,7 @@ const REGISTER_FIELDS = [
 type RegisterValues = {
   fullName: string
   email: string
+  phone: string
   password: string
   confirmPassword: string
 }
@@ -26,27 +29,32 @@ type RegisterErrors = Partial<Record<keyof RegisterValues | 'form', string>>
 function validate(values: RegisterValues): RegisterErrors {
   const errors: RegisterErrors = {}
   if (!values.fullName.trim()) {
-    errors.fullName = 'Full name is required.'
+    errors.fullName = 'Vui lòng nhập họ và tên.'
   } else if (values.fullName.trim().length < 2) {
-    errors.fullName = 'Enter your full name.'
+    errors.fullName = 'Vui lòng nhập họ và tên đầy đủ.'
   }
   const emailError = requireEmail(values.email)
   if (emailError) errors.email = emailError
+  if (values.phone.trim() && values.phone.trim().length < 8) {
+    errors.phone = 'Vui lòng nhập số điện thoại hợp lệ.'
+  }
   const passwordError = requirePassword(values.password)
   if (passwordError) errors.password = passwordError
   if (!values.confirmPassword) {
-    errors.confirmPassword = 'Confirm your password.'
+    errors.confirmPassword = 'Vui lòng xác nhận mật khẩu.'
   } else if (values.confirmPassword !== values.password) {
-    errors.confirmPassword = 'Passwords do not match.'
+    errors.confirmPassword = 'Mật khẩu xác nhận không khớp.'
   }
   return errors
 }
 
 export function RegisterForm() {
+  const navigate = useNavigate()
   const { motionForm, fieldVariants } = useStaggerFormMotion()
   const [values, setValues] = useState<RegisterValues>({
     fullName: '',
     email: '',
+    phone: '',
     password: '',
     confirmPassword: '',
   })
@@ -54,10 +62,12 @@ export function RegisterForm() {
   const [status, setStatus] = useState<'idle' | 'loading' | 'success'>('idle')
 
   const clearFieldError = (field: keyof RegisterValues) => {
-    if (errors[field]) setErrors((err) => ({ ...err, [field]: undefined }))
+    if (errors[field] || errors.form) {
+      setErrors((err) => ({ ...err, [field]: undefined, form: undefined }))
+    }
   }
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     const nextErrors = validate(values)
     setErrors(nextErrors)
@@ -66,10 +76,24 @@ export function RegisterForm() {
       return
     }
 
-    setStatus('loading')
-    window.setTimeout(() => {
+    try {
+      setStatus('loading')
+      await authApi.register({
+        fullName: values.fullName.trim(),
+        email: values.email.trim(),
+        phone: values.phone.trim() || undefined,
+        password: values.password,
+      })
       setStatus('success')
-    }, 1400)
+      window.setTimeout(() => {
+        navigate('/login', { replace: true })
+      }, 700)
+    } catch (error) {
+      setStatus('idle')
+      setErrors({
+        form: error instanceof Error ? error.message : 'Không thể tạo tài khoản. Vui lòng thử lại.',
+      })
+    }
   }
 
   return (
@@ -78,11 +102,11 @@ export function RegisterForm() {
         <motion.div variants={fieldVariants} custom={0}>
           <AuthField
             id="register-name"
-            label="Full name"
+            label="Họ và tên"
             type="text"
             name="fullName"
             autoComplete="name"
-            placeholder="Mira Chen"
+            placeholder="Nhập họ và tên"
             value={values.fullName}
             disabled={status === 'loading'}
             onChange={(e) => {
@@ -96,11 +120,11 @@ export function RegisterForm() {
         <motion.div variants={fieldVariants} custom={0.05}>
           <AuthField
             id="register-email"
-            label="Work email"
+            label="Email "
             type="email"
             name="email"
             autoComplete="email"
-            placeholder="mira.chen@riverside-tower.vn"
+            placeholder="Nhập email"
             value={values.email}
             disabled={status === 'loading'}
             onChange={(e) => {
@@ -108,18 +132,37 @@ export function RegisterForm() {
               clearFieldError('email')
             }}
             error={errors.email}
-            helper="Use your building or property management address."
+            helper="Sử dụng email của tòa nhà hoặc đơn vị quản lý."
           />
         </motion.div>
 
         <motion.div variants={fieldVariants} custom={0.1}>
           <AuthField
+            id="register-phone"
+            label="Số điện thoại"
+            type="tel"
+            name="phone"
+            autoComplete="tel"
+            placeholder="Nhập số điện thoại"
+            value={values.phone}
+            disabled={status === 'loading'}
+            onChange={(e) => {
+              setValues((v) => ({ ...v, phone: e.target.value }))
+              clearFieldError('phone')
+            }}
+            error={errors.phone}
+            helper="Không bắt buộc, dùng để lưu vào hồ sơ người dùng."
+          />
+        </motion.div>
+
+        <motion.div variants={fieldVariants} custom={0.15}>
+          <AuthField
             id="register-password"
-            label="Password"
+            label="Mật khẩu"
             type="password"
             name="password"
             autoComplete="new-password"
-            placeholder="At least 8 characters"
+            placeholder="Ít nhất 8 ký tự"
             value={values.password}
             disabled={status === 'loading'}
             onChange={(e) => {
@@ -130,14 +173,14 @@ export function RegisterForm() {
           />
         </motion.div>
 
-        <motion.div variants={fieldVariants} custom={0.14}>
+        <motion.div variants={fieldVariants} custom={0.2}>
           <AuthField
             id="register-confirm"
-            label="Confirm password"
+            label="Xác nhận mật khẩu"
             type="password"
             name="confirmPassword"
             autoComplete="new-password"
-            placeholder="Repeat password"
+            placeholder="Nhập lại mật khẩu"
             value={values.confirmPassword}
             disabled={status === 'loading'}
             onChange={(e) => {
@@ -150,9 +193,14 @@ export function RegisterForm() {
       </motion.div>
 
       <div aria-live="polite" aria-atomic="true" className="min-h-[1.25rem]">
+        {errors.form && (
+          <p role="alert" className="text-xs text-rose-400">
+            {errors.form}
+          </p>
+        )}
         {status === 'success' && (
           <p className="text-xs text-muted">
-            Account created locally — wire this form to your registration API when ready.
+            Tạo tài khoản thành công. Đang chuyển đến đăng nhập...
           </p>
         )}
       </div>
@@ -160,16 +208,16 @@ export function RegisterForm() {
       <AuthSubmitButton
         status={status}
         labels={{
-          idle: 'Create account',
-          loading: 'Creating account…',
-          success: 'Account ready',
+          idle: 'Tạo tài khoản',
+          loading: 'Đang tạo tài khoản...',
+          success: 'Tài khoản đã sẵn sàng',
         }}
       />
 
       <p className="text-center text-xs text-faint">
-        Already have access?{' '}
+        Đã có tài khoản?{' '}
         <Link to="/login" className="text-fg hover:text-fg transition-colors">
-          Sign in
+          Đăng nhập
         </Link>
       </p>
     </form>

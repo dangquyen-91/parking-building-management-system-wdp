@@ -12,10 +12,10 @@ import { easeOut, fadeUp, staggerContainer } from '../../assets/motion/variants'
 import { SectionShell } from './SectionShell'
 
 const STATS = [
-  { label: 'Buildings deployed', value: 48, suffix: '+' },
-  { label: 'Bays monitored', value: 12400, suffix: '' },
-  { label: 'Gate uptime', value: 98, suffix: '%' },
-  { label: 'Avg. clearance', value: 2, suffix: 's' },
+  { label: 'Tòa nhà triển khai', value: 48, suffix: '+' },
+  { label: 'Ô đỗ được giám sát', value: 12400, suffix: '' },
+  { label: 'Thời gian hoạt động cổng', value: 98, suffix: '%' },
+  { label: 'Thời gian xử lý TB', value: 2, suffix: 's' },
 ] as const
 
 function AnimatedNumber({
@@ -65,8 +65,8 @@ export function StatsSection() {
 
   return (
     <SectionShell
-      eyebrow="Telemetry // Stats"
-      title="Numbers from live deployments"
+      eyebrow="Dữ liệu // Thống kê"
+      title="Số liệu từ các tòa nhà đang vận hành"
       tone="alt"
     >
       <motion.div

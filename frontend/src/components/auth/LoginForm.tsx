@@ -1,7 +1,8 @@
 import { motion } from 'framer-motion'
 import { type FormEvent, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useStaggerFormMotion } from '../../hooks/useStaggerFormMotion'
+import { authApi, getDefaultRouteForRole } from '../../services/authApi'
 import { focusFirstFormError } from '../../utils/focusFirstFormError'
 import { requireEmail, requirePassword } from '../../utils/validation'
 import { AuthField } from './AuthField'
@@ -29,6 +30,7 @@ function validate(values: LoginValues): LoginErrors {
 }
 
 export function LoginForm() {
+  const navigate = useNavigate()
   const { motionForm, fieldVariants } = useStaggerFormMotion()
   const [values, setValues] = useState<LoginValues>({ email: '', password: '' })
   const [errors, setErrors] = useState<LoginErrors>({})
@@ -36,10 +38,12 @@ export function LoginForm() {
   const [remember, setRemember] = useState(false)
 
   const clearError = (field: keyof LoginValues) => {
-    if (errors[field]) setErrors((err) => ({ ...err, [field]: undefined }))
+    if (errors[field] || errors.form) {
+      setErrors((err) => ({ ...err, [field]: undefined, form: undefined }))
+    }
   }
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     const nextErrors = validate(values)
     setErrors(nextErrors)
@@ -48,10 +52,20 @@ export function LoginForm() {
       return
     }
 
-    setStatus('loading')
-    window.setTimeout(() => {
+    try {
+      setStatus('loading')
+      const session = await authApi.login({
+        email: values.email,
+        password: values.password,
+      })
       setStatus('success')
-    }, 1200)
+      navigate(getDefaultRouteForRole(session.user.role), { replace: true })
+    } catch (error) {
+      setStatus('idle')
+      setErrors({
+        form: error instanceof Error ? error.message : 'Không thể đăng nhập. Vui lòng thử lại.',
+      })
+    }
   }
 
   return (
@@ -64,7 +78,7 @@ export function LoginForm() {
             type="email"
             name="email"
             autoComplete="email"
-            placeholder="mira.chen@riverside-tower.vn"
+            placeholder="Nhập email"
             value={values.email}
             disabled={status === 'loading'}
             onChange={(e) => {
@@ -78,11 +92,11 @@ export function LoginForm() {
         <motion.div variants={fieldVariants} custom={0.06}>
           <AuthField
             id="login-password"
-            label="Password"
+            label="Mật khẩu"
             type="password"
             name="password"
             autoComplete="current-password"
-            placeholder="Enter your password"
+            placeholder="Nhập mật khẩu"
             value={values.password}
             disabled={status === 'loading'}
             onChange={(e) => {
@@ -103,13 +117,13 @@ export function LoginForm() {
             className="rounded border-theme-strong auth-input text-fg outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--focus-ring)]"
             disabled={status === 'loading'}
           />
-          Remember this device
+          Ghi nhớ thiết bị này
         </label>
         <a
           href="#recover"
           className="text-muted hover:text-fg transition-colors duration-200"
         >
-          Forgot password?
+          Quên mật khẩu?
         </a>
       </div>
 
@@ -121,7 +135,7 @@ export function LoginForm() {
         )}
         {status === 'success' && (
           <p className="text-xs text-muted">
-            Signed in locally — connect your API endpoint when the backend is ready.
+            Đăng nhập thành công. Đang chuyển hướng...
           </p>
         )}
       </div>
@@ -129,18 +143,19 @@ export function LoginForm() {
       <AuthSubmitButton
         status={status}
         labels={{
-          idle: 'Sign in',
-          loading: 'Signing in…',
-          success: 'Welcome back',
+          idle: 'Đăng nhập',
+          loading: 'Đang đăng nhập...',
+          success: 'Chào mừng trở lại',
         }}
       />
 
       <p className="text-center text-xs text-faint">
-        New to the platform?{' '}
+        Chưa có tài khoản?{' '}
         <Link to="/register" className="text-fg hover:text-fg transition-colors">
-          Create an account
+          Tạo tài khoản
         </Link>
       </p>
     </form>
   )
 }
+
