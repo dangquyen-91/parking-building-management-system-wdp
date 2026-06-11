@@ -12,7 +12,7 @@ const MANAGER_PAGE_TITLES: Record<string, string> = {
   '/manager/gate-logs': 'Gate Logs',
   '/manager/staff': 'Quản lý nhân viên',
   '/manager/plans': 'Gói gửi xe',
-  '/manager/reports': 'Reports',
+  '/manager/reports': 'Báo cáo vận hành',
 }
 
 export function ManagerLayout() {

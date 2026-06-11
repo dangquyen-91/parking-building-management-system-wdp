@@ -11,7 +11,7 @@ const MANAGER_NAV_ITEMS = [
   { to: '/manager/gate-logs', label: 'Hoạt động cổng', icon: 'gate' }, // Gate Logs
   { to: '/manager/staff', label: 'Nhân viên', icon: 'staff' },
   { to: '/manager/plans', label: 'Gói gửi xe', icon: 'plan' },
-  { to: '/manager/reports', label: 'Reports', icon: 'report' },
+  { to: '/manager/reports', label: 'Báo cáo', icon: 'report' },
 ] as const
 
 function ManagerIcon({ name }: { name: (typeof MANAGER_NAV_ITEMS)[number]['icon'] }) {
