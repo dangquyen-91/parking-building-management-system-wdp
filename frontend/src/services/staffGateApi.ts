@@ -68,6 +68,9 @@ export type GateSession = {
   paymentStatus: GatePaymentStatus
   status: GateSessionStatus
   userId?: GateUser | string | null
+  staffId?: GateUser | string | null
+  checkOutStaffId?: GateUser | string | null
+  paymentMethod?: 'cash' | 'transfer' | null
   note?: string
 }
 

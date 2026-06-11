@@ -8,7 +8,7 @@ const MANAGER_NAV_ITEMS = [
   { to: '/manager/buildings', label: 'Tòa Nhà', icon: 'building' },
   { to: '/manager/slots', label: 'Chỗ đỗ', icon: 'slots' },
   { to: '/manager/bookings', label: 'Bookings', icon: 'calendar' },
-  { to: '/manager/gate-logs', label: 'Gate Logs', icon: 'gate' },
+  { to: '/manager/gate-logs', label: 'Hoạt động cổng', icon: 'gate' }, // Gate Logs
   { to: '/manager/staff', label: 'Staff', icon: 'staff' },
   { to: '/manager/plans', label: 'Gói gửi xe', icon: 'plan' },
   { to: '/manager/reports', label: 'Reports', icon: 'report' },
