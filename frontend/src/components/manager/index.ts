@@ -11,6 +11,13 @@ export {
 export { ManagerPlanList } from './ManagerPlanList'
 export { ManagerPlanStats } from './ManagerPlanStats'
 export {
+  ManagerGateLogFilters,
+  type ManagerGateCustomerFilter,
+  type ManagerGateVehicleFilter,
+} from './ManagerGateLogFilters'
+export { ManagerGateLogList } from './ManagerGateLogList'
+export { ManagerGateLogStats } from './ManagerGateLogStats'
+export {
   MANAGER_BOOKINGS,
   MANAGER_GATE_LOGS,
   MANAGER_STAFF,
