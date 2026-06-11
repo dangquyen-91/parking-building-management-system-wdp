@@ -21,6 +21,7 @@ import { ManagerPlansPage } from '../pages/ManagerPlansPage'
 import { ManagerReportsPage } from '../pages/ManagerReportsPage'
 import { ManagerSlotsPage } from '../pages/ManagerSlotsPage'
 import { ManagerStaffPage } from '../pages/ManagerStaffPage'
+import { ManagerSubscriptionsPage } from '../pages/ManagerSubscriptionsPage'
 import { MyBookingsPage } from '../pages/MyBookingsPage'
 import { MySubscriptionsPage } from '../pages/MySubscriptionsPage'
 import { RegisterPage } from '../pages/RegisterPage'
@@ -79,6 +80,7 @@ export const AppRoutes = () => {
           <Route path="/manager/gate-logs" element={<ManagerGateLogsPage />} />
           <Route path="/manager/staff" element={<ManagerStaffPage />} />
           <Route path="/manager/plans" element={<ManagerPlansPage />} />
+          <Route path="/manager/subscriptions" element={<ManagerSubscriptionsPage />} />
           <Route path="/manager/reports" element={<ManagerReportsPage />} />
         </Route>
       </Route>
