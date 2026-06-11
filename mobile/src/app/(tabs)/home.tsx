@@ -1,8 +1,14 @@
+import { Linking } from "react-native";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import { toast } from "sonner-native";
 
 import { GlassCard, Label } from "../../components/parking-ui";
+import {
+  useGuestBookingsQuery,
+  useMyBookingsQuery,
+} from "../../hooks/useBookings";
 import { useCurrentUserQuery, useLogoutMutation } from "../../hooks/useAuth";
+import type { Booking, StoredGuestBooking } from "../../types/bookings";
 import { Link, Pressable, ScrollView, Text, View } from "../../tw";
 
 const features = [
@@ -28,9 +34,42 @@ const features = [
   },
 ];
 
+const formatDateTime = (value: string) =>
+  new Date(value).toLocaleString("vi-VN", {
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    month: "2-digit",
+  });
+
+const formatMoney = (value: number) => `${value.toLocaleString("vi-VN")} VND`;
+
+const getStatusTone = (status: Booking["status"]) => {
+  if (status === "paid" || status === "used") {
+    return "text-btn-primary";
+  }
+
+  if (status === "cancelled" || status === "expired") {
+    return "text-faint";
+  }
+
+  return "text-fg";
+};
+
+const getStoredPaymentUrl = (booking: Booking | StoredGuestBooking) =>
+  (booking as StoredGuestBooking).payment?.checkoutUrl;
+
 export default function Home() {
-  const { data: currentUser } = useCurrentUserQuery();
+  const { data: currentUser, isLoading: isAuthLoading } = useCurrentUserQuery();
+  const myBookingsQuery = useMyBookingsQuery(Boolean(currentUser));
+  const guestBookingsQuery = useGuestBookingsQuery(!isAuthLoading && !currentUser);
   const logoutMutation = useLogoutMutation();
+  const homeBookings = currentUser
+    ? (myBookingsQuery.data?.bookings ?? [])
+    : (guestBookingsQuery.data ?? []);
+  const isBookingsLoading = currentUser
+    ? myBookingsQuery.isFetching
+    : guestBookingsQuery.isFetching;
 
   const handleLogout = async () => {
     try {
@@ -43,6 +82,16 @@ export default function Home() {
         description: "Your local session has been cleared.",
       });
     }
+  };
+
+  const openGuestPayment = async (booking: Booking | StoredGuestBooking) => {
+    const checkoutUrl = getStoredPaymentUrl(booking);
+
+    if (!checkoutUrl) {
+      return;
+    }
+
+    await Linking.openURL(checkoutUrl);
   };
 
   return (
@@ -129,38 +178,83 @@ export default function Home() {
           </View>
         </View>
 
-        <GlassCard className="gap-4">
+        <View className="gap-3">
           <View className="flex-row items-center justify-between">
             <View className="gap-1">
-              <Label>Today overview</Label>
-              <Text className="font-sans text-xl font-extrabold text-fg">
-                Parking is running smoothly
+              <Label>My bookings</Label>
+              <Text className="font-sans text-2xl font-black text-fg">
+                Recent reservations
               </Text>
             </View>
-            <View className="h-11 w-11 items-center justify-center rounded-full bg-badge">
-              <Ionicons name="analytics" color="#ffffff" size={22} />
-            </View>
+            {isBookingsLoading ? (
+              <Text className="font-sans text-xs font-bold text-subtle">
+                Loading
+              </Text>
+            ) : null}
           </View>
 
-          <View className="h-2.5 overflow-hidden rounded-full bg-badge">
-            <View className="h-full w-[72%] bg-btn-primary" />
-          </View>
-
-          <View className="flex-row gap-3">
-            {[
-              ["318", "Total slots"],
-              ["66", "Open now"],
-              ["24/7", "Monitoring"],
-            ].map(([value, label]) => (
-              <View key={label} className="flex-1 gap-1 rounded-[14px] bg-surface-alt p-3">
-                <Text selectable className="font-sans text-xl font-black text-fg">
-                  {value}
+          {homeBookings.slice(0, 3).map((booking) => (
+            <GlassCard key={booking._id} className="gap-3">
+              <View className="flex-row items-center justify-between gap-3">
+                <View className="flex-1 gap-1">
+                  <Text selectable className="font-sans text-lg font-extrabold text-fg">
+                    {booking.licensePlate}
+                  </Text>
+                  <Text className="font-sans text-sm text-subtle">
+                    {formatDateTime(booking.expectedArrivalTime)} -{" "}
+                    {formatDateTime(booking.expectedExitTime)}
+                  </Text>
+                </View>
+                <Text
+                  className={`font-sans text-xs font-extrabold uppercase ${getStatusTone(
+                    booking.status,
+                  )}`}
+                >
+                  {booking.status}
                 </Text>
-                <Text className="font-sans text-xs text-subtle">{label}</Text>
               </View>
-            ))}
-          </View>
-        </GlassCard>
+
+              <View className="flex-row items-center justify-between gap-3">
+                <Text className="font-sans text-sm font-bold text-muted">
+                  {formatMoney(booking.amount)}
+                </Text>
+                {getStoredPaymentUrl(booking) ? (
+                  <Pressable
+                    className="rounded-full bg-btn-primary px-4 py-2"
+                    onPress={() => openGuestPayment(booking)}
+                  >
+                    <Text className="font-sans text-sm font-extrabold text-btn-primary-fg">
+                      Pay
+                    </Text>
+                  </Pressable>
+                ) : null}
+              </View>
+            </GlassCard>
+          ))}
+
+          {!isBookingsLoading && homeBookings.length === 0 ? (
+            <GlassCard className="gap-3">
+              <View className="h-11 w-11 items-center justify-center rounded-[14px] bg-badge">
+                <Ionicons name="calendar-outline" color="#ffffff" size={22} />
+              </View>
+              <View className="gap-1">
+                <Text className="font-sans text-base font-extrabold text-fg">
+                  No bookings yet
+                </Text>
+                <Text className="font-sans text-sm leading-5 text-subtle">
+                  Visitor bookings you create on this device will appear here.
+                </Text>
+              </View>
+              <Link href="/(tabs)/booking" asChild>
+                <Pressable className="items-center rounded-full bg-btn-primary py-3.5">
+                  <Text className="font-sans text-base font-extrabold text-btn-primary-fg">
+                    Book parking
+                  </Text>
+                </Pressable>
+              </Link>
+            </GlassCard>
+          ) : null}
+        </View>
 
         <View className="gap-3">
           <View className="gap-1">

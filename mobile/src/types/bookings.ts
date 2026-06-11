@@ -41,3 +41,8 @@ export type MyBookingsResult = {
   bookings: Booking[];
 };
 
+export type StoredGuestBooking = Booking & {
+  payment?: BookingPayment;
+  savedAt: string;
+};
+

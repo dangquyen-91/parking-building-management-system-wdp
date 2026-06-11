@@ -25,7 +25,7 @@ export default function Login() {
       toast.success("Signed in", {
         description: "Welcome back.",
       });
-      router.replace("/(tabs)");
+      router.replace("/(tabs)/home");
     } catch (error) {
       toast.error("Sign in failed", {
         description: error instanceof Error ? error.message : "Please try again.",
@@ -41,7 +41,7 @@ export default function Login() {
       >
         <View className="gap-8">
           <View className="flex-row items-center justify-between">
-            <Link href="/(tabs)" asChild>
+            <Link href="/(tabs)/home" asChild>
               <Pressable className="h-11 w-11 items-center justify-center rounded-full border border-border-theme bg-badge">
                 <Ionicons name="chevron-back" color="#ffffff" size={22} />
               </Pressable>

@@ -1,13 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { authKeys, login, logout, register } from "@/lib/auth";
-import { getStoredUser } from "@/lib/auth-storage";
+import { authKeys, getCurrentUser, login, logout, register } from "@/lib/auth";
 
 export const useCurrentUserQuery = () =>
   useQuery({
     queryKey: authKeys.currentUser,
-    queryFn: getStoredUser,
-    staleTime: Infinity,
+    queryFn: getCurrentUser,
   });
 
 export const useLoginMutation = () => {

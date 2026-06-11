@@ -8,6 +8,7 @@ import { GlassCard, Label, Page } from "../../components/parking-ui";
 import { useCurrentUserQuery } from "../../hooks/useAuth";
 import {
   useCreateBookingMutation,
+  useSaveGuestBookingMutation,
   useMyBookingsQuery,
 } from "../../hooks/useBookings";
 import {
@@ -85,6 +86,7 @@ export default function Booking() {
 
   const { data: currentUser } = useCurrentUserQuery();
   const createBookingMutation = useCreateBookingMutation();
+  const saveGuestBookingMutation = useSaveGuestBookingMutation();
   const myBookingsQuery = useMyBookingsQuery(Boolean(currentUser));
 
   useEffect(() => {
@@ -161,6 +163,9 @@ export default function Booking() {
         expectedExitTime: exit.toISOString(),
       });
       setCreatedBooking(result);
+      if (!currentUser) {
+        await saveGuestBookingMutation.mutateAsync(result);
+      }
       toast.success("Booking created", {
         description: "Complete payment to activate your booking.",
       });

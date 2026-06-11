@@ -47,7 +47,7 @@ export default function Register() {
         contentContainerClassName="gap-8 px-5 pb-10 pt-16"
       >
         <View className="flex-row items-center justify-between">
-          <Link href="/(tabs)" asChild>
+          <Link href="/(tabs)/home" asChild>
             <Pressable className="h-11 w-11 items-center justify-center rounded-full border border-border-theme bg-badge">
               <Ionicons name="chevron-back" color="#ffffff" size={22} />
             </Pressable>

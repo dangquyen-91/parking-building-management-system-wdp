@@ -1,5 +1,10 @@
 import { apiRequest } from "./api";
-import { clearAuthTokens, saveAuthTokens, saveStoredUser } from "./auth-storage";
+import {
+  clearAuthTokens,
+  getAccessToken,
+  saveAuthTokens,
+  saveStoredUser,
+} from "./auth-storage";
 import type { AuthSession, LoginPayload, RegisterPayload, User } from "@/types/auth";
 
 export const authKeys = {
@@ -11,6 +16,19 @@ export const saveAuthSession = async (session: AuthSession) => {
     saveAuthTokens(session.accessToken, session.refreshToken),
     saveStoredUser(session.user),
   ]);
+};
+
+export const getCurrentUser = async () => {
+  const token = await getAccessToken();
+
+  if (!token) {
+    return null;
+  }
+
+  const { user } = await apiRequest<{ user: User }>("/users/me");
+  await saveStoredUser(user);
+
+  return user;
 };
 
 export const login = async (payload: LoginPayload) => {
