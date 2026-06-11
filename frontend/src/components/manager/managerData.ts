@@ -71,7 +71,7 @@ export const MANAGER_STAFF: ManagerStaff[] = [
   { id: 'ST-04', name: 'Quyen Do', shift: '22:00 - 06:00', gate: 'Gate B', checkins: 0, checkouts: 0, status: 'offline' },
 ]
 
-export const statusTone: Record<SlotStatus | ParkingRowStatus | BookingStatus | GateLogStatus | ManagerStaff['status'] | 'active' | 'inactive', string> = {
+export const statusTone: Record<SlotStatus | ParkingRowStatus | BookingStatus | GateLogStatus | ManagerStaff['status'] | 'active' | 'inactive' | 'expired', string> = {
   available: 'border-emerald-500/70 bg-emerald-100 text-emerald-800 dark:border-emerald-300/70 dark:bg-emerald-500/15 dark:text-emerald-100',
   occupied: 'border-sky-500/70 bg-sky-100 text-sky-800 dark:border-sky-300/70 dark:bg-sky-500/15 dark:text-sky-100',
   reserved: 'border-amber-500/80 bg-amber-100 text-amber-900 dark:border-amber-300/70 dark:bg-amber-500/15 dark:text-amber-100',
@@ -87,6 +87,7 @@ export const statusTone: Record<SlotStatus | ParkingRowStatus | BookingStatus | 
   offline: 'border-theme bg-badge text-subtle',
   active: 'border-emerald-500/70 bg-emerald-100 text-emerald-800 dark:border-emerald-300/70 dark:bg-emerald-500/15 dark:text-emerald-100',
   inactive: 'border-rose-500/70 bg-rose-100 text-rose-800 dark:border-rose-300/70 dark:bg-rose-500/15 dark:text-rose-100',
+  expired: 'border-theme bg-badge text-subtle',
 }
 
 export function getAvailableSlots(zone: ManagerZone) {
