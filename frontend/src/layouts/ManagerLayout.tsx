@@ -11,6 +11,7 @@ const MANAGER_PAGE_TITLES: Record<string, string> = {
   '/manager/bookings': 'Bookings',
   '/manager/gate-logs': 'Gate Logs',
   '/manager/staff': 'Staff',
+  '/manager/plans': 'Gói gửi xe',
   '/manager/reports': 'Reports',
 }
 

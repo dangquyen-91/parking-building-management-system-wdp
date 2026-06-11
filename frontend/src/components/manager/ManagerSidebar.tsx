@@ -10,6 +10,7 @@ const MANAGER_NAV_ITEMS = [
   { to: '/manager/bookings', label: 'Bookings', icon: 'calendar' },
   { to: '/manager/gate-logs', label: 'Gate Logs', icon: 'gate' },
   { to: '/manager/staff', label: 'Staff', icon: 'staff' },
+  { to: '/manager/plans', label: 'Gói gửi xe', icon: 'plan' },
   { to: '/manager/reports', label: 'Reports', icon: 'report' },
 ] as const
 
@@ -49,6 +50,15 @@ function ManagerIcon({ name }: { name: (typeof MANAGER_NAV_ITEMS)[number]['icon'
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
         <path d="M6 20V4h9l3 3v13H6Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
         <path d="M9 15h6M9 11h6M9 7h3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      </svg>
+    )
+  }
+
+  if (name === 'plan') {
+    return (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M5 5.5A1.5 1.5 0 0 1 6.5 4h11A1.5 1.5 0 0 1 19 5.5v13a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 5 18.5v-13Z" stroke="currentColor" strokeWidth="1.5" />
+        <path d="M8 8h8M8 12h8M8 16h5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
       </svg>
     )
   }
