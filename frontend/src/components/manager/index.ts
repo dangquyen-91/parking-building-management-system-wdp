@@ -24,6 +24,12 @@ export {
 export { ManagerBookingList } from './ManagerBookingList'
 export { ManagerBookingStats } from './ManagerBookingStats'
 export {
+  ManagerStaffFilters,
+  type ManagerStaffStatusFilter,
+} from './ManagerStaffFilters'
+export { ManagerStaffList } from './ManagerStaffList'
+export { ManagerStaffStats } from './ManagerStaffStats'
+export {
   MANAGER_BOOKINGS,
   MANAGER_GATE_LOGS,
   MANAGER_STAFF,

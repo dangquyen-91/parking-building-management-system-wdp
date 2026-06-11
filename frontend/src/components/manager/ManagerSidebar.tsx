@@ -9,7 +9,7 @@ const MANAGER_NAV_ITEMS = [
   { to: '/manager/slots', label: 'Chỗ đỗ', icon: 'slots' },
   { to: '/manager/bookings', label: 'Booking', icon: 'calendar' },
   { to: '/manager/gate-logs', label: 'Hoạt động cổng', icon: 'gate' }, // Gate Logs
-  { to: '/manager/staff', label: 'Staff', icon: 'staff' },
+  { to: '/manager/staff', label: 'Nhân viên', icon: 'staff' },
   { to: '/manager/plans', label: 'Gói gửi xe', icon: 'plan' },
   { to: '/manager/reports', label: 'Reports', icon: 'report' },
 ] as const
