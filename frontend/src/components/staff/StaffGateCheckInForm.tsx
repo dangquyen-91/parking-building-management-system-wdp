@@ -6,34 +6,31 @@ import type {
   GateSlot,
   GateVehicleType,
 } from '../../services/staffGateApi'
+import { StaffAssignedParking } from './StaffAssignedParking'
 import { StaffGateField } from './StaffGateField'
 import {
   formatCustomerType,
   formatVehicleType,
-  getBuildingName,
-  getFloorId,
   normalizePlate,
 } from './staffGateUtils'
 
 type StaffGateCheckInFormProps = {
   plate: string
   vehicleType: GateVehicleType
-  rowId: string
-  slotId: string
   note: string
   lookupResult: GateLookupResult | null
   lookupMatchesPlate: boolean
   checkInCustomerType?: GateCustomerType
-  rowOptions: GateRow[]
-  slotOptions: GateSlot[]
+  autoAssignedRow?: GateRow
+  autoAssignedRowFloorAvailable: number
+  autoAssignedSlot?: GateSlot
+  autoAssignedFloorAvailable: number
   floorMap: Map<string, Floor>
   isLookupLoading: boolean
   isSubmitting: boolean
   canCheckIn: boolean
   onPlateChange: (value: string) => void
   onVehicleTypeChange: (value: GateVehicleType) => void
-  onRowChange: (value: string) => void
-  onSlotChange: (value: string) => void
   onNoteChange: (value: string) => void
   onLookup: () => void
   onCheckIn: () => void
@@ -42,22 +39,20 @@ type StaffGateCheckInFormProps = {
 export function StaffGateCheckInForm({
   plate,
   vehicleType,
-  rowId,
-  slotId,
   note,
   lookupResult,
   lookupMatchesPlate,
   checkInCustomerType,
-  rowOptions,
-  slotOptions,
+  autoAssignedRow,
+  autoAssignedRowFloorAvailable,
+  autoAssignedSlot,
+  autoAssignedFloorAvailable,
   floorMap,
   isLookupLoading,
   isSubmitting,
   canCheckIn,
   onPlateChange,
   onVehicleTypeChange,
-  onRowChange,
-  onSlotChange,
   onNoteChange,
   onLookup,
   onCheckIn,
@@ -129,59 +124,22 @@ export function StaffGateCheckInForm({
               >
                 <span className="block text-sm font-semibold">{formatVehicleType(type)}</span>
                 <span className="mt-1 block text-xs opacity-75">
-                  {type === 'motorcycle' ? 'Chọn hàng đỗ xe máy' : 'Khách vãng lai chọn ô đỗ ô tô'}
+                  Hệ thống tự phân bổ tầng còn chỗ
                 </span>
               </button>
             ))}
           </div>
         </StaffGateField>
 
-        {vehicleType === 'motorcycle' ? (
-          <StaffGateField label="Hàng xe máy">
-            <select
-              value={rowId}
-              onChange={(event) => onRowChange(event.target.value)}
-              className="auth-input h-11 rounded-lg border px-3 text-sm text-fg"
-            >
-              <option value="">Chọn hàng còn chỗ</option>
-              {rowOptions.map((row) => {
-                const floor = floorMap.get(getFloorId(row))
-                const buildingName = getBuildingName(floor)
-                return (
-                  <option key={row._id} value={row._id}>
-                    {buildingName ? `${buildingName} - ` : ''}
-                    Tầng {floor?.floorNumber ?? '--'} - {row.rowCode} - còn{' '}
-                    {Math.max(0, row.capacity - row.occupiedCount)}/{row.capacity}
-                  </option>
-                )
-              })}
-            </select>
-          </StaffGateField>
-        ) : checkInCustomerType === 'resident' ? (
-          <div className="rounded-lg border border-theme bg-badge p-4 text-sm text-muted">
-            Cư dân ô tô sẽ dùng ô đỗ cố định trong gói cư dân, frontend không gửi slotId.
-          </div>
-        ) : (
-          <StaffGateField label="Ô đỗ ô tô cho khách vãng lai">
-            <select
-              value={slotId}
-              onChange={(event) => onSlotChange(event.target.value)}
-              className="auth-input h-11 rounded-lg border px-3 text-sm text-fg"
-            >
-              <option value="">Chọn ô còn trống</option>
-              {slotOptions.map((slot) => {
-                const floor = floorMap.get(getFloorId(slot))
-                const buildingName = getBuildingName(floor)
-                return (
-                  <option key={slot._id} value={slot._id}>
-                    {buildingName ? `${buildingName} - ` : ''}
-                    Tầng {floor?.floorNumber ?? '--'} - {slot.slotCode}
-                  </option>
-                )
-              })}
-            </select>
-          </StaffGateField>
-        )}
+        <StaffAssignedParking
+          vehicleType={vehicleType}
+          customerType={checkInCustomerType}
+          autoAssignedRow={autoAssignedRow}
+          autoAssignedRowFloorAvailable={autoAssignedRowFloorAvailable}
+          autoAssignedSlot={autoAssignedSlot}
+          autoAssignedFloorAvailable={autoAssignedFloorAvailable}
+          floorMap={floorMap}
+        />
 
         <StaffGateField label="Ghi chú">
           <textarea
