@@ -262,4 +262,13 @@ export const adminApi = {
   getPeakHoursReport(params?: { days?: number }) {
     return getData<AdminPeakHoursReport>('/reports/peak-hours', params)
   },
+
+  async updateUserStatus(id: string, isActive: boolean) {
+    try {
+      const response = await adminHttp.patch<ApiEnvelope<{ user: AdminUser }>>(`/users/${id}/status`, { isActive })
+      return response.data.data
+    } catch (error) {
+      throw getApiError(error)
+    }
+  },
 }

@@ -12,6 +12,9 @@ const roleLabels: Record<AdminUser['role'], string> = {
 export function UserManagementPage() {
   const [users, setUsers] = useState<AdminUser[]>([])
   const [total, setTotal] = useState(0)
+  const [query, setQuery] = useState('')
+  const [roleFilter, setRoleFilter] = useState<'all' | AdminUser['role']>('all')
+  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all')
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
 
@@ -51,6 +54,22 @@ export function UserManagementPage() {
 
   const activeUsers = users.filter((user) => user.isActive).length
   const operationsUsers = users.filter((user) => user.role === 'manager' || user.role === 'staff').length
+  const filteredUsers = useMemo(() => {
+    const normalizedQuery = query.trim().toLowerCase()
+
+    return users.filter((user) => {
+      const matchesQuery =
+        !normalizedQuery ||
+        user.fullName.toLowerCase().includes(normalizedQuery) ||
+        user.email.toLowerCase().includes(normalizedQuery) ||
+        user.phone?.toLowerCase().includes(normalizedQuery)
+
+      if (!matchesQuery) return false
+      if (roleFilter !== 'all' && user.role !== roleFilter) return false
+      if (statusFilter !== 'all' && user.isActive !== (statusFilter === 'active')) return false
+      return true
+    })
+  }, [query, roleFilter, statusFilter, users])
 
   return (
     <AdminPageShell
@@ -58,19 +77,41 @@ export function UserManagementPage() {
       title="Quản lý người dùng"
       description="Quản lý tài khoản người dùng, nhân viên, quản lý và admin; kiểm soát vai trò trước khi cho phép truy cập hệ thống."
       actions={
-        <div className="flex flex-wrap gap-2">
-          <button
-            type="button"
-            className="h-10 rounded-lg border border-theme-strong px-4 text-sm font-semibold text-fg transition-colors hover:bg-ghost"
-          >
-            Xuất dữ liệu
-          </button>
-          <button
-            type="button"
-            className="h-10 rounded-lg bg-btn-primary px-4 text-sm font-semibold text-btn-primary-fg transition-transform hover:-translate-y-0.5"
-          >
-            Mời người dùng
-          </button>
+        <div className="grid w-full gap-3 sm:grid-cols-3 xl:w-auto xl:min-w-[42rem]">
+          <label className="grid gap-1 text-xs font-medium text-subtle">
+            Tìm kiếm
+            <input
+              className="h-10 rounded-lg border border-theme bg-page px-3 text-sm text-fg outline-none focus:border-btn-primary"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="Tên, email hoặc số điện thoại"
+            />
+          </label>
+          <label className="grid gap-1 text-xs font-medium text-subtle">
+            Vai trò
+            <select
+              className="h-10 rounded-lg border border-theme bg-page px-3 text-sm text-fg"
+              value={roleFilter}
+              onChange={(event) => setRoleFilter(event.target.value as typeof roleFilter)}
+            >
+              <option value="all">Tất cả vai trò</option>
+              {roleStats.map((role) => (
+                <option key={role.role} value={role.role}>{roleLabels[role.role]}</option>
+              ))}
+            </select>
+          </label>
+          <label className="grid gap-1 text-xs font-medium text-subtle">
+            Trạng thái
+            <select
+              className="h-10 rounded-lg border border-theme bg-page px-3 text-sm text-fg"
+              value={statusFilter}
+              onChange={(event) => setStatusFilter(event.target.value as typeof statusFilter)}
+            >
+              <option value="all">Tất cả</option>
+              <option value="active">Đang hoạt động</option>
+              <option value="inactive">Đã khóa</option>
+            </select>
+          </label>
         </div>
       }
     >
@@ -93,19 +134,9 @@ export function UserManagementPage() {
               <p className="text-[10px] uppercase tracking-[0.18em] text-subtle">Tài khoản</p>
               <h2 className="mt-1 text-base font-semibold text-fg">Danh sách người dùng</h2>
             </div>
-            <div className="flex gap-2">
-              <select className="auth-input h-10 rounded-lg border px-3 text-sm text-fg" defaultValue="Tất cả vai trò">
-                <option>Tất cả vai trò</option>
-                {roleStats.map((role) => (
-                  <option key={role.role}>{roleLabels[role.role]}</option>
-                ))}
-              </select>
-              <input
-                className="auth-input h-10 w-40 rounded-lg border px-3 text-sm text-fg"
-                placeholder="Tìm kiếm"
-                type="search"
-              />
-            </div>
+            <span className="rounded-full border border-theme px-3 py-1 text-xs font-semibold text-subtle">
+              {filteredUsers.length} tài khoản
+            </span>
           </div>
 
           <div className="overflow-x-auto">
@@ -125,12 +156,12 @@ export function UserManagementPage() {
                     <td className="px-3 py-6 text-muted" colSpan={5}>Đang tải người dùng...</td>
                   </tr>
                 )}
-                {!isLoading && users.length === 0 && (
+                {!isLoading && filteredUsers.length === 0 && (
                   <tr>
                     <td className="px-3 py-6 text-muted" colSpan={5}>Không tìm thấy người dùng.</td>
                   </tr>
                 )}
-                {!isLoading && users.map((user) => (
+                {!isLoading && filteredUsers.map((user) => (
                   <tr key={user._id} className="align-top">
                     <td className="px-3 py-4">
                       <p className="font-semibold text-fg">{user.fullName}</p>

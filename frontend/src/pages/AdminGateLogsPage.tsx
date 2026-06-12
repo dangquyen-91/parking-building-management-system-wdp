@@ -1,129 +1,91 @@
-import { useEffect, useState } from 'react'
-import { AdminPageShell, AdminStatCard, AdminStatusBadge, formatAdminCurrency } from '../components/admin'
-import { adminApi } from '../services/adminApi'
+import { useEffect, useMemo, useState } from 'react'
+import {
+  ManagerGateLogFilters,
+  ManagerGateLogList,
+  ManagerGateLogStats,
+  type ManagerGateCustomerFilter,
+  type ManagerGateVehicleFilter,
+} from '../components/manager'
+import { AdminPageShell } from '../components/admin'
+import { adminApi, type AdminDashboardReport } from '../services/adminApi'
+import type { ManagerGateDashboard } from '../services/managerGateLogsApi'
 import type { GateSession } from '../services/staffGateApi'
-
-const vehicleTypeLabels: Record<GateSession['vehicleType'], string> = {
-  car: 'Ô tô',
-  motorcycle: 'Xe máy',
-}
-
-const customerTypeLabels: Record<GateSession['customerType'], string> = {
-  resident: 'Cư dân',
-  walk_in: 'Khách vãng lai',
-}
-
-const paymentStatusLabels: Record<GateSession['paymentStatus'], string> = {
-  paid: 'Đã thanh toán',
-  pending: 'Đang chờ',
-  unpaid: 'Chưa thanh toán',
-}
-
-function getSessionLocation(session: GateSession) {
-  const slot = typeof session.slotId === 'object' ? session.slotId : null
-  const row = typeof session.rowId === 'object' ? session.rowId : null
-
-  if (slot) return slot.slotCode
-  if (row) return row.rowCode
-  return '-'
-}
 
 export function AdminGateLogsPage() {
   const [sessions, setSessions] = useState<GateSession[]>([])
-  const [total, setTotal] = useState(0)
+  const [dashboard, setDashboard] = useState<AdminDashboardReport | null>(null)
+  const [query, setQuery] = useState('')
+  const [vehicleFilter, setVehicleFilter] = useState<ManagerGateVehicleFilter>('all')
+  const [customerFilter, setCustomerFilter] = useState<ManagerGateCustomerFilter>('all')
   const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState('')
+  const [error, setError] = useState<string | null>(null)
+
+  async function loadGateLogs() {
+    setIsLoading(true)
+    setError(null)
+
+    try {
+      const [sessionsResponse, dashboardResponse] = await Promise.all([
+        adminApi.getSessions({ limit: 100 }),
+        adminApi.getDashboardReport(),
+      ])
+      setSessions(sessionsResponse.sessions ?? [])
+      setDashboard(dashboardResponse)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Không thể tải dữ liệu hoạt động cổng.')
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   useEffect(() => {
-    let ignore = false
-
-    async function loadSessions() {
-      try {
-        setIsLoading(true)
-        setError('')
-        const response = await adminApi.getSessions({ limit: 100 })
-        if (!ignore) {
-          setSessions(response.sessions)
-          setTotal(response.total)
-        }
-      } catch (loadError) {
-        if (!ignore) setError(loadError instanceof Error ? loadError.message : 'Không thể tải phiên cổng')
-      } finally {
-        if (!ignore) setIsLoading(false)
-      }
-    }
-
-    loadSessions()
-
-    return () => {
-      ignore = true
-    }
+    const timeoutId = window.setTimeout(() => void loadGateLogs(), 0)
+    return () => window.clearTimeout(timeoutId)
   }, [])
 
-  const paidSessions = sessions.filter((session) => session.paymentStatus === 'paid').length
-  const totalFee = sessions.reduce((sum, session) => sum + (session.fee ?? 0), 0)
+  const filteredSessions = useMemo(() => {
+    const normalizedQuery = query.trim().toUpperCase().replace(/\s/g, '')
+
+    return sessions.filter((session) => {
+      if (normalizedQuery && !session.licensePlate.includes(normalizedQuery)) return false
+      if (vehicleFilter !== 'all' && session.vehicleType !== vehicleFilter) return false
+      if (customerFilter !== 'all' && session.customerType !== customerFilter) return false
+      return true
+    })
+  }, [customerFilter, query, sessions, vehicleFilter])
 
   return (
     <AdminPageShell
-      eyebrow="Admin // Nhật ký cổng"
-      title="Hoạt động cổng"
-      description="Admin xem các phiên xe vào/ra mà quản lý và nhân viên đang theo dõi."
+      eyebrow="Admin // Hoạt động cổng"
+      title="Giám sát xe vào / ra"
+      description="Theo dõi xe đang trong bãi, nhân viên ghi nhận, vị trí đỗ và thống kê hoạt động cổng hôm nay."
+      actions={
+        <ManagerGateLogFilters
+          query={query}
+          vehicleFilter={vehicleFilter}
+          customerFilter={customerFilter}
+          onQueryChange={setQuery}
+          onVehicleFilterChange={setVehicleFilter}
+          onCustomerFilterChange={setCustomerFilter}
+        />
+      }
     >
+      <ManagerGateLogStats dashboard={dashboard as ManagerGateDashboard | null} isLoading={isLoading} />
+
       {error && (
-        <div className="mb-4 rounded-lg border border-rose-400/40 bg-rose-500/10 p-3 text-sm text-rose-100">
-          {error}
+        <div className="mb-5 flex items-center justify-between gap-3 rounded-lg border border-theme bg-rose-500/10 p-4 text-sm text-rose-200">
+          <span>{error}</span>
+          <button type="button" className="font-semibold hover:underline" onClick={() => void loadGateLogs()}>
+            Thử lại
+          </button>
         </div>
       )}
 
-      <div className="grid gap-3 md:grid-cols-3">
-        <AdminStatCard label="Phiên gửi xe" value={isLoading ? '-' : total} detail="Lấy từ sessions API" />
-        <AdminStatCard label="Đã thanh toán" value={isLoading ? '-' : paidSessions} detail="Thanh toán hoàn tất" />
-        <AdminStatCard label="Tổng phí" value={isLoading ? '-' : formatAdminCurrency(totalFee)} detail="Tổng trang hiện tại" />
+      <div className="mb-4 rounded-lg border border-theme bg-badge px-4 py-3 text-xs text-muted">
+        Danh sách chi tiết hiện hiển thị các xe đang trong bãi. Số lượt xe ra hôm nay được tổng hợp từ báo cáo hệ thống.
       </div>
 
-      <section className="liquid-glass-card mt-5 rounded-lg p-4 md:p-5">
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[58rem] text-left text-sm">
-            <thead className="border-b border-theme text-xs uppercase tracking-[0.14em] text-subtle">
-              <tr>
-                <th className="px-3 py-3 font-medium">Biển số</th>
-                <th className="px-3 py-3 font-medium">Loại xe</th>
-                <th className="px-3 py-3 font-medium">Vị trí</th>
-                <th className="px-3 py-3 font-medium">Giờ vào</th>
-                <th className="px-3 py-3 font-medium">Thanh toán</th>
-                <th className="px-3 py-3 font-medium">Trạng thái</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-theme">
-              {isLoading && (
-                <tr>
-                  <td className="px-3 py-6 text-muted" colSpan={6}>Đang tải hoạt động cổng...</td>
-                </tr>
-              )}
-              {!isLoading && sessions.length === 0 && (
-                <tr>
-                  <td className="px-3 py-6 text-muted" colSpan={6}>Không tìm thấy phiên cổng.</td>
-                </tr>
-              )}
-              {!isLoading && sessions.map((session) => (
-                <tr key={session._id} className="align-top">
-                  <td className="px-3 py-4 font-semibold text-fg">{session.licensePlate}</td>
-                  <td className="px-3 py-4 text-muted">{vehicleTypeLabels[session.vehicleType]} / {customerTypeLabels[session.customerType]}</td>
-                  <td className="px-3 py-4 text-muted">{getSessionLocation(session)}</td>
-                  <td className="px-3 py-4 text-muted">{new Date(session.entryTime).toLocaleString('vi-VN')}</td>
-                  <td className="px-3 py-4">
-                    <p className="font-medium text-fg">{formatAdminCurrency(session.fee ?? 0)}</p>
-                    <p className="mt-1 text-xs text-subtle">{paymentStatusLabels[session.paymentStatus]}</p>
-                  </td>
-                  <td className="px-3 py-4">
-                    <AdminStatusBadge status={session.status} />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
+      <ManagerGateLogList sessions={filteredSessions} isLoading={isLoading} />
     </AdminPageShell>
   )
 }
