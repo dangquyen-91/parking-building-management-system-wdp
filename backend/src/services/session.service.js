@@ -229,7 +229,7 @@ export const getById = async (id) => {
 export const lookup = async (licensePlate) => {
   const normalizedPlate = licensePlate.toUpperCase().replace(/\s/g, '');
 
-  const [activeSession, activeSub, lastSession, availableCar, motoAgg] = await Promise.all([
+  const [activeSession, activeSub, lastSession, availableCar, motoAgg, paidBooking] = await Promise.all([
     ParkingSession.findOne({ licensePlate: normalizedPlate, status: 'active' }).populate(SESSION_POPULATE),
     Subscription.findOne({ licensePlate: normalizedPlate, status: 'active' })
       .populate('planId', 'code name vehicleType durationDays price')
@@ -243,6 +243,7 @@ export const lookup = async (licensePlate) => {
       { $match: { status: 'available' } },
       { $group: { _id: null, available: { $sum: { $subtract: ['$capacity', '$occupiedCount'] } } } },
     ]),
+    bookingService.findPaidBookingForCheckIn(normalizedPlate),
   ]);
 
   const availableMotorcycle = motoAgg[0]?.available || 0;
@@ -276,6 +277,16 @@ export const lookup = async (licensePlate) => {
       motorcycle: availableMotorcycle,
       car: availableCar,
     },
+    booking: paidBooking
+      ? {
+          _id: paidBooking._id,
+          expectedArrivalTime: paidBooking.expectedArrivalTime,
+          expectedExitTime: paidBooking.expectedExitTime,
+          durationHours: paidBooking.durationHours,
+          amount: paidBooking.amount,
+          status: paidBooking.status,
+        }
+      : null,
   };
 };
 
