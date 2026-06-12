@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useState } from 'react'
 import { ResidentSubscriptionForm } from '../components/subscription/ResidentSubscriptionForm'
 import { ResidentSubscriptionPaymentStep } from '../components/subscription/ResidentSubscriptionPaymentStep'
 import { ResidentSubscriptionSlotSection } from '../components/subscription/ResidentSubscriptionSlotSection'
@@ -34,8 +34,6 @@ export function ResidentSubscriptionPage() {
 
   const canGoStep2 = Boolean(selectedPlanId) && normalizePlate(licensePlate).length >= 4
   const canGoStep3 = vehicleType === 'motorcycle' || Boolean(selectedSlotId)
-  const paymentRequestKey = `${selectedPlanId}:${normalizePlate(licensePlate)}:${vehicleType}:${selectedSlotId}`
-  const autoPaymentKeyRef = useRef('')
 
   function handleVehicleChange(value: typeof vehicleType) {
     handleVehicleTypeChange(value)
@@ -45,14 +43,6 @@ export function ResidentSubscriptionPage() {
   async function handleCreatePayment() {
     await handlePurchase()
   }
-
-  useEffect(() => {
-    if (step !== 3 || !canSubmit || payment || isSubmitting) return
-    if (autoPaymentKeyRef.current === paymentRequestKey) return
-
-    autoPaymentKeyRef.current = paymentRequestKey
-    void handlePurchase()
-  }, [canSubmit, handlePurchase, isSubmitting, payment, paymentRequestKey, step])
 
   return (
     <div className="min-h-screen bg-page text-fg">

@@ -56,7 +56,7 @@ export function ResidentSubscriptionPaymentStep({
         </div>
       </div>
 
-      <div className="mt-5 grid gap-4 lg:grid-cols-[minmax(0,1fr)_26rem]">
+      <div className={`mt-5 grid gap-4 ${payment ? 'lg:grid-cols-[minmax(0,1fr)_26rem]' : ''}`}>
         <div className="rounded-lg border border-theme bg-badge p-4 text-sm">
           <p className="text-xs font-medium uppercase tracking-[0.14em] text-subtle">Tóm tắt</p>
           <dl className="mt-4 grid gap-3">
@@ -106,13 +106,7 @@ export function ResidentSubscriptionPaymentStep({
           )}
         </div>
 
-        {payment ? (
-          <SubscriptionPaymentCard payment={payment} />
-        ) : (
-          <div className="flex min-h-80 items-center justify-center rounded-lg border border-theme bg-badge p-5 text-center text-sm text-muted">
-            Mã QR sẽ hiện ở đây sau khi bạn tạo đơn thanh toán.
-          </div>
-        )}
+        {payment && <SubscriptionPaymentCard payment={payment} />}
       </div>
 
       <SubscriptionWizardActions previousLabel="Quay lại chọn slot" onPrevious={onPrevious} />

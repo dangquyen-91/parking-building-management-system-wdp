@@ -1,5 +1,7 @@
+import { useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { BookingTopNav } from '../components/booking'
+import { consumeSubscriptionPaymentReturn } from '../utils/subscriptionPaymentReturn'
 
 type PaymentResultPageProps = {
   status: 'success' | 'cancel'
@@ -34,11 +36,39 @@ const resultCopy = {
   },
 } satisfies Record<PaymentResultPageProps['status'], Record<string, string>>
 
+const subscriptionResultCopy = {
+  success: {
+    eyebrow: 'Gói cư dân // Thanh toán thành công',
+    title: 'Thanh toán gói thành công',
+    description: 'Hệ thống đang kích hoạt gói cư dân sau khi nhận xác nhận từ PayOS.',
+    badge: 'Đã ghi nhận thanh toán',
+    panelClass: 'border-emerald-500/40 bg-emerald-500/10 text-emerald-700 dark:text-emerald-100',
+    mark: '✓',
+    primaryLabel: 'Xem gói của tôi',
+    primaryTo: '/my-subscriptions',
+    secondaryLabel: 'Mua gói khác',
+    secondaryTo: '/subscriptions',
+  },
+  cancel: {
+    eyebrow: 'Gói cư dân // Đã hủy',
+    title: 'Bạn đã hủy thanh toán gói',
+    description: 'Gói cư dân chưa được kích hoạt. Bạn có thể quay lại để tạo đơn thanh toán mới.',
+    badge: 'Thanh toán chưa hoàn tất',
+    panelClass: 'border-amber-500/40 bg-amber-500/10 text-amber-800 dark:text-amber-100',
+    mark: '!',
+    primaryLabel: 'Quay lại mua gói',
+    primaryTo: '/subscriptions',
+    secondaryLabel: 'Xem gói của tôi',
+    secondaryTo: '/my-subscriptions',
+  },
+} satisfies Record<PaymentResultPageProps['status'], Record<string, string>>
+
 export function PaymentResultPage({ status }: PaymentResultPageProps) {
   const [searchParams] = useSearchParams()
-  const copy = resultCopy[status]
   const orderCode = searchParams.get('orderCode')
   const payosStatus = searchParams.get('status')
+  const [isSubscriptionPayment] = useState(() => consumeSubscriptionPaymentReturn(orderCode))
+  const copy = isSubscriptionPayment ? subscriptionResultCopy[status] : resultCopy[status]
 
   return (
     <div className="min-h-screen bg-page text-fg">
