@@ -28,15 +28,37 @@ export function getBuildingName(floor?: Floor) {
   return typeof building === 'string' ? undefined : building?.name
 }
 
-export function formatSessionSpot(session: GateSession) {
+export function formatSessionSpot(session: GateSession, floorMap?: Map<string, Floor>) {
   if (session.slotId && typeof session.slotId !== 'string') {
-    return session.slotId.slotCode
+    return formatDetailedSpot(session.slotId.floorId, `Slot ${session.slotId.slotCode}`, floorMap)
   }
 
   if (session.rowId && typeof session.rowId !== 'string') {
     const row = session.rowId
-    return `${row.rowCode} (${row.occupiedCount}/${row.capacity})`
+    return formatDetailedSpot(
+      row.floorId,
+      `Hàng ${row.rowCode} (${row.occupiedCount}/${row.capacity})`,
+      floorMap,
+    )
   }
 
   return 'Tự động'
+}
+
+function formatDetailedSpot(
+  floorRef: GateRow['floorId'] | GateSlot['floorId'],
+  spot: string,
+  floorMap?: Map<string, Floor>,
+) {
+  const floorId = typeof floorRef === 'string' ? floorRef : floorRef?._id
+  const loadedFloor = floorMap?.get(floorId)
+  const populatedFloor = typeof floorRef === 'string' ? undefined : floorRef
+  const floorNumber = loadedFloor?.floorNumber ?? populatedFloor?.floorNumber
+  const buildingName = getBuildingName(loadedFloor)
+
+  return [
+    buildingName,
+    floorNumber === undefined ? undefined : `Tầng ${floorNumber}`,
+    spot,
+  ].filter(Boolean).join(' · ')
 }

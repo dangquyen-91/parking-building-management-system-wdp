@@ -1,3 +1,4 @@
+import type { Floor } from '../../services/managerBuildingsApi'
 import type { GateCheckoutPreview, GateSession } from '../../services/staffGateApi'
 import { StaffGateField } from './StaffGateField'
 import { formatGateTime, formatStaffCurrency } from './staffGateData'
@@ -9,6 +10,7 @@ type StaffGateCheckoutPanelProps = {
   preview: GateCheckoutPreview | null
   isPreviewLoading: boolean
   isSubmitting: boolean
+  floorMap: Map<string, Floor>
   onQueryChange: (value: string) => void
   onCheckoutCash: (session: GateSession) => void
   onCheckoutTransfer: (session: GateSession) => void
@@ -20,6 +22,7 @@ export function StaffGateCheckoutPanel({
   preview,
   isPreviewLoading,
   isSubmitting,
+  floorMap,
   onQueryChange,
   onCheckoutCash,
   onCheckoutTransfer,
@@ -67,7 +70,7 @@ export function StaffGateCheckoutPanel({
               </div>
               <div>
                 <dt className="text-subtle">Vị trí</dt>
-                <dd className="mt-1 font-medium text-fg">{formatSessionSpot(session)}</dd>
+                <dd className="mt-1 font-medium text-fg">{formatSessionSpot(session, floorMap)}</dd>
               </div>
               <div>
                 <dt className="text-subtle">Giờ vào</dt>
