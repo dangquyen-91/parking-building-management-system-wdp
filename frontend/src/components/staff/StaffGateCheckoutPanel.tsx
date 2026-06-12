@@ -27,13 +27,16 @@ export function StaffGateCheckoutPanel({
   onCheckoutCash,
   onCheckoutTransfer,
 }: StaffGateCheckoutPanelProps) {
+  const amountToCollect = preview?.toCollect ?? session?.fee ?? 0
+  const hasPrepaidBooking = Boolean(preview?.bookingId)
+
   return (
     <section className="liquid-glass-card rounded-lg p-4 md:p-5">
       <div className="flex flex-col gap-2 border-b border-theme pb-4">
         <p className="text-[10px] uppercase tracking-[0.18em] text-subtle">Xe ra</p>
         <h2 className="text-xl font-semibold text-fg">Tra cứu và ghi nhận xe ra</h2>
         <p className="text-sm text-muted">
-          Tìm phiên gửi xe đang hoạt động, xem phí tạm tính, rồi xác nhận thu tiền mặt hoặc tạo link chuyển khoản.
+          Tìm phiên gửi xe, kiểm tra số tiền còn phải thu rồi xác nhận xe ra.
         </p>
       </div>
 
@@ -42,7 +45,7 @@ export function StaffGateCheckoutPanel({
           <input
             value={query}
             onChange={(event) => onQueryChange(event.target.value)}
-            placeholder="Nhập 59X2 hoặc mã phiên"
+            placeholder="Nhập biển số hoặc mã phiên"
             className="auth-input h-11 rounded-lg border px-3 text-sm font-semibold uppercase text-fg"
           />
         </StaffGateField>
@@ -54,56 +57,57 @@ export function StaffGateCheckoutPanel({
                 <p className="text-lg font-semibold text-fg">{session.licensePlate}</p>
                 <p className="mt-1 text-xs text-subtle">{session._id}</p>
               </div>
-              <span className="w-fit rounded-full border border-emerald-400/40 bg-emerald-500/10 px-3 py-1 text-[11px] font-medium text-emerald-200">
+              <span className="w-fit rounded-full border border-emerald-400/40 bg-emerald-500/10 px-3 py-1 text-[11px] font-medium text-emerald-700 dark:text-emerald-200">
                 Đang gửi
               </span>
             </div>
 
             <dl className="mt-5 grid gap-3 text-sm sm:grid-cols-2">
-              <div>
-                <dt className="text-subtle">Loại khách</dt>
-                <dd className="mt-1 font-medium text-fg">{formatCustomerType(session.customerType)}</dd>
-              </div>
-              <div>
-                <dt className="text-subtle">Loại xe</dt>
-                <dd className="mt-1 font-medium text-fg">{formatVehicleType(session.vehicleType)}</dd>
-              </div>
-              <div>
-                <dt className="text-subtle">Vị trí</dt>
-                <dd className="mt-1 font-medium text-fg">{formatSessionSpot(session, floorMap)}</dd>
-              </div>
-              <div>
-                <dt className="text-subtle">Giờ vào</dt>
-                <dd className="mt-1 font-medium text-fg">{formatGateTime(session.entryTime)}</dd>
-              </div>
-              <div>
-                <dt className="text-subtle">Tạm tính</dt>
-                <dd className="mt-1 font-medium text-fg">
-                  {isPreviewLoading ? 'Đang tính...' : formatStaffCurrency(preview?.fee ?? session.fee ?? 0)}
-                </dd>
-              </div>
-              <div>
-                <dt className="text-subtle">Thanh toán</dt>
-                <dd className="mt-1 font-medium text-fg">{session.paymentStatus}</dd>
-              </div>
+              <Detail label="Loại khách" value={formatCustomerType(session.customerType)} />
+              <Detail label="Loại xe" value={formatVehicleType(session.vehicleType)} />
+              <Detail label="Vị trí" value={formatSessionSpot(session, floorMap)} />
+              <Detail label="Giờ vào" value={formatGateTime(session.entryTime)} />
+              <Detail
+                label="Cần thu thêm"
+                value={isPreviewLoading ? 'Đang tính...' : formatStaffCurrency(amountToCollect)}
+              />
+              <Detail
+                label="Trạng thái"
+                value={amountToCollect === 0 ? 'Không cần thu thêm' : 'Chờ thanh toán'}
+              />
+              {hasPrepaidBooking && (
+                <>
+                  <Detail label="Đặt chỗ đã trả trước" value={formatStaffCurrency(preview?.prepaidAmount ?? 0)} />
+                  <Detail
+                    label="Phí quá giờ"
+                    value={`${preview?.overtimeHours ?? 0} giờ / ${formatStaffCurrency(preview?.overtimeFee ?? 0)}`}
+                  />
+                </>
+              )}
             </dl>
 
-            <div className="mt-5 grid gap-3 sm:grid-cols-2">
-              <button
-                type="button"
-                onClick={() => onCheckoutCash(session)}
-                disabled={isSubmitting}
-                className="h-11 rounded-lg bg-btn-primary px-4 text-sm font-semibold text-btn-primary-fg transition-transform hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0"
-              >
-                Thu tiền mặt
-              </button>
+            {preview?.note && (
+              <p className="mt-4 rounded-lg border border-theme bg-page p-3 text-xs text-muted">{preview.note}</p>
+            )}
+
+            <div className={`mt-5 grid gap-3 ${amountToCollect > 0 ? 'sm:grid-cols-2' : ''}`}>
+              {amountToCollect > 0 && (
+                <button
+                  type="button"
+                  onClick={() => onCheckoutCash(session)}
+                  disabled={isSubmitting || isPreviewLoading}
+                  className="h-11 rounded-lg bg-btn-primary px-4 text-sm font-semibold text-btn-primary-fg disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  Thu tiền mặt {formatStaffCurrency(amountToCollect)}
+                </button>
+              )}
               <button
                 type="button"
                 onClick={() => onCheckoutTransfer(session)}
-                disabled={isSubmitting}
-                className="h-11 rounded-lg border border-theme bg-badge px-4 text-sm font-semibold text-fg transition-colors hover:bg-ghost disabled:cursor-not-allowed disabled:opacity-60"
+                disabled={isSubmitting || isPreviewLoading}
+                className="h-11 rounded-lg border border-theme bg-badge px-4 text-sm font-semibold text-fg hover:bg-ghost disabled:cursor-not-allowed disabled:opacity-60"
               >
-                Chuyển khoản
+                {amountToCollect > 0 ? `Chuyển khoản ${formatStaffCurrency(amountToCollect)}` : 'Xác nhận xe ra'}
               </button>
             </div>
           </div>
@@ -114,5 +118,14 @@ export function StaffGateCheckoutPanel({
         )}
       </div>
     </section>
+  )
+}
+
+function Detail({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <dt className="text-subtle">{label}</dt>
+      <dd className="mt-1 font-medium text-fg">{value}</dd>
+    </div>
   )
 }

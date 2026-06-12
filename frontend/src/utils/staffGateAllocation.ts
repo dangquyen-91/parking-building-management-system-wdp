@@ -3,6 +3,7 @@ import type {
   GateCustomerType,
   GateRow,
   GateSlot,
+  GateVehicleType,
 } from '../services/staffGateApi'
 
 function getFloorId(value: GateRow | GateSlot) {
@@ -15,6 +16,13 @@ type StaffGateAllocationParams = {
   floorMap: Map<string, Floor>
   lookupMatchesPlate: boolean
   customerType?: GateCustomerType
+  vehicleType: GateVehicleType
+  selectedFloorId: string
+}
+
+export type StaffGateFloorOption = {
+  floor: Floor
+  available: number
 }
 
 export function getStaffGateAllocation({
@@ -23,6 +31,8 @@ export function getStaffGateAllocation({
   floorMap,
   lookupMatchesPlate,
   customerType,
+  vehicleType,
+  selectedFloorId,
 }: StaffGateAllocationParams) {
   const targetFloorType = customerType === 'resident' ? 'resident' : 'visitor'
 
@@ -40,28 +50,31 @@ export function getStaffGateAllocation({
     return slot.status === 'empty'
   })
 
-  const autoAssignedRow = rowOptions[0]
-  const autoAssignedRowFloorId = autoAssignedRow ? getFloorId(autoAssignedRow) : undefined
-  const autoAssignedRowFloorAvailable = autoAssignedRowFloorId
-    ? rowOptions
-        .filter((row) => getFloorId(row) === autoAssignedRowFloorId)
-        .reduce((total, row) => total + Math.max(0, row.capacity - row.occupiedCount), 0)
-    : 0
-  const autoAssignedSlot = slotOptions[0]
-  const autoAssignedFloorId = autoAssignedSlot ? getFloorId(autoAssignedSlot) : undefined
-  const autoAssignedFloorAvailable = autoAssignedFloorId
-    ? slotOptions.filter((slot) => getFloorId(slot) === autoAssignedFloorId).length
-    : 0
+  const floorOptions = Array.from(floorMap.values())
+    .filter((floor) => floor.vehicleType === vehicleType)
+    .map((floor): StaffGateFloorOption => ({
+      floor,
+      available:
+        vehicleType === 'motorcycle'
+          ? rowOptions
+              .filter((row) => getFloorId(row) === floor._id)
+              .reduce((total, row) => total + Math.max(0, row.capacity - row.occupiedCount), 0)
+          : slotOptions.filter((slot) => getFloorId(slot) === floor._id).length,
+    }))
+    .filter((option) => option.available > 0)
+    .sort((a, b) => a.floor.floorNumber - b.floor.floorNumber)
+
+  const autoAssignedRow = rowOptions.find((row) => getFloorId(row) === selectedFloorId)
+  const autoAssignedSlot = slotOptions.find((slot) => getFloorId(slot) === selectedFloorId)
   const availableCount =
     rowOptions.reduce((total, row) => total + Math.max(0, row.capacity - row.occupiedCount), 0) +
     slotOptions.length
 
   return {
     rowOptions,
+    floorOptions,
     autoAssignedRow,
-    autoAssignedRowFloorAvailable,
     autoAssignedSlot,
-    autoAssignedFloorAvailable,
     availableCount,
   }
 }
