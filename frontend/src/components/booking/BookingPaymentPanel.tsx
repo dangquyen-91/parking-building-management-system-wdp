@@ -1,5 +1,3 @@
-import { useEffect, useState } from 'react'
-import QRCode from 'qrcode'
 import type { BookingPayment } from '../../services/bookingApi'
 import { formatBookingCurrency } from './bookingUtils'
 
@@ -8,72 +6,15 @@ type BookingPaymentPanelProps = {
 }
 
 export function BookingPaymentPanel({ payment }: BookingPaymentPanelProps) {
-  const [qrImage, setQrImage] = useState('')
-  const [qrError, setQrError] = useState<string | null>(null)
-
-  useEffect(() => {
-    let ignore = false
-
-    async function buildQrImage() {
-      setQrImage('')
-      setQrError(null)
-
-      const payloads = [payment.qrCode, payment.checkoutUrl].filter(Boolean) as string[]
-
-      for (const payload of payloads) {
-        if (payload.startsWith('data:image/') || /^https?:\/\/.+\.(png|jpg|jpeg|webp|svg)(\?.*)?$/i.test(payload)) {
-          if (!ignore) setQrImage(payload)
-          return
-        }
-
-        try {
-          const dataUrl = await QRCode.toDataURL(payload, {
-            errorCorrectionLevel: 'M',
-            margin: 2,
-            scale: 8,
-            color: {
-              dark: '#111827',
-              light: '#ffffff',
-            },
-          })
-          if (!ignore) setQrImage(dataUrl)
-          return
-        } catch {
-          // Try the next PayOS payload.
-        }
-      }
-
-      if (!ignore) setQrError('Không thể tạo mã QR. Vui lòng mở liên kết thanh toán PayOS.')
-    }
-
-    void buildQrImage()
-
-    return () => {
-      ignore = true
-    }
-  }, [payment.checkoutUrl, payment.qrCode])
-
   return (
     <section className="liquid-glass-card rounded-lg p-5 md:p-7">
       <p className="mb-3 text-[10px] uppercase tracking-[0.2em] text-subtle">Thanh toán // PayOS</p>
-      <h1 className="text-3xl font-bold tracking-tight text-fg md:text-4xl">Quét mã để thanh toán</h1>
+      <h1 className="text-3xl font-bold tracking-tight text-fg md:text-4xl">Thanh toán đơn đặt chỗ</h1>
       <p className="mt-3 max-w-2xl text-sm text-muted">
-        Đơn đặt chỗ đang chờ thanh toán. Hãy thanh toán qua PayOS để hệ thống tự động kích hoạt đơn sau khi nhận kết quả thanh toán.
+        Đơn đặt chỗ đang chờ thanh toán. Hãy mở trang PayOS để hệ thống tự động kích hoạt đơn sau khi nhận kết quả thanh toán.
       </p>
 
-      <div className="mt-8 grid gap-6 md:grid-cols-[18rem_minmax(0,1fr)]">
-        {qrImage ? (
-          <img
-            src={qrImage}
-            alt="Mã QR thanh toán PayOS cho đặt chỗ"
-            className="aspect-square w-full rounded-lg border border-theme bg-white object-contain p-4"
-          />
-        ) : (
-          <div className="flex aspect-square w-full items-center justify-center rounded-lg border border-theme bg-badge p-4 text-center text-sm text-muted">
-            {qrError ?? 'Đang tạo mã QR...'}
-          </div>
-        )}
-
+      <div className="mt-8">
         <div className="flex flex-col justify-between gap-5 rounded-lg border border-theme bg-badge p-5">
           <dl className="grid gap-3 text-sm sm:grid-cols-2">
             <div>

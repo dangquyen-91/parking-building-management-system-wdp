@@ -24,6 +24,7 @@ import { ManagerStaffPage } from '../pages/ManagerStaffPage'
 import { ManagerSubscriptionsPage } from '../pages/ManagerSubscriptionsPage'
 import { MyBookingsPage } from '../pages/MyBookingsPage'
 import { MySubscriptionsPage } from '../pages/MySubscriptionsPage'
+import { PaymentResultPage } from '../pages/PaymentResultPage'
 import { RegisterPage } from '../pages/RegisterPage'
 import { ResidentSubscriptionPage } from '../pages/ResidentSubscriptionPage'
 import { StaffGatePage } from '../pages/StaffGatePage'
@@ -41,6 +42,8 @@ export const AppRoutes = () => {
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/booking" element={<BookingPage />} />
+      <Route path="/payment/success" element={<PaymentResultPage status="success" />} />
+      <Route path="/payment/cancel" element={<PaymentResultPage status="cancel" />} />
       <Route path="/my-bookings" element={<MyBookingsPage />} />
       <Route element={<ProtectedRoute allowedRoles={['user']} />}>
         <Route path="/subscriptions" element={<ResidentSubscriptionPage />} />
