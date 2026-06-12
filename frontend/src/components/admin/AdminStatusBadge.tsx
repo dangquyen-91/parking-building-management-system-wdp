@@ -30,7 +30,7 @@ const statusLabels: Record<AdminStatus, string> = {
 
 export function AdminStatusBadge({ status, label = statusLabels[status] }: AdminStatusBadgeProps) {
   return (
-    <span className={['rounded-full border px-2 py-1 text-[10px] font-medium uppercase tracking-wide', adminStatusTone[status]].join(' ')}>
+    <span className={['inline-flex min-w-20 justify-center rounded-full border px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide shadow-sm', adminStatusTone[status]].join(' ')}>
       {label}
     </span>
   )

@@ -1,86 +1,92 @@
-import { useEffect, useState } from 'react'
-import { AdminPageShell, AdminStatCard, AdminStatusBadge } from '../components/admin'
+import { useEffect, useMemo, useState } from 'react'
+import {
+  ManagerStaffFilters,
+  ManagerStaffList,
+  ManagerStaffStats,
+  type ManagerStaffStatusFilter,
+} from '../components/manager'
+import { AdminPageShell } from '../components/admin'
 import { adminApi, type AdminUser } from '../services/adminApi'
+import type { ManagerStaffUser } from '../services/managerStaffApi'
+import type { GateSession } from '../services/staffGateApi'
 
 export function AdminStaffPage() {
   const [staff, setStaff] = useState<AdminUser[]>([])
-  const [total, setTotal] = useState(0)
+  const [sessions, setSessions] = useState<GateSession[]>([])
+  const [query, setQuery] = useState('')
+  const [statusFilter, setStatusFilter] = useState<ManagerStaffStatusFilter>('all')
   const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState('')
+  const [error, setError] = useState<string | null>(null)
+
+  async function loadStaffData() {
+    setIsLoading(true)
+    setError(null)
+
+    try {
+      const [staffResponse, sessionsResponse] = await Promise.all([
+        adminApi.getUsers({ role: 'staff', limit: 100, sort: 'fullName', order: 'asc' }),
+        adminApi.getSessions({ limit: 100 }),
+      ])
+      setStaff(staffResponse.users ?? [])
+      setSessions(sessionsResponse.sessions ?? [])
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Không thể tải dữ liệu nhân viên.')
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   useEffect(() => {
-    let ignore = false
-
-    async function loadStaff() {
-      try {
-        setIsLoading(true)
-        setError('')
-        const response = await adminApi.getUsers({ role: 'staff', limit: 100, sort: 'fullName', order: 'asc' })
-        if (!ignore) {
-          setStaff(response.users)
-          setTotal(response.total)
-        }
-      } catch (loadError) {
-        if (!ignore) setError(loadError instanceof Error ? loadError.message : 'Không thể tải tài khoản nhân viên')
-      } finally {
-        if (!ignore) setIsLoading(false)
-      }
-    }
-
-    loadStaff()
-
-    return () => {
-      ignore = true
-    }
+    const timeoutId = window.setTimeout(() => void loadStaffData(), 0)
+    return () => window.clearTimeout(timeoutId)
   }, [])
 
-  const activeStaff = staff.filter((user) => user.isActive).length
+  const filteredStaff = useMemo(() => {
+    const normalizedQuery = query.trim().toLowerCase()
+
+    return staff.filter((user) => {
+      const matchesQuery =
+        !normalizedQuery ||
+        user.fullName.toLowerCase().includes(normalizedQuery) ||
+        user.email.toLowerCase().includes(normalizedQuery) ||
+        user.phone?.toLowerCase().includes(normalizedQuery)
+
+      if (!matchesQuery) return false
+      if (statusFilter !== 'all' && user.isActive !== (statusFilter === 'active')) return false
+      return true
+    })
+  }, [query, staff, statusFilter])
 
   return (
     <AdminPageShell
       eyebrow="Admin // Nhân viên"
-      title="Theo dõi nhân viên"
-      description="Admin xem danh sách tài khoản nhân viên mà quản lý vận hành trong quy trình cổng."
+      title="Quản lý nhân viên"
+      description="Theo dõi tài khoản staff, thông tin liên hệ và số xe đang được từng nhân viên ghi nhận tại cổng."
+      actions={
+        <ManagerStaffFilters
+          query={query}
+          statusFilter={statusFilter}
+          onQueryChange={setQuery}
+          onStatusFilterChange={setStatusFilter}
+        />
+      }
     >
+      <ManagerStaffStats staff={staff as ManagerStaffUser[]} sessions={sessions} isLoading={isLoading} />
+
       {error && (
-        <div className="mb-4 rounded-lg border border-rose-400/40 bg-rose-500/10 p-3 text-sm text-rose-100">
-          {error}
+        <div className="mb-5 flex items-center justify-between gap-3 rounded-lg border border-theme bg-rose-500/10 p-4 text-sm text-rose-200">
+          <span>{error}</span>
+          <button type="button" className="font-semibold hover:underline" onClick={() => void loadStaffData()}>
+            Thử lại
+          </button>
         </div>
       )}
 
-      <div className="grid gap-3 md:grid-cols-3">
-        <AdminStatCard label="Tài khoản nhân viên" value={isLoading ? '-' : total} detail="Vai trò nhân viên" />
-        <AdminStatCard label="Đang hoạt động" value={isLoading ? '-' : activeStaff} detail="Có thể truy cập khu nhân viên" />
-        <AdminStatCard label="Ngưng hoạt động" value={isLoading ? '-' : total - activeStaff} detail="Đã tắt quyền truy cập" />
+      <div className="mb-4 rounded-lg border border-theme bg-badge px-4 py-3 text-xs text-muted">
+        Admin có thể theo dõi nhân viên tại đây. Việc chỉnh vai trò, khóa hoặc mở tài khoản nằm ở trang Người dùng.
       </div>
 
-      <section className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        {isLoading && <p className="rounded-lg border border-theme bg-badge p-4 text-sm text-muted">Đang tải nhân viên...</p>}
-        {!isLoading && staff.length === 0 && (
-          <p className="rounded-lg border border-theme bg-badge p-4 text-sm text-muted">Không tìm thấy tài khoản nhân viên.</p>
-        )}
-        {!isLoading && staff.map((user) => (
-          <article key={user._id} className="liquid-glass-card rounded-lg p-4">
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <p className="text-lg font-semibold text-fg">{user.fullName}</p>
-                <p className="mt-1 text-xs text-subtle">{user.email}</p>
-              </div>
-              <AdminStatusBadge status={user.isActive ? 'active' : 'inactive'} />
-            </div>
-            <dl className="mt-5 grid gap-3 text-sm">
-              <div>
-                <dt className="text-subtle">Điện thoại</dt>
-                <dd className="mt-1 font-medium text-fg">{user.phone ?? '-'}</dd>
-              </div>
-              <div>
-                <dt className="text-subtle">Ngày tạo</dt>
-                <dd className="mt-1 font-medium text-fg">{user.createdAt ? new Date(user.createdAt).toLocaleDateString('vi-VN') : '-'}</dd>
-              </div>
-            </dl>
-          </article>
-        ))}
-      </section>
+      <ManagerStaffList staff={filteredStaff as ManagerStaffUser[]} sessions={sessions} isLoading={isLoading} />
     </AdminPageShell>
   )
 }
