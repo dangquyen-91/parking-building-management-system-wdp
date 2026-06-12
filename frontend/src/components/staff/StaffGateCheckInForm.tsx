@@ -1,11 +1,9 @@
-import type { Floor } from '../../services/managerBuildingsApi'
 import type {
   GateCustomerType,
   GateLookupResult,
-  GateRow,
-  GateSlot,
   GateVehicleType,
 } from '../../services/staffGateApi'
+import type { StaffGateFloorOption } from '../../utils/staffGateAllocation'
 import { StaffAssignedParking } from './StaffAssignedParking'
 import { StaffGateField } from './StaffGateField'
 import {
@@ -21,16 +19,14 @@ type StaffGateCheckInFormProps = {
   lookupResult: GateLookupResult | null
   lookupMatchesPlate: boolean
   checkInCustomerType?: GateCustomerType
-  autoAssignedRow?: GateRow
-  autoAssignedRowFloorAvailable: number
-  autoAssignedSlot?: GateSlot
-  autoAssignedFloorAvailable: number
-  floorMap: Map<string, Floor>
+  floorOptions: StaffGateFloorOption[]
+  selectedFloorId: string
   isLookupLoading: boolean
   isSubmitting: boolean
   canCheckIn: boolean
   onPlateChange: (value: string) => void
   onVehicleTypeChange: (value: GateVehicleType) => void
+  onFloorChange: (value: string) => void
   onNoteChange: (value: string) => void
   onLookup: () => void
   onCheckIn: () => void
@@ -43,20 +39,21 @@ export function StaffGateCheckInForm({
   lookupResult,
   lookupMatchesPlate,
   checkInCustomerType,
-  autoAssignedRow,
-  autoAssignedRowFloorAvailable,
-  autoAssignedSlot,
-  autoAssignedFloorAvailable,
-  floorMap,
+  floorOptions,
+  selectedFloorId,
   isLookupLoading,
   isSubmitting,
   canCheckIn,
   onPlateChange,
   onVehicleTypeChange,
+  onFloorChange,
   onNoteChange,
   onLookup,
   onCheckIn,
 }: StaffGateCheckInFormProps) {
+  const isVehicleTypeLocked =
+    lookupMatchesPlate && Boolean(lookupResult?.subscription?.vehicleType || lookupResult?.booking)
+
   return (
     <section className="liquid-glass-card rounded-lg p-4 md:p-5">
       <div className="flex flex-col gap-2 border-b border-theme pb-4">
@@ -94,7 +91,7 @@ export function StaffGateCheckInForm({
               <div>
                 <p className="font-semibold text-fg">{lookupResult.licensePlate}</p>
                 <p className="mt-1 text-subtle">
-                  {formatCustomerType(lookupResult.customerType)}
+                  {lookupResult.booking ? 'Khách đặt trước' : formatCustomerType(lookupResult.customerType)}
                   {lookupResult.subscription?.owner?.fullName
                     ? ` / ${lookupResult.subscription.owner.fullName}`
                     : ''}
@@ -107,6 +104,15 @@ export function StaffGateCheckInForm({
           </div>
         )}
 
+        {lookupMatchesPlate && lookupResult?.booking && (
+          <div className="rounded-lg border border-emerald-500/40 bg-emerald-500/10 p-4 text-sm">
+            <p className="font-semibold text-fg">Đặt chỗ ô tô đã thanh toán</p>
+            <p className="mt-1 text-xs text-muted">
+              Đã trả trước {lookupResult.booking.durationHours} giờ. Nhân viên chọn tầng ô tô để ghi nhận xe vào.
+            </p>
+          </div>
+        )}
+
         <StaffGateField label="Loại xe">
           <div className="grid gap-3 sm:grid-cols-2">
             {(['motorcycle', 'car'] as const).map((type) => (
@@ -114,7 +120,7 @@ export function StaffGateCheckInForm({
                 key={type}
                 type="button"
                 onClick={() => onVehicleTypeChange(type)}
-                disabled={Boolean(lookupResult?.subscription?.vehicleType)}
+                disabled={isVehicleTypeLocked}
                 className={[
                   'min-h-16 rounded-lg border px-4 text-left transition-colors disabled:cursor-not-allowed disabled:opacity-70',
                   vehicleType === type
@@ -134,11 +140,9 @@ export function StaffGateCheckInForm({
         <StaffAssignedParking
           vehicleType={vehicleType}
           customerType={checkInCustomerType}
-          autoAssignedRow={autoAssignedRow}
-          autoAssignedRowFloorAvailable={autoAssignedRowFloorAvailable}
-          autoAssignedSlot={autoAssignedSlot}
-          autoAssignedFloorAvailable={autoAssignedFloorAvailable}
-          floorMap={floorMap}
+          floorOptions={floorOptions}
+          selectedFloorId={selectedFloorId}
+          onFloorChange={onFloorChange}
         />
 
         <StaffGateField label="Ghi chú">

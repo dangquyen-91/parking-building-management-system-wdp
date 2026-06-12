@@ -30,7 +30,7 @@ export function getBuildingName(floor?: Floor) {
 
 export function formatSessionSpot(session: GateSession, floorMap?: Map<string, Floor>) {
   if (session.slotId && typeof session.slotId !== 'string') {
-    return formatDetailedSpot(session.slotId.floorId, `Slot ${session.slotId.slotCode}`, floorMap)
+    return formatDetailedSpot(session.slotId.floorId, `Ô đỗ ${session.slotId.slotCode}`, floorMap)
   }
 
   if (session.rowId && typeof session.rowId !== 'string') {

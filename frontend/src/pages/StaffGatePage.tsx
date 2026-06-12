@@ -35,6 +35,7 @@ export function StaffGatePage() {
 
   const [plate, setPlate] = useState('')
   const [vehicleType, setVehicleType] = useState<GateVehicleType>('motorcycle')
+  const [selectedFloorId, setSelectedFloorId] = useState('')
   const [note, setNote] = useState('')
   const [lookupResult, setLookupResult] = useState<GateLookupResult | null>(null)
   const [isLookupLoading, setIsLookupLoading] = useState(false)
@@ -44,6 +45,7 @@ export function StaffGatePage() {
   const [checkoutQuery, setCheckoutQuery] = useState(checkoutPlate)
   const [checkoutPreview, setCheckoutPreview] = useState<GateCheckoutPreview | null>(null)
   const [isPreviewLoading, setIsPreviewLoading] = useState(false)
+  const [pendingTransferSession, setPendingTransferSession] = useState<GateSession | null>(null)
 
   const floorMap = useMemo(() => new Map(floors.map((floor) => [floor._id, floor])), [floors])
   const normalizedPlate = normalizePlate(plate)
@@ -51,10 +53,9 @@ export function StaffGatePage() {
   const checkInCustomerType = lookupMatchesPlate ? lookupResult.customerType : undefined
 
   const {
+    floorOptions,
     autoAssignedRow,
-    autoAssignedRowFloorAvailable,
     autoAssignedSlot,
-    autoAssignedFloorAvailable,
     availableCount,
   } = useMemo(
     () =>
@@ -64,8 +65,10 @@ export function StaffGatePage() {
         floorMap,
         lookupMatchesPlate,
         customerType: checkInCustomerType,
+        vehicleType,
+        selectedFloorId,
       }),
-    [rows, slots, floorMap, lookupMatchesPlate, checkInCustomerType],
+    [rows, slots, floorMap, lookupMatchesPlate, checkInCustomerType, vehicleType, selectedFloorId],
   )
 
   const selectedCheckoutSession = useMemo(() => {
@@ -81,8 +84,7 @@ export function StaffGatePage() {
     lookupMatchesPlate &&
     lookupResult.status !== 'already_active' &&
     normalizedPlate.length >= 4 &&
-    (vehicleType === 'car' || Boolean(autoAssignedRow)) &&
-    (vehicleType === 'motorcycle' || checkInCustomerType === 'resident' || Boolean(autoAssignedSlot))
+    (vehicleType === 'motorcycle' ? Boolean(autoAssignedRow) : checkInCustomerType === 'resident' || Boolean(autoAssignedSlot))
 
   async function loadGateData() {
     setIsLoading(true)
@@ -143,6 +145,52 @@ export function StaffGatePage() {
     }
   }, [selectedCheckoutSession])
 
+  useEffect(() => {
+    if (!pendingTransferSession) return
+
+    const pendingSession = pendingTransferSession
+    let ignore = false
+    let attempts = 0
+
+    async function refreshTransferStatus() {
+      attempts += 1
+
+      try {
+        const response = await staffGateApi.getActiveSessions({
+          limit: 100,
+          refreshAt: Date.now(),
+        })
+        if (ignore) return
+
+        const sessions = response.sessions ?? []
+        setActiveSessions(sessions)
+
+        if (!sessions.some((session) => session._id === pendingSession._id)) {
+          setPendingTransferSession(null)
+          setCheckoutQuery('')
+          setCheckoutPreview(null)
+          setActionMessage(`Đã xác nhận chuyển khoản và ghi nhận xe ra ${pendingSession.licensePlate}.`)
+        } else if (attempts >= 72) {
+          setPendingTransferSession(null)
+          setActionMessage('Chưa nhận được xác nhận thanh toán. Vui lòng kiểm tra lại sau ít phút.')
+        }
+      } catch {
+        if (!ignore && attempts >= 72) {
+          setPendingTransferSession(null)
+          setActionMessage('Không thể tự kiểm tra thanh toán. Vui lòng tải lại trang để cập nhật trạng thái.')
+        }
+      }
+    }
+
+    void refreshTransferStatus()
+    const intervalId = window.setInterval(() => void refreshTransferStatus(), 2500)
+
+    return () => {
+      ignore = true
+      window.clearInterval(intervalId)
+    }
+  }, [pendingTransferSession])
+
   async function handleLookup() {
     const plateToLookup = normalizePlate(plate)
     if (!plateToLookup) return
@@ -153,9 +201,12 @@ export function StaffGatePage() {
     try {
       const result = await staffGateApi.lookup(plateToLookup)
       setLookupResult(result)
+      setSelectedFloorId('')
 
       if (result.subscription?.vehicleType) {
         setVehicleType(result.subscription.vehicleType)
+      } else if (result.booking) {
+        setVehicleType('car')
       }
 
       if (result.status === 'already_active' && result.activeSession) {
@@ -185,8 +236,6 @@ export function StaffGatePage() {
 
       setActiveSessions((current) => [response.session, ...current])
       resetCheckInForm()
-      setCheckoutQuery(response.session.licensePlate)
-      setMode('checkout')
       setActionMessage(`Đã ghi nhận xe vào ${response.session.licensePlate}.`)
       await loadGateData()
     } catch (err) {
@@ -221,7 +270,8 @@ export function StaffGatePage() {
 
       if (response.payment?.checkoutUrl) {
         window.open(response.payment.checkoutUrl, '_blank', 'noopener,noreferrer')
-        setActionMessage('Đã tạo link chuyển khoản PayOS. Phiên gửi xe sẽ đóng khi webhook thành công.')
+        setPendingTransferSession(session)
+        setActionMessage('Đã tạo mã QR PayOS. Đang chờ xác nhận thanh toán...')
       } else {
         closeSessionLocally(session._id, response.session)
         setActionMessage(response.note ?? `Đã ghi nhận xe ra ${response.session.licensePlate}.`)
@@ -243,6 +293,7 @@ export function StaffGatePage() {
 
   function resetCheckInForm() {
     setPlate('')
+    setSelectedFloorId('')
     setNote('')
     setLookupResult(null)
   }
@@ -250,10 +301,12 @@ export function StaffGatePage() {
   function handlePlateChange(value: string) {
     setPlate(value)
     setLookupResult(null)
+    setSelectedFloorId('')
   }
 
   function handleVehicleTypeChange(value: GateVehicleType) {
     setVehicleType(value)
+    setSelectedFloorId('')
   }
 
   return (
@@ -294,16 +347,14 @@ export function StaffGatePage() {
               lookupResult={lookupResult}
               lookupMatchesPlate={lookupMatchesPlate}
               checkInCustomerType={checkInCustomerType}
-              autoAssignedRow={autoAssignedRow}
-              autoAssignedRowFloorAvailable={autoAssignedRowFloorAvailable}
-              autoAssignedSlot={autoAssignedSlot}
-              autoAssignedFloorAvailable={autoAssignedFloorAvailable}
-              floorMap={floorMap}
+              floorOptions={floorOptions}
+              selectedFloorId={selectedFloorId}
               isLookupLoading={isLookupLoading}
               isSubmitting={isSubmitting}
               canCheckIn={canCheckIn}
               onPlateChange={handlePlateChange}
               onVehicleTypeChange={handleVehicleTypeChange}
+              onFloorChange={setSelectedFloorId}
               onNoteChange={setNote}
               onLookup={handleLookup}
               onCheckIn={handleCheckIn}
