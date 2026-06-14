@@ -212,6 +212,10 @@ export const handleWebhook = async (webhookBody) => {
         );
       }
     }
+    if (payment.targetType === 'booking') {
+      const { cancelBookingFromWebhook } = await import('./booking.service.js');
+      await cancelBookingFromWebhook(payment._id);
+    }
     return { processed: true, status: 'failed', targetType: payment.targetType };
   }
 
