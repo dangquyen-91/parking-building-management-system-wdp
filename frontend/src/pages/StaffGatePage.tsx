@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import {
   StaffGateCheckInForm,
+  StaffGateCheckInTicket,
   StaffGateCheckoutPanel,
   StaffGateModeTabs,
   StaffGateSessionActivity,
@@ -46,6 +47,7 @@ export function StaffGatePage() {
   const [checkoutPreview, setCheckoutPreview] = useState<GateCheckoutPreview | null>(null)
   const [isPreviewLoading, setIsPreviewLoading] = useState(false)
   const [pendingTransferSession, setPendingTransferSession] = useState<GateSession | null>(null)
+  const [issuedTicket, setIssuedTicket] = useState<GateSession | null>(null)
 
   const floorMap = useMemo(() => new Map(floors.map((floor) => [floor._id, floor])), [floors])
   const normalizedPlate = normalizePlate(plate)
@@ -232,6 +234,7 @@ export function StaffGatePage() {
       })
 
       setActiveSessions((current) => [response.session, ...current])
+      setIssuedTicket(response.session)
       resetCheckInForm()
       setActionMessage(`Đã ghi nhận xe vào ${response.session.licensePlate}.`)
       await loadGateData()
@@ -382,6 +385,10 @@ export function StaffGatePage() {
             <StaffGateSessionActivity sessions={[...activeSessions, ...completedSessions]} />
           </aside>
         </div>
+      )}
+
+      {issuedTicket && (
+        <StaffGateCheckInTicket session={issuedTicket} onClose={() => setIssuedTicket(null)} />
       )}
     </div>
   )
