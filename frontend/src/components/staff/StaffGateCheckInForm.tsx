@@ -138,7 +138,7 @@ export function StaffGateCheckInForm({
               >
                 <span className="block text-sm font-semibold">{formatVehicleType(type)}</span>
                 <span className="mt-1 block text-xs opacity-75">
-                  Hệ thống tự phân bổ tầng còn chỗ
+                  {type === 'car' ? 'Vãng lai theo tầng, cư dân giữ ô riêng' : 'Tự chọn hàng còn chỗ'}
                 </span>
               </button>
             ))}
