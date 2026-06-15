@@ -45,7 +45,7 @@ export function ResidentSubscriptionPaymentStep({
     <section className="liquid-glass-card rounded-lg p-4 md:p-6">
       <div className="flex items-center gap-3 border-b border-theme pb-5">
         <span className="flex h-9 w-9 items-center justify-center rounded-full bg-btn-primary text-sm font-bold text-btn-primary-fg">
-          3
+          4
         </span>
         <div>
           <p className="text-[10px] uppercase tracking-[0.18em] text-subtle">Thanh toán</p>
@@ -109,7 +109,7 @@ export function ResidentSubscriptionPaymentStep({
         {payment && <SubscriptionPaymentCard payment={payment} />}
       </div>
 
-      <SubscriptionWizardActions previousLabel="Quay lại chọn slot" onPrevious={onPrevious} />
+      <SubscriptionWizardActions previousLabel="Quay lại chọn vị trí" onPrevious={onPrevious} />
     </section>
   )
 }

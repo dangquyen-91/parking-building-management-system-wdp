@@ -1,25 +1,17 @@
-import type { Plan, VehicleType } from '../../services/userSubscriptionApi'
-import { formatSubscriptionCurrency, VEHICLE_LABELS } from '../../utils/subscriptionUi'
+import type { VehicleType } from '../../services/userSubscriptionApi'
+import { VEHICLE_LABELS } from '../../utils/subscriptionUi'
 
 type ResidentSubscriptionFormProps = {
   vehicleType: VehicleType
-  plans: Plan[]
-  selectedPlanId: string
-  selectedPlan?: Plan
   licensePlate: string
   onVehicleTypeChange: (value: VehicleType) => void
-  onPlanChange: (value: string) => void
   onLicensePlateChange: (value: string) => void
 }
 
 export function ResidentSubscriptionForm({
   vehicleType,
-  plans,
-  selectedPlanId,
-  selectedPlan,
   licensePlate,
   onVehicleTypeChange,
-  onPlanChange,
   onLicensePlateChange,
 }: ResidentSubscriptionFormProps) {
   return (
@@ -30,14 +22,12 @@ export function ResidentSubscriptionForm({
             1
           </span>
           <div>
-            <p className="text-[10px] uppercase tracking-[0.18em] text-subtle">Thông tin gói</p>
-            <h2 className="mt-1 text-xl font-semibold text-fg">Chọn gói cho biển số xe</h2>
+            <p className="text-[10px] uppercase tracking-[0.18em] text-subtle">Thông tin xe</p>
+            <h2 className="mt-1 text-xl font-semibold text-fg">Chọn loại xe và nhập biển số</h2>
           </div>
         </div>
         <p className="mt-2 text-sm text-muted">
-          {vehicleType === 'car'
-            ? 'Ô tô cư dân sẽ chọn ô đỗ cố định ở bước tiếp theo.'
-            : 'Xe máy cư dân dùng sức chứa chung của tầng xe máy cư dân, không cần chọn ô riêng.'}
+          Các gói cư dân phù hợp với loại xe sẽ được hiển thị ở bước tiếp theo.
         </p>
 
         <div className="mt-5 grid gap-3 sm:grid-cols-2">
@@ -63,41 +53,6 @@ export function ResidentSubscriptionForm({
       </div>
 
       <div className="mt-5 grid gap-4">
-        <label className="grid gap-2 text-xs font-medium text-subtle">
-          Gói cư dân
-          <div className="grid gap-3 md:grid-cols-2">
-            {plans.map((plan) => {
-              const selected = selectedPlanId === plan._id
-
-              return (
-                <button
-                  key={plan._id}
-                  type="button"
-                  onClick={() => onPlanChange(plan._id)}
-                  className={[
-                    'min-h-28 rounded-lg border p-4 text-left transition',
-                    selected
-                      ? 'border-transparent bg-btn-primary text-btn-primary-fg'
-                      : 'border-theme bg-badge text-muted hover:bg-ghost hover:text-fg',
-                  ].join(' ')}
-                >
-                  <span className="block text-sm font-semibold">{plan.name}</span>
-                  <span className="mt-2 block text-lg font-bold">{formatSubscriptionCurrency(plan.price)}</span>
-                  <span className="mt-1 block text-xs opacity-75">{plan.durationDays} ngày sử dụng</span>
-                </button>
-              )
-            })}
-          </div>
-        </label>
-
-        {selectedPlan && (
-          <div className="rounded-lg border border-theme bg-badge p-4 text-sm">
-            <p className="font-semibold text-fg">{selectedPlan.name}</p>
-            <p className="mt-1 text-muted">{selectedPlan.description || 'Gói cư dân đang hoạt động.'}</p>
-            <p className="mt-2 text-sm font-semibold text-fg">{formatSubscriptionCurrency(selectedPlan.price)}</p>
-          </div>
-        )}
-
         <label className="grid gap-2 text-xs font-medium text-subtle">
           Biển số xe
           <input
