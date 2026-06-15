@@ -25,3 +25,12 @@ export const checkInSchema = Joi.object({
 export const lookupSchema = Joi.object({
   licensePlate: Joi.string().trim().min(4).max(20).required(),
 });
+
+export const scanPlateSchema = Joi.object({
+  image: Joi.string().required(),
+});
+
+export const verifyQRSchema = Joi.object({
+  qrToken: Joi.string().required(),
+  scannedPlate: Joi.string().trim().min(4).max(20).required(),
+});

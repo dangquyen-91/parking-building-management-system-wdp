@@ -10,6 +10,16 @@ import * as payosService from './payos.service.js';
 import * as bookingService from './booking.service.js';
 import AppError from '../utils/appError.js';
 import logger from '../utils/logger.js';
+import QRCode from 'qrcode';
+import { signQRToken, verifyQRToken } from '../utils/qrToken.js';
+
+const attachQR = async (session, normalizedPlate) => {
+  const qrToken = signQRToken(session._id, normalizedPlate);
+  await ParkingSession.findByIdAndUpdate(session._id, { qrToken });
+  const qrImage = await QRCode.toDataURL(qrToken, { errorCorrectionLevel: 'M', width: 300, margin: 2 });
+  const populated = await session.populate(SESSION_POPULATE);
+  return { session: populated, qrToken, qrImage };
+};
 
 const SESSION_POPULATE = [
   {
@@ -103,7 +113,7 @@ export const checkIn = async ({ slotId, rowId, licensePlate, vehicleType, staffI
           paymentStatus: 'paid',
           note,
         });
-        return session.populate(SESSION_POPULATE);
+        return attachQR(session, normalizedPlate);
       } catch (err) {
         await ParkingSlot.findByIdAndUpdate(resolvedSlotId, { status: 'reserved' });
         throw err;
@@ -163,7 +173,7 @@ export const checkIn = async ({ slotId, rowId, licensePlate, vehicleType, staffI
       await bookingService.markUsed(paidBooking._id, session._id);
     }
 
-    return session.populate(SESSION_POPULATE);
+    return attachQR(session, normalizedPlate);
   }
 
   // Motorcycle: counter-based row. Auto-pick the first row with capacity if
@@ -226,7 +236,7 @@ export const checkIn = async ({ slotId, rowId, licensePlate, vehicleType, staffI
       paymentStatus: activeSub ? 'paid' : 'unpaid',
       note,
     });
-    return session.populate(SESSION_POPULATE);
+    return attachQR(session, normalizedPlate);
   } catch (err) {
     await ParkingRow.findByIdAndUpdate(resolvedRowId, {
       $inc: { occupiedCount: -1 },
@@ -609,6 +619,44 @@ export const checkOutTransfer = async (id, staffId) => {
     fee: calc.total,
     toCollect: calc.toCollect,
     breakdown: calc.breakdown,
+  };
+};
+
+export const getSessionQR = async (id) => {
+  const session = await ParkingSession.findById(id).select('+qrToken');
+  if (!session) throw new AppError('Session not found', 404);
+  if (session.status !== 'active') throw new AppError('QR only available for active sessions', 400);
+
+  let { qrToken } = session;
+  if (!qrToken) {
+    qrToken = signQRToken(session._id, session.licensePlate);
+    await ParkingSession.findByIdAndUpdate(id, { qrToken });
+  }
+
+  const qrImage = await QRCode.toDataURL(qrToken, { errorCorrectionLevel: 'M', width: 300, margin: 2 });
+  return { qrToken, qrImage, licensePlate: session.licensePlate, sessionId: session._id };
+};
+
+export const verifyQR = async ({ qrToken, scannedPlate }) => {
+  const plate = scannedPlate.toUpperCase().replace(/\s/g, '');
+
+  const { valid, payload, reason } = verifyQRToken(qrToken);
+  if (!valid) throw new AppError(`QR không hợp lệ: ${reason}`, 400);
+
+  const session = await ParkingSession.findById(payload.sid).populate(SESSION_POPULATE);
+  if (!session) throw new AppError('Session không tồn tại', 404);
+  if (session.status !== 'active') throw new AppError(`Session đã ${session.status}`, 400);
+
+  const plateMatch = payload.plate === plate;
+
+  const preview = await previewCheckout(payload.sid);
+  return {
+    session,
+    preview,
+    plateMatch,
+    plateQR: payload.plate,
+    plateCamera: plate,
+    warning: plateMatch ? null : `Biển số camera (${plate}) khác biển số QR (${payload.plate}). Staff cần xác nhận thủ công.`,
   };
 };
 

@@ -30,6 +30,7 @@ const parkingSessionSchema = new mongoose.Schema(
     userId:  { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
     status: { type: String, enum: SESSION_STATUSES, default: 'active' },
     note: { type: String, trim: true },
+    qrToken: { type: String, default: null, select: false },
   },
   { timestamps: true }
 );

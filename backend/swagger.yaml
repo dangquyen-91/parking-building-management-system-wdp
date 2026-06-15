@@ -411,60 +411,6 @@ components:
           type: string
           format: date-time
 
-  responses:
-    Unauthorized:
-      description: Missing or invalid token
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              status:
-                type: string
-                example: fail
-              message:
-                type: string
-                example: No token provided
-    Forbidden:
-      description: Insufficient permissions
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              status:
-                type: string
-                example: fail
-              message:
-                type: string
-                example: You do not have permission to perform this action
-    NotFound:
-      description: Resource not found
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              status:
-                type: string
-                example: fail
-              message:
-                type: string
-                example: User not found
-    ValidationError:
-      description: Invalid request body
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              status:
-                type: string
-                example: fail
-              message:
-                type: string
-                example: '"role" must be one of [admin, manager, staff, user]'
-
     Plan:
       type: object
       properties:
@@ -743,6 +689,60 @@ components:
               type: string
             bin:
               type: string
+
+  responses:
+    Unauthorized:
+      description: Missing or invalid token
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+                example: fail
+              message:
+                type: string
+                example: No token provided
+    Forbidden:
+      description: Insufficient permissions
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+                example: fail
+              message:
+                type: string
+                example: You do not have permission to perform this action
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+                example: fail
+              message:
+                type: string
+                example: User not found
+    ValidationError:
+      description: Invalid request body
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+                example: fail
+              message:
+                type: string
+                example: '"role" must be one of [admin, manager, staff, user]'
 
 paths:
 
@@ -2041,7 +2041,7 @@ paths:
                       type: string
       responses:
         '201':
-          description: Vehicle checked in â€” slot assigned, session created
+          description: Vehicle checked in — slot assigned, session created, QR generated
           content:
             application/json:
               schema:
@@ -2058,6 +2058,14 @@ paths:
                     properties:
                       session:
                         $ref: '#/components/schemas/ParkingSession'
+                      qrToken:
+                        type: string
+                        description: HMAC-signed token dùng để verify tại cổng ra
+                        example: eyJzaWQiOiI2NjRhMWYyZSIsInBsYXRlIjoiNTFBMTIzNDUiLCJpYXQiOjE2OTAwMDAwMDB9.abc123
+                      qrImage:
+                        type: string
+                        description: Base64 PNG của QR code — dùng trực tiếp trong thẻ img
+                        example: data:image/png;base64,iVBORw0KGgoAAAANSUh...
         '400':
           description: Vehicle already has an active session
         '404':
@@ -2160,6 +2168,169 @@ paths:
         '403':
           $ref: '#/components/responses/Forbidden'
 
+  /sessions/scan-plate:
+    post:
+      tags: [Sessions]
+      summary: Quét biển số xe qua camera (admin, manager, staff)
+      description: |
+        Nhận ảnh chụp từ camera (base64), gọi Plate Recognizer ANPR API và trả về biển số gợi ý.
+        Frontend dùng kết quả này để prefill ô nhập biển số trước khi staff xác nhận check-in.
+        - `confidence >= 0.8` → tự động điền
+        - `confidence < 0.8` → highlight vàng, yêu cầu staff xác nhận thủ công
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [image]
+              properties:
+                image:
+                  type: string
+                  description: Ảnh biển số dạng base64 (có thể kèm data URL prefix)
+                  example: data:image/jpeg;base64,/9j/4AAQSkZJRgAB...
+      responses:
+        '200':
+          description: Kết quả nhận dạng biển số
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  message:
+                    type: string
+                    example: License plate detected
+                  data:
+                    type: object
+                    properties:
+                      result:
+                        nullable: true
+                        type: object
+                        properties:
+                          plate:
+                            type: string
+                            example: 51A12345
+                          confidence:
+                            type: number
+                            format: float
+                            minimum: 0
+                            maximum: 1
+                            example: 0.92
+                          region:
+                            type: string
+                            nullable: true
+                            example: vn
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '502':
+          description: ANPR service không phản hồi
+        '503':
+          description: ANPR service chưa được cấu hình (thiếu PLATE_RECOGNIZER_TOKEN)
+
+  /sessions/verify-qr:
+    post:
+      tags: [Sessions]
+      summary: Xác thực QR tại cổng ra (admin, manager, staff)
+      description: |
+        Bước xác thực trước khi checkout. So khớp QR token (khách xuất trình) với biển số camera quét được tại cổng ra.
+        - Verify chữ ký HMAC của token
+        - So khớp biển số trong token với `scannedPlate`
+        - Trả về thông tin session + preview phí để staff xử lý checkout
+
+        Sau khi verify thành công, gọi tiếp `POST /sessions/{id}/checkout/cash` hoặc `/transfer` để hoàn tất.
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [qrToken, scannedPlate]
+              properties:
+                qrToken:
+                  type: string
+                  description: Token lấy từ QR code khách xuất trình
+                  example: eyJzaWQiOiI2NjRhMWYyZSIsInBsYXRlIjoiNTFBMTIzNDUiLCJpYXQiOjE2OTAwMDAwMDB9.abc123
+                scannedPlate:
+                  type: string
+                  description: Biển số camera quét được tại cổng ra
+                  example: 51A12345
+      responses:
+        '200':
+          description: QR hợp lệ — biển số khớp, có thể tiến hành checkout
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  message:
+                    type: string
+                    example: QR verified — proceed to checkout
+                  data:
+                    type: object
+                    properties:
+                      session:
+                        $ref: '#/components/schemas/ParkingSession'
+                      plateMatch:
+                        type: boolean
+                        description: true = biển số khớp hoàn toàn, false = có sai lệch cần staff xác nhận
+                        example: false
+                      plateQR:
+                        type: string
+                        description: Biển số lưu trong QR (từ lúc check-in)
+                        example: 9H7060
+                      plateCamera:
+                        type: string
+                        description: Biển số camera quét tại cổng ra
+                        example: 99H77060
+                      warning:
+                        type: string
+                        nullable: true
+                        description: Khác null khi biển số không khớp — FE hiện cảnh báo cho staff xác nhận
+                        example: "Biển số camera (99H77060) khác biển số QR (9H7060). Staff cần xác nhận thủ công."
+                      preview:
+                        type: object
+                        description: Thông tin phí checkout
+                        properties:
+                          sessionId:
+                            type: string
+                          customerType:
+                            type: string
+                            enum: [resident, walk_in]
+                          entryTime:
+                            type: string
+                            format: date-time
+                          exitTime:
+                            type: string
+                            format: date-time
+                          fee:
+                            type: integer
+                            example: 25000
+                          toCollect:
+                            type: integer
+                            example: 25000
+                          note:
+                            type: string
+        '400':
+          description: QR token không hợp lệ (chữ ký sai, session không active)
+        '404':
+          description: Session không tồn tại
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
   /sessions:
     get:
       tags: [Sessions]
@@ -2227,6 +2398,57 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '403':
           $ref: '#/components/responses/Forbidden'
+
+  /sessions/{id}/qr:
+    get:
+      tags: [Sessions]
+      summary: Lấy lại QR code của session (admin, manager, staff)
+      description: |
+        Trả về QR token và ảnh QR base64 của một session đang active.
+        Dùng khi khách mất QR hoặc staff cần in lại.
+        Nếu session chưa có token (edge case), hệ thống tự sinh mới.
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: Session ID
+      responses:
+        '200':
+          description: QR code trả về thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    type: object
+                    properties:
+                      sessionId:
+                        type: string
+                      licensePlate:
+                        type: string
+                        example: 51A12345
+                      qrToken:
+                        type: string
+                      qrImage:
+                        type: string
+                        description: Base64 PNG — dùng trực tiếp trong thẻ img
+                        example: data:image/png;base64,iVBORw0KGgoAAAANSUh...
+        '400':
+          description: Session không còn active
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
 
   /sessions/{id}:
     get:
