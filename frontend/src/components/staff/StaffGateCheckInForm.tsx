@@ -5,6 +5,7 @@ import type {
 } from '../../services/staffGateApi'
 import type { StaffGateFloorOption } from '../../utils/staffGateAllocation'
 import { StaffAssignedParking } from './StaffAssignedParking'
+import { StaffGateCameraScanner } from './StaffGateCameraScanner'
 import { StaffGateField } from './StaffGateField'
 import {
   formatCustomerType,
@@ -70,6 +71,8 @@ export function StaffGateCheckInForm({
       </div>
 
       <div className="grid gap-6 p-5 md:p-6">
+        <StaffGateCameraScanner gate="entry" onUsePlate={onPlateChange} />
+
         <StaffGateField label="Biển số xe">
           <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_9rem]">
             <input
