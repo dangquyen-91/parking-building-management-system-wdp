@@ -21,6 +21,7 @@ import {
   type GateVehicleType,
 } from '../services/staffGateApi'
 import { getStaffGateAllocation } from '../utils/staffGateAllocation'
+import { rememberStaffGatePaymentReturn } from '../utils/staffGatePaymentReturn'
 
 export function StaffGatePage() {
   const [searchParams] = useSearchParams()
@@ -269,6 +270,7 @@ export function StaffGatePage() {
       const response = await staffGateApi.checkoutTransfer(session._id)
 
       if (response.payment?.checkoutUrl) {
+        rememberStaffGatePaymentReturn(response.payment.orderCode, session.licensePlate)
         window.open(response.payment.checkoutUrl, '_blank', 'noopener,noreferrer')
         setPendingTransferSession(session)
         setActionMessage('Đã tạo mã QR PayOS. Đang chờ xác nhận thanh toán...')
