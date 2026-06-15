@@ -49,7 +49,7 @@ export function ResidentSubscriptionPage() {
   return (
     <div className="min-h-screen bg-page text-fg">
       <ResidentSubscriptionTopNav />
-      <main id="main" tabIndex={-1} className="mx-auto max-w-7xl px-4 pb-4 pt-24 md:px-8 md:pb-8 lg:px-10 lg:pb-10">
+      <main id="main" tabIndex={-1} className="mx-auto max-w-7xl px-4 pb-8 pt-24 md:px-8 md:pb-10 lg:px-10">
         <SubscriptionStepHeader
           step={step}
           canGoStep2={canGoStep2}
@@ -58,15 +58,15 @@ export function ResidentSubscriptionPage() {
           onStepChange={setStep}
         />
 
-        {message && <div className="mb-5 rounded-lg border border-theme bg-badge p-4 text-sm text-fg">{message}</div>}
+        {message && <div className="mb-5 rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-4 text-sm text-fg">{message}</div>}
         {error && (
-          <div className="mb-5 rounded-lg border border-theme bg-badge p-4 text-sm text-rose-700 dark:text-rose-100">
+          <div className="mb-5 rounded-xl border border-rose-500/30 bg-rose-500/10 p-4 text-sm text-rose-700 dark:text-rose-100">
             {error}
           </div>
         )}
 
         {isLoading ? (
-          <div className="rounded-lg border border-theme bg-badge p-5 text-sm text-muted">
+          <div className="rounded-xl border border-theme bg-badge p-5 text-sm text-muted">
             Đang tải dữ liệu gói cư dân...
           </div>
         ) : (

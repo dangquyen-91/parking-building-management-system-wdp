@@ -5,8 +5,8 @@ export type SubscriptionStep = 1 | 2 | 3 | 4
 const SUBSCRIPTION_STEPS = [
   { value: 1, title: 'Thông tin xe', description: 'Loại xe và biển số' },
   { value: 2, title: 'Chọn gói', description: 'Gói phù hợp với xe' },
-  { value: 3, title: 'Chọn slot', description: 'Vị trí gửi xe cư dân' },
-  { value: 4, title: 'Thanh toán', description: 'Thanh toán PayOS' },
+  { value: 3, title: 'Vị trí đỗ', description: 'Khu vực gửi xe' },
+  { value: 4, title: 'Thanh toán', description: 'Kiểm tra và thanh toán' },
 ] as const
 
 type SubscriptionStepHeaderProps = {
@@ -25,17 +25,21 @@ export function SubscriptionStepHeader({
   onStepChange,
 }: SubscriptionStepHeaderProps) {
   return (
-    <div className="mb-6 rounded-lg border border-theme bg-badge p-5 md:p-7">
-      <p className="mb-3 text-[10px] uppercase tracking-[0.2em] text-subtle">User // Gói cư dân</p>
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+    <div className="mb-6 overflow-hidden rounded-2xl border border-theme bg-badge">
+      <div className="bg-gradient-to-r from-sky-500/15 via-transparent to-emerald-500/10 p-5 md:p-7">
+        <div className="mb-3 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-subtle">
+          <span className="size-2 rounded-full bg-emerald-500 shadow-[0_0_12px_rgba(34,197,94,0.8)]" />
+          Đăng ký trực tuyến
+        </div>
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-fg md:text-4xl">Mua gói cư dân</h1>
-          <p className="mt-3 max-w-2xl text-sm text-muted">
-            Nhập thông tin xe, chọn gói phù hợp, vị trí gửi xe và thanh toán để kích hoạt quyền cư dân.
+          <h1 className="text-3xl font-black tracking-tight text-fg md:text-4xl">Mua gói gửi xe cư dân</h1>
+          <p className="mt-2 max-w-2xl text-sm text-muted">
+            Hoàn tất 4 bước để đăng ký quyền gửi xe cư dân cho biển số của bạn.
           </p>
         </div>
+      </div>
 
-        <div className="grid gap-2 sm:min-w-[38rem] sm:grid-cols-4">
+      <div className="grid gap-px border-t border-theme bg-[color:var(--border)] sm:grid-cols-4">
           {SUBSCRIPTION_STEPS.map((item) => {
             const active = step === item.value
             const done = step > item.value
@@ -45,12 +49,12 @@ export function SubscriptionStepHeader({
                 key={item.value}
                 type="button"
                 className={[
-                  'rounded-lg border px-3 py-2 text-left transition',
+                  'flex min-h-20 items-center gap-3 bg-page px-4 py-3 text-left transition-colors',
                   active
-                    ? 'border-transparent bg-btn-primary text-btn-primary-fg'
+                    ? 'bg-btn-primary text-btn-primary-fg'
                     : done
-                      ? 'border-emerald-400/50 bg-emerald-500/10 text-fg'
-                      : 'border-theme bg-page/70 text-muted',
+                      ? 'bg-emerald-500/10 text-fg'
+                      : 'text-muted hover:bg-ghost',
                 ].join(' ')}
                 onClick={() => {
                   if (item.value === 1) onStepChange(1)
@@ -59,13 +63,19 @@ export function SubscriptionStepHeader({
                   if (item.value === 4 && canGoStep2 && canGoStep3 && canGoStep4) onStepChange(4)
                 }}
               >
-                <span className="block text-base font-bold">{item.value}</span>
-                <span className="block text-[11px] font-semibold">{item.title}</span>
-                <span className="mt-0.5 block text-[10px] opacity-75">{item.description}</span>
+                <span className={[
+                  'flex size-8 shrink-0 items-center justify-center rounded-full border text-xs font-black',
+                  active ? 'border-white/30 bg-white/15' : done ? 'border-emerald-500/30 bg-emerald-500 text-white' : 'border-theme bg-badge',
+                ].join(' ')}>
+                  {done ? '✓' : item.value}
+                </span>
+                <span className="min-w-0">
+                  <span className="block text-xs font-bold">{item.title}</span>
+                  <span className="mt-0.5 block text-[10px] opacity-70">{item.description}</span>
+                </span>
               </button>
             )
           })}
-        </div>
       </div>
     </div>
   )

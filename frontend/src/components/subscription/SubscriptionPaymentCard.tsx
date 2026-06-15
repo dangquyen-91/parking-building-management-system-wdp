@@ -8,14 +8,16 @@ type SubscriptionPaymentCardProps = {
 
 export function SubscriptionPaymentCard({ payment }: SubscriptionPaymentCardProps) {
   return (
-    <section className="liquid-glass-card rounded-lg p-4 md:p-5">
-      <p className="text-[10px] uppercase tracking-[0.18em] text-subtle">Thanh toán PayOS</p>
-      <h2 className="mt-2 text-lg font-semibold text-fg">{formatSubscriptionCurrency(payment.amount)}</h2>
+    <section className="overflow-hidden rounded-xl border border-emerald-500/30 bg-emerald-500/10">
+      <div className="border-b border-emerald-500/20 p-5">
+      <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-emerald-700 dark:text-emerald-200">Thanh toán PayOS</p>
+      <h2 className="mt-2 text-2xl font-black text-fg">{formatSubscriptionCurrency(payment.amount)}</h2>
       <p className="mt-2 text-sm text-muted">
         Đơn mua gói đang chờ thanh toán. Hãy mở PayOS để hoàn tất và kích hoạt gói cư dân.
       </p>
 
-      <dl className="mt-5 grid gap-3 rounded-lg border border-theme bg-badge p-4 text-sm">
+      </div>
+      <dl className="grid gap-3 p-5 text-sm">
         <div className="flex items-center justify-between gap-3">
           <dt className="text-subtle">Mã đơn</dt>
           <dd className="font-semibold text-fg">{payment.orderCode}</dd>
@@ -37,9 +39,9 @@ export function SubscriptionPaymentCard({ payment }: SubscriptionPaymentCardProp
         target="_blank"
         rel="noreferrer"
         onClick={() => rememberSubscriptionPaymentReturn(payment.orderCode)}
-        className="mt-4 inline-flex h-10 w-full items-center justify-center rounded-lg bg-btn-primary px-4 text-sm font-semibold text-btn-primary-fg"
+        className="m-5 mt-0 inline-flex h-12 w-[calc(100%-2.5rem)] items-center justify-center rounded-xl bg-emerald-600 px-4 text-sm font-bold text-white shadow-lg shadow-emerald-600/20"
       >
-        Mở trang thanh toán PayOS
+        Mở PayOS để thanh toán →
       </a>
     </section>
   )
