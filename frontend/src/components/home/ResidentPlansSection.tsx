@@ -76,7 +76,7 @@ export function ResidentPlansSection() {
           Mua gói cư dân
         </Link>
         <Link
-          to="/my-bookings"
+          to="/my-subscriptions"
           className="inline-flex rounded-full border border-theme-strong px-6 py-3 text-sm font-medium text-fg transition-opacity hover:opacity-80"
         >
           Xem gói của tôi

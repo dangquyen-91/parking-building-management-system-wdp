@@ -2,6 +2,7 @@ import { useState } from 'react'
 import type { Floor } from '../../services/managerBuildingsApi'
 import type { GateCheckoutPreview, GateSession } from '../../services/staffGateApi'
 import { StaffGateField } from './StaffGateField'
+import { StaffGateCameraScanner } from './StaffGateCameraScanner'
 import { formatGateTime, formatStaffCurrency } from './staffGateData'
 import { formatCustomerType, formatSessionSpot, formatVehicleType } from './staffGateUtils'
 
@@ -63,6 +64,8 @@ export function StaffGateCheckoutPanel({
         </div>
 
         <div className="grid gap-5 p-5 md:p-6">
+        <StaffGateCameraScanner gate="exit" onUsePlate={onQueryChange} />
+
         <StaffGateField label="Biển số / mã phiên">
           <input
             value={query}
