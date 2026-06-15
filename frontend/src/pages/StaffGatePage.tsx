@@ -55,7 +55,6 @@ export function StaffGatePage() {
   const {
     floorOptions,
     autoAssignedRow,
-    autoAssignedSlot,
     availableCount,
   } = useMemo(
     () =>
@@ -83,8 +82,7 @@ export function StaffGatePage() {
   const canCheckIn =
     lookupMatchesPlate &&
     lookupResult.status !== 'already_active' &&
-    normalizedPlate.length >= 4 &&
-    (vehicleType === 'motorcycle' ? Boolean(autoAssignedRow) : checkInCustomerType === 'resident' || Boolean(autoAssignedSlot))
+    normalizedPlate.length >= 4
 
   async function loadGateData() {
     setIsLoading(true)
@@ -230,7 +228,6 @@ export function StaffGatePage() {
         vehicleType,
         licensePlate: normalizedPlate,
         rowId: vehicleType === 'motorcycle' ? autoAssignedRow?._id : undefined,
-        slotId: vehicleType === 'car' && checkInCustomerType !== 'resident' ? autoAssignedSlot?._id : undefined,
         note: note.trim() || undefined,
       })
 
