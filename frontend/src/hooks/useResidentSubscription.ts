@@ -41,7 +41,7 @@ export function useResidentSubscription() {
         setPlans(activePlans)
         setSelectedPlanId((current) => {
           if (current && activePlans.some((plan) => plan._id === current)) return current
-          return activePlans[0]?._id ?? ''
+          return ''
         })
         setAvailableData(availableResponse)
         setSelectedSlotId('')
@@ -49,8 +49,7 @@ export function useResidentSubscription() {
         if (!isMounted) return
         setError(err instanceof Error ? err.message : 'Không thể tải dữ liệu gói cư dân.')
       } finally {
-        if (!isMounted) return
-        setIsLoading(false)
+        if (isMounted) setIsLoading(false)
       }
     }
 

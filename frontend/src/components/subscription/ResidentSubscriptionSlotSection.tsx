@@ -24,7 +24,7 @@ export function ResidentSubscriptionSlotSection({
       <section className="liquid-glass-card rounded-lg p-4 md:p-6">
         <div className="flex items-center gap-3 border-b border-theme pb-5">
           <span className="flex h-9 w-9 items-center justify-center rounded-full bg-btn-primary text-sm font-bold text-btn-primary-fg">
-            2
+            3
           </span>
           <div>
             <p className="text-[10px] uppercase tracking-[0.18em] text-subtle">Vị trí xe máy</p>
@@ -66,7 +66,7 @@ export function ResidentSubscriptionSlotSection({
       <div className="flex flex-col gap-3 border-b border-theme pb-5 md:flex-row md:items-start md:justify-between">
         <div className="flex items-center gap-3">
           <span className="flex h-9 w-9 items-center justify-center rounded-full bg-btn-primary text-sm font-bold text-btn-primary-fg">
-            2
+            3
           </span>
           <div>
             <p className="text-[10px] uppercase tracking-[0.18em] text-subtle">Ô đỗ cố định</p>

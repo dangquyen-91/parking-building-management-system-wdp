@@ -1,16 +1,14 @@
 import Booking from '../models/booking.model.js';
 import Payment from '../models/payment.model.js';
 import ParkingSession from '../models/parking-session.model.js';
-import ParkingSlot from '../models/parking-slot.model.js';
 import Floor from '../models/floor.model.js';
 import * as payosService from './payos.service.js';
+import * as emailService from './email.service.js';
+import * as pricingService from './pricing.service.js';
 import AppError from '../utils/appError.js';
 import logger from '../utils/logger.js';
 
 const HOUR_MS = 60 * 60 * 1000;
-const DAY_MS = 24 * HOUR_MS;
-const CAR_BASE_FEE = 20000;
-const CAR_DAILY_CAP = 120000;
 const MAX_FUTURE_MS = 24 * HOUR_MS;
 const MIN_DURATION_HOURS = 1;
 const MAX_DURATION_HOURS = 24;
@@ -19,13 +17,6 @@ const BOOKING_POPULATE = [
   { path: 'userId', select: 'fullName email phone' },
   { path: 'sessionId', select: 'entryTime exitTime status' },
 ];
-
-const computeAmount = (durationHours) => {
-  const fullDays = Math.floor(durationHours / 24);
-  const remainderHours = durationHours - fullDays * 24;
-  const remainderFee = Math.min(remainderHours * CAR_BASE_FEE, CAR_DAILY_CAP);
-  return fullDays * CAR_DAILY_CAP + remainderFee;
-};
 
 const getVisitorCarCapacity = async () => {
   const floors = await Floor.find({
@@ -54,15 +45,17 @@ const countCurrentVisitorCarSessions = async () => {
   }).select('_id');
   const floorIds = floors.map((f) => f._id);
 
-  const slots = await ParkingSlot.find({ floorId: { $in: floorIds } }).select('_id');
+  // Walk-in cars are counter-based on the floor (no fixed slot) → count by floorId.
   return ParkingSession.countDocuments({
     status: 'active',
-    slotId: { $in: slots.map((s) => s._id) },
+    vehicleType: 'car',
+    floorId: { $in: floorIds },
   });
 };
 
-export const create = async ({ phoneNumber, licensePlate, expectedArrivalTime, expectedExitTime, userId }) => {
+export const create = async ({ email, licensePlate, expectedArrivalTime, expectedExitTime, userId }) => {
   const normalizedPlate = licensePlate.toUpperCase().replace(/\s/g, '');
+  const normalizedEmail = email.trim().toLowerCase();
   const arrival = new Date(expectedArrivalTime);
   const exit = new Date(expectedExitTime);
   const now = new Date();
@@ -127,10 +120,14 @@ export const create = async ({ phoneNumber, licensePlate, expectedArrivalTime, e
     );
   }
 
-  const amount = computeAmount(durationHours);
+  const { total: amount } = await pricingService.calculateFee({
+    vehicleType: 'car',
+    entryTime: arrival,
+    exitTime: exit,
+  });
 
   const booking = await Booking.create({
-    phoneNumber: phoneNumber.trim(),
+    email: normalizedEmail,
     licensePlate: normalizedPlate,
     vehicleType: 'car',
     expectedArrivalTime: arrival,
@@ -150,8 +147,7 @@ export const create = async ({ phoneNumber, licensePlate, expectedArrivalTime, e
       description: `Book ${normalizedPlate}`,
       items: [{ name: `Car parking ${durationHours}h`, quantity: 1, price: amount }],
       buyerName: 'Booking Customer',
-      buyerEmail: undefined,
-      buyerPhone: phoneNumber.trim(),
+      buyerEmail: normalizedEmail,
     });
   } catch (err) {
     await Booking.findByIdAndDelete(booking._id);
@@ -190,10 +186,10 @@ export const create = async ({ phoneNumber, licensePlate, expectedArrivalTime, e
   };
 };
 
-export const lookup = async ({ phoneNumber, licensePlate }) => {
+export const lookup = async ({ email, licensePlate }) => {
   const normalizedPlate = licensePlate.toUpperCase().replace(/\s/g, '');
   const bookings = await Booking.find({
-    phoneNumber: phoneNumber.trim(),
+    email: email.trim().toLowerCase(),
     licensePlate: normalizedPlate,
   })
     .populate(BOOKING_POPULATE)
@@ -214,14 +210,14 @@ export const getById = async (id) => {
   return booking;
 };
 
-export const getAll = async ({ page = 1, limit = 20, status, licensePlate, phoneNumber } = {}) => {
+export const getAll = async ({ page = 1, limit = 20, status, licensePlate, email } = {}) => {
   const pageNum = Math.max(1, parseInt(page));
   const limitNum = Math.min(100, Math.max(1, parseInt(limit)));
 
   const filter = {};
   if (status) filter.status = status;
   if (licensePlate) filter.licensePlate = new RegExp(licensePlate.toUpperCase(), 'i');
-  if (phoneNumber) filter.phoneNumber = phoneNumber.trim();
+  if (email) filter.email = email.trim().toLowerCase();
 
   const skip = (pageNum - 1) * limitNum;
   const [bookings, total] = await Promise.all([
@@ -235,7 +231,7 @@ export const getAll = async ({ page = 1, limit = 20, status, licensePlate, phone
   return { bookings, total, page: pageNum, limit: limitNum, totalPages: Math.ceil(total / limitNum) };
 };
 
-export const cancel = async ({ id, userId, phoneNumber, licensePlate }) => {
+export const cancel = async ({ id, userId, email, licensePlate }) => {
   const booking = await Booking.findById(id);
   if (!booking) throw new AppError('Booking not found', 404);
 
@@ -244,12 +240,12 @@ export const cancel = async ({ id, userId, phoneNumber, licensePlate }) => {
       throw new AppError('Only the booking owner can cancel this booking', 403);
     }
   } else {
-    if (!phoneNumber || !licensePlate) {
-      throw new AppError('Anonymous booking requires phoneNumber + licensePlate to cancel', 400);
+    if (!email || !licensePlate) {
+      throw new AppError('Anonymous booking requires email + licensePlate to cancel', 400);
     }
     const normalizedPlate = licensePlate.toUpperCase().replace(/\s/g, '');
-    if (booking.phoneNumber !== phoneNumber.trim() || booking.licensePlate !== normalizedPlate) {
-      throw new AppError('phoneNumber or licensePlate does not match', 403);
+    if (booking.email !== email.trim().toLowerCase() || booking.licensePlate !== normalizedPlate) {
+      throw new AppError('email or licensePlate does not match', 403);
     }
   }
 
@@ -309,5 +305,26 @@ export const activateBookingFromWebhook = async (paymentId) => {
     logger.warn('Booking not found or not pending when activating', { paymentId });
     return { alreadyProcessed: true };
   }
+
+  // Fire-and-forget confirmation email (does not block or throw)
+  emailService.sendBookingConfirmation(booking);
+
   return { activated: true, bookingId: booking._id };
+};
+
+// Payment failed/cancelled → cancel booking immediately (no slot held)
+export const cancelBookingFromWebhook = async (paymentId) => {
+  const payment = await Payment.findById(paymentId);
+  if (!payment || payment.targetType !== 'booking') return null;
+  const booking = await Booking.findOneAndUpdate(
+    { _id: payment.bookingId, status: 'pending' },
+    { status: 'cancelled' },
+    { new: true }
+  );
+  if (!booking) {
+    logger.warn('Booking not found or not pending when cancelling', { paymentId });
+    return { alreadyProcessed: true };
+  }
+  logger.info('Booking cancelled due to failed/cancelled payment', { bookingId: booking._id });
+  return { cancelled: true, bookingId: booking._id };
 };
