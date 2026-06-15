@@ -279,6 +279,7 @@ export const staffGateApi = {
         ApiEnvelope<{
           session: GateSession
           payment: {
+            orderCode?: number
             amount: number
             checkoutUrl?: string
             qrCode?: string
