@@ -7,6 +7,7 @@ import {
   StaffGateModeTabs,
   StaffGateSessionActivity,
   StaffGateSummary,
+  StaffGateToast,
   type StaffGateMode,
 } from '../components/staff'
 import { normalizePlate } from '../components/staff/staffGateUtils'
@@ -21,6 +22,7 @@ import {
   type GateVehicleType,
 } from '../services/staffGateApi'
 import { getStaffGateAllocation } from '../utils/staffGateAllocation'
+import { rememberStaffGatePaymentReturn } from '../utils/staffGatePaymentReturn'
 
 export function StaffGatePage() {
   const [searchParams] = useSearchParams()
@@ -42,6 +44,7 @@ export function StaffGatePage() {
   const [isLookupLoading, setIsLookupLoading] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [actionMessage, setActionMessage] = useState<string | null>(null)
+  const [toastMessage, setToastMessage] = useState<string | null>(null)
 
   const [checkoutQuery, setCheckoutQuery] = useState(checkoutPlate)
   const [checkoutPreview, setCheckoutPreview] = useState<GateCheckoutPreview | null>(null)
@@ -113,6 +116,17 @@ export function StaffGatePage() {
     const timeoutId = window.setTimeout(() => void loadGateData(), 0)
     return () => window.clearTimeout(timeoutId)
   }, [])
+
+  useEffect(() => {
+    if (!actionMessage) return
+    const showTimeoutId = window.setTimeout(() => setToastMessage(actionMessage), 0)
+    const hideTimeoutId = window.setTimeout(() => setToastMessage(null), 6000)
+
+    return () => {
+      window.clearTimeout(showTimeoutId)
+      window.clearTimeout(hideTimeoutId)
+    }
+  }, [actionMessage])
 
   useEffect(() => {
     if (!selectedCheckoutSession) {
@@ -269,6 +283,7 @@ export function StaffGatePage() {
       const response = await staffGateApi.checkoutTransfer(session._id)
 
       if (response.payment?.checkoutUrl) {
+        rememberStaffGatePaymentReturn(response.payment.orderCode, session.licensePlate)
         window.open(response.payment.checkoutUrl, '_blank', 'noopener,noreferrer')
         setPendingTransferSession(session)
         setActionMessage('Đã tạo mã QR PayOS. Đang chờ xác nhận thanh toán...')
@@ -389,6 +404,10 @@ export function StaffGatePage() {
 
       {issuedTicket && (
         <StaffGateCheckInTicket session={issuedTicket} onClose={() => setIssuedTicket(null)} />
+      )}
+
+      {toastMessage && (
+        <StaffGateToast message={toastMessage} onClose={() => setToastMessage(null)} />
       )}
     </div>
   )
