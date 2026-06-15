@@ -1,81 +1,86 @@
+import { useEffect, useMemo, useState } from 'react'
 import {
-  ADMIN_BOOKINGS,
-  AdminPageShell,
-  AdminStatCard,
-  AdminStatusBadge,
-  formatAdminCurrency,
-} from '../components/admin'
+  ManagerBookingFilters,
+  ManagerBookingList,
+  ManagerBookingStats,
+  type ManagerBookingStatusFilter,
+} from '../components/manager'
+import { AdminPageShell } from '../components/admin'
+import { adminApi, type AdminBooking } from '../services/adminApi'
+import type { ManagerBooking } from '../services/managerBookingsApi'
+
+function getCustomerSearchText(booking: AdminBooking) {
+  if (!booking.userId || typeof booking.userId === 'string') return ''
+  return `${booking.userId.fullName ?? ''} ${booking.userId.email ?? ''}`.toLowerCase()
+}
 
 export function AdminBookingsPage() {
-  const confirmedBookings = ADMIN_BOOKINGS.filter((booking) => booking.status === 'confirmed').length
-  const pendingBookings = ADMIN_BOOKINGS.filter((booking) => booking.status === 'pending').length
-  const revenue = ADMIN_BOOKINGS
-    .filter((booking) => booking.payment === 'Paid')
-    .reduce((sum, booking) => sum + booking.amount, 0)
+  const [bookings, setBookings] = useState<AdminBooking[]>([])
+  const [query, setQuery] = useState('')
+  const [statusFilter, setStatusFilter] = useState<ManagerBookingStatusFilter>('all')
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  async function loadBookings() {
+    setIsLoading(true)
+    setError(null)
+    try {
+      const response = await adminApi.getBookings({ limit: 100 })
+      setBookings(response.bookings ?? [])
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Không thể tải danh sách booking.')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => void loadBookings(), 0)
+    return () => window.clearTimeout(timeoutId)
+  }, [])
+
+  const filteredBookings = useMemo(() => {
+    const normalizedQuery = query.trim().toLowerCase().replace(/\s/g, '')
+
+    return bookings.filter((booking) => {
+      const matchesQuery =
+        !normalizedQuery ||
+        booking.licensePlate.toLowerCase().replace(/\s/g, '').includes(normalizedQuery) ||
+        booking.phoneNumber.toLowerCase().replace(/\s/g, '').includes(normalizedQuery) ||
+        getCustomerSearchText(booking).replace(/\s/g, '').includes(normalizedQuery)
+
+      if (!matchesQuery) return false
+      if (statusFilter !== 'all' && booking.status !== statusFilter) return false
+      return true
+    })
+  }, [bookings, query, statusFilter])
 
   return (
     <AdminPageShell
-      eyebrow="Admin // Bookings"
-      title="Booking Overview"
-      description="Admin xem tat ca booking cua user, vi tri slot, bien so, thanh toan va trang thai dat cho."
+      eyebrow="Admin // Booking"
+      title="Quản lý booking"
+      description="Theo dõi lịch đặt chỗ ô tô, trạng thái thanh toán, thời gian dự kiến và thông tin khách hàng trên toàn hệ thống."
+      actions={
+        <ManagerBookingFilters
+          query={query}
+          statusFilter={statusFilter}
+          onQueryChange={setQuery}
+          onStatusFilterChange={setStatusFilter}
+        />
+      }
     >
-      <div className="grid gap-3 md:grid-cols-3">
-        <AdminStatCard label="Bookings" value={ADMIN_BOOKINGS.length} detail={`${confirmedBookings} confirmed`} />
-        <AdminStatCard label="Pending" value={pendingBookings} detail="Need confirmation or payment" />
-        <AdminStatCard label="Paid revenue" value={formatAdminCurrency(revenue)} detail="From paid bookings" />
-      </div>
+      <ManagerBookingStats bookings={bookings as ManagerBooking[]} isLoading={isLoading} />
 
-      <section className="liquid-glass-card mt-5 rounded-lg p-4 md:p-5">
-        <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <div>
-            <p className="text-[10px] uppercase tracking-[0.18em] text-subtle">Reservations</p>
-            <h2 className="mt-1 text-base font-semibold text-fg">All Bookings</h2>
-          </div>
-          <input
-            className="auth-input h-10 w-full rounded-lg border px-3 text-sm text-fg md:w-56"
-            placeholder="Search booking"
-            type="search"
-          />
+      {error && (
+        <div className="mb-5 flex items-center justify-between gap-3 rounded-lg border border-theme bg-rose-500/10 p-4 text-sm text-rose-200">
+          <span>{error}</span>
+          <button type="button" className="font-semibold hover:underline" onClick={() => void loadBookings()}>
+            Thử lại
+          </button>
         </div>
+      )}
 
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[58rem] text-left text-sm">
-            <thead className="border-b border-theme text-xs uppercase tracking-[0.14em] text-subtle">
-              <tr>
-                <th className="px-3 py-3 font-medium">Booking</th>
-                <th className="px-3 py-3 font-medium">Customer</th>
-                <th className="px-3 py-3 font-medium">Slot</th>
-                <th className="px-3 py-3 font-medium">Schedule</th>
-                <th className="px-3 py-3 font-medium">Payment</th>
-                <th className="px-3 py-3 font-medium">Status</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-theme">
-              {ADMIN_BOOKINGS.map((booking) => (
-                <tr key={booking.id} className="align-top">
-                  <td className="px-3 py-4 font-semibold text-fg">{booking.id}</td>
-                  <td className="px-3 py-4">
-                    <p className="font-medium text-fg">{booking.customer}</p>
-                    <p className="mt-1 text-xs text-subtle">{booking.plate}</p>
-                  </td>
-                  <td className="px-3 py-4">
-                    <p className="font-medium text-fg">{booking.slot}</p>
-                    <p className="mt-1 text-xs text-subtle">{booking.building}</p>
-                  </td>
-                  <td className="px-3 py-4 text-muted">{booking.schedule}</td>
-                  <td className="px-3 py-4">
-                    <p className="font-medium text-fg">{booking.payment}</p>
-                    <p className="mt-1 text-xs text-subtle">{formatAdminCurrency(booking.amount)}</p>
-                  </td>
-                  <td className="px-3 py-4">
-                    <AdminStatusBadge status={booking.status} />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
+      <ManagerBookingList bookings={filteredBookings as ManagerBooking[]} isLoading={isLoading} />
     </AdminPageShell>
   )
 }

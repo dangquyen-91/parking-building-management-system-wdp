@@ -7,8 +7,12 @@ info:
     name: WDP301 Team
 
 servers:
+  - url: /api/v1
+    description: Current server (auto-detected)
+  - url: https://pbms-backend.onrender.com/api/v1
+    description: Render production
   - url: http://localhost:5000/api/v1
-    description: Local development server
+    description: Local development
 
 tags:
   - name: Auth
@@ -649,9 +653,10 @@ components:
       properties:
         _id:
           type: string
-        phoneNumber:
+        email:
           type: string
-          example: '0912345678'
+          format: email
+          example: guest@example.com
         licensePlate:
           type: string
           example: 51F-12345
@@ -694,13 +699,12 @@ components:
 
     CreateBookingRequest:
       type: object
-      required: [phoneNumber, licensePlate, expectedArrivalTime, expectedExitTime]
+      required: [email, licensePlate, expectedArrivalTime, expectedExitTime]
       properties:
-        phoneNumber:
+        email:
           type: string
-          minLength: 8
-          maxLength: 15
-          example: '0912345678'
+          format: email
+          example: guest@example.com
         licensePlate:
           type: string
           minLength: 4
@@ -3059,8 +3063,8 @@ paths:
           name: licensePlate
           schema: { type: string }
         - in: query
-          name: phoneNumber
-          schema: { type: string }
+          name: email
+          schema: { type: string, format: email }
       responses:
         '200':
           description: List of bookings
@@ -3072,13 +3076,13 @@ paths:
   /bookings/check:
     get:
       tags: [Bookings]
-      summary: Lookup bookings by phone + plate (anonymous OK)
-      description: For anonymous customers to find their own bookings.
+      summary: Lookup bookings by email + plate (anonymous OK)
+      description: For anonymous (guest) customers to find their own bookings.
       parameters:
         - in: query
-          name: phoneNumber
+          name: email
           required: true
-          schema: { type: string }
+          schema: { type: string, format: email }
         - in: query
           name: licensePlate
           required: true
@@ -3129,7 +3133,7 @@ paths:
       description: |
         Cancel a pending booking. Paid bookings cannot be cancelled (no refund).
         - Logged-in user: cancels their own bookings.
-        - Anonymous: must provide phoneNumber + licensePlate in body for verification.
+        - Anonymous (guest): must provide email + licensePlate in body for verification.
       parameters:
         - in: path
           name: id
@@ -3142,12 +3146,13 @@ paths:
             schema:
               type: object
               properties:
-                phoneNumber:
+                email:
                   type: string
-                  description: Required for anonymous booking
+                  format: email
+                  description: Required for anonymous (guest) booking
                 licensePlate:
                   type: string
-                  description: Required for anonymous booking
+                  description: Required for anonymous (guest) booking
       responses:
         '200':
           description: Booking cancelled

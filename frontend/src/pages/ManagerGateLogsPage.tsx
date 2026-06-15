@@ -1,42 +1,92 @@
+import { useEffect, useMemo, useState } from 'react'
 import {
-  MANAGER_GATE_LOGS,
+  ManagerGateLogFilters,
+  ManagerGateLogList,
+  ManagerGateLogStats,
   ManagerPageHeader,
-  ManagerStatusBadge,
-  formatCurrency,
+  type ManagerGateCustomerFilter,
+  type ManagerGateVehicleFilter,
 } from '../components/manager'
+import { managerGateLogsApi, type ManagerGateDashboard } from '../services/managerGateLogsApi'
+import type { GateSession } from '../services/staffGateApi'
 
 export function ManagerGateLogsPage() {
+  const [sessions, setSessions] = useState<GateSession[]>([])
+  const [dashboard, setDashboard] = useState<ManagerGateDashboard | null>(null)
+  const [query, setQuery] = useState('')
+  const [vehicleFilter, setVehicleFilter] = useState<ManagerGateVehicleFilter>('all')
+  const [customerFilter, setCustomerFilter] = useState<ManagerGateCustomerFilter>('all')
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  async function loadGateLogs() {
+    setIsLoading(true)
+    setError(null)
+
+    try {
+      const [sessionsResponse, dashboardResponse] = await Promise.all([
+        managerGateLogsApi.getActiveSessions({ limit: 100 }),
+        managerGateLogsApi.getDashboard(),
+      ])
+      setSessions(sessionsResponse.sessions ?? [])
+      setDashboard(dashboardResponse)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Không thể tải dữ liệu hoạt động cổng.')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => void loadGateLogs(), 0)
+    return () => window.clearTimeout(timeoutId)
+  }, [])
+
+  const filteredSessions = useMemo(() => {
+    const normalizedQuery = query.trim().toUpperCase().replace(/\s/g, '')
+
+    return sessions.filter((session) => {
+      if (normalizedQuery && !session.licensePlate.includes(normalizedQuery)) return false
+      if (vehicleFilter !== 'all' && session.vehicleType !== vehicleFilter) return false
+      if (customerFilter !== 'all' && session.customerType !== customerFilter) return false
+      return true
+    })
+  }, [customerFilter, query, sessions, vehicleFilter])
+
   return (
     <div className="p-4 md:p-8 lg:p-10">
       <ManagerPageHeader
-        eyebrow="Manager // Gate Logs"
-        title="Gate Activity"
-        description="Xem lich su check-in/check-out tu staff theo bien so, loai khach, gio xu ly va phi thu."
+        eyebrow="Quản lý // Hoạt động cổng"
+        title="Giám sát xe vào / ra"
+        description="Theo dõi xe đang trong bãi, nhân viên ghi nhận, vị trí đỗ và thống kê hoạt động cổng hôm nay."
+        actions={
+          <ManagerGateLogFilters
+            query={query}
+            vehicleFilter={vehicleFilter}
+            customerFilter={customerFilter}
+            onQueryChange={setQuery}
+            onVehicleFilterChange={setVehicleFilter}
+            onCustomerFilterChange={setCustomerFilter}
+          />
+        }
       />
 
-      <section className="liquid-glass-card rounded-lg p-4 md:p-5">
-        <div className="grid gap-3">
-          {MANAGER_GATE_LOGS.map((log) => (
-            <div key={log.id} className="grid gap-4 rounded-lg border border-theme bg-badge p-4 md:grid-cols-[1fr_1fr_1fr_0.8fr_0.8fr] md:items-center">
-              <div>
-                <p className="font-semibold text-fg">{log.plate}</p>
-                <p className="mt-1 text-xs text-subtle">{log.id}</p>
-              </div>
-              <p className="text-sm text-muted">{log.visitorType}</p>
-              <p className="text-sm text-muted">{log.staff}</p>
-              <div>
-                <p className="text-xs text-subtle">Time</p>
-                <p className="mt-1 text-sm font-medium text-fg">{log.time}</p>
-              </div>
-              <div className="flex flex-col gap-2">
-                <ManagerStatusBadge status={log.action} />
-                <span className="text-xs text-muted">{formatCurrency(log.fee)}</span>
-              </div>
-            </div>
-          ))}
+      <ManagerGateLogStats dashboard={dashboard} isLoading={isLoading} />
+
+      {error && (
+        <div className="mb-5 flex items-center justify-between gap-3 rounded-lg border border-theme bg-rose-500/10 p-4 text-sm text-rose-200">
+          <span>{error}</span>
+          <button type="button" className="font-semibold hover:underline" onClick={() => void loadGateLogs()}>
+            Thử lại
+          </button>
         </div>
-      </section>
+      )}
+
+      <div className="mb-4 rounded-lg border border-theme bg-badge px-4 py-3 text-xs text-muted">
+        Danh sách chi tiết hiện hiển thị các xe đang trong bãi. Số lượt xe ra hôm nay được tổng hợp từ báo cáo hệ thống.
+      </div>
+
+      <ManagerGateLogList sessions={filteredSessions} isLoading={isLoading} />
     </div>
   )
 }
-

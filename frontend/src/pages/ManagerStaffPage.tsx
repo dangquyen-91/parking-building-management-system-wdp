@@ -1,46 +1,93 @@
-import { MANAGER_STAFF, ManagerPageHeader, ManagerStatusBadge } from '../components/manager'
+import { useEffect, useMemo, useState } from 'react'
+import {
+  ManagerPageHeader,
+  ManagerStaffFilters,
+  ManagerStaffList,
+  ManagerStaffStats,
+  type ManagerStaffStatusFilter,
+} from '../components/manager'
+import { managerStaffApi, type ManagerStaffUser } from '../services/managerStaffApi'
+import type { GateSession } from '../services/staffGateApi'
 
 export function ManagerStaffPage() {
+  const [staff, setStaff] = useState<ManagerStaffUser[]>([])
+  const [sessions, setSessions] = useState<GateSession[]>([])
+  const [query, setQuery] = useState('')
+  const [statusFilter, setStatusFilter] = useState<ManagerStaffStatusFilter>('all')
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  async function loadStaffData() {
+    setIsLoading(true)
+    setError(null)
+
+    try {
+      const [staffResponse, sessionsResponse] = await Promise.all([
+        managerStaffApi.getStaff(),
+        managerStaffApi.getActiveSessions(),
+      ])
+      setStaff(staffResponse.users ?? [])
+      setSessions(sessionsResponse.sessions ?? [])
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Không thể tải dữ liệu nhân viên.')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => void loadStaffData(), 0)
+    return () => window.clearTimeout(timeoutId)
+  }, [])
+
+  const filteredStaff = useMemo(() => {
+    const normalizedQuery = query.trim().toLowerCase()
+
+    return staff.filter((user) => {
+      const matchesQuery =
+        !normalizedQuery ||
+        user.fullName.toLowerCase().includes(normalizedQuery) ||
+        user.email.toLowerCase().includes(normalizedQuery) ||
+        user.phone?.toLowerCase().includes(normalizedQuery)
+
+      if (!matchesQuery) return false
+      if (statusFilter !== 'all' && user.isActive !== (statusFilter === 'active')) return false
+      return true
+    })
+  }, [query, staff, statusFilter])
+
   return (
     <div className="p-4 md:p-8 lg:p-10">
       <ManagerPageHeader
-        eyebrow="Manager // Staff"
-        title="Staff Monitoring"
-        description="Theo doi ca truc, cong phu trach va so luot check-in/check-out cua tung nhan vien."
+        eyebrow="Quản lý // Nhân viên"
+        title="Quản lý nhân viên"
+        description="Theo dõi tài khoản staff, thông tin liên hệ và số xe đang được từng nhân viên ghi nhận tại cổng."
+        actions={
+          <ManagerStaffFilters
+            query={query}
+            statusFilter={statusFilter}
+            onQueryChange={setQuery}
+            onStatusFilterChange={setStatusFilter}
+          />
+        }
       />
 
-      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        {MANAGER_STAFF.map((staff) => (
-          <article key={staff.id} className="liquid-glass-card rounded-lg p-4">
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <p className="text-lg font-semibold text-fg">{staff.name}</p>
-                <p className="mt-1 text-xs text-subtle">{staff.id} / {staff.gate}</p>
-              </div>
-              <ManagerStatusBadge status={staff.status} />
-            </div>
-            <dl className="mt-5 grid grid-cols-2 gap-3 text-sm">
-              <div>
-                <dt className="text-subtle">Shift</dt>
-                <dd className="mt-1 font-medium text-fg">{staff.shift}</dd>
-              </div>
-              <div>
-                <dt className="text-subtle">Total</dt>
-                <dd className="mt-1 font-medium text-fg">{staff.checkins + staff.checkouts}</dd>
-              </div>
-              <div>
-                <dt className="text-subtle">Check-in</dt>
-                <dd className="mt-1 font-medium text-fg">{staff.checkins}</dd>
-              </div>
-              <div>
-                <dt className="text-subtle">Checkout</dt>
-                <dd className="mt-1 font-medium text-fg">{staff.checkouts}</dd>
-              </div>
-            </dl>
-          </article>
-        ))}
-      </section>
+      <ManagerStaffStats staff={staff} sessions={sessions} isLoading={isLoading} />
+
+      {error && (
+        <div className="mb-5 flex items-center justify-between gap-3 rounded-lg border border-theme bg-rose-500/10 p-4 text-sm text-rose-200">
+          <span>{error}</span>
+          <button type="button" className="font-semibold hover:underline" onClick={() => void loadStaffData()}>
+            Thử lại
+          </button>
+        </div>
+      )}
+
+      <div className="mb-4 rounded-lg border border-theme bg-badge px-4 py-3 text-xs text-muted">
+        Manager có quyền theo dõi nhân viên. Việc sửa thông tin, đổi vai trò hoặc khóa tài khoản hiện thuộc quyền Admin.
+      </div>
+
+      <ManagerStaffList staff={filteredStaff} sessions={sessions} isLoading={isLoading} />
     </div>
   )
 }
-

@@ -1,16 +1,24 @@
 export type AdminStatus =
   | 'active'
+  | 'inactive'
   | 'pending'
   | 'locked'
   | 'enabled'
   | 'warning'
   | 'critical'
+  | 'empty'
   | 'available'
   | 'occupied'
   | 'reserved'
   | 'maintenance'
   | 'confirmed'
+  | 'paid'
+  | 'unpaid'
+  | 'used'
+  | 'completed'
+  | 'expired'
   | 'cancelled'
+  | 'full'
 
 export type AdminUser = {
   id: string
@@ -352,18 +360,26 @@ export const ADMIN_BOOKINGS: AdminBooking[] = [
 ]
 
 export const adminStatusTone: Record<AdminStatus, string> = {
-  active: 'border-emerald-400/40 bg-emerald-500/10 text-emerald-200',
-  pending: 'border-amber-400/40 bg-amber-500/10 text-amber-100',
-  locked: 'border-rose-400/40 bg-rose-500/10 text-rose-200',
-  enabled: 'border-sky-400/40 bg-sky-500/10 text-sky-200',
-  warning: 'border-amber-400/40 bg-amber-500/10 text-amber-100',
-  critical: 'border-rose-400/40 bg-rose-500/10 text-rose-200',
-  available: 'border-emerald-400/40 bg-emerald-500/10 text-emerald-200',
-  occupied: 'border-sky-400/40 bg-sky-500/10 text-sky-200',
-  reserved: 'border-amber-400/40 bg-amber-500/10 text-amber-100',
-  maintenance: 'border-rose-400/40 bg-rose-500/10 text-rose-200',
-  confirmed: 'border-emerald-400/40 bg-emerald-500/10 text-emerald-200',
-  cancelled: 'border-rose-400/40 bg-rose-500/10 text-rose-200',
+  active: 'border-emerald-500 bg-emerald-100 text-emerald-800 dark:border-emerald-300 dark:bg-emerald-400/20 dark:text-emerald-100',
+  inactive: 'border-slate-500 bg-slate-200 text-slate-800 dark:border-slate-300 dark:bg-slate-400/20 dark:text-slate-100',
+  pending: 'border-amber-500 bg-amber-100 text-amber-900 dark:border-amber-300 dark:bg-amber-400/20 dark:text-amber-100',
+  locked: 'border-rose-500 bg-rose-100 text-rose-800 dark:border-rose-300 dark:bg-rose-400/20 dark:text-rose-100',
+  enabled: 'border-sky-500 bg-sky-100 text-sky-800 dark:border-sky-300 dark:bg-sky-400/20 dark:text-sky-100',
+  warning: 'border-amber-500 bg-amber-100 text-amber-900 dark:border-amber-300 dark:bg-amber-400/20 dark:text-amber-100',
+  critical: 'border-rose-500 bg-rose-100 text-rose-800 dark:border-rose-300 dark:bg-rose-400/20 dark:text-rose-100',
+  empty: 'border-emerald-500 bg-emerald-100 text-emerald-800 dark:border-emerald-300 dark:bg-emerald-400/20 dark:text-emerald-100',
+  available: 'border-emerald-500 bg-emerald-100 text-emerald-800 dark:border-emerald-300 dark:bg-emerald-400/20 dark:text-emerald-100',
+  occupied: 'border-sky-500 bg-sky-100 text-sky-800 dark:border-sky-300 dark:bg-sky-400/20 dark:text-sky-100',
+  reserved: 'border-amber-500 bg-amber-100 text-amber-900 dark:border-amber-300 dark:bg-amber-400/20 dark:text-amber-100',
+  maintenance: 'border-rose-500 bg-rose-100 text-rose-800 dark:border-rose-300 dark:bg-rose-400/20 dark:text-rose-100',
+  confirmed: 'border-emerald-500 bg-emerald-100 text-emerald-800 dark:border-emerald-300 dark:bg-emerald-400/20 dark:text-emerald-100',
+  paid: 'border-emerald-500 bg-emerald-100 text-emerald-800 dark:border-emerald-300 dark:bg-emerald-400/20 dark:text-emerald-100',
+  unpaid: 'border-amber-500 bg-amber-100 text-amber-900 dark:border-amber-300 dark:bg-amber-400/20 dark:text-amber-100',
+  used: 'border-sky-500 bg-sky-100 text-sky-800 dark:border-sky-300 dark:bg-sky-400/20 dark:text-sky-100',
+  completed: 'border-emerald-500 bg-emerald-100 text-emerald-800 dark:border-emerald-300 dark:bg-emerald-400/20 dark:text-emerald-100',
+  expired: 'border-slate-500 bg-slate-200 text-slate-800 dark:border-slate-300 dark:bg-slate-400/20 dark:text-slate-100',
+  cancelled: 'border-rose-500 bg-rose-100 text-rose-800 dark:border-rose-300 dark:bg-rose-400/20 dark:text-rose-100',
+  full: 'border-amber-500 bg-amber-100 text-amber-900 dark:border-amber-300 dark:bg-amber-400/20 dark:text-amber-100',
 }
 
 export function getRoleCount(role: AdminUser['role']) {

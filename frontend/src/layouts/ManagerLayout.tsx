@@ -5,13 +5,15 @@ import { ManagerSidebar } from '../components/manager'
 import { useOverlayPanel } from '../hooks/useOverlayPanel'
 
 const MANAGER_PAGE_TITLES: Record<string, string> = {
-  '/manager': 'Manager Overview',
+  '/manager': 'Tổng quan vận hành',
   '/manager/buildings': 'Buildings',
   '/manager/slots': 'Slots & Zones',
-  '/manager/bookings': 'Bookings',
+  '/manager/bookings': 'Quản lý booking',
   '/manager/gate-logs': 'Gate Logs',
-  '/manager/staff': 'Staff',
-  '/manager/reports': 'Reports',
+  '/manager/staff': 'Quản lý nhân viên',
+  '/manager/plans': 'Gói gửi xe',
+  '/manager/subscriptions': 'Người dùng gói',
+  '/manager/reports': 'Báo cáo vận hành',
 }
 
 export function ManagerLayout() {

@@ -8,50 +8,54 @@ import logger from '../utils/logger.js';
 
 dns.setServers(['8.8.8.8', '1.1.1.1', '8.8.4.4']);
 
+const resetMode = process.argv.includes('--reset');
+
+// Layout: 2 basements (hầm), each split into 2 zones (khu) by vehicle type.
+// floorNumber = hầm number; section = zone within the hầm.
 const FLOORS_CONFIG = [
+  // ---- Hầm 1 — Cư dân ----
   {
-    floorNumber: -1,
+    floorNumber: 1,
+    section: 'A',
     vehicleType: 'motorcycle',
     floorType: 'resident',
     totalSlots: 100,
-    description: 'Tầng hầm 1 - Xe máy cư dân',
-    rows: [
-      { rowCode: 'BM1-A', capacity: 25 },
-      { rowCode: 'BM1-B', capacity: 25 },
-      { rowCode: 'BM1-C', capacity: 25 },
-      { rowCode: 'BM1-D', capacity: 25 },
-    ],
-  },
-  {
-    floorNumber: -2,
-    vehicleType: 'car',
-    floorType: 'resident',
-    totalSlots: 30,
-    description: 'Tầng hầm 2 - Xe ô tô cư dân',
-    slotsPrefix: 'BC2-',
-    slotsCount: 30,
+    description: 'Hầm 1 - Khu A - Xe máy cư dân',
+    rowsPrefix: 'H1A-',
+    rowsCount: 10,
+    rowCapacity: 10,
   },
   {
     floorNumber: 1,
+    section: 'B',
     vehicleType: 'car',
+    floorType: 'resident',
+    totalSlots: 50,
+    description: 'Hầm 1 - Khu B - Ô tô cư dân',
+    slotsPrefix: 'H1B-',
+    slotsCount: 50,
+  },
+  // ---- Hầm 2 — Vãng lai ----
+  {
+    floorNumber: 2,
+    section: 'A',
+    vehicleType: 'motorcycle',
     floorType: 'visitor',
-    totalSlots: 20,
-    description: 'Tầng 1 - Xe ô tô vãng lai',
-    slotsPrefix: 'V1-',
-    slotsCount: 20,
+    totalSlots: 100,
+    description: 'Hầm 2 - Khu A - Xe máy vãng lai',
+    rowsPrefix: 'H2A-',
+    rowsCount: 10,
+    rowCapacity: 10,
   },
   {
     floorNumber: 2,
-    vehicleType: 'motorcycle',
+    section: 'B',
+    vehicleType: 'car',
     floorType: 'visitor',
-    totalSlots: 80,
-    description: 'Tầng 2 - Xe máy vãng lai',
-    rows: [
-      { rowCode: 'V2-A', capacity: 20 },
-      { rowCode: 'V2-B', capacity: 20 },
-      { rowCode: 'V2-C', capacity: 20 },
-      { rowCode: 'V2-D', capacity: 20 },
-    ],
+    totalSlots: 50,
+    description: 'Hầm 2 - Khu B - Ô tô vãng lai',
+    slotsPrefix: 'H2B-',
+    slotsCount: 50,
   },
 ];
 
@@ -71,27 +75,34 @@ const ensureBuilding = async () => {
 };
 
 const ensureFloor = async (buildingId, config) => {
-  let floor = await Floor.findOne({ buildingId, floorNumber: config.floorNumber });
+  let floor = await Floor.findOne({
+    buildingId,
+    floorNumber: config.floorNumber,
+    section: config.section,
+  });
   if (floor) {
-    logger.info(`Floor ${config.floorNumber} already exists — keep`);
+    logger.info(`Hầm ${config.floorNumber} Khu ${config.section} already exists — keep`);
     return floor;
   }
   floor = await Floor.create({
     buildingId,
     floorNumber: config.floorNumber,
+    section: config.section,
     vehicleType: config.vehicleType,
     floorType: config.floorType,
     totalSlots: config.totalSlots,
     description: config.description,
   });
-  logger.info(`Created floor ${config.floorNumber} (${config.vehicleType}/${config.floorType})`);
+  logger.info(
+    `Created Hầm ${config.floorNumber} Khu ${config.section} (${config.vehicleType}/${config.floorType}, ${config.totalSlots})`
+  );
   return floor;
 };
 
 const ensureCarSlots = async (floor, prefix, count) => {
   const existing = await ParkingSlot.countDocuments({ floorId: floor._id });
   if (existing > 0) {
-    logger.info(`  Floor ${floor.floorNumber}: ${existing} slots already exist — skip`);
+    logger.info(`  ${prefix}: ${existing} slots already exist — skip`);
     return;
   }
   const padLen = Math.max(String(count).length, 2);
@@ -102,28 +113,48 @@ const ensureCarSlots = async (floor, prefix, count) => {
     status: 'empty',
   }));
   await ParkingSlot.insertMany(docs);
-  logger.info(`  Created ${count} car slots on floor ${floor.floorNumber}`);
+  logger.info(`  Created ${count} car slots (${prefix})`);
 };
 
-const ensureMotoRows = async (floor, rows) => {
+const ensureMotoRows = async (floor, { rowsPrefix, rowsCount, rowCapacity }) => {
   const existing = await ParkingRow.countDocuments({ floorId: floor._id });
   if (existing > 0) {
-    logger.info(`  Floor ${floor.floorNumber}: ${existing} rows already exist — skip`);
+    logger.info(`  ${rowsPrefix}: ${existing} rows already exist — skip`);
     return;
   }
-  const docs = rows.map((r) => ({
+  const padLen = Math.max(String(rowsCount).length, 2);
+  const docs = Array.from({ length: rowsCount }, (_, i) => ({
     floorId: floor._id,
-    rowCode: r.rowCode,
-    capacity: r.capacity,
+    rowCode: `${rowsPrefix}${String(i + 1).padStart(padLen, '0')}`,
+    capacity: rowCapacity,
     occupiedCount: 0,
     status: 'available',
   }));
   await ParkingRow.insertMany(docs);
-  logger.info(`  Created ${rows.length} motorcycle rows on floor ${floor.floorNumber}`);
+  logger.info(`  Created ${rowsCount} motorcycle rows (${rowsPrefix}, ${rowCapacity} each)`);
 };
 
 const run = async () => {
   await mongoose.connect(process.env.MONGODB_URI);
+
+  // Drop the legacy unique index (buildingId+floorNumber) so a single hầm can
+  // hold multiple zones (replaced by buildingId+floorNumber+section).
+  try {
+    await Floor.collection.dropIndex('buildingId_1_floorNumber_1');
+    logger.info('Dropped legacy floor index buildingId_1_floorNumber_1');
+  } catch {
+    /* index not present — fine */
+  }
+
+  if (resetMode) {
+    await Promise.all([
+      ParkingSlot.deleteMany({}),
+      ParkingRow.deleteMany({}),
+      Floor.deleteMany({}),
+    ]);
+    logger.info('RESET: cleared all floors, car slots, motorcycle rows');
+  }
+
   const building = await ensureBuilding();
 
   for (const config of FLOORS_CONFIG) {
@@ -131,8 +162,8 @@ const run = async () => {
     if (config.slotsCount) {
       await ensureCarSlots(floor, config.slotsPrefix, config.slotsCount);
     }
-    if (config.rows) {
-      await ensureMotoRows(floor, config.rows);
+    if (config.rowsCount) {
+      await ensureMotoRows(floor, config);
     }
   }
 

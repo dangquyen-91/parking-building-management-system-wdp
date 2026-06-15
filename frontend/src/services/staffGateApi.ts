@@ -55,6 +55,15 @@ export type GateUser = {
   email?: string
 }
 
+export type GateBooking = {
+  _id: string
+  expectedArrivalTime: string
+  expectedExitTime: string
+  durationHours: number
+  amount: number
+  status: 'paid'
+}
+
 export type GateSession = {
   _id: string
   slotId: GateSlot | string | null
@@ -68,6 +77,9 @@ export type GateSession = {
   paymentStatus: GatePaymentStatus
   status: GateSessionStatus
   userId?: GateUser | string | null
+  staffId?: GateUser | string | null
+  checkOutStaffId?: GateUser | string | null
+  paymentMethod?: 'cash' | 'transfer' | null
   note?: string
 }
 
@@ -89,6 +101,7 @@ export type GateLookupResult = {
       durationDays?: number
     }
   } | null
+  booking: GateBooking | null
   hint: {
     lastVisit: {
       vehicleType: GateVehicleType
@@ -106,9 +119,14 @@ export type GateLookupResult = {
 export type GateCheckoutPreview = {
   sessionId: string
   customerType: GateCustomerType
+  bookingId?: string | null
   entryTime: string
   exitTime: string
   fee: number
+  toCollect: number
+  prepaidAmount: number
+  overtimeHours: number
+  overtimeFee: number
   note?: string
   breakdown?: {
     hours?: number
@@ -189,6 +207,7 @@ export const staffGateApi = {
     licensePlate?: string
     page?: number
     limit?: number
+    refreshAt?: number
   }) {
     try {
       const response = await staffHttp.get<ApiEnvelope<ActiveSessionsResponse>>('/sessions', { params })
