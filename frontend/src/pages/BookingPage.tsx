@@ -11,9 +11,12 @@ import {
   normalizeBookingPlate,
   toDateTimeLocalValue,
 } from '../components/booking'
+import { getStoredAuthUser } from '../services/authApi'
 import { bookingApi, type Booking, type BookingPayment } from '../services/bookingApi'
+import { isValidEmail } from '../utils/validation'
 
 export function BookingPage() {
+  const storedUser = useMemo(() => getStoredAuthUser(), [])
   const defaultArrival = useMemo(() => {
     const nextHour = new Date()
     nextHour.setMinutes(0, 0, 0)
@@ -21,6 +24,7 @@ export function BookingPage() {
     return toDateTimeLocalValue(nextHour)
   }, [])
 
+  const [email, setEmail] = useState(storedUser?.email ?? '')
   const [phoneNumber, setPhoneNumber] = useState('')
   const [licensePlate, setLicensePlate] = useState('')
   const [expectedArrivalTime, setExpectedArrivalTime] = useState(defaultArrival)
@@ -36,7 +40,7 @@ export function BookingPage() {
     : toDateTimeLocalValue(new Date(arrival.getTime() + durationHours * 60 * 60 * 1000))
   const estimatedFee = computeBookingAmount(durationHours)
   const canSubmit =
-    phoneNumber.trim().length >= 8 && normalizeBookingPlate(licensePlate).length >= 4 && expectedArrivalTime
+    isValidEmail(email) && normalizeBookingPlate(licensePlate).length >= 4 && expectedArrivalTime
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -49,7 +53,7 @@ export function BookingPage() {
 
     try {
       const result = await bookingApi.createBooking({
-        phoneNumber: phoneNumber.trim(),
+        email: email.trim().toLowerCase(),
         licensePlate: normalizeBookingPlate(licensePlate),
         expectedArrivalTime: new Date(expectedArrivalTime).toISOString(),
         expectedExitTime: new Date(expectedExitTime).toISOString(),
@@ -87,12 +91,15 @@ export function BookingPage() {
         ) : (
           <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_22rem]">
             <BookingForm
+              email={email}
               phoneNumber={phoneNumber}
               licensePlate={licensePlate}
               expectedArrivalTime={expectedArrivalTime}
               durationHours={durationHours}
               canSubmit={Boolean(canSubmit)}
               isSubmitting={isSubmitting}
+              isEmailLocked={Boolean(storedUser?.email)}
+              onEmailChange={setEmail}
               onPhoneNumberChange={setPhoneNumber}
               onLicensePlateChange={setLicensePlate}
               onExpectedArrivalTimeChange={setExpectedArrivalTime}
@@ -100,6 +107,7 @@ export function BookingPage() {
               onSubmit={handleSubmit}
             />
             <BookingSummary
+              email={email}
               phoneNumber={phoneNumber}
               licensePlate={licensePlate}
               expectedArrivalTime={expectedArrivalTime}

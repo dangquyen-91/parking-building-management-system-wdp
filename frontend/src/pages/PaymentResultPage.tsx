@@ -83,6 +83,11 @@ export function PaymentResultPage({ status }: PaymentResultPageProps) {
           <p className="mt-6 text-[10px] uppercase tracking-[0.2em] text-subtle">{copy.eyebrow}</p>
           <h1 className="mt-3 text-3xl font-bold tracking-tight text-fg md:text-4xl">{copy.title}</h1>
           <p className="mt-3 max-w-2xl text-sm text-muted">{copy.description}</p>
+          {status === 'success' && !isSubscriptionPayment && (
+            <p className="mt-2 max-w-2xl text-sm font-medium text-emerald-700 dark:text-emerald-100">
+              Email xác nhận booking sẽ được gửi đến địa chỉ bạn đã nhập sau khi hệ thống nhận kết quả thanh toán.
+            </p>
+          )}
 
           <div className="mt-7 rounded-lg border border-theme bg-badge p-4">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

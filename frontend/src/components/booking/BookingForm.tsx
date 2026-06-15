@@ -2,12 +2,15 @@ import type { FormEvent, ReactNode } from 'react'
 import { MAX_DURATION_HOURS } from './bookingUtils'
 
 type BookingFormProps = {
+  email: string
   phoneNumber: string
   licensePlate: string
   expectedArrivalTime: string
   durationHours: number
   canSubmit: boolean
   isSubmitting: boolean
+  isEmailLocked?: boolean
+  onEmailChange: (value: string) => void
   onPhoneNumberChange: (value: string) => void
   onLicensePlateChange: (value: string) => void
   onExpectedArrivalTimeChange: (value: string) => void
@@ -20,12 +23,15 @@ function FieldLabel({ children }: { children: ReactNode }) {
 }
 
 export function BookingForm({
+  email,
   phoneNumber,
   licensePlate,
   expectedArrivalTime,
   durationHours,
   canSubmit,
   isSubmitting,
+  isEmailLocked = false,
+  onEmailChange,
   onPhoneNumberChange,
   onLicensePlateChange,
   onExpectedArrivalTimeChange,
@@ -36,6 +42,22 @@ export function BookingForm({
     <form className="liquid-glass-card rounded-lg p-4 md:p-5" onSubmit={onSubmit}>
       <div className="grid gap-4 md:grid-cols-2">
         <div className="flex flex-col gap-2">
+          <FieldLabel>Email</FieldLabel>
+          <input
+            type="email"
+            value={email}
+            onChange={(event) => onEmailChange(event.target.value)}
+            required
+            readOnly={isEmailLocked}
+            className="auth-input h-11 rounded-lg border px-3 text-sm text-fg read-only:opacity-80"
+            placeholder="guest@example.com"
+          />
+          <p className="text-xs text-subtle">
+            Email này sẽ nhận thông tin booking sau khi chuyển khoản thành công.
+          </p>
+        </div>
+
+        <div className="flex flex-col gap-2">
           <FieldLabel>Số điện thoại</FieldLabel>
           <input
             type="tel"
@@ -43,7 +65,6 @@ export function BookingForm({
             onChange={(event) => onPhoneNumberChange(event.target.value)}
             minLength={8}
             maxLength={15}
-            required
             className="auth-input h-11 rounded-lg border px-3 text-sm text-fg"
             placeholder="0912345678"
           />

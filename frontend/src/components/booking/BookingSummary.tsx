@@ -1,6 +1,7 @@
 import { formatBookingCurrency, formatBookingDateTime, normalizeBookingPlate } from './bookingUtils'
 
 type BookingSummaryProps = {
+  email: string
   phoneNumber: string
   licensePlate: string
   expectedArrivalTime: string
@@ -10,6 +11,7 @@ type BookingSummaryProps = {
 }
 
 export function BookingSummary({
+  email,
   phoneNumber,
   licensePlate,
   expectedArrivalTime,
@@ -26,6 +28,10 @@ export function BookingSummary({
       <p className="mt-1 text-sm text-muted">Đặt chỗ ô tô vãng lai</p>
 
       <dl className="mt-6 space-y-4 text-sm">
+        <div className="flex items-center justify-between gap-4">
+          <dt className="text-subtle">Email</dt>
+          <dd className="break-all text-right font-medium text-fg">{email.trim() || '-'}</dd>
+        </div>
         <div className="flex items-center justify-between gap-4">
           <dt className="text-subtle">Số điện thoại</dt>
           <dd className="font-medium text-fg">{phoneNumber.trim() || '-'}</dd>
