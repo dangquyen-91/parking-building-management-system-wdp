@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import {
-  StaffGateActiveSessions,
   StaffGateCheckInForm,
   StaffGateCheckoutPanel,
   StaffGateModeTabs,
@@ -8,21 +8,23 @@ import {
   StaffGateSummary,
   type StaffGateMode,
 } from '../components/staff'
-import { getFloorId, normalizePlate } from '../components/staff/staffGateUtils'
+import { normalizePlate } from '../components/staff/staffGateUtils'
 import { managerBuildingsApi, type Floor } from '../services/managerBuildingsApi'
 import {
   staffGateApi,
   type GateCheckoutPreview,
-  type GateCustomerType,
   type GateLookupResult,
   type GateRow,
   type GateSession,
   type GateSlot,
   type GateVehicleType,
 } from '../services/staffGateApi'
+import { getStaffGateAllocation } from '../utils/staffGateAllocation'
 
 export function StaffGatePage() {
-  const [mode, setMode] = useState<StaffGateMode>('checkin')
+  const [searchParams] = useSearchParams()
+  const checkoutPlate = searchParams.get('checkout') ?? ''
+  const [mode, setMode] = useState<StaffGateMode>(checkoutPlate ? 'checkout' : 'checkin')
   const [activeSessions, setActiveSessions] = useState<GateSession[]>([])
   const [completedSessions, setCompletedSessions] = useState<GateSession[]>([])
   const [rows, setRows] = useState<GateRow[]>([])
@@ -33,40 +35,41 @@ export function StaffGatePage() {
 
   const [plate, setPlate] = useState('')
   const [vehicleType, setVehicleType] = useState<GateVehicleType>('motorcycle')
-  const [rowId, setRowId] = useState('')
-  const [slotId, setSlotId] = useState('')
+  const [selectedFloorId, setSelectedFloorId] = useState('')
   const [note, setNote] = useState('')
   const [lookupResult, setLookupResult] = useState<GateLookupResult | null>(null)
   const [isLookupLoading, setIsLookupLoading] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [actionMessage, setActionMessage] = useState<string | null>(null)
 
-  const [checkoutQuery, setCheckoutQuery] = useState('')
+  const [checkoutQuery, setCheckoutQuery] = useState(checkoutPlate)
   const [checkoutPreview, setCheckoutPreview] = useState<GateCheckoutPreview | null>(null)
   const [isPreviewLoading, setIsPreviewLoading] = useState(false)
+  const [pendingTransferSession, setPendingTransferSession] = useState<GateSession | null>(null)
 
   const floorMap = useMemo(() => new Map(floors.map((floor) => [floor._id, floor])), [floors])
   const normalizedPlate = normalizePlate(plate)
   const lookupMatchesPlate = lookupResult?.licensePlate === normalizedPlate
   const checkInCustomerType = lookupMatchesPlate ? lookupResult.customerType : undefined
 
-  const rowOptions = useMemo(() => {
-    return rows.filter((row) => {
-      const floor = floorMap.get(getFloorId(row))
-      if (!floor || floor.vehicleType !== 'motorcycle') return false
-      if (lookupMatchesPlate && floor.floorType !== getTargetFloorType(checkInCustomerType)) return false
-      return row.status === 'available' && row.occupiedCount < row.capacity
-    })
-  }, [rows, floorMap, lookupMatchesPlate, checkInCustomerType])
-
-  const slotOptions = useMemo(() => {
-    return slots.filter((slot) => {
-      const floor = floorMap.get(getFloorId(slot))
-      if (!floor || floor.vehicleType !== 'car') return false
-      if (lookupMatchesPlate && floor.floorType !== 'visitor') return false
-      return slot.status === 'empty'
-    })
-  }, [slots, floorMap, lookupMatchesPlate])
+  const {
+    floorOptions,
+    autoAssignedRow,
+    autoAssignedSlot,
+    availableCount,
+  } = useMemo(
+    () =>
+      getStaffGateAllocation({
+        rows,
+        slots,
+        floorMap,
+        lookupMatchesPlate,
+        customerType: checkInCustomerType,
+        vehicleType,
+        selectedFloorId,
+      }),
+    [rows, slots, floorMap, lookupMatchesPlate, checkInCustomerType, vehicleType, selectedFloorId],
+  )
 
   const selectedCheckoutSession = useMemo(() => {
     const query = checkoutQuery.trim().toLowerCase()
@@ -77,16 +80,11 @@ export function StaffGatePage() {
     })
   }, [activeSessions, checkoutQuery])
 
-  const availableCount =
-    rowOptions.reduce((total, row) => total + Math.max(0, row.capacity - row.occupiedCount), 0) +
-    slotOptions.length
-
   const canCheckIn =
     lookupMatchesPlate &&
     lookupResult.status !== 'already_active' &&
     normalizedPlate.length >= 4 &&
-    (vehicleType === 'car' || Boolean(rowId)) &&
-    (vehicleType === 'motorcycle' || checkInCustomerType === 'resident' || Boolean(slotId))
+    (vehicleType === 'motorcycle' ? Boolean(autoAssignedRow) : checkInCustomerType === 'resident' || Boolean(autoAssignedSlot))
 
   async function loadGateData() {
     setIsLoading(true)
@@ -112,13 +110,14 @@ export function StaffGatePage() {
   }
 
   useEffect(() => {
-    void loadGateData()
+    const timeoutId = window.setTimeout(() => void loadGateData(), 0)
+    return () => window.clearTimeout(timeoutId)
   }, [])
 
   useEffect(() => {
     if (!selectedCheckoutSession) {
-      setCheckoutPreview(null)
-      return
+      const timeoutId = window.setTimeout(() => setCheckoutPreview(null), 0)
+      return () => window.clearTimeout(timeoutId)
     }
 
     const sessionId = selectedCheckoutSession._id
@@ -146,6 +145,52 @@ export function StaffGatePage() {
     }
   }, [selectedCheckoutSession])
 
+  useEffect(() => {
+    if (!pendingTransferSession) return
+
+    const pendingSession = pendingTransferSession
+    let ignore = false
+    let attempts = 0
+
+    async function refreshTransferStatus() {
+      attempts += 1
+
+      try {
+        const response = await staffGateApi.getActiveSessions({
+          limit: 100,
+          refreshAt: Date.now(),
+        })
+        if (ignore) return
+
+        const sessions = response.sessions ?? []
+        setActiveSessions(sessions)
+
+        if (!sessions.some((session) => session._id === pendingSession._id)) {
+          setPendingTransferSession(null)
+          setCheckoutQuery('')
+          setCheckoutPreview(null)
+          setActionMessage(`Đã xác nhận chuyển khoản và ghi nhận xe ra ${pendingSession.licensePlate}.`)
+        } else if (attempts >= 72) {
+          setPendingTransferSession(null)
+          setActionMessage('Chưa nhận được xác nhận thanh toán. Vui lòng kiểm tra lại sau ít phút.')
+        }
+      } catch {
+        if (!ignore && attempts >= 72) {
+          setPendingTransferSession(null)
+          setActionMessage('Không thể tự kiểm tra thanh toán. Vui lòng tải lại trang để cập nhật trạng thái.')
+        }
+      }
+    }
+
+    void refreshTransferStatus()
+    const intervalId = window.setInterval(() => void refreshTransferStatus(), 2500)
+
+    return () => {
+      ignore = true
+      window.clearInterval(intervalId)
+    }
+  }, [pendingTransferSession])
+
   async function handleLookup() {
     const plateToLookup = normalizePlate(plate)
     if (!plateToLookup) return
@@ -156,9 +201,12 @@ export function StaffGatePage() {
     try {
       const result = await staffGateApi.lookup(plateToLookup)
       setLookupResult(result)
+      setSelectedFloorId('')
 
       if (result.subscription?.vehicleType) {
         setVehicleType(result.subscription.vehicleType)
+      } else if (result.booking) {
+        setVehicleType('car')
       }
 
       if (result.status === 'already_active' && result.activeSession) {
@@ -181,15 +229,13 @@ export function StaffGatePage() {
       const response = await staffGateApi.checkIn({
         vehicleType,
         licensePlate: normalizedPlate,
-        rowId: vehicleType === 'motorcycle' ? rowId : undefined,
-        slotId: vehicleType === 'car' && checkInCustomerType !== 'resident' ? slotId : undefined,
+        rowId: vehicleType === 'motorcycle' ? autoAssignedRow?._id : undefined,
+        slotId: vehicleType === 'car' && checkInCustomerType !== 'resident' ? autoAssignedSlot?._id : undefined,
         note: note.trim() || undefined,
       })
 
       setActiveSessions((current) => [response.session, ...current])
       resetCheckInForm()
-      setCheckoutQuery(response.session.licensePlate)
-      setMode('checkout')
       setActionMessage(`Đã ghi nhận xe vào ${response.session.licensePlate}.`)
       await loadGateData()
     } catch (err) {
@@ -224,7 +270,8 @@ export function StaffGatePage() {
 
       if (response.payment?.checkoutUrl) {
         window.open(response.payment.checkoutUrl, '_blank', 'noopener,noreferrer')
-        setActionMessage('Đã tạo link chuyển khoản PayOS. Phiên gửi xe sẽ đóng khi webhook thành công.')
+        setPendingTransferSession(session)
+        setActionMessage('Đã tạo mã QR PayOS. Đang chờ xác nhận thanh toán...')
       } else {
         closeSessionLocally(session._id, response.session)
         setActionMessage(response.note ?? `Đã ghi nhận xe ra ${response.session.licensePlate}.`)
@@ -246,8 +293,7 @@ export function StaffGatePage() {
 
   function resetCheckInForm() {
     setPlate('')
-    setRowId('')
-    setSlotId('')
+    setSelectedFloorId('')
     setNote('')
     setLookupResult(null)
   }
@@ -255,19 +301,12 @@ export function StaffGatePage() {
   function handlePlateChange(value: string) {
     setPlate(value)
     setLookupResult(null)
-    setRowId('')
-    setSlotId('')
+    setSelectedFloorId('')
   }
 
   function handleVehicleTypeChange(value: GateVehicleType) {
     setVehicleType(value)
-    setRowId('')
-    setSlotId('')
-  }
-
-  function handleActiveSessionSelect(session: GateSession) {
-    setCheckoutQuery(session.licensePlate)
-    setMode('checkout')
+    setSelectedFloorId('')
   }
 
   return (
@@ -299,59 +338,44 @@ export function StaffGatePage() {
       {isLoading ? (
         <div className="rounded-lg border border-theme bg-badge p-5 text-sm text-muted">Đang tải dữ liệu cổng...</div>
       ) : (
-        <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_24rem]">
-          <div className="grid gap-5">
-            {mode === 'checkin' ? (
-              <StaffGateCheckInForm
-                plate={plate}
-                vehicleType={vehicleType}
-                rowId={rowId}
-                slotId={slotId}
-                note={note}
-                lookupResult={lookupResult}
-                lookupMatchesPlate={lookupMatchesPlate}
-                checkInCustomerType={checkInCustomerType}
-                rowOptions={rowOptions}
-                slotOptions={slotOptions}
-                floorMap={floorMap}
-                isLookupLoading={isLookupLoading}
-                isSubmitting={isSubmitting}
-                canCheckIn={canCheckIn}
-                onPlateChange={handlePlateChange}
-                onVehicleTypeChange={handleVehicleTypeChange}
-                onRowChange={setRowId}
-                onSlotChange={setSlotId}
-                onNoteChange={setNote}
-                onLookup={handleLookup}
-                onCheckIn={handleCheckIn}
-              />
-            ) : (
-              <StaffGateCheckoutPanel
-                query={checkoutQuery}
-                session={selectedCheckoutSession}
-                preview={checkoutPreview}
-                isPreviewLoading={isPreviewLoading}
-                isSubmitting={isSubmitting}
-                onQueryChange={setCheckoutQuery}
-                onCheckoutCash={handleCheckoutCash}
-                onCheckoutTransfer={handleCheckoutTransfer}
-              />
-            )}
+        <div className="grid gap-5">
+          {mode === 'checkin' ? (
+            <StaffGateCheckInForm
+              plate={plate}
+              vehicleType={vehicleType}
+              note={note}
+              lookupResult={lookupResult}
+              lookupMatchesPlate={lookupMatchesPlate}
+              checkInCustomerType={checkInCustomerType}
+              floorOptions={floorOptions}
+              selectedFloorId={selectedFloorId}
+              isLookupLoading={isLookupLoading}
+              isSubmitting={isSubmitting}
+              canCheckIn={canCheckIn}
+              onPlateChange={handlePlateChange}
+              onVehicleTypeChange={handleVehicleTypeChange}
+              onFloorChange={setSelectedFloorId}
+              onNoteChange={setNote}
+              onLookup={handleLookup}
+              onCheckIn={handleCheckIn}
+            />
+          ) : (
+            <StaffGateCheckoutPanel
+              query={checkoutQuery}
+              session={selectedCheckoutSession}
+              preview={checkoutPreview}
+              isPreviewLoading={isPreviewLoading}
+              isSubmitting={isSubmitting}
+              floorMap={floorMap}
+              onQueryChange={setCheckoutQuery}
+              onCheckoutCash={handleCheckoutCash}
+              onCheckoutTransfer={handleCheckoutTransfer}
+            />
+          )}
 
-            <StaffGateSessionActivity sessions={[...activeSessions, ...completedSessions]} />
-          </div>
-
-          <StaffGateActiveSessions
-            sessions={activeSessions}
-            selectedSessionId={selectedCheckoutSession?._id}
-            onSelectSession={handleActiveSessionSelect}
-          />
+          <StaffGateSessionActivity sessions={[...activeSessions, ...completedSessions]} />
         </div>
       )}
     </div>
   )
-}
-
-function getTargetFloorType(customerType?: GateCustomerType) {
-  return customerType === 'resident' ? 'resident' : 'visitor'
 }

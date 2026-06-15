@@ -3,7 +3,7 @@ import Booking from '../models/booking.model.js';
 import Payment from '../models/payment.model.js';
 import logger from '../utils/logger.js';
 
-const PENDING_TTL_MINUTES = 60;
+const PENDING_TTL_MINUTES = 15;
 
 const expirePaidBookingsPastExit = async () => {
   const now = new Date();

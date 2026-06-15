@@ -7,6 +7,7 @@ import { Header } from '../components/home/Header'
 import { Hero } from '../components/home/Hero'
 import { HowItWorksSection } from '../components/home/HowItWorksSection'
 import { ResourcesSection } from '../components/home/ResourcesSection'
+import { ResidentPlansSection } from '../components/home/ResidentPlansSection'
 import { StatsSection } from '../components/home/StatsSection'
 
 export function HomePage() {
@@ -19,6 +20,7 @@ export function HomePage() {
         <AboutSection />
         <HowItWorksSection />
         <FeaturesSection />
+        <ResidentPlansSection />
         <StatsSection />
         <ResourcesSection />
         <CtaSection />
