@@ -3,6 +3,7 @@ import type { Floor } from '../../services/managerBuildingsApi'
 import type { GateCheckoutPreview, GateSession } from '../../services/staffGateApi'
 import { StaffGateField } from './StaffGateField'
 import { StaffGateCameraScanner } from './StaffGateCameraScanner'
+import { StaffGateQrVerifier } from './StaffGateQrVerifier'
 import { formatGateTime, formatStaffCurrency } from './staffGateData'
 import { formatCustomerType, formatSessionSpot, formatVehicleType } from './staffGateUtils'
 
@@ -32,8 +33,13 @@ export function StaffGateCheckoutPanel({
   onCheckoutTransfer,
 }: StaffGateCheckoutPanelProps) {
   const [confirmMethod, setConfirmMethod] = useState<CheckoutMethod | null>(null)
+  const [verifiedSessionId, setVerifiedSessionId] = useState('')
+  const [manualSessionId, setManualSessionId] = useState('')
   const amountToCollect = preview?.toCollect ?? session?.fee ?? 0
   const hasPrepaidBooking = Boolean(preview?.bookingId)
+  const checkoutVerified = Boolean(
+    session && (verifiedSessionId === session._id || manualSessionId === session._id),
+  )
 
   function handleConfirmCheckout() {
     if (!session || !confirmMethod) return
@@ -74,6 +80,19 @@ export function StaffGateCheckoutPanel({
             className="auth-input h-14 rounded-xl border px-4 text-lg font-bold uppercase tracking-[0.08em] text-fg"
           />
         </StaffGateField>
+
+        <StaffGateQrVerifier
+          key={session?._id ?? 'no-checkout-session'}
+          session={session}
+          verified={Boolean(session && verifiedSessionId === session._id)}
+          manualOverride={Boolean(session && manualSessionId === session._id)}
+          onVerified={() => {
+            if (session) setVerifiedSessionId(session._id)
+          }}
+          onManualOverride={() => {
+            if (session) setManualSessionId(session._id)
+          }}
+        />
 
         {session ? (
           <div className="overflow-hidden rounded-xl border border-theme bg-badge">
@@ -124,7 +143,7 @@ export function StaffGateCheckoutPanel({
                 <button
                   type="button"
                   onClick={() => setConfirmMethod('cash')}
-                  disabled={isSubmitting || isPreviewLoading}
+                  disabled={isSubmitting || isPreviewLoading || !checkoutVerified}
                   className="h-14 rounded-xl bg-emerald-600 px-4 text-sm font-bold text-white shadow-lg shadow-emerald-600/20 transition-transform hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   Thu tiền mặt {formatStaffCurrency(amountToCollect)}
@@ -133,11 +152,16 @@ export function StaffGateCheckoutPanel({
               <button
                 type="button"
                 onClick={() => setConfirmMethod('transfer')}
-                disabled={isSubmitting || isPreviewLoading}
+                disabled={isSubmitting || isPreviewLoading || !checkoutVerified}
                 className="h-14 rounded-xl border border-theme-strong bg-btn-primary px-4 text-sm font-bold text-btn-primary-fg shadow-lg transition-transform hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {amountToCollect > 0 ? `Chuyển khoản ${formatStaffCurrency(amountToCollect)}` : 'Xác nhận xe ra'}
               </button>
+              {!checkoutVerified && (
+                <p className="sm:col-span-2 text-center text-[11px] font-medium text-amber-600 dark:text-amber-300">
+                  Cần xác minh vé QR hoặc chọn xử lý thủ công trước khi thanh toán và cho xe ra.
+                </p>
+              )}
             </div>
           </div>
         ) : (
