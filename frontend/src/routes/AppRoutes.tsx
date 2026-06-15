@@ -28,6 +28,7 @@ import { ManagerSubscriptionsPage } from '../pages/ManagerSubscriptionsPage'
 import { MyBookingsPage } from '../pages/MyBookingsPage'
 import { MySubscriptionsPage } from '../pages/MySubscriptionsPage'
 import { PaymentResultPage } from '../pages/PaymentResultPage'
+import { ProfilePage } from '../pages/ProfilePage'
 import { RegisterPage } from '../pages/RegisterPage'
 import { ResidentSubscriptionPage } from '../pages/ResidentSubscriptionPage'
 import { StaffGatePage } from '../pages/StaffGatePage'
@@ -49,6 +50,7 @@ export const AppRoutes = () => {
       <Route path="/payment/cancel" element={<PaymentResultPage status="cancel" />} />
       <Route path="/my-bookings" element={<MyBookingsPage />} />
       <Route element={<ProtectedRoute allowedRoles={['user']} />}>
+        <Route path="/profile" element={<ProfilePage />} />
         <Route path="/subscriptions" element={<ResidentSubscriptionPage />} />
         <Route path="/my-subscriptions" element={<MySubscriptionsPage />} />
       </Route>
