@@ -1,7 +1,6 @@
 import axios, { AxiosError, AxiosHeaders } from 'axios'
 import { API_BASE_URL } from './apiConfig'
-import { AUTH_STORAGE_KEYS } from './authApi'
-import type { GateSession } from './staffGateApi'
+import { AUTH_STORAGE_KEYS, setStoredAuthUser, type AuthUser } from './authApi'
 
 type ApiEnvelope<T> = {
   status: 'success' | 'error'
@@ -9,38 +8,19 @@ type ApiEnvelope<T> = {
   data: T
 }
 
-export type ManagerStaffUser = {
-  _id: string
+export type UpdateProfilePayload = {
   fullName: string
-  email: string
   phone?: string
-  role: 'staff'
-  isActive: boolean
-  createdAt?: string
-  updatedAt?: string
 }
 
-type StaffResponse = {
-  users: ManagerStaffUser[]
-  total: number
-  page: number
-  limit: number
-}
-
-type SessionsResponse = {
-  sessions: GateSession[]
-  total: number
-  page: number
-  limit: number
-  totalPages?: number
-}
-
-const managerStaffHttp = axios.create({
+const userHttp = axios.create({
   baseURL: API_BASE_URL,
-  headers: { 'Content-Type': 'application/json' },
+  headers: {
+    'Content-Type': 'application/json',
+  },
 })
 
-managerStaffHttp.interceptors.request.use((config) => {
+userHttp.interceptors.request.use((config) => {
   const token = localStorage.getItem(AUTH_STORAGE_KEYS.accessToken)
 
   if (token) {
@@ -60,26 +40,27 @@ function getApiError(error: unknown) {
   if (error instanceof AxiosError) {
     return new Error(error.response?.data?.message ?? error.message, { cause: error })
   }
+
   return error
 }
 
-export const managerStaffApi = {
-  async getStaff() {
+export const userApi = {
+  async getMe() {
     try {
-      const response = await managerStaffHttp.get<ApiEnvelope<StaffResponse>>('/users', {
-        params: { role: 'staff', limit: 100, sort: 'fullName', order: 'asc' },
-      })
+      const response = await userHttp.get<ApiEnvelope<{ user: AuthUser }>>('/users/me')
+      setStoredAuthUser(response.data.data.user)
+
       return response.data.data
     } catch (error) {
       throw getApiError(error)
     }
   },
 
-  async getActiveSessions() {
+  async updateMe(payload: UpdateProfilePayload) {
     try {
-      const response = await managerStaffHttp.get<ApiEnvelope<SessionsResponse>>('/sessions', {
-        params: { limit: 100 },
-      })
+      const response = await userHttp.patch<ApiEnvelope<{ user: AuthUser }>>('/users/me', payload)
+      setStoredAuthUser(response.data.data.user)
+
       return response.data.data
     } catch (error) {
       throw getApiError(error)

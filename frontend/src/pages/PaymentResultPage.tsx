@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { BookingTopNav } from '../components/booking'
+import { consumeStaffGatePaymentReturn } from '../utils/staffGatePaymentReturn'
 import { consumeSubscriptionPaymentReturn } from '../utils/subscriptionPaymentReturn'
 
 type PaymentResultPageProps = {
@@ -63,12 +64,49 @@ const subscriptionResultCopy = {
   },
 } satisfies Record<PaymentResultPageProps['status'], Record<string, string>>
 
+function getStaffResultCopy(status: PaymentResultPageProps['status'], licensePlate: string) {
+  const checkoutPath = `/staff?checkout=${encodeURIComponent(licensePlate)}`
+
+  return status === 'success'
+    ? {
+        eyebrow: 'Xe ra // Thanh toán thành công',
+        title: 'Đã ghi nhận thanh toán xe ra',
+        description: `Quay lại cổng để kiểm tra trạng thái xe ${licensePlate} trước khi mở cổng.`,
+        badge: 'Đã ghi nhận thanh toán',
+        panelClass: 'border-emerald-500/40 bg-emerald-500/10 text-emerald-700 dark:text-emerald-100',
+        mark: '✓',
+        primaryLabel: 'Quay lại kiểm tra xe ra',
+        primaryTo: checkoutPath,
+        secondaryLabel: 'Xem xe đang gửi',
+        secondaryTo: '/staff/vehicles',
+      }
+    : {
+        eyebrow: 'Xe ra // Thanh toán đã hủy',
+        title: 'Thanh toán xe ra chưa hoàn tất',
+        description: `Quay lại cổng để tiếp tục xử lý thanh toán cho xe ${licensePlate}.`,
+        badge: 'Thanh toán chưa hoàn tất',
+        panelClass: 'border-amber-500/40 bg-amber-500/10 text-amber-800 dark:text-amber-100',
+        mark: '!',
+        primaryLabel: 'Quay lại xe ra',
+        primaryTo: checkoutPath,
+        secondaryLabel: 'Xem xe đang gửi',
+        secondaryTo: '/staff/vehicles',
+      }
+}
+
 export function PaymentResultPage({ status }: PaymentResultPageProps) {
   const [searchParams] = useSearchParams()
   const orderCode = searchParams.get('orderCode')
   const payosStatus = searchParams.get('status')
-  const [isSubscriptionPayment] = useState(() => consumeSubscriptionPaymentReturn(orderCode))
-  const copy = isSubscriptionPayment ? subscriptionResultCopy[status] : resultCopy[status]
+  const [staffPayment] = useState(() => consumeStaffGatePaymentReturn(orderCode))
+  const [isSubscriptionPayment] = useState(() => (
+    staffPayment ? false : consumeSubscriptionPaymentReturn(orderCode)
+  ))
+  const copy = staffPayment
+    ? getStaffResultCopy(status, staffPayment.licensePlate)
+    : isSubscriptionPayment
+      ? subscriptionResultCopy[status]
+      : resultCopy[status]
 
   return (
     <div className="min-h-screen bg-page text-fg">
@@ -83,6 +121,11 @@ export function PaymentResultPage({ status }: PaymentResultPageProps) {
           <p className="mt-6 text-[10px] uppercase tracking-[0.2em] text-subtle">{copy.eyebrow}</p>
           <h1 className="mt-3 text-3xl font-bold tracking-tight text-fg md:text-4xl">{copy.title}</h1>
           <p className="mt-3 max-w-2xl text-sm text-muted">{copy.description}</p>
+          {status === 'success' && !isSubscriptionPayment && !staffPayment && (
+            <p className="mt-2 max-w-2xl text-sm font-medium text-emerald-700 dark:text-emerald-100">
+              Email xác nhận booking sẽ được gửi đến địa chỉ bạn đã nhập sau khi hệ thống nhận kết quả thanh toán.
+            </p>
+          )}
 
           <div className="mt-7 rounded-lg border border-theme bg-badge p-4">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

@@ -2,10 +2,12 @@ import { useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import {
   StaffGateCheckInForm,
+  StaffGateCheckInTicket,
   StaffGateCheckoutPanel,
   StaffGateModeTabs,
   StaffGateSessionActivity,
   StaffGateSummary,
+  StaffGateToast,
   type StaffGateMode,
 } from '../components/staff'
 import { normalizePlate } from '../components/staff/staffGateUtils'
@@ -20,6 +22,7 @@ import {
   type GateVehicleType,
 } from '../services/staffGateApi'
 import { getStaffGateAllocation } from '../utils/staffGateAllocation'
+import { rememberStaffGatePaymentReturn } from '../utils/staffGatePaymentReturn'
 
 export function StaffGatePage() {
   const [searchParams] = useSearchParams()
@@ -41,11 +44,13 @@ export function StaffGatePage() {
   const [isLookupLoading, setIsLookupLoading] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [actionMessage, setActionMessage] = useState<string | null>(null)
+  const [toastMessage, setToastMessage] = useState<string | null>(null)
 
   const [checkoutQuery, setCheckoutQuery] = useState(checkoutPlate)
   const [checkoutPreview, setCheckoutPreview] = useState<GateCheckoutPreview | null>(null)
   const [isPreviewLoading, setIsPreviewLoading] = useState(false)
   const [pendingTransferSession, setPendingTransferSession] = useState<GateSession | null>(null)
+  const [issuedTicket, setIssuedTicket] = useState<GateSession | null>(null)
 
   const floorMap = useMemo(() => new Map(floors.map((floor) => [floor._id, floor])), [floors])
   const normalizedPlate = normalizePlate(plate)
@@ -55,7 +60,6 @@ export function StaffGatePage() {
   const {
     floorOptions,
     autoAssignedRow,
-    autoAssignedSlot,
     availableCount,
   } = useMemo(
     () =>
@@ -83,8 +87,7 @@ export function StaffGatePage() {
   const canCheckIn =
     lookupMatchesPlate &&
     lookupResult.status !== 'already_active' &&
-    normalizedPlate.length >= 4 &&
-    (vehicleType === 'motorcycle' ? Boolean(autoAssignedRow) : checkInCustomerType === 'resident' || Boolean(autoAssignedSlot))
+    normalizedPlate.length >= 4
 
   async function loadGateData() {
     setIsLoading(true)
@@ -113,6 +116,17 @@ export function StaffGatePage() {
     const timeoutId = window.setTimeout(() => void loadGateData(), 0)
     return () => window.clearTimeout(timeoutId)
   }, [])
+
+  useEffect(() => {
+    if (!actionMessage) return
+    const showTimeoutId = window.setTimeout(() => setToastMessage(actionMessage), 0)
+    const hideTimeoutId = window.setTimeout(() => setToastMessage(null), 6000)
+
+    return () => {
+      window.clearTimeout(showTimeoutId)
+      window.clearTimeout(hideTimeoutId)
+    }
+  }, [actionMessage])
 
   useEffect(() => {
     if (!selectedCheckoutSession) {
@@ -230,11 +244,11 @@ export function StaffGatePage() {
         vehicleType,
         licensePlate: normalizedPlate,
         rowId: vehicleType === 'motorcycle' ? autoAssignedRow?._id : undefined,
-        slotId: vehicleType === 'car' && checkInCustomerType !== 'resident' ? autoAssignedSlot?._id : undefined,
         note: note.trim() || undefined,
       })
 
       setActiveSessions((current) => [response.session, ...current])
+      setIssuedTicket(response.session)
       resetCheckInForm()
       setActionMessage(`Đã ghi nhận xe vào ${response.session.licensePlate}.`)
       await loadGateData()
@@ -269,6 +283,7 @@ export function StaffGatePage() {
       const response = await staffGateApi.checkoutTransfer(session._id)
 
       if (response.payment?.checkoutUrl) {
+        rememberStaffGatePaymentReturn(response.payment.orderCode, session.licensePlate)
         window.open(response.payment.checkoutUrl, '_blank', 'noopener,noreferrer')
         setPendingTransferSession(session)
         setActionMessage('Đã tạo mã QR PayOS. Đang chờ xác nhận thanh toán...')
@@ -310,13 +325,16 @@ export function StaffGatePage() {
   }
 
   return (
-    <div className="p-4 md:p-8 lg:p-10">
-      <div className="mb-6 flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
+    <div className="mx-auto max-w-[1500px] p-4 md:p-8 lg:p-10">
+      <div className="mb-6 flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
         <div>
-          <p className="mb-3 text-[10px] uppercase tracking-[0.2em] text-subtle">Nhân viên // Cổng</p>
-          <h1 className="text-3xl font-bold tracking-tight text-fg md:text-4xl">Xe vào / Xe ra</h1>
-          <p className="mt-3 max-w-2xl text-sm text-muted">
-            Tra cứu biển số để hệ thống tự nhận diện cư dân hoặc khách vãng lai, sau đó ghi nhận xe vào/ra.
+          <div className="mb-3 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-subtle">
+            <span className="size-2 rounded-full bg-emerald-500 shadow-[0_0_12px_rgba(34,197,94,0.8)]" />
+            Cổng đang hoạt động
+          </div>
+          <h1 className="text-3xl font-black tracking-tight text-fg md:text-4xl">Điều phối xe vào / ra</h1>
+          <p className="mt-2 max-w-2xl text-sm text-muted">
+            Tra cứu nhanh, phân bổ vị trí và hoàn tất thanh toán ngay tại cổng.
           </p>
         </div>
 
@@ -330,51 +348,66 @@ export function StaffGatePage() {
       <StaffGateModeTabs mode={mode} onModeChange={setMode} />
 
       {actionMessage && (
-        <div className="mb-5 rounded-lg border border-theme bg-badge p-4 text-sm text-fg">{actionMessage}</div>
+        <div className="mb-5 flex items-start gap-3 rounded-xl border border-sky-500/30 bg-sky-500/10 p-4 text-sm text-fg">
+          <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-sky-500 text-xs font-bold text-white">i</span>
+          {actionMessage}
+        </div>
       )}
 
-      {error && <div className="mb-5 rounded-lg border border-theme bg-badge p-4 text-sm text-rose-100">{error}</div>}
+      {error && <div className="mb-5 rounded-xl border border-rose-500/30 bg-rose-500/10 p-4 text-sm text-rose-700 dark:text-rose-200">{error}</div>}
 
       {isLoading ? (
         <div className="rounded-lg border border-theme bg-badge p-5 text-sm text-muted">Đang tải dữ liệu cổng...</div>
       ) : (
-        <div className="grid gap-5">
-          {mode === 'checkin' ? (
-            <StaffGateCheckInForm
-              plate={plate}
-              vehicleType={vehicleType}
-              note={note}
-              lookupResult={lookupResult}
-              lookupMatchesPlate={lookupMatchesPlate}
-              checkInCustomerType={checkInCustomerType}
-              floorOptions={floorOptions}
-              selectedFloorId={selectedFloorId}
-              isLookupLoading={isLookupLoading}
-              isSubmitting={isSubmitting}
-              canCheckIn={canCheckIn}
-              onPlateChange={handlePlateChange}
-              onVehicleTypeChange={handleVehicleTypeChange}
-              onFloorChange={setSelectedFloorId}
-              onNoteChange={setNote}
-              onLookup={handleLookup}
-              onCheckIn={handleCheckIn}
-            />
-          ) : (
-            <StaffGateCheckoutPanel
-              query={checkoutQuery}
-              session={selectedCheckoutSession}
-              preview={checkoutPreview}
-              isPreviewLoading={isPreviewLoading}
-              isSubmitting={isSubmitting}
-              floorMap={floorMap}
-              onQueryChange={setCheckoutQuery}
-              onCheckoutCash={handleCheckoutCash}
-              onCheckoutTransfer={handleCheckoutTransfer}
-            />
-          )}
+        <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_24rem]">
+          <div>
+            {mode === 'checkin' ? (
+              <StaffGateCheckInForm
+                plate={plate}
+                vehicleType={vehicleType}
+                note={note}
+                lookupResult={lookupResult}
+                lookupMatchesPlate={lookupMatchesPlate}
+                checkInCustomerType={checkInCustomerType}
+                floorOptions={floorOptions}
+                selectedFloorId={selectedFloorId}
+                isLookupLoading={isLookupLoading}
+                isSubmitting={isSubmitting}
+                canCheckIn={canCheckIn}
+                onPlateChange={handlePlateChange}
+                onVehicleTypeChange={handleVehicleTypeChange}
+                onFloorChange={setSelectedFloorId}
+                onNoteChange={setNote}
+                onLookup={handleLookup}
+                onCheckIn={handleCheckIn}
+              />
+            ) : (
+              <StaffGateCheckoutPanel
+                query={checkoutQuery}
+                session={selectedCheckoutSession}
+                preview={checkoutPreview}
+                isPreviewLoading={isPreviewLoading}
+                isSubmitting={isSubmitting}
+                floorMap={floorMap}
+                onQueryChange={setCheckoutQuery}
+                onCheckoutCash={handleCheckoutCash}
+                onCheckoutTransfer={handleCheckoutTransfer}
+              />
+            )}
+          </div>
 
-          <StaffGateSessionActivity sessions={[...activeSessions, ...completedSessions]} />
+          <aside className="xl:sticky xl:top-6">
+            <StaffGateSessionActivity sessions={[...activeSessions, ...completedSessions]} />
+          </aside>
         </div>
+      )}
+
+      {issuedTicket && (
+        <StaffGateCheckInTicket session={issuedTicket} onClose={() => setIssuedTicket(null)} />
+      )}
+
+      {toastMessage && (
+        <StaffGateToast message={toastMessage} onClose={() => setToastMessage(null)} />
       )}
     </div>
   )

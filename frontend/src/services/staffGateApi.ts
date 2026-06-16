@@ -129,9 +129,28 @@ export type GateCheckoutPreview = {
   overtimeFee: number
   note?: string
   breakdown?: {
+    durationMs?: number
+    blocks?: number
+    blockHours?: number
+    blockFee?: number
+    detail?: string
     hours?: number
     turns?: number
     nights?: number
+    prepaidAmount?: number
+    fullStayFee?: number
+  } | null
+  pricing?: {
+    vehicleType: GateVehicleType
+    mode: 'time_block' | 'fixed_block'
+    blockHours?: number | null
+    blockFee?: number | null
+    timeBlocks?: Array<{
+      startHour: number
+      endHour: number
+      fee: number
+      label?: string
+    }>
   } | null
 }
 
@@ -260,6 +279,7 @@ export const staffGateApi = {
         ApiEnvelope<{
           session: GateSession
           payment: {
+            orderCode?: number
             amount: number
             checkoutUrl?: string
             qrCode?: string
