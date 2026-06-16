@@ -71,6 +71,14 @@ export type AvailableMotorcycleSubscriptions = {
 
 export type Subscription = {
   _id: string
+  userId?:
+    | string
+    | {
+        _id: string
+        fullName?: string
+        email?: string
+        phone?: string
+      }
   planId: Plan
   licensePlate: string
   vehicleType: VehicleType

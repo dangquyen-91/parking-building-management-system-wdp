@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { SubscriptionCredentialQr } from '../components/subscription/SubscriptionCredentialQr'
 import { ResidentSubscriptionTopNav } from '../components/subscription/ResidentSubscriptionTopNav'
 import { userSubscriptionApi, type Subscription } from '../services/userSubscriptionApi'
 import {
@@ -197,6 +198,20 @@ function SubscriptionCard({ subscription, onCancel }: SubscriptionCardProps) {
         <CardDetail label="Ngày bắt đầu" value={formatSubscriptionDate(subscription.startDate)} />
         <CardDetail label="Ngày kết thúc" value={formatSubscriptionDate(subscription.endDate)} />
       </div>
+
+      {subscription.status === 'active' && (
+        <div className="border-t border-theme p-4">
+          <div className="grid gap-4 md:grid-cols-[12rem_minmax(0,1fr)] md:items-center">
+            <SubscriptionCredentialQr subscription={subscription} compact />
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-subtle">Thẻ cư dân QR</p>
+              <p className="mt-2 text-sm text-muted">
+                Dùng QR này để chứng minh xe thuộc cư dân đã đăng ký gói. Nhân viên cần đối chiếu lại trạng thái gói trên hệ thống khi quét.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {subscription.status === 'pending' && (
         <div className="flex flex-col gap-3 border-t border-theme bg-amber-500/5 p-4 sm:flex-row sm:items-center sm:justify-between">
