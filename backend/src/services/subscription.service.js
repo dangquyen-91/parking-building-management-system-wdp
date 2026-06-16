@@ -7,6 +7,8 @@ import Floor from '../models/floor.model.js';
 import * as payosService from './payos.service.js';
 import AppError from '../utils/appError.js';
 import logger from '../utils/logger.js';
+import QRCode from 'qrcode';
+import { signSubscriptionQRToken } from '../utils/qrToken.js';
 
 const SUBSCRIPTION_POPULATE = [
   { path: 'planId', select: 'code name vehicleType durationDays price' },
@@ -247,9 +249,11 @@ export const handleWebhook = async (webhookBody) => {
   const endDate = new Date(startDate);
   endDate.setDate(endDate.getDate() + subscription.planId.durationDays);
 
+  const qrToken = signSubscriptionQRToken(subscription._id, subscription.licensePlate);
+
   const activated = await Subscription.findOneAndUpdate(
     { _id: subscription._id, status: 'pending' },
-    { status: 'active', startDate, endDate },
+    { status: 'active', startDate, endDate, qrToken },
     { new: true }
   );
 
@@ -323,6 +327,18 @@ export const cancel = async (id, userId) => {
   subscription.status = 'cancelled';
   await subscription.save();
   return subscription.populate(SUBSCRIPTION_POPULATE);
+};
+
+export const getQR = async (id, requester) => {
+  const subscription = await Subscription.findById(id).select('+qrToken');
+  if (!subscription) throw new AppError('Subscription not found', 404);
+  if (requester.role === 'user' && subscription.userId.toString() !== requester._id.toString()) {
+    throw new AppError('You can only view your own subscription QR', 403);
+  }
+  if (subscription.status !== 'active') throw new AppError('QR only available for active subscriptions', 400);
+
+  const qrImage = await QRCode.toDataURL(subscription.qrToken, { errorCorrectionLevel: 'M', width: 300, margin: 2 });
+  return { qrToken: subscription.qrToken, qrImage, licensePlate: subscription.licensePlate, subscriptionId: subscription._id };
 };
 
 export const findActiveByPlate = async (licensePlate) => {

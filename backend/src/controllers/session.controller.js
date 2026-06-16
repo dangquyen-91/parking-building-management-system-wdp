@@ -3,6 +3,15 @@ import * as anprService from '../services/anpr.service.js';
 import { success } from '../utils/response.js';
 
 
+export const requestEntryQR = async (req, res, next) => {
+  try {
+    const result = await sessionService.requestEntryQR(req.body.licensePlate);
+    success(res, result, 'Entry ticket QR generated');
+  } catch (err) {
+    next(err);
+  }
+};
+
 export const checkIn = async (req, res, next) => {
   try {
     const result = await sessionService.checkIn({
@@ -53,7 +62,7 @@ export const previewCheckout = async (req, res, next) => {
 
 export const checkOutCash = async (req, res, next) => {
   try {
-    const session = await sessionService.checkOutCash(req.params.id, req.user._id);
+    const session = await sessionService.checkOutCash(req.params.id, req.user._id, req.body);
     success(res, { session }, 'Vehicle checked out (cash) successfully');
   } catch (err) {
     next(err);
@@ -62,7 +71,7 @@ export const checkOutCash = async (req, res, next) => {
 
 export const checkOutTransfer = async (req, res, next) => {
   try {
-    const result = await sessionService.checkOutTransfer(req.params.id, req.user._id);
+    const result = await sessionService.checkOutTransfer(req.params.id, req.user._id, req.body);
     success(res, result, 'PayOS payment link created for transfer');
   } catch (err) {
     next(err);

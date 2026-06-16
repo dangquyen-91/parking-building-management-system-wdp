@@ -49,6 +49,15 @@ export const cancel = async (req, res, next) => {
   }
 };
 
+export const getQR = async (req, res, next) => {
+  try {
+    const result = await subscriptionService.getQR(req.params.id, req.user);
+    success(res, result, 'Subscription QR retrieved');
+  } catch (err) {
+    next(err);
+  }
+};
+
 export const handleWebhook = async (req, res, next) => {
   try {
     const result = await subscriptionService.handleWebhook(req.body);
