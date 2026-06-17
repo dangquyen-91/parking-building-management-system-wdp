@@ -15,8 +15,8 @@ type StaffGateCheckoutPanelProps = {
   isSubmitting: boolean
   floorMap: Map<string, Floor>
   onQueryChange: (value: string) => void
-  onCheckoutCash: (session: GateSession) => void
-  onCheckoutTransfer: (session: GateSession) => void
+  onCheckoutCash: (session: GateSession, qrValue: string) => void
+  onCheckoutTransfer: (session: GateSession, qrValue: string) => void
 }
 
 type CheckoutMethod = 'cash' | 'transfer'
@@ -34,20 +34,20 @@ export function StaffGateCheckoutPanel({
 }: StaffGateCheckoutPanelProps) {
   const [confirmMethod, setConfirmMethod] = useState<CheckoutMethod | null>(null)
   const [verifiedSessionId, setVerifiedSessionId] = useState('')
-  const [manualSessionId, setManualSessionId] = useState('')
+  const [verifiedQrValue, setVerifiedQrValue] = useState('')
   const amountToCollect = preview?.toCollect ?? session?.fee ?? 0
   const hasPrepaidBooking = Boolean(preview?.bookingId)
   const checkoutVerified = Boolean(
-    session && (verifiedSessionId === session._id || manualSessionId === session._id),
+    session && verifiedSessionId === session._id && verifiedQrValue,
   )
 
   function handleConfirmCheckout() {
-    if (!session || !confirmMethod) return
+    if (!session || !confirmMethod || !verifiedQrValue) return
 
     if (confirmMethod === 'cash') {
-      onCheckoutCash(session)
+      onCheckoutCash(session, verifiedQrValue)
     } else {
-      onCheckoutTransfer(session)
+      onCheckoutTransfer(session, verifiedQrValue)
     }
 
     setConfirmMethod(null)
@@ -85,12 +85,11 @@ export function StaffGateCheckoutPanel({
           key={session?._id ?? 'no-checkout-session'}
           session={session}
           verified={Boolean(session && verifiedSessionId === session._id)}
-          manualOverride={Boolean(session && manualSessionId === session._id)}
-          onVerified={() => {
-            if (session) setVerifiedSessionId(session._id)
-          }}
-          onManualOverride={() => {
-            if (session) setManualSessionId(session._id)
+          onVerified={(qrValue) => {
+            if (session) {
+              setVerifiedSessionId(session._id)
+              setVerifiedQrValue(qrValue)
+            }
           }}
         />
 
@@ -159,7 +158,7 @@ export function StaffGateCheckoutPanel({
               </button>
               {!checkoutVerified && (
                 <p className="sm:col-span-2 text-center text-[11px] font-medium text-amber-600 dark:text-amber-300">
-                  Cần xác minh vé QR hoặc chọn xử lý thủ công trước khi thanh toán và cho xe ra.
+                  Cần quét đúng QR và khớp biển số camera trước khi thanh toán và cho xe ra.
                 </p>
               )}
             </div>

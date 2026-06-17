@@ -21,7 +21,14 @@ import {
   type GateSlot,
   type GateVehicleType,
 } from '../services/staffGateApi'
+import { userSubscriptionApi } from '../services/userSubscriptionApi'
 import { getStaffGateAllocation } from '../utils/staffGateAllocation'
+import {
+  forgetTicketForSession,
+  parseGateQr,
+  rememberTicketForSession,
+  validateEntryQr,
+} from '../utils/staffGateQr'
 import { rememberStaffGatePaymentReturn } from '../utils/staffGatePaymentReturn'
 
 export function StaffGatePage() {
@@ -45,12 +52,14 @@ export function StaffGatePage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [actionMessage, setActionMessage] = useState<string | null>(null)
   const [toastMessage, setToastMessage] = useState<string | null>(null)
+  const [entryQrValue, setEntryQrValue] = useState('')
+  const [issuedWalkInQrValue, setIssuedWalkInQrValue] = useState('')
 
   const [checkoutQuery, setCheckoutQuery] = useState(checkoutPlate)
   const [checkoutPreview, setCheckoutPreview] = useState<GateCheckoutPreview | null>(null)
   const [isPreviewLoading, setIsPreviewLoading] = useState(false)
   const [pendingTransferSession, setPendingTransferSession] = useState<GateSession | null>(null)
-  const [issuedTicket, setIssuedTicket] = useState<GateSession | null>(null)
+  const [issuedTicket, setIssuedTicket] = useState<{ session: GateSession; qrValue: string } | null>(null)
 
   const floorMap = useMemo(() => new Map(floors.map((floor) => [floor._id, floor])), [floors])
   const normalizedPlate = normalizePlate(plate)
@@ -87,7 +96,25 @@ export function StaffGatePage() {
   const canCheckIn =
     lookupMatchesPlate &&
     lookupResult.status !== 'already_active' &&
-    normalizedPlate.length >= 4
+    normalizedPlate.length >= 4 &&
+    Boolean(entryQrValue)
+
+  async function resolveQrTokenForApi(qrValue: string) {
+    const payload = parseGateQr(qrValue)
+    const subscriptionId = payload?.credential?.subscriptionId ?? payload?.verification?.subscriptionId ?? payload?.subId
+    const isShortResidentQr = qrValue.startsWith('PBMS-SUB|') || payload?.type === 'resident-subscription-credential'
+
+    if (!isShortResidentQr || !subscriptionId) return qrValue
+
+    try {
+      const qr = await userSubscriptionApi.getSubscriptionQr(subscriptionId)
+      if (!qr.qrToken) throw new Error('API không trả về qrToken cho gói cư dân.')
+      return qr.qrToken
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Không lấy được QR token thật của gói cư dân.'
+      throw new Error(`QR cư dân đã khớp, nhưng chưa lấy được token backend để mở cổng: ${message}`)
+    }
+  }
 
   async function loadGateData() {
     setIsLoading(true)
@@ -216,6 +243,8 @@ export function StaffGatePage() {
       const result = await staffGateApi.lookup(plateToLookup)
       setLookupResult(result)
       setSelectedFloorId('')
+      setEntryQrValue('')
+      setIssuedWalkInQrValue('')
 
       if (result.subscription?.vehicleType) {
         setVehicleType(result.subscription.vehicleType)
@@ -240,15 +269,20 @@ export function StaffGatePage() {
     setActionMessage(null)
 
     try {
+      const apiQrToken = await resolveQrTokenForApi(entryQrValue)
       const response = await staffGateApi.checkIn({
         vehicleType,
         licensePlate: normalizedPlate,
         rowId: vehicleType === 'motorcycle' ? autoAssignedRow?._id : undefined,
         note: note.trim() || undefined,
+        qrToken: apiQrToken,
       })
 
       setActiveSessions((current) => [response.session, ...current])
-      setIssuedTicket(response.session)
+      if (response.session.customerType === 'walk_in') {
+        rememberTicketForSession(response.session, entryQrValue)
+      }
+      setIssuedTicket({ session: response.session, qrValue: entryQrValue })
       resetCheckInForm()
       setActionMessage(`Đã ghi nhận xe vào ${response.session.licensePlate}.`)
       await loadGateData()
@@ -259,12 +293,17 @@ export function StaffGatePage() {
     }
   }
 
-  async function handleCheckoutCash(session: GateSession) {
+  async function handleCheckoutCash(session: GateSession, qrValue: string) {
     setIsSubmitting(true)
     setActionMessage(null)
 
     try {
-      const response = await staffGateApi.checkoutCash(session._id)
+      const apiQrToken = await resolveQrTokenForApi(qrValue)
+      const response = await staffGateApi.checkoutCash(session._id, {
+        qrToken: apiQrToken,
+        scannedPlate: session.licensePlate,
+      })
+      forgetTicketForSession(session._id)
       closeSessionLocally(session._id, response.session)
       setActionMessage(`Đã ghi nhận xe ra ${response.session.licensePlate} bằng tiền mặt.`)
       await loadGateData()
@@ -275,12 +314,16 @@ export function StaffGatePage() {
     }
   }
 
-  async function handleCheckoutTransfer(session: GateSession) {
+  async function handleCheckoutTransfer(session: GateSession, qrValue: string) {
     setIsSubmitting(true)
     setActionMessage(null)
 
     try {
-      const response = await staffGateApi.checkoutTransfer(session._id)
+      const apiQrToken = await resolveQrTokenForApi(qrValue)
+      const response = await staffGateApi.checkoutTransfer(session._id, {
+        qrToken: apiQrToken,
+        scannedPlate: session.licensePlate,
+      })
 
       if (response.payment?.checkoutUrl) {
         rememberStaffGatePaymentReturn(response.payment.orderCode, session.licensePlate)
@@ -288,6 +331,7 @@ export function StaffGatePage() {
         setPendingTransferSession(session)
         setActionMessage('Đã tạo mã QR PayOS. Đang chờ xác nhận thanh toán...')
       } else {
+        forgetTicketForSession(session._id)
         closeSessionLocally(session._id, response.session)
         setActionMessage(response.note ?? `Đã ghi nhận xe ra ${response.session.licensePlate}.`)
         await loadGateData()
@@ -311,17 +355,61 @@ export function StaffGatePage() {
     setSelectedFloorId('')
     setNote('')
     setLookupResult(null)
+    setEntryQrValue('')
+    setIssuedWalkInQrValue('')
   }
 
   function handlePlateChange(value: string) {
     setPlate(value)
     setLookupResult(null)
     setSelectedFloorId('')
+    setEntryQrValue('')
+    setIssuedWalkInQrValue('')
   }
 
   function handleVehicleTypeChange(value: GateVehicleType) {
     setVehicleType(value)
     setSelectedFloorId('')
+  }
+
+  async function handleIssueWalkInQr() {
+    if (!normalizedPlate || !lookupResult || lookupResult.customerType !== 'walk_in') return
+
+    try {
+      const ticket = await staffGateApi.requestEntryQr(normalizedPlate)
+      setIssuedWalkInQrValue(ticket.qrToken)
+      setEntryQrValue('')
+      setActionMessage(`Đã cấp vé QR vãng lai cho ${normalizedPlate}. Hãy quét lại vé này trong 5 phút để xác nhận xe vào.`)
+    } catch (err) {
+      setIssuedWalkInQrValue('')
+      setEntryQrValue('')
+      setActionMessage(err instanceof Error ? err.message : 'Không thể cấp vé QR vãng lai.')
+    }
+  }
+
+  function handleEntryQrScanned(qrValue: string) {
+    if (!lookupResult) return
+
+    if (lookupResult.customerType === 'walk_in' && issuedWalkInQrValue && qrValue !== issuedWalkInQrValue) {
+      setEntryQrValue('')
+      setActionMessage('QR vừa quét không khớp vé vãng lai vừa cấp cho biển số này.')
+      return
+    }
+
+    const message = validateEntryQr({
+      qrValue,
+      lookupResult,
+      cameraPlate: normalizedPlate,
+    })
+
+    if (message) {
+      setEntryQrValue('')
+      setActionMessage(message)
+      return
+    }
+
+    setEntryQrValue(qrValue)
+    setActionMessage('QR cổng vào đã khớp biển số camera. Có thể xác nhận cho xe vào.')
   }
 
   return (
@@ -374,11 +462,15 @@ export function StaffGatePage() {
                 isLookupLoading={isLookupLoading}
                 isSubmitting={isSubmitting}
                 canCheckIn={canCheckIn}
+                entryQrValue={entryQrValue}
+                issuedWalkInQrValue={issuedWalkInQrValue}
                 onPlateChange={handlePlateChange}
                 onVehicleTypeChange={handleVehicleTypeChange}
                 onFloorChange={setSelectedFloorId}
                 onNoteChange={setNote}
                 onLookup={handleLookup}
+                onIssueWalkInQr={handleIssueWalkInQr}
+                onEntryQrScanned={handleEntryQrScanned}
                 onCheckIn={handleCheckIn}
               />
             ) : (
@@ -403,7 +495,7 @@ export function StaffGatePage() {
       )}
 
       {issuedTicket && (
-        <StaffGateCheckInTicket session={issuedTicket} onClose={() => setIssuedTicket(null)} />
+        <StaffGateCheckInTicket session={issuedTicket.session} qrValue={issuedTicket.qrValue} onClose={() => setIssuedTicket(null)} />
       )}
 
       {toastMessage && (

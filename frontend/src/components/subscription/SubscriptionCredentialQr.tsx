@@ -7,81 +7,52 @@ type SubscriptionCredentialQrProps = {
   compact?: boolean
 }
 
+function buildResidentQrValue(subscription: Subscription) {
+  return `PBMS-SUB|${subscription._id}|${subscription.licensePlate}|${subscription.status}`
+}
+
 export function SubscriptionCredentialQr({ subscription, compact = false }: SubscriptionCredentialQrProps) {
   const [qrDataUrl, setQrDataUrl] = useState('')
-  const [qrError, setQrError] = useState(false)
-
-  const plan = subscription.planId
-  const slot = subscription.slotId
-  const owner = subscription.userId && typeof subscription.userId !== 'string' ? subscription.userId : null
-  const payload = useMemo(
-    () =>
-      JSON.stringify({
-        type: 'resident-subscription-credential',
-        version: 1,
-        issuer: 'parking-building-management-system',
-        subject: {
-          userId: owner?._id ?? null,
-          fullName: owner?.fullName ?? null,
-          resident: true,
-        },
-        credential: {
-          subscriptionId: subscription._id,
-          licensePlate: subscription.licensePlate,
-          vehicleType: subscription.vehicleType,
-          status: subscription.status,
-          validFrom: subscription.startDate ?? null,
-          validUntil: subscription.endDate ?? null,
-          plan: {
-            id: plan._id,
-            code: plan.code,
-            name: plan.name,
-            durationDays: plan.durationDays,
-          },
-          slot: slot
-            ? {
-                id: slot._id,
-                code: slot.slotCode,
-                floorNumber: slot.floorId?.floorNumber ?? null,
-              }
-            : null,
-        },
-        verification: {
-          method: 'lookup-subscription',
-          subscriptionId: subscription._id,
-          licensePlate: subscription.licensePlate,
-        },
-      }),
-    [owner, plan, slot, subscription],
-  )
+  const [message, setMessage] = useState('Đang tạo thẻ QR cư dân...')
+  const isActive = subscription.status === 'active'
+  const qrValue = useMemo(() => buildResidentQrValue(subscription), [subscription])
 
   useEffect(() => {
     let ignore = false
-    setQrError(false)
+    setQrDataUrl('')
 
-    void QRCode.toDataURL(payload, {
-      width: compact ? 180 : 280,
-      margin: 1,
-      errorCorrectionLevel: 'M',
-      color: {
-        dark: '#111827',
-        light: '#ffffff',
-      },
-    })
-      .then((url) => {
+    async function loadQr() {
+      if (!isActive) {
+        setMessage('QR cư dân chỉ hiển thị khi gói đã active.')
+        return
+      }
+
+      try {
+        setMessage('Đang tạo thẻ QR cư dân...')
+        const url = await QRCode.toDataURL(qrValue, {
+          width: compact ? 240 : 320,
+          margin: 3,
+          errorCorrectionLevel: 'M',
+          color: {
+            dark: '#000000',
+            light: '#ffffff',
+          },
+        })
         if (!ignore) setQrDataUrl(url)
-      })
-      .catch(() => {
+      } catch {
         if (!ignore) {
           setQrDataUrl('')
-          setQrError(true)
+          setMessage('Không thể tạo QR cư dân. Vui lòng thử lại sau.')
         }
-      })
+      }
+    }
+
+    void loadQr()
 
     return () => {
       ignore = true
     }
-  }, [compact, payload])
+  }, [compact, isActive, qrValue])
 
   return (
     <div className="rounded-xl border border-theme bg-white p-3 shadow-sm">
@@ -93,9 +64,7 @@ export function SubscriptionCredentialQr({ subscription, compact = false }: Subs
             className="size-full object-contain"
           />
         ) : (
-          <p className="px-4 text-center text-xs font-medium text-zinc-500">
-            {qrError ? 'Không thể tạo thẻ QR cư dân.' : 'Đang tạo thẻ QR cư dân...'}
-          </p>
+          <p className="px-4 text-center text-xs font-medium text-zinc-500">{message}</p>
         )}
       </div>
     </div>

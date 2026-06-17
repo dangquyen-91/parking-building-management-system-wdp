@@ -109,6 +109,13 @@ export type SubscriptionPayment = {
   bin?: string
 }
 
+export type SubscriptionCredentialQr = {
+  qrToken: string
+  qrImage?: string
+  licensePlate: string
+  subscriptionId: string
+}
+
 export type PurchaseSubscriptionPayload = {
   planId: string
   licensePlate: string
@@ -194,6 +201,17 @@ export const userSubscriptionApi = {
     try {
       const response = await userSubscriptionHttp.patch<ApiEnvelope<{ subscription: Subscription }>>(
         `/subscriptions/${id}/cancel`,
+      )
+      return response.data.data
+    } catch (error) {
+      throw getApiError(error)
+    }
+  },
+
+  async getSubscriptionQr(id: string) {
+    try {
+      const response = await userSubscriptionHttp.get<ApiEnvelope<SubscriptionCredentialQr>>(
+        `/subscriptions/${id}/qr`,
       )
       return response.data.data
     } catch (error) {

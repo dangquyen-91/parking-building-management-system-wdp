@@ -1,3 +1,5 @@
+import { useEffect, useState } from 'react'
+import QRCode from 'qrcode'
 import type {
   GateCustomerType,
   GateLookupResult,
@@ -7,6 +9,7 @@ import type { StaffGateFloorOption } from '../../utils/staffGateAllocation'
 import { StaffAssignedParking } from './StaffAssignedParking'
 import { StaffGateCameraScanner } from './StaffGateCameraScanner'
 import { StaffGateField } from './StaffGateField'
+import { StaffGateQrScanner } from './StaffGateQrScanner'
 import {
   formatCustomerType,
   formatVehicleType,
@@ -25,11 +28,15 @@ type StaffGateCheckInFormProps = {
   isLookupLoading: boolean
   isSubmitting: boolean
   canCheckIn: boolean
+  entryQrValue: string
+  issuedWalkInQrValue: string
   onPlateChange: (value: string) => void
   onVehicleTypeChange: (value: GateVehicleType) => void
   onFloorChange: (value: string) => void
   onNoteChange: (value: string) => void
   onLookup: () => void
+  onIssueWalkInQr: () => void
+  onEntryQrScanned: (qrValue: string) => void
   onCheckIn: () => void
 }
 
@@ -45,15 +52,43 @@ export function StaffGateCheckInForm({
   isLookupLoading,
   isSubmitting,
   canCheckIn,
+  entryQrValue,
+  issuedWalkInQrValue,
   onPlateChange,
   onVehicleTypeChange,
   onFloorChange,
   onNoteChange,
   onLookup,
+  onIssueWalkInQr,
+  onEntryQrScanned,
   onCheckIn,
 }: StaffGateCheckInFormProps) {
+  const [walkInQrDataUrl, setWalkInQrDataUrl] = useState('')
   const isVehicleTypeLocked =
     lookupMatchesPlate && Boolean(lookupResult?.subscription?.vehicleType || lookupResult?.booking)
+  const isResident = lookupMatchesPlate && lookupResult?.customerType === 'resident'
+  const isWalkIn = lookupMatchesPlate && lookupResult?.customerType === 'walk_in'
+
+  useEffect(() => {
+    let ignore = false
+
+    if (!issuedWalkInQrValue) {
+      setWalkInQrDataUrl('')
+      return undefined
+    }
+
+    void QRCode.toDataURL(issuedWalkInQrValue, {
+      width: 220,
+      margin: 1,
+      errorCorrectionLevel: 'M',
+    }).then((url) => {
+      if (!ignore) setWalkInQrDataUrl(url)
+    })
+
+    return () => {
+      ignore = true
+    }
+  }, [issuedWalkInQrValue])
 
   return (
     <section className="liquid-glass-card overflow-hidden rounded-2xl">
@@ -65,7 +100,7 @@ export function StaffGateCheckInForm({
           <div>
             <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-emerald-600 dark:text-emerald-300">Quy trình xe vào</p>
             <h2 className="mt-1 text-xl font-bold text-fg">Tiếp nhận phương tiện</h2>
-            <p className="mt-1 text-sm text-muted">Tra cứu biển số, xác nhận thông tin và phân bổ vị trí đỗ.</p>
+            <p className="mt-1 text-sm text-muted">Camera đọc biển số, QR khớp biển số, sau đó mới ghi nhận xe vào.</p>
           </div>
         </div>
       </div>
@@ -100,13 +135,11 @@ export function StaffGateCheckInForm({
                 <p className="text-lg font-bold tracking-wide text-fg">{lookupResult.licensePlate}</p>
                 <p className="mt-1 text-muted">
                   {lookupResult.booking ? 'Khách đặt trước' : formatCustomerType(lookupResult.customerType)}
-                  {lookupResult.subscription?.owner?.fullName
-                    ? ` / ${lookupResult.subscription.owner.fullName}`
-                    : ''}
+                  {lookupResult.subscription?.owner?.fullName ? ` / ${lookupResult.subscription.owner.fullName}` : ''}
                 </p>
               </div>
               <span className="w-fit rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-[11px] font-semibold text-emerald-700 dark:text-emerald-200">
-                {lookupResult.status === 'already_active' ? 'Đang gửi' : 'Sẵn sàng ghi nhận xe vào'}
+                {lookupResult.status === 'already_active' ? 'Đang gửi' : 'Sẵn sàng xác minh QR'}
               </span>
             </div>
           </div>
@@ -116,8 +149,59 @@ export function StaffGateCheckInForm({
           <div className="rounded-xl border border-sky-500/40 bg-sky-500/10 p-4 text-sm">
             <p className="font-semibold text-fg">Đặt chỗ ô tô đã thanh toán</p>
             <p className="mt-1 text-xs text-muted">
-              Đã trả trước {lookupResult.booking.durationHours} giờ. Nhân viên chọn tầng ô tô để ghi nhận xe vào.
+              Đã trả trước {lookupResult.booking.durationHours} giờ. Vé QR cổng vào vẫn được xác minh để đối chiếu khi xe ra.
             </p>
+          </div>
+        )}
+
+        {lookupMatchesPlate && lookupResult && (
+          <div className="grid gap-4 rounded-2xl border border-theme bg-badge p-4">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-subtle">Xác minh QR cổng vào</p>
+                <h3 className="mt-1 text-base font-bold text-fg">
+                  {isResident ? 'Quét QR gói cư dân' : 'Cấp vé QR vãng lai rồi quét lại'}
+                </h3>
+                <p className="mt-1 text-xs text-muted">
+                  QR phải khớp biển số camera {lookupResult.licensePlate}. Sau khi xác minh mới cho xe vào.
+                </p>
+              </div>
+              <span className={`w-fit rounded-full px-3 py-1 text-[10px] font-bold text-white ${entryQrValue ? 'bg-emerald-500' : 'bg-amber-500'}`}>
+                {entryQrValue ? 'QR ĐÃ KHỚP' : 'CHỜ QR'}
+              </span>
+            </div>
+
+            {isWalkIn && (
+              <div className="grid gap-3 md:grid-cols-[12rem_minmax(0,1fr)]">
+                <div className="flex min-h-44 items-center justify-center rounded-xl border border-theme bg-white p-3">
+                  {walkInQrDataUrl ? (
+                    <img src={walkInQrDataUrl} alt={`Vé QR ${lookupResult.licensePlate}`} className="size-full object-contain" />
+                  ) : (
+                    <p className="text-center text-xs text-zinc-500">Bấm cấp vé để tạo QR vãng lai.</p>
+                  )}
+                </div>
+                <div className="grid content-start gap-3">
+                  <button
+                    type="button"
+                    onClick={onIssueWalkInQr}
+                    className="h-11 rounded-xl bg-sky-600 px-4 text-xs font-bold text-white hover:bg-sky-500"
+                  >
+                    {issuedWalkInQrValue ? 'Cấp lại vé QR' : 'Cấp vé QR vãng lai'}
+                  </button>
+                  <p className="text-xs text-muted">
+                    Vé QR này chỉ dùng cho biển số đang đọc và phải quét lại trong 5 phút để xác nhận xe vào.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            <StaffGateQrScanner
+              title={isResident ? 'QR gói cư dân' : 'Quét lại vé QR vừa cấp'}
+              description={isResident ? 'Cư dân đưa QR gói đã mua để đối chiếu với biển số camera.' : 'Quét đúng vé QR vừa cấp để xác nhận check-in.'}
+              verified={Boolean(entryQrValue)}
+              disabled={isWalkIn && !issuedWalkInQrValue}
+              onScan={onEntryQrScanned}
+            />
           </div>
         )}
 
@@ -169,7 +253,7 @@ export function StaffGateCheckInForm({
           disabled={!canCheckIn || isSubmitting}
           className="h-14 rounded-xl bg-emerald-600 px-4 text-sm font-bold text-white shadow-lg shadow-emerald-600/20 transition-all hover:-translate-y-0.5 hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0"
         >
-          {isSubmitting ? 'Đang ghi nhận...' : 'Xác nhận cho xe vào →'}
+          {isSubmitting ? 'Đang ghi nhận...' : entryQrValue ? 'Xác nhận cho xe vào →' : 'Cần xác minh QR trước'}
         </button>
       </div>
     </section>
