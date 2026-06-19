@@ -13,6 +13,7 @@ const subscriptionSchema = new mongoose.Schema(
     endDate: { type: Date, default: null },
     status: { type: String, enum: SUBSCRIPTION_STATUSES, default: 'pending' },
     note: { type: String, trim: true },
+    qrToken: { type: String, default: null, select: false },
   },
   { timestamps: true }
 );
