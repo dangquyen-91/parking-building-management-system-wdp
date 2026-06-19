@@ -10,6 +10,41 @@ import * as payosService from './payos.service.js';
 import * as bookingService from './booking.service.js';
 import AppError from '../utils/appError.js';
 import logger from '../utils/logger.js';
+import QRCode from 'qrcode';
+import { verifyQRToken, signWalkInTicket } from '../utils/qrToken.js';
+
+const WALKIN_TICKET_TTL_MS = 5 * 60 * 1000; // must be redeemed at check-in within 5 minutes
+
+// Both customer types carry exactly one QR for the whole visit, never
+// re-minted: residents reuse their permanent subscription QR, walk-ins reuse
+// the ticket minted at requestEntryQR (verified again here, then persisted
+// as-is on the session so checkout matches the same physical ticket).
+const attachQR = async (session, activeSub, qrToken) => {
+  const finalToken = activeSub ? activeSub.qrToken : qrToken;
+  if (!activeSub) {
+    await ParkingSession.findByIdAndUpdate(session._id, { qrToken: finalToken });
+  }
+  const qrImage = await QRCode.toDataURL(finalToken, { errorCorrectionLevel: 'M', width: 300, margin: 2 });
+  const populated = await session.populate(SESSION_POPULATE);
+  return { session: populated, qrToken: finalToken, qrImage };
+};
+
+// Step 1 of walk-in entry: gate camera reads a plate with no subscription
+// behind it. Mint the ticket QR for that exact plate; the gate scans it back
+// (step 2, inside checkIn) to confirm check-in, then the same QR is kept for
+// the rest of the visit and presented again at checkout.
+export const requestEntryQR = async (licensePlate) => {
+  const normalizedPlate = licensePlate.toUpperCase().replace(/\s/g, '');
+
+  const existing = await ParkingSession.findOne({ licensePlate: normalizedPlate, status: 'active' });
+  if (existing) {
+    throw new AppError(`Vehicle ${normalizedPlate} already has an active parking session`, 400);
+  }
+
+  const qrToken = signWalkInTicket(normalizedPlate);
+  const qrImage = await QRCode.toDataURL(qrToken, { errorCorrectionLevel: 'M', width: 300, margin: 2 });
+  return { qrToken, qrImage, licensePlate: normalizedPlate };
+};
 
 const SESSION_POPULATE = [
   {
@@ -31,7 +66,7 @@ const SESSION_POPULATE = [
   { path: 'userId',  select: 'fullName phone email' },
 ];
 
-export const checkIn = async ({ slotId, rowId, licensePlate, vehicleType, staffId, note }) => {
+export const checkIn = async ({ slotId, rowId, licensePlate, vehicleType, staffId, note, qrToken }) => {
   const normalizedPlate = licensePlate.toUpperCase().replace(/\s/g, '');
 
   const existing = await ParkingSession.findOne({ licensePlate: normalizedPlate, status: 'active' });
@@ -39,13 +74,52 @@ export const checkIn = async ({ slotId, rowId, licensePlate, vehicleType, staffI
     throw new AppError(`Vehicle ${normalizedPlate} already has an active parking session`, 400);
   }
 
-  const activeSub = await Subscription.findOne({ licensePlate: normalizedPlate, status: 'active' });
+  const activeSub = await Subscription.findOne({ licensePlate: normalizedPlate, status: 'active' }).select('+qrToken');
   if (activeSub && activeSub.vehicleType !== vehicleType) {
     throw new AppError(
       `License plate ${normalizedPlate} has a ${activeSub.vehicleType} subscription, cannot check in as ${vehicleType}`,
       400
     );
   }
+
+  // Every check-in — resident or walk-in — must present a QR whose encoded
+  // plate matches the camera-read plate. Residents use their permanent
+  // subscription QR; walk-ins use the ticket from requestEntryQR (minted
+  // moments ago at the gate camera).
+  if (!qrToken) {
+    throw new AppError('Cần quét mã QR (gói đăng ký hoặc vé vào cổng) khớp camera để check-in.', 400);
+  }
+  const { valid, payload, reason } = verifyQRToken(qrToken);
+  if (!valid) throw new AppError(`QR không hợp lệ: ${reason}`, 400);
+
+  if (activeSub) {
+    if (payload.type !== 'subscription_entry') {
+      throw new AppError('QR không đúng loại (không phải QR gói đăng ký).', 400);
+    }
+    if (payload.subId !== activeSub._id.toString()) {
+      throw new AppError('QR không thuộc gói đăng ký của biển số này.', 400);
+    }
+    if (payload.plate !== normalizedPlate) {
+      throw new AppError(
+        `Biển số trên QR (${payload.plate}) không khớp biển số camera (${normalizedPlate}).`,
+        400
+      );
+    }
+  } else {
+    if (payload.type !== 'walkin_ticket') {
+      throw new AppError('QR không đúng loại (không phải vé vào cổng cho khách vãng lai).', 400);
+    }
+    if (payload.plate !== normalizedPlate) {
+      throw new AppError(
+        `Biển số trên vé (${payload.plate}) không khớp biển số camera (${normalizedPlate}).`,
+        400
+      );
+    }
+    if (Date.now() - payload.iat > WALKIN_TICKET_TTL_MS) {
+      throw new AppError('Vé vào cổng đã hết hạn, vui lòng quét lại biển số để lấy vé mới.', 400);
+    }
+  }
+
   const userId = activeSub ? activeSub.userId : null;
 
   if (vehicleType === 'car') {
@@ -103,7 +177,7 @@ export const checkIn = async ({ slotId, rowId, licensePlate, vehicleType, staffI
           paymentStatus: 'paid',
           note,
         });
-        return session.populate(SESSION_POPULATE);
+        return attachQR(session, activeSub, qrToken);
       } catch (err) {
         await ParkingSlot.findByIdAndUpdate(resolvedSlotId, { status: 'reserved' });
         throw err;
@@ -163,7 +237,7 @@ export const checkIn = async ({ slotId, rowId, licensePlate, vehicleType, staffI
       await bookingService.markUsed(paidBooking._id, session._id);
     }
 
-    return session.populate(SESSION_POPULATE);
+    return attachQR(session, activeSub, qrToken);
   }
 
   // Motorcycle: counter-based row. Auto-pick the first row with capacity if
@@ -226,7 +300,7 @@ export const checkIn = async ({ slotId, rowId, licensePlate, vehicleType, staffI
       paymentStatus: activeSub ? 'paid' : 'unpaid',
       note,
     });
-    return session.populate(SESSION_POPULATE);
+    return attachQR(session, activeSub, qrToken);
   } catch (err) {
     await ParkingRow.findByIdAndUpdate(resolvedRowId, {
       $inc: { occupiedCount: -1 },
@@ -371,11 +445,42 @@ const releaseSpot = async (session) => {
 };
 
 const loadActiveSession = async (id) => {
-  const session = await ParkingSession.findById(id);
+  const session = await ParkingSession.findById(id).select('+qrToken');
   if (!session) throw new AppError('Session not found', 404);
   if (session.status !== 'active')
     throw new AppError(`Session is already ${session.status}`, 400);
   return session;
+};
+
+// Applies to every checkout, resident or walk-in: the QR presented must be
+// byte-identical to the one we recorded as authoritative for this exact
+// visit — residents' permanent subscription QR, or walk-ins' ticket from
+// requestEntryQR — and its encoded plate must match what the gate camera
+// just read.
+const assertExitQRMatches = async (session, qrToken, scannedPlate) => {
+  const { valid, payload, reason } = verifyQRToken(qrToken);
+  if (!valid) throw new AppError(`QR không hợp lệ: ${reason}`, 400);
+
+  if (payload.type === 'subscription_entry') {
+    const sub = session.subscriptionId && await Subscription.findById(session.subscriptionId).select('+qrToken');
+    if (!sub || sub.qrToken !== qrToken) {
+      throw new AppError('QR gói đăng ký không khớp phiên đỗ xe đang check-out.', 400);
+    }
+  } else if (payload.type === 'walkin_ticket') {
+    if (session.qrToken !== qrToken) {
+      throw new AppError('QR không khớp phiên đỗ xe đang check-out.', 400);
+    }
+  } else {
+    throw new AppError('QR không đúng loại để check-out.', 400);
+  }
+
+  const normalizedScanned = scannedPlate.toUpperCase().replace(/\s/g, '');
+  if (payload.plate !== normalizedScanned) {
+    throw new AppError(
+      `Biển số camera (${normalizedScanned}) không khớp biển số QR (${payload.plate}).`,
+      400
+    );
+  }
 };
 
 const HOUR_MS = 60 * 60 * 1000;
@@ -494,8 +599,9 @@ const closeSessionPaid = async (session, { method, exitTime, fee, breakdown, pai
   return updated.populate(SESSION_POPULATE);
 };
 
-export const checkOutCash = async (id, staffId) => {
+export const checkOutCash = async (id, staffId, { qrToken, scannedPlate }) => {
   const session = await loadActiveSession(id);
+  await assertExitQRMatches(session, qrToken, scannedPlate);
   const exitTime = new Date();
   const calc = await computeCheckoutFee(session, exitTime);
 
@@ -509,8 +615,9 @@ export const checkOutCash = async (id, staffId) => {
   });
 };
 
-export const checkOutTransfer = async (id, staffId) => {
+export const checkOutTransfer = async (id, staffId, { qrToken, scannedPlate }) => {
   const session = await loadActiveSession(id);
+  await assertExitQRMatches(session, qrToken, scannedPlate);
   const exitTime = new Date();
   const calc = await computeCheckoutFee(session, exitTime);
 
@@ -612,6 +719,61 @@ export const checkOutTransfer = async (id, staffId) => {
   };
 };
 
+export const getSessionQR = async (id) => {
+  const session = await ParkingSession.findById(id).select('+qrToken');
+  if (!session) throw new AppError('Session not found', 404);
+  if (session.status !== 'active') throw new AppError('QR only available for active sessions', 400);
+
+  let qrToken;
+  if (session.subscriptionId) {
+    const sub = await Subscription.findById(session.subscriptionId).select('+qrToken');
+    qrToken = sub?.qrToken;
+  } else {
+    qrToken = session.qrToken;
+  }
+  if (!qrToken) throw new AppError('QR not found for this session. Contact admin.', 500);
+
+  const qrImage = await QRCode.toDataURL(qrToken, { errorCorrectionLevel: 'M', width: 300, margin: 2 });
+  return { qrToken, qrImage, licensePlate: session.licensePlate, sessionId: session._id };
+};
+
+export const verifyQR = async ({ qrToken, scannedPlate }) => {
+  const plate = scannedPlate.toUpperCase().replace(/\s/g, '');
+
+  const { valid, payload, reason } = verifyQRToken(qrToken);
+  if (!valid) throw new AppError(`QR không hợp lệ: ${reason}`, 400);
+
+  let session;
+  if (payload.type === 'walkin_ticket') {
+    // The walk-in ticket is stored verbatim on the session at check-in —
+    // look the session up by that exact token rather than decoding an id.
+    session = await ParkingSession.findOne({ qrToken, status: 'active' }).populate(SESSION_POPULATE);
+    if (!session) throw new AppError('Không tìm thấy phiên đỗ xe đang active cho vé này', 404);
+  } else if (payload.type === 'subscription_entry') {
+    // Residents reuse their permanent QR — find the active session it
+    // currently belongs to instead of decoding a session id from the token.
+    session = await ParkingSession.findOne({
+      subscriptionId: payload.subId,
+      status: 'active',
+    }).populate(SESSION_POPULATE);
+    if (!session) throw new AppError('Không tìm thấy phiên đỗ xe đang active cho QR gói đăng ký này', 404);
+  } else {
+    throw new AppError('QR không đúng loại để check-out.', 400);
+  }
+
+  const plateMatch = payload.plate === plate;
+
+  const preview = await previewCheckout(session._id);
+  return {
+    session,
+    preview,
+    plateMatch,
+    plateQR: payload.plate,
+    plateCamera: plate,
+    warning: plateMatch ? null : `Biển số camera (${plate}) khác biển số QR (${payload.plate}). Staff cần xác nhận thủ công.`,
+  };
+};
+
 export const activateSessionFromWebhook = async (paymentId) => {
   const payment = await Payment.findById(paymentId);
   if (!payment || payment.targetType !== 'session') return null;
@@ -634,4 +796,20 @@ export const activateSessionFromWebhook = async (paymentId) => {
     collectorId: session.checkOutStaffId,
   });
   return { closed: true, sessionId: closed._id };
+};
+
+// Active confirmation for a transfer checkout: query PayOS directly so the
+// session closes near-instantly instead of waiting for the webhook.
+export const confirmCheckout = async (id) => {
+  const session = await ParkingSession.findById(id);
+  if (!session) throw new AppError('Session not found', 404);
+
+  if (session.status === 'active' && session.paymentStatus === 'pending') {
+    const payment = await Payment.findOne({ sessionId: id }).sort({ createdAt: -1 });
+    if (!payment) throw new AppError('No payment found for this session', 404);
+    const { confirmPaymentByOrderCode } = await import('./subscription.service.js');
+    await confirmPaymentByOrderCode(payment.orderCode);
+  }
+
+  return ParkingSession.findById(id).populate(SESSION_POPULATE);
 };

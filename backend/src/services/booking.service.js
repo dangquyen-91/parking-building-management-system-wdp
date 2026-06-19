@@ -275,6 +275,36 @@ export const cancel = async ({ id, userId, email, licensePlate }) => {
   return booking.populate(BOOKING_POPULATE);
 };
 
+// Active confirmation from the return-url flow: query PayOS directly so a paid
+// booking flips pending -> paid near-instantly instead of waiting for the webhook.
+export const confirm = async ({ id, userId, email, licensePlate }) => {
+  const booking = await Booking.findById(id);
+  if (!booking) throw new AppError('Booking not found', 404);
+
+  if (booking.userId) {
+    if (!userId || booking.userId.toString() !== userId.toString()) {
+      throw new AppError('Only the booking owner can confirm this booking', 403);
+    }
+  } else {
+    if (!email || !licensePlate) {
+      throw new AppError('Anonymous booking requires email + licensePlate to confirm', 400);
+    }
+    const normalizedPlate = licensePlate.toUpperCase().replace(/\s/g, '');
+    if (booking.email !== email.trim().toLowerCase() || booking.licensePlate !== normalizedPlate) {
+      throw new AppError('email or licensePlate does not match', 403);
+    }
+  }
+
+  if (booking.status === 'pending') {
+    const payment = await Payment.findOne({ bookingId: id }).sort({ createdAt: -1 });
+    if (!payment) throw new AppError('No payment found for this booking', 404);
+    const { confirmPaymentByOrderCode } = await import('./subscription.service.js');
+    await confirmPaymentByOrderCode(payment.orderCode);
+  }
+
+  return Booking.findById(id).populate(BOOKING_POPULATE);
+};
+
 export const findPaidBookingForCheckIn = async (licensePlate) => {
   const normalizedPlate = licensePlate.toUpperCase().replace(/\s/g, '');
   const now = new Date();
