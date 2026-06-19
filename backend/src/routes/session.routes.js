@@ -8,6 +8,7 @@ import {
   previewCheckout,
   checkOutCash,
   checkOutTransfer,
+  confirmCheckout,
   scanPlate,
   getSessionQR,
   verifyQR,
@@ -41,6 +42,7 @@ router.get('/lookup', authorize('admin', 'manager', 'staff'), noCache, validate(
 router.get('/:id/checkout/preview', authorize('admin', 'manager', 'staff'), noCache, previewCheckout);
 router.post('/:id/checkout/cash', authorize('admin', 'staff'), noCache, validate(checkoutSchema), checkOutCash);
 router.post('/:id/checkout/transfer', authorize('admin', 'staff'), noCache, validate(checkoutSchema), checkOutTransfer);
+router.post('/:id/checkout/confirm', authorize('admin', 'staff'), noCache, confirmCheckout);
 
 router.get('/', authorize('admin', 'manager', 'staff'), privateCache(15), getActiveSessions);
 router.get('/:id/qr', authorize('admin', 'manager', 'staff'), noCache, getSessionQR);

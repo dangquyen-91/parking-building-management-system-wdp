@@ -2790,6 +2790,47 @@ paths:
         '502':
           description: PayOS API error
 
+  /sessions/{id}/checkout/confirm:
+    post:
+      tags: [Sessions]
+      summary: Confirm a transfer checkout now — close session without waiting for the webhook (admin, staff)
+      description: |
+        After a TRANSFER checkout link is paid, actively queries PayOS instead of waiting for
+        the (5-15s delayed) webhook. If PayOS reports PAID, the session is closed immediately
+        (status=completed, slot/row released). Idempotent and safe vs. the webhook racing in
+        parallel. Intended for the return-url flow on the staff checkout screen.
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: |
+            Returns the (possibly now-completed) session. If PayOS has not registered the
+            payment yet, the session stays `active` with `paymentStatus: pending` — retry shortly.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      session:
+                        $ref: '#/components/schemas/ParkingSession'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          description: Session or its payment not found
+        '502':
+          description: PayOS API error
+
   /parking-rows:
     get:
       tags: [Parking Rows]
@@ -3380,6 +3421,48 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
+  /subscriptions/{id}/confirm:
+    post:
+      tags: [Subscriptions]
+      summary: Confirm payment now — activate without waiting for the webhook (owner only)
+      description: |
+        Actively queries PayOS for the latest payment status instead of waiting for the
+        (5-15s delayed) webhook. If PayOS reports PAID, the subscription is activated
+        immediately (status=active, startDate/endDate set, qrToken minted — for both car
+        and motorcycle plans). Fully idempotent: safe to call repeatedly and safe vs. the
+        webhook arriving in parallel. Intended for the PayOS return-url flow.
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: |
+            Returns the (possibly now-active) subscription. If PayOS has not registered the
+            payment yet, the subscription stays `pending` — retry shortly.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      subscription:
+                        $ref: '#/components/schemas/Subscription'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: You can only confirm your own subscription
+        '404':
+          description: Subscription or its payment not found
+        '502':
+          description: PayOS API error
+
   /webhooks/payos:
     servers:
       - url: http://localhost:5000
@@ -3569,6 +3652,47 @@ paths:
           description: Not the owner / wrong verification info
         '404':
           $ref: '#/components/responses/NotFound'
+
+  /bookings/{id}/confirm:
+    post:
+      tags: [Bookings]
+      summary: Confirm payment now — flip pending → paid without waiting for the webhook
+      description: |
+        Actively queries PayOS instead of waiting for the (5-15s delayed) webhook. If PayOS
+        reports PAID, the booking is marked paid immediately and a confirmation email is sent.
+        Idempotent and safe vs. the webhook racing in parallel. Intended for the return-url flow.
+        - Logged-in user: confirms their own booking.
+        - Anonymous (guest): must provide email + licensePlate in body for verification.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                  description: Required for anonymous (guest) booking
+                licensePlate:
+                  type: string
+                  description: Required for anonymous (guest) booking
+      responses:
+        '200':
+          description: |
+            Returns the (possibly now-paid) booking. If PayOS has not registered the payment
+            yet, the booking stays `pending` — retry shortly.
+        '403':
+          description: Not the owner / wrong verification info
+        '404':
+          description: Booking or its payment not found
+        '502':
+          description: PayOS API error
 
   /reports/dashboard:
     get:

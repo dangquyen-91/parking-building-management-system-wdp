@@ -62,3 +62,17 @@ export const cancel = async (req, res, next) => {
     next(err);
   }
 };
+
+export const confirm = async (req, res, next) => {
+  try {
+    const booking = await bookingService.confirm({
+      id: req.params.id,
+      userId: req.user?._id || null,
+      email: req.body?.email,
+      licensePlate: req.body?.licensePlate,
+    });
+    success(res, { booking }, 'Booking payment confirmed');
+  } catch (err) {
+    next(err);
+  }
+};

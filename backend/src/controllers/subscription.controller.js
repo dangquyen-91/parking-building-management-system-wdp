@@ -49,6 +49,15 @@ export const cancel = async (req, res, next) => {
   }
 };
 
+export const confirm = async (req, res, next) => {
+  try {
+    const subscription = await subscriptionService.confirmSubscription(req.params.id, req.user._id);
+    success(res, { subscription }, 'Subscription payment confirmed');
+  } catch (err) {
+    next(err);
+  }
+};
+
 export const getQR = async (req, res, next) => {
   try {
     const result = await subscriptionService.getQR(req.params.id, req.user);

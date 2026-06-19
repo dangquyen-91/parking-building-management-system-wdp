@@ -797,3 +797,19 @@ export const activateSessionFromWebhook = async (paymentId) => {
   });
   return { closed: true, sessionId: closed._id };
 };
+
+// Active confirmation for a transfer checkout: query PayOS directly so the
+// session closes near-instantly instead of waiting for the webhook.
+export const confirmCheckout = async (id) => {
+  const session = await ParkingSession.findById(id);
+  if (!session) throw new AppError('Session not found', 404);
+
+  if (session.status === 'active' && session.paymentStatus === 'pending') {
+    const payment = await Payment.findOne({ sessionId: id }).sort({ createdAt: -1 });
+    if (!payment) throw new AppError('No payment found for this session', 404);
+    const { confirmPaymentByOrderCode } = await import('./subscription.service.js');
+    await confirmPaymentByOrderCode(payment.orderCode);
+  }
+
+  return ParkingSession.findById(id).populate(SESSION_POPULATE);
+};

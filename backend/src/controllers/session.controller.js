@@ -78,6 +78,15 @@ export const checkOutTransfer = async (req, res, next) => {
   }
 };
 
+export const confirmCheckout = async (req, res, next) => {
+  try {
+    const session = await sessionService.confirmCheckout(req.params.id);
+    success(res, { session }, 'Checkout payment confirmed');
+  } catch (err) {
+    next(err);
+  }
+};
+
 export const scanPlate = async (req, res, next) => {
   try {
     const { image } = req.body;
