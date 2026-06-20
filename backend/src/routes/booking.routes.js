@@ -6,6 +6,7 @@ import {
   getAll,
   getOne,
   cancel,
+  confirm,
 } from '../controllers/booking.controller.js';
 import { authenticate, authorize, optionalAuth } from '../middlewares/auth.middleware.js';
 import validate from '../middlewares/validate.middleware.js';
@@ -21,6 +22,7 @@ const router = Router();
 router.post('/', optionalAuth, noCache, validate(createBookingSchema), create);
 router.get('/check', noCache, validate(lookupBookingSchema, 'query'), lookup);
 router.patch('/:id/cancel', optionalAuth, noCache, validate(cancelBookingSchema), cancel);
+router.post('/:id/confirm', optionalAuth, noCache, validate(cancelBookingSchema), confirm);
 
 router.get('/me', authenticate, noCache, getMine);
 

@@ -7,6 +7,8 @@ import Floor from '../models/floor.model.js';
 import * as payosService from './payos.service.js';
 import AppError from '../utils/appError.js';
 import logger from '../utils/logger.js';
+import QRCode from 'qrcode';
+import { signSubscriptionQRToken } from '../utils/qrToken.js';
 
 const SUBSCRIPTION_POPULATE = [
   { path: 'planId', select: 'code name vehicleType durationDays price' },
@@ -179,9 +181,77 @@ export const purchase = async ({ userId, planId, licensePlate, slotId }) => {
   };
 };
 
+// ---- Shared payment-resolution helpers (used by webhook + active confirm) ----
+
+// Activate whatever a paid payment targets. Idempotent: safe to call from both
+// the webhook and the confirm endpoint, even when already activated.
+const activatePaidPayment = async (payment) => {
+  if (payment.targetType === 'session') {
+    const { activateSessionFromWebhook } = await import('./session.service.js');
+    const result = await activateSessionFromWebhook(payment._id);
+    if (!result) return { processed: true, status: 'paid_but_no_session' };
+    if (result.alreadyClosed)
+      return { processed: true, status: 'already_processed', sessionId: result.sessionId };
+    return { processed: true, status: 'session_closed', sessionId: result.sessionId };
+  }
+
+  if (payment.targetType === 'booking') {
+    const { activateBookingFromWebhook } = await import('./booking.service.js');
+    const result = await activateBookingFromWebhook(payment._id);
+    if (!result) return { processed: true, status: 'paid_but_no_booking' };
+    if (result.alreadyProcessed) return { processed: true, status: 'already_processed' };
+    return { processed: true, status: 'booking_activated', bookingId: result.bookingId };
+  }
+
+  const subscription = await Subscription.findById(payment.subscriptionId).populate('planId');
+  if (!subscription) {
+    logger.error('Subscription missing for paid payment', { paymentId: payment._id });
+    return { processed: true, status: 'paid_but_no_sub' };
+  }
+  if (subscription.status === 'active') {
+    return { processed: true, status: 'already_processed', subscriptionId: subscription._id };
+  }
+
+  const startDate = new Date();
+  const endDate = new Date(startDate);
+  endDate.setDate(endDate.getDate() + subscription.planId.durationDays);
+
+  const qrToken = signSubscriptionQRToken(subscription._id, subscription.licensePlate);
+
+  const activated = await Subscription.findOneAndUpdate(
+    { _id: subscription._id, status: 'pending' },
+    { status: 'active', startDate, endDate, qrToken },
+    { new: true }
+  );
+  if (!activated) {
+    logger.warn('Subscription was not pending when activating', { subscriptionId: subscription._id });
+    return { processed: true, status: 'already_processed', subscriptionId: subscription._id };
+  }
+  return { processed: true, status: 'activated', subscriptionId: subscription._id };
+};
+
+// Release resources held by a failed/cancelled payment.
+const failPaidPayment = async (payment) => {
+  if (payment.targetType === 'subscription') {
+    const failedSub = await Subscription.findById(payment.subscriptionId);
+    if (failedSub?.slotId) {
+      await ParkingSlot.findOneAndUpdate(
+        { _id: failedSub.slotId, status: 'reserved' },
+        { status: 'empty' }
+      );
+    }
+  }
+  if (payment.targetType === 'booking') {
+    const { cancelBookingFromWebhook } = await import('./booking.service.js');
+    await cancelBookingFromWebhook(payment._id);
+  }
+  return { processed: true, status: 'failed', targetType: payment.targetType };
+};
+
 export const handleWebhook = async (webhookBody) => {
   const data = await payosService.verifyWebhook(webhookBody);
-  const isSuccess = webhookBody.success === true && webhookBody.code === '00';
+  // Trust only the verified payload: `data.code === '00'` means success.
+  const isSuccess = data.code === '00';
 
   const payment = await Payment.findOneAndUpdate(
     { orderCode: data.orderCode, status: 'pending' },
@@ -199,62 +269,55 @@ export const handleWebhook = async (webhookBody) => {
       logger.warn('Webhook received for unknown orderCode', { orderCode: data.orderCode });
       return { processed: false, reason: 'order_not_found' };
     }
+    // Already flipped (by the confirm endpoint or a duplicate webhook). If it
+    // was paid, make sure the target actually got activated.
+    if (existing.status === 'paid') return activatePaidPayment(existing);
     return { processed: false, reason: `already_${existing.status}` };
   }
 
-  if (!isSuccess) {
-    if (payment.targetType === 'subscription') {
-      const failedSub = await Subscription.findById(payment.subscriptionId);
-      if (failedSub?.slotId) {
-        await ParkingSlot.findOneAndUpdate(
-          { _id: failedSub.slotId, status: 'reserved' },
-          { status: 'empty' }
-        );
-      }
-    }
-    return { processed: true, status: 'failed', targetType: payment.targetType };
+  return isSuccess ? activatePaidPayment(payment) : failPaidPayment(payment);
+};
+
+// Active confirmation: query PayOS directly instead of waiting for the webhook
+// (PayOS delivers it 5-15s after payment). Called from the return-url flow so a
+// paid order activates near-instantly. Fully idempotent vs. the webhook.
+export const confirmPaymentByOrderCode = async (orderCode) => {
+  const payment = await Payment.findOne({ orderCode });
+  if (!payment) throw new AppError('No payment found for this orderCode', 404);
+
+  if (payment.status === 'paid') return activatePaidPayment(payment);
+  if (payment.status !== 'pending') {
+    return { processed: false, reason: `already_${payment.status}` };
   }
 
-  if (payment.targetType === 'session') {
-    const { activateSessionFromWebhook } = await import('./session.service.js');
-    const result = await activateSessionFromWebhook(payment._id);
-    if (!result) return { processed: true, status: 'paid_but_no_session' };
-    if (result.alreadyClosed)
-      return { processed: true, status: 'already_processed', sessionId: result.sessionId };
-    return { processed: true, status: 'session_closed', sessionId: result.sessionId };
+  const info = await payosService.getPaymentInfo(orderCode);
+  if (info.status !== 'PAID') {
+    return { processed: false, reason: 'not_paid_yet', payosStatus: info.status };
   }
 
-  if (payment.targetType === 'booking') {
-    const { activateBookingFromWebhook } = await import('./booking.service.js');
-    const result = await activateBookingFromWebhook(payment._id);
-    if (!result) return { processed: true, status: 'paid_but_no_booking' };
-    if (result.alreadyProcessed)
-      return { processed: true, status: 'already_processed' };
-    return { processed: true, status: 'booking_activated', bookingId: result.bookingId };
-  }
-
-  const subscription = await Subscription.findById(payment.subscriptionId).populate('planId');
-  if (!subscription) {
-    logger.error('Subscription missing for paid payment', { paymentId: payment._id });
-    return { processed: true, status: 'paid_but_no_sub' };
-  }
-
-  const startDate = new Date();
-  const endDate = new Date(startDate);
-  endDate.setDate(endDate.getDate() + subscription.planId.durationDays);
-
-  const activated = await Subscription.findOneAndUpdate(
-    { _id: subscription._id, status: 'pending' },
-    { status: 'active', startDate, endDate },
+  const paid = await Payment.findOneAndUpdate(
+    { orderCode, status: 'pending' },
+    { status: 'paid', paidAt: new Date(), $set: { 'providerData.confirm': info } },
     { new: true }
   );
+  // If the webhook won the race, `paid` is null — re-fetch and activate idempotently.
+  const effective = paid || (await Payment.findOne({ orderCode }));
+  return activatePaidPayment(effective);
+};
 
-  if (!activated) {
-    logger.warn('Subscription was not pending when activating', { subscriptionId: subscription._id });
-    return { processed: true, status: 'already_processed', subscriptionId: subscription._id };
+export const confirmSubscription = async (id, userId) => {
+  const subscription = await Subscription.findById(id);
+  if (!subscription) throw new AppError('Subscription not found', 404);
+  if (subscription.userId.toString() !== userId.toString())
+    throw new AppError('You can only confirm your own subscription', 403);
+
+  if (subscription.status !== 'active') {
+    const payment = await Payment.findOne({ subscriptionId: id }).sort({ createdAt: -1 });
+    if (!payment) throw new AppError('No payment found for this subscription', 404);
+    await confirmPaymentByOrderCode(payment.orderCode);
   }
 
-  return { processed: true, status: 'activated', subscriptionId: subscription._id };
+  return Subscription.findById(id).populate(SUBSCRIPTION_POPULATE);
 };
 
 export const getMySubscriptions = async (userId, { status } = {}) => {
@@ -319,6 +382,25 @@ export const cancel = async (id, userId) => {
   subscription.status = 'cancelled';
   await subscription.save();
   return subscription.populate(SUBSCRIPTION_POPULATE);
+};
+
+export const getQR = async (id, requester) => {
+  const subscription = await Subscription.findById(id).select('+qrToken');
+  if (!subscription) throw new AppError('Subscription not found', 404);
+  if (requester.role === 'user' && subscription.userId.toString() !== requester._id.toString()) {
+    throw new AppError('You can only view your own subscription QR', 403);
+  }
+  if (subscription.status !== 'active') throw new AppError('QR only available for active subscriptions', 400);
+
+  // Lazily mint + persist the token if it's missing (e.g. subscriptions activated
+  // before the token logic existed). Activation normally sets it already.
+  if (!subscription.qrToken) {
+    subscription.qrToken = signSubscriptionQRToken(subscription._id, subscription.licensePlate);
+    await subscription.save({ validateBeforeSave: false });
+  }
+
+  const qrImage = await QRCode.toDataURL(subscription.qrToken, { errorCorrectionLevel: 'M', width: 300, margin: 2 });
+  return { qrToken: subscription.qrToken, qrImage, licensePlate: subscription.licensePlate, subscriptionId: subscription._id };
 };
 
 export const findActiveByPlate = async (licensePlate) => {

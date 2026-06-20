@@ -1,12 +1,11 @@
 import axios, { AxiosError, AxiosHeaders } from 'axios'
+import { API_BASE_URL } from './apiConfig'
 import { AUTH_STORAGE_KEYS, type AuthRole } from './authApi'
 import type { Building, Floor } from './managerBuildingsApi'
 import type { ParkingRow } from './managerParkingRowApi'
 import type { ParkingSlot, SlotStatus } from './managerParkingSlotApi'
 import type { GateSession, GateVehicleType } from './staffGateApi'
 import type { Plan, SubscriptionStatus, VehicleType } from './userSubscriptionApi'
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5000/api/v1'
 
 type ApiEnvelope<T> = {
   status: 'success' | 'error'
@@ -261,5 +260,14 @@ export const adminApi = {
 
   getPeakHoursReport(params?: { days?: number }) {
     return getData<AdminPeakHoursReport>('/reports/peak-hours', params)
+  },
+
+  async updateUserStatus(id: string, isActive: boolean) {
+    try {
+      const response = await adminHttp.patch<ApiEnvelope<{ user: AdminUser }>>(`/users/${id}/status`, { isActive })
+      return response.data.data
+    } catch (error) {
+      throw getApiError(error)
+    }
   },
 }

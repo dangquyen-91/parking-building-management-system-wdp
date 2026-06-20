@@ -8,37 +8,48 @@ type StaffGateSessionActivityProps = {
 
 export function StaffGateSessionActivity({ sessions }: StaffGateSessionActivityProps) {
   return (
-    <section className="liquid-glass-card rounded-lg p-4 md:p-5">
-      <div className="mb-4">
-        <p className="text-[10px] uppercase tracking-[0.18em] text-subtle">Log ca trực</p>
-        <h2 className="mt-1 text-base font-semibold text-fg">Hoạt động gần đây</h2>
+    <section className="liquid-glass-card overflow-hidden rounded-2xl">
+      <div className="border-b border-theme p-4 md:p-5">
+        <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-subtle">Log ca trực</p>
+        <div className="mt-1 flex items-end justify-between gap-3">
+          <h2 className="text-base font-bold text-fg">Hoạt động gần đây</h2>
+          <span className="rounded-full border border-theme bg-badge px-2.5 py-1 text-[10px] font-semibold text-subtle">
+            {sessions.length} lượt
+          </span>
+        </div>
       </div>
 
-      <div className="overflow-hidden rounded-lg border border-theme">
-        <div className="hidden grid-cols-[1fr_0.8fr_0.8fr_0.8fr] gap-4 border-b border-theme bg-badge px-4 py-3 text-xs font-medium uppercase tracking-[0.12em] text-subtle md:grid">
-          <span>Xe</span>
-          <span>Loại khách</span>
-          <span>Vị trí</span>
-          <span>Trạng thái</span>
-        </div>
-
-        <div className="divide-y divide-[color:var(--border)]">
-          {sessions.slice(0, 6).map((session) => (
-            <div key={session._id} className="grid gap-3 px-4 py-3 text-sm md:grid-cols-[1fr_0.8fr_0.8fr_0.8fr]">
-              <div>
-                <p className="font-semibold text-fg">{session.licensePlate}</p>
-                <p className="mt-1 text-xs text-subtle">{session._id}</p>
+      <div className="divide-y divide-[color:var(--border)]">
+        {sessions.length > 0 ? (
+          sessions.slice(0, 6).map((session) => (
+            <div key={session._id} className="p-4 transition-colors hover:bg-ghost">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="font-bold tracking-wide text-fg">{session.licensePlate}</p>
+                  <p className="mt-1 text-xs text-muted">{formatCustomerType(session.customerType)}</p>
+                </div>
+                <span className={[
+                  'rounded-full px-2.5 py-1 text-[10px] font-bold',
+                  session.status === 'active'
+                    ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-200'
+                    : 'bg-badge text-subtle',
+                ].join(' ')}>
+                  {session.status === 'active' ? 'XE VÀO' : 'XE RA'}
+                </span>
               </div>
-              <p className="text-muted">{formatCustomerType(session.customerType)}</p>
-              <p className="text-muted">{formatSessionSpot(session)}</p>
-              <p className={session.status === 'active' ? 'text-emerald-300' : 'text-subtle'}>
-                {session.status === 'active'
-                  ? `Vào ${formatGateTime(session.entryTime)}`
-                  : `Ra ${session.exitTime ? formatGateTime(session.exitTime) : '--'}`}
-              </p>
+              <div className="mt-3 flex items-end justify-between gap-3 text-xs">
+                <p className="line-clamp-2 text-muted">{formatSessionSpot(session)}</p>
+                <p className="shrink-0 font-medium text-subtle">
+                  {session.status === 'active'
+                    ? `Vào ${formatGateTime(session.entryTime)}`
+                    : `Ra ${session.exitTime ? formatGateTime(session.exitTime) : '--'}`}
+                </p>
+              </div>
             </div>
-          ))}
-        </div>
+          ))
+        ) : (
+          <p className="p-6 text-center text-sm text-muted">Chưa có hoạt động trong ca trực.</p>
+        )}
       </div>
     </section>
   )

@@ -238,11 +238,11 @@ export const getSessionStats = async ({ from, to } = {}) => {
 export const getOccupancy = async () => {
   const floors = await Floor.find({ isActive: true })
     .populate('buildingId', 'name')
-    .select('_id floorNumber vehicleType floorType totalSlots buildingId description');
+    .select('_id floorNumber section vehicleType floorType totalSlots buildingId description');
 
   const floorIds = floors.map((f) => f._id);
 
-  const [slotCounts, rowCounts] = await Promise.all([
+  const [slotCounts, rowCounts, carSessionCounts] = await Promise.all([
     ParkingSlot.aggregate([
       { $match: { floorId: { $in: floorIds } } },
       { $group: { _id: { floorId: '$floorId', status: '$status' }, count: { $sum: 1 } } },
@@ -257,6 +257,10 @@ export const getOccupancy = async () => {
         },
       },
     ]),
+    ParkingSession.aggregate([
+      { $match: { status: 'active', vehicleType: 'car', floorId: { $in: floorIds } } },
+      { $group: { _id: '$floorId', count: { $sum: 1 } } },
+    ]),
   ]);
 
   const slotMap = new Map();
@@ -266,15 +270,38 @@ export const getOccupancy = async () => {
     slotMap.get(key)[r._id.status] = r.count;
   }
   const rowMap = new Map(rowCounts.map((r) => [r._id.toString(), r]));
+  const carSessionMap = new Map(carSessionCounts.map((r) => [r._id.toString(), r.count]));
 
   const floorReport = floors.map((f) => {
     const key = f._id.toString();
     if (f.vehicleType === 'car') {
+      // Visitor car floor: counter-based (walk-ins don't occupy a fixed slot).
+      if (f.floorType === 'visitor') {
+        const occupied = carSessionMap.get(key) || 0;
+        return {
+          floorId: f._id,
+          floorNumber: f.floorNumber,
+          section: f.section,
+          floorType: f.floorType,
+          vehicleType: 'car',
+          description: f.description,
+          building: f.buildingId,
+          totalSlots: f.totalSlots,
+          currentSlots: f.totalSlots,
+          occupied,
+          empty: Math.max(0, f.totalSlots - occupied),
+          reserved: 0,
+          maintenance: 0,
+          utilizationPercent: f.totalSlots > 0 ? Math.round((occupied / f.totalSlots) * 100) : 0,
+        };
+      }
+      // Resident car floor: slot-status based (reserved slots are the product).
       const stats = slotMap.get(key) || { empty: 0, occupied: 0, reserved: 0, maintenance: 0 };
       const total = stats.empty + stats.occupied + stats.reserved + stats.maintenance;
       return {
         floorId: f._id,
         floorNumber: f.floorNumber,
+        section: f.section,
         floorType: f.floorType,
         vehicleType: 'car',
         description: f.description,
@@ -292,6 +319,7 @@ export const getOccupancy = async () => {
     return {
       floorId: f._id,
       floorNumber: f.floorNumber,
+      section: f.section,
       floorType: f.floorType,
       vehicleType: 'motorcycle',
       description: f.description,

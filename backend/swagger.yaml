@@ -411,60 +411,6 @@ components:
           type: string
           format: date-time
 
-  responses:
-    Unauthorized:
-      description: Missing or invalid token
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              status:
-                type: string
-                example: fail
-              message:
-                type: string
-                example: No token provided
-    Forbidden:
-      description: Insufficient permissions
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              status:
-                type: string
-                example: fail
-              message:
-                type: string
-                example: You do not have permission to perform this action
-    NotFound:
-      description: Resource not found
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              status:
-                type: string
-                example: fail
-              message:
-                type: string
-                example: User not found
-    ValidationError:
-      description: Invalid request body
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              status:
-                type: string
-                example: fail
-              message:
-                type: string
-                example: '"role" must be one of [admin, manager, staff, user]'
-
     Plan:
       type: object
       properties:
@@ -653,9 +599,10 @@ components:
       properties:
         _id:
           type: string
-        phoneNumber:
+        email:
           type: string
-          example: '0912345678'
+          format: email
+          example: guest@example.com
         licensePlate:
           type: string
           example: 51F-12345
@@ -698,13 +645,12 @@ components:
 
     CreateBookingRequest:
       type: object
-      required: [phoneNumber, licensePlate, expectedArrivalTime, expectedExitTime]
+      required: [email, licensePlate, expectedArrivalTime, expectedExitTime]
       properties:
-        phoneNumber:
+        email:
           type: string
-          minLength: 8
-          maxLength: 15
-          example: '0912345678'
+          format: email
+          example: guest@example.com
         licensePlate:
           type: string
           minLength: 4
@@ -743,6 +689,60 @@ components:
               type: string
             bin:
               type: string
+
+  responses:
+    Unauthorized:
+      description: Missing or invalid token
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+                example: fail
+              message:
+                type: string
+                example: No token provided
+    Forbidden:
+      description: Insufficient permissions
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+                example: fail
+              message:
+                type: string
+                example: You do not have permission to perform this action
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+                example: fail
+              message:
+                type: string
+                example: User not found
+    ValidationError:
+      description: Invalid request body
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+                example: fail
+              message:
+                type: string
+                example: '"role" must be one of [admin, manager, staff, user]'
 
 paths:
 
@@ -1990,16 +1990,84 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
+  /sessions/entry-qr:
+    post:
+      tags: [Sessions]
+      summary: Cấp vé QR tạm cho khách vãng lai tại cổng vào (admin, staff)
+      description: |
+        Bước 1 của check-in vãng lai: camera ANPR đọc biển số → hệ thống sinh 1 mã QR
+        (`type: walkin_ticket`) mã hoá biển số đó.
+
+        - Vé chỉ có hiệu lực **5 phút** để dùng ở bước `POST /sessions/check-in` tiếp theo.
+        - Vé này KHÔNG bị thay thế bởi QR khác sau khi check-in — chính xác cái QR này sẽ
+          được lưu lại trên session và phải dùng lại nguyên vẹn lúc checkout.
+        - Resident (có subscription active) KHÔNG dùng endpoint này — họ dùng QR cố định
+          của gói, lấy qua `GET /subscriptions/{id}/qr`.
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [licensePlate]
+              properties:
+                licensePlate:
+                  type: string
+                  example: 51A-12345
+      responses:
+        '200':
+          description: Vé QR tạm đã được cấp
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  message:
+                    type: string
+                    example: Entry ticket QR generated
+                  data:
+                    type: object
+                    properties:
+                      qrToken:
+                        type: string
+                        example: eyJ0eXBlIjoid2Fsa2luX3RpY2tldCIsInBsYXRlIjoiNTFBMTIzNDUiLCJpYXQiOjE2OTAwMDAwMDB9.abc123
+                      qrImage:
+                        type: string
+                        description: Base64 PNG của QR code — dùng trực tiếp trong thẻ img
+                        example: data:image/png;base64,iVBORw0KGgoAAAANSUh...
+                      licensePlate:
+                        type: string
+                        example: 51A12345
+        '400':
+          description: Vehicle already has an active session
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
   /sessions/check-in:
     post:
       tags: [Sessions]
-      summary: Check in a vehicle (admin, manager, staff)
+      summary: Check in a vehicle (admin, staff)
       description: |
         Staff enters the license plate. The system auto-detects whether the plate has an active Subscription:
         - Has active Subscription → `customerType: resident`, `userId` filled from subscription owner, must use resident floor.
           For CAR resident, slot is auto-resolved from `subscription.slotId` — staff does NOT pass slotId.
         - No subscription → `customerType: walk_in`, must use visitor floor; fee charged at exit time.
           For CAR walk-in, slotId is REQUIRED.
+
+        **`qrToken` is now REQUIRED for everyone**, and must encode the same plate the gate
+        camera just read:
+        - Resident → QR cố định của gói, lấy qua `GET /subscriptions/{id}/qr`.
+        - Walk-in → vé tạm lấy qua `POST /sessions/entry-qr` (phải dùng trong vòng 5 phút).
+
+        Nếu hợp lệ, QR này được lưu lại làm "vé chính thức" của session — dùng nguyên vẹn
+        ở bước checkout, không sinh QR mới.
       security:
         - BearerAuth: []
       requestBody:
@@ -2010,7 +2078,7 @@ paths:
               oneOf:
                 - title: Car check-in
                   type: object
-                  required: [vehicleType, licensePlate]
+                  required: [vehicleType, licensePlate, qrToken]
                   properties:
                     vehicleType:
                       type: string
@@ -2018,6 +2086,10 @@ paths:
                     licensePlate:
                       type: string
                       example: 51A-12345
+                    qrToken:
+                      type: string
+                      description: QR gói (resident) hoặc vé tạm từ /sessions/entry-qr (walk-in)
+                      example: eyJ0eXBlIjoic3Vic2NyaXB0aW9uX2VudHJ5Iiwic3VibCI6IjY2NGEx...
                     slotId:
                       type: string
                       example: 664a1f2e8b2c3d4e5f6a7b8c
@@ -2026,7 +2098,7 @@ paths:
                       type: string
                 - title: Motorcycle check-in
                   type: object
-                  required: [vehicleType, licensePlate, rowId]
+                  required: [vehicleType, licensePlate, rowId, qrToken]
                   properties:
                     vehicleType:
                       type: string
@@ -2034,6 +2106,9 @@ paths:
                     licensePlate:
                       type: string
                       example: 59X1-23456
+                    qrToken:
+                      type: string
+                      description: QR gói (resident) hoặc vé tạm từ /sessions/entry-qr (walk-in)
                     rowId:
                       type: string
                       example: 664a1f2e8b2c3d4e5f6a7b8c
@@ -2041,7 +2116,7 @@ paths:
                       type: string
       responses:
         '201':
-          description: Vehicle checked in â€” slot assigned, session created
+          description: Vehicle checked in — slot assigned, session created, QR attached
           content:
             application/json:
               schema:
@@ -2058,8 +2133,20 @@ paths:
                     properties:
                       session:
                         $ref: '#/components/schemas/ParkingSession'
+                      qrToken:
+                        type: string
+                        description: >
+                          Chính là qrToken đã gửi lên (QR gói cho resident, vé entry-qr cho
+                          walk-in) — không phải QR mới sinh ra.
+                        example: eyJ0eXBlIjoid2Fsa2luX3RpY2tldCIsInBsYXRlIjoiNTFBMTIzNDUiLCJpYXQiOjE2OTAwMDAwMDB9.abc123
+                      qrImage:
+                        type: string
+                        description: Base64 PNG của QR code — dùng trực tiếp trong thẻ img
+                        example: data:image/png;base64,iVBORw0KGgoAAAANSUh...
         '400':
-          description: Vehicle already has an active session
+          description: >
+            Vehicle already has an active session, OR qrToken thiếu/sai loại/biển số không
+            khớp camera/vé walk-in đã hết hạn 5 phút.
         '404':
           description: No available slots for the vehicle type
         '401':
@@ -2160,6 +2247,174 @@ paths:
         '403':
           $ref: '#/components/responses/Forbidden'
 
+  /sessions/scan-plate:
+    post:
+      tags: [Sessions]
+      summary: Quét biển số xe qua camera (admin, manager, staff)
+      description: |
+        Nhận ảnh chụp từ camera (base64), gọi Plate Recognizer ANPR API và trả về biển số gợi ý.
+        Frontend dùng kết quả này để prefill ô nhập biển số trước khi staff xác nhận check-in.
+        - `confidence >= 0.8` → tự động điền
+        - `confidence < 0.8` → highlight vàng, yêu cầu staff xác nhận thủ công
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [image]
+              properties:
+                image:
+                  type: string
+                  description: Ảnh biển số dạng base64 (có thể kèm data URL prefix)
+                  example: data:image/jpeg;base64,/9j/4AAQSkZJRgAB...
+      responses:
+        '200':
+          description: Kết quả nhận dạng biển số
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  message:
+                    type: string
+                    example: License plate detected
+                  data:
+                    type: object
+                    properties:
+                      result:
+                        nullable: true
+                        type: object
+                        properties:
+                          plate:
+                            type: string
+                            example: 51A12345
+                          confidence:
+                            type: number
+                            format: float
+                            minimum: 0
+                            maximum: 1
+                            example: 0.92
+                          region:
+                            type: string
+                            nullable: true
+                            example: vn
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '502':
+          description: ANPR service không phản hồi
+        '503':
+          description: ANPR service chưa được cấu hình (thiếu PLATE_RECOGNIZER_TOKEN)
+
+  /sessions/verify-qr:
+    post:
+      tags: [Sessions]
+      summary: Xác thực QR tại cổng ra (admin, manager, staff)
+      description: |
+        Bước xác thực TUỲ CHỌN trước khi checkout (chỉ để staff xem trước cảnh báo —
+        không bắt buộc, vì checkout/cash|transfer tự verify lại từ đầu).
+        - Verify chữ ký HMAC của token
+        - Nhận diện loại QR: `subscription_entry` (resident, tìm session active theo
+          subscriptionId) hoặc `walkin_ticket` (walk-in, tìm session active có
+          `qrToken` khớp chính xác chuỗi này)
+        - So khớp biển số trong token với `scannedPlate`
+        - Trả về thông tin session + preview phí để staff xử lý checkout
+
+        Sau khi verify thành công, gọi tiếp `POST /sessions/{id}/checkout/cash` hoặc `/transfer` để hoàn tất
+        (truyền lại đúng `qrToken` + `scannedPlate` này).
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [qrToken, scannedPlate]
+              properties:
+                qrToken:
+                  type: string
+                  description: Token lấy từ QR code khách xuất trình
+                  example: eyJzaWQiOiI2NjRhMWYyZSIsInBsYXRlIjoiNTFBMTIzNDUiLCJpYXQiOjE2OTAwMDAwMDB9.abc123
+                scannedPlate:
+                  type: string
+                  description: Biển số camera quét được tại cổng ra
+                  example: 51A12345
+      responses:
+        '200':
+          description: QR hợp lệ — biển số khớp, có thể tiến hành checkout
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  message:
+                    type: string
+                    example: QR verified — proceed to checkout
+                  data:
+                    type: object
+                    properties:
+                      session:
+                        $ref: '#/components/schemas/ParkingSession'
+                      plateMatch:
+                        type: boolean
+                        description: true = biển số khớp hoàn toàn, false = có sai lệch cần staff xác nhận
+                        example: false
+                      plateQR:
+                        type: string
+                        description: Biển số lưu trong QR (từ lúc check-in)
+                        example: 9H7060
+                      plateCamera:
+                        type: string
+                        description: Biển số camera quét tại cổng ra
+                        example: 99H77060
+                      warning:
+                        type: string
+                        nullable: true
+                        description: Khác null khi biển số không khớp — FE hiện cảnh báo cho staff xác nhận
+                        example: "Biển số camera (99H77060) khác biển số QR (9H7060). Staff cần xác nhận thủ công."
+                      preview:
+                        type: object
+                        description: Thông tin phí checkout
+                        properties:
+                          sessionId:
+                            type: string
+                          customerType:
+                            type: string
+                            enum: [resident, walk_in]
+                          entryTime:
+                            type: string
+                            format: date-time
+                          exitTime:
+                            type: string
+                            format: date-time
+                          fee:
+                            type: integer
+                            example: 25000
+                          toCollect:
+                            type: integer
+                            example: 25000
+                          note:
+                            type: string
+        '400':
+          description: QR token không hợp lệ (chữ ký sai, session không active)
+        '404':
+          description: Session không tồn tại
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
   /sessions:
     get:
       tags: [Sessions]
@@ -2227,6 +2482,58 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '403':
           $ref: '#/components/responses/Forbidden'
+
+  /sessions/{id}/qr:
+    get:
+      tags: [Sessions]
+      summary: Lấy lại QR code của session (admin, manager, staff)
+      description: |
+        Trả về QR token và ảnh QR base64 đang gắn với session active.
+        Dùng khi khách mất QR hoặc staff cần in lại — KHÔNG sinh QR mới.
+        - Resident → trả về QR cố định của subscription liên kết.
+        - Walk-in → trả về đúng vé `walkin_ticket` đã lưu lúc check-in.
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: Session ID
+      responses:
+        '200':
+          description: QR code trả về thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    type: object
+                    properties:
+                      sessionId:
+                        type: string
+                      licensePlate:
+                        type: string
+                        example: 51A12345
+                      qrToken:
+                        type: string
+                      qrImage:
+                        type: string
+                        description: Base64 PNG — dùng trực tiếp trong thẻ img
+                        example: data:image/png;base64,iVBORw0KGgoAAAANSUh...
+        '400':
+          description: Session không còn active
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
 
   /sessions/{id}:
     get:
@@ -2342,6 +2649,12 @@ paths:
       description: |
         Staff confirms they have collected cash from the driver.
         Calculates final fee, marks session as completed + paid, releases slot/row immediately.
+
+        **Bắt buộc QR khớp camera** — áp dụng cho cả resident và walk-in:
+        - `qrToken` phải byte-for-byte đúng QR đang gắn với session này (QR gói của
+          subscription cho resident, hoặc vé `walkin_ticket` đã lưu lúc check-in cho walk-in).
+        - Biển số mã hoá trong `qrToken` phải khớp `scannedPlate` (camera đọc tại cổng ra).
+        - Sai bất kỳ điểm nào → 400, KHÔNG đóng session.
       security:
         - BearerAuth: []
       parameters:
@@ -2350,6 +2663,22 @@ paths:
           required: true
           schema:
             type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [qrToken, scannedPlate]
+              properties:
+                qrToken:
+                  type: string
+                  description: QR đã nhận lúc check-in (QR gói hoặc vé walk-in) — dùng lại nguyên vẹn
+                  example: eyJ0eXBlIjoid2Fsa2luX3RpY2tldCIsInBsYXRlIjoiNTFBMTIzNDUiLCJpYXQiOjE2OTAwMDAwMDB9.abc123
+                scannedPlate:
+                  type: string
+                  description: Biển số camera quét được tại cổng ra
+                  example: 51A12345
       responses:
         '200':
           description: Session closed; slot/row released
@@ -2364,7 +2693,9 @@ paths:
                       session:
                         $ref: '#/components/schemas/ParkingSession'
         '400':
-          description: Session is not active
+          description: >
+            Session is not active, OR qrToken không hợp lệ/không khớp session/biển số
+            camera không khớp QR.
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
@@ -2382,6 +2713,8 @@ paths:
         On webhook success the session is auto-closed + slot/row released.
         Resident sessions skip PayOS — they are closed immediately with fee=0.
         If a pending payment already exists, the same link is reused.
+
+        **Bắt buộc QR khớp camera** (giống `/checkout/cash`) — xem mô tả bên đó.
       security:
         - BearerAuth: []
       parameters:
@@ -2390,6 +2723,22 @@ paths:
           required: true
           schema:
             type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [qrToken, scannedPlate]
+              properties:
+                qrToken:
+                  type: string
+                  description: QR đã nhận lúc check-in (QR gói hoặc vé walk-in) — dùng lại nguyên vẹn
+                  example: eyJ0eXBlIjoid2Fsa2luX3RpY2tldCIsInBsYXRlIjoiNTFBMTIzNDUiLCJpYXQiOjE2OTAwMDAwMDB9.abc123
+                scannedPlate:
+                  type: string
+                  description: Biển số camera quét được tại cổng ra
+                  example: 51A12345
       responses:
         '200':
           description: PayOS link created (or reused) — driver scans QR to pay
@@ -2429,13 +2778,56 @@ paths:
                       breakdown:
                         type: object
         '400':
-          description: Session is not active
+          description: >
+            Session is not active, OR qrToken không hợp lệ/không khớp session/biển số
+            camera không khớp QR.
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
           $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
+        '502':
+          description: PayOS API error
+
+  /sessions/{id}/checkout/confirm:
+    post:
+      tags: [Sessions]
+      summary: Confirm a transfer checkout now — close session without waiting for the webhook (admin, staff)
+      description: |
+        After a TRANSFER checkout link is paid, actively queries PayOS instead of waiting for
+        the (5-15s delayed) webhook. If PayOS reports PAID, the session is closed immediately
+        (status=completed, slot/row released). Idempotent and safe vs. the webhook racing in
+        parallel. Intended for the return-url flow on the staff checkout screen.
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: |
+            Returns the (possibly now-completed) session. If PayOS has not registered the
+            payment yet, the session stays `active` with `paymentStatus: pending` — retry shortly.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      session:
+                        $ref: '#/components/schemas/ParkingSession'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          description: Session or its payment not found
         '502':
           description: PayOS API error
 
@@ -2948,6 +3340,62 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
+  /subscriptions/{id}/qr:
+    get:
+      tags: [Subscriptions]
+      summary: Lấy QR cố định của gói (chủ gói, hoặc admin/manager/staff)
+      description: |
+        Trả về QR token + ảnh QR base64 gắn với subscription này — sinh **một lần duy nhất**
+        khi subscription chuyển `active` (lúc webhook PayOS báo thanh toán thành công), và
+        KHÔNG đổi cho tới khi gói hết hạn/bị hủy.
+
+        Resident dùng đúng QR này để check-in VÀ check-out trong suốt thời hạn gói — không
+        có QR nào khác được sinh thêm.
+        - User thường (`role: user`) chỉ xem được QR của gói thuộc về chính họ.
+        - admin/manager/staff xem được QR của bất kỳ gói nào.
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: QR code trả về thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    type: object
+                    properties:
+                      qrToken:
+                        type: string
+                        example: eyJ0eXBlIjoic3Vic2NyaXB0aW9uX2VudHJ5Iiwic3ViSWQiOiI2NjRhMWYyZSIsInBsYXRlIjoiNTlBMTIzNDUiLCJpYXQiOjE2OTAwMDAwMDB9.abc123
+                      qrImage:
+                        type: string
+                        description: Base64 PNG — dùng trực tiếp trong thẻ img
+                        example: data:image/png;base64,iVBORw0KGgoAAAANSUh...
+                      licensePlate:
+                        type: string
+                        example: 59A12345
+                      subscriptionId:
+                        type: string
+        '400':
+          description: Subscription chưa active (chưa thanh toán xong) nên chưa có QR
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: You can only view your own subscription QR
+        '404':
+          $ref: '#/components/responses/NotFound'
+
   /subscriptions/{id}/cancel:
     patch:
       tags: [Subscriptions]
@@ -2972,6 +3420,48 @@ paths:
           description: You can only cancel your own subscription
         '404':
           $ref: '#/components/responses/NotFound'
+
+  /subscriptions/{id}/confirm:
+    post:
+      tags: [Subscriptions]
+      summary: Confirm payment now — activate without waiting for the webhook (owner only)
+      description: |
+        Actively queries PayOS for the latest payment status instead of waiting for the
+        (5-15s delayed) webhook. If PayOS reports PAID, the subscription is activated
+        immediately (status=active, startDate/endDate set, qrToken minted — for both car
+        and motorcycle plans). Fully idempotent: safe to call repeatedly and safe vs. the
+        webhook arriving in parallel. Intended for the PayOS return-url flow.
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: |
+            Returns the (possibly now-active) subscription. If PayOS has not registered the
+            payment yet, the subscription stays `pending` — retry shortly.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      subscription:
+                        $ref: '#/components/schemas/Subscription'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: You can only confirm your own subscription
+        '404':
+          description: Subscription or its payment not found
+        '502':
+          description: PayOS API error
 
   /webhooks/payos:
     servers:
@@ -3063,8 +3553,8 @@ paths:
           name: licensePlate
           schema: { type: string }
         - in: query
-          name: phoneNumber
-          schema: { type: string }
+          name: email
+          schema: { type: string, format: email }
       responses:
         '200':
           description: List of bookings
@@ -3076,13 +3566,13 @@ paths:
   /bookings/check:
     get:
       tags: [Bookings]
-      summary: Lookup bookings by phone + plate (anonymous OK)
-      description: For anonymous customers to find their own bookings.
+      summary: Lookup bookings by email + plate (anonymous OK)
+      description: For anonymous (guest) customers to find their own bookings.
       parameters:
         - in: query
-          name: phoneNumber
+          name: email
           required: true
-          schema: { type: string }
+          schema: { type: string, format: email }
         - in: query
           name: licensePlate
           required: true
@@ -3133,7 +3623,7 @@ paths:
       description: |
         Cancel a pending booking. Paid bookings cannot be cancelled (no refund).
         - Logged-in user: cancels their own bookings.
-        - Anonymous: must provide phoneNumber + licensePlate in body for verification.
+        - Anonymous (guest): must provide email + licensePlate in body for verification.
       parameters:
         - in: path
           name: id
@@ -3146,12 +3636,13 @@ paths:
             schema:
               type: object
               properties:
-                phoneNumber:
+                email:
                   type: string
-                  description: Required for anonymous booking
+                  format: email
+                  description: Required for anonymous (guest) booking
                 licensePlate:
                   type: string
-                  description: Required for anonymous booking
+                  description: Required for anonymous (guest) booking
       responses:
         '200':
           description: Booking cancelled
@@ -3161,6 +3652,47 @@ paths:
           description: Not the owner / wrong verification info
         '404':
           $ref: '#/components/responses/NotFound'
+
+  /bookings/{id}/confirm:
+    post:
+      tags: [Bookings]
+      summary: Confirm payment now — flip pending → paid without waiting for the webhook
+      description: |
+        Actively queries PayOS instead of waiting for the (5-15s delayed) webhook. If PayOS
+        reports PAID, the booking is marked paid immediately and a confirmation email is sent.
+        Idempotent and safe vs. the webhook racing in parallel. Intended for the return-url flow.
+        - Logged-in user: confirms their own booking.
+        - Anonymous (guest): must provide email + licensePlate in body for verification.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                  description: Required for anonymous (guest) booking
+                licensePlate:
+                  type: string
+                  description: Required for anonymous (guest) booking
+      responses:
+        '200':
+          description: |
+            Returns the (possibly now-paid) booking. If PayOS has not registered the payment
+            yet, the booking stays `pending` — retry shortly.
+        '403':
+          description: Not the owner / wrong verification info
+        '404':
+          description: Booking or its payment not found
+        '502':
+          description: PayOS API error
 
   /reports/dashboard:
     get:
