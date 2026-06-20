@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
+  ManagerPageHeader,
   ManagerSubscriptionFilters,
+  ManagerSubscriptionList,
+  ManagerSubscriptionStats,
   type ManagerSubscriptionStatusFilter,
   type ManagerSubscriptionVehicleFilter,
-} from '../../components/manager/ManagerSubscriptionFilters'
-import { ManagerSubscriptionList } from '../../components/manager/ManagerSubscriptionList'
-import { ManagerSubscriptionStats } from '../../components/manager/ManagerSubscriptionStats'
-import { ManagerPageHeader } from '../../components/manager'
+} from '../../components/manager'
 import { managerGateLogsApi } from '../../services/managerGateLogsApi'
 import {
   managerSubscriptionsApi,
@@ -65,7 +65,7 @@ export function ManagerSubscriptionsPage() {
   }, [query, snapshotTime, status, subscriptions, vehicleType])
 
   return (
-    <div className="p-4 md:p-8 lg:p-10">
+    <div className="relative mx-auto max-w-[118rem] p-4 md:p-8 lg:p-10">
       <ManagerPageHeader
         eyebrow="Manager // Gói gửi xe"
         title="Người dùng gói"

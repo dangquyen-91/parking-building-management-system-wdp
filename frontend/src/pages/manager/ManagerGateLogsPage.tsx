@@ -10,6 +10,10 @@ import {
 import { managerGateLogsApi, type ManagerGateDashboard } from '../../services/managerGateLogsApi'
 import type { GateSession } from '../../services/staffGateApi'
 
+function normalizePlateSearch(value: string) {
+  return value.toUpperCase().replace(/[^A-Z0-9]/g, '')
+}
+
 export function ManagerGateLogsPage() {
   const [sessions, setSessions] = useState<GateSession[]>([])
   const [dashboard, setDashboard] = useState<ManagerGateDashboard | null>(null)
@@ -43,18 +47,19 @@ export function ManagerGateLogsPage() {
   }, [])
 
   const filteredSessions = useMemo(() => {
-    const normalizedQuery = query.trim().toUpperCase().replace(/\s/g, '')
+    const normalizedQuery = normalizePlateSearch(query)
 
     return sessions.filter((session) => {
-      if (normalizedQuery && !session.licensePlate.includes(normalizedQuery)) return false
+      if (normalizedQuery && !normalizePlateSearch(session.licensePlate).includes(normalizedQuery)) return false
       if (vehicleFilter !== 'all' && session.vehicleType !== vehicleFilter) return false
       if (customerFilter !== 'all' && session.customerType !== customerFilter) return false
       return true
     })
   }, [customerFilter, query, sessions, vehicleFilter])
+  const isFiltered = Boolean(query.trim()) || vehicleFilter !== 'all' || customerFilter !== 'all'
 
   return (
-    <div className="p-4 md:p-8 lg:p-10">
+    <div className="relative mx-auto max-w-[118rem] p-4 md:p-8 lg:p-10">
       <ManagerPageHeader
         eyebrow="Quản lý // Hoạt động cổng"
         title="Giám sát xe vào / ra"
@@ -71,7 +76,13 @@ export function ManagerGateLogsPage() {
         }
       />
 
-      <ManagerGateLogStats dashboard={dashboard} isLoading={isLoading} />
+      <ManagerGateLogStats
+        dashboard={dashboard}
+        sessions={filteredSessions}
+        totalSessions={sessions.length}
+        isFiltered={isFiltered}
+        isLoading={isLoading}
+      />
 
       {error && (
         <div className="mb-5 flex items-center justify-between gap-3 rounded-lg border border-theme bg-rose-500/10 p-4 text-sm text-rose-200">

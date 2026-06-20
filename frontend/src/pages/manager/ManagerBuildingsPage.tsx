@@ -1,8 +1,11 @@
 import { useMemo, useState } from 'react'
-import { ManagerBuildingCard } from '../../components/manager/ManagerBuildingCard'
-import { ManagerBuildingFormModal } from '../../components/manager/ManagerBuildingFormModal'
-import { ManagerFloorFormModal } from '../../components/manager/ManagerFloorFormModal'
-import { ManagerPageHeader, ManagerStatCard } from '../../components/manager'
+import {
+  ManagerBuildingCard,
+  ManagerBuildingFormModal,
+  ManagerFloorFormModal,
+  ManagerPageHeader,
+  ManagerStatCard,
+} from '../../components/manager'
 import { managerBuildingsApi, type BuildingPayload, type FloorPayload, type FloorUpdatePayload } from '../../services/managerBuildingsApi'
 import { useManagerBuildings, type ManagerBuildingSummary } from '../../hooks/useManagerBuildings'
 
@@ -120,7 +123,7 @@ export function ManagerBuildingsPage() {
   }
 
   return (
-    <div className="p-4 md:p-8 lg:p-10">
+    <div className="relative mx-auto max-w-[118rem] p-4 md:p-8 lg:p-10">
       <ManagerPageHeader
         eyebrow="Quản lý // Tòa nhà"
         title="Tổng quan tòa nhà"

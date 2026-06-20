@@ -1,12 +1,14 @@
 import { useCallback, useEffect, useState } from 'react'
-import { ManagerOccupancyTable } from '../../components/manager/ManagerOccupancyTable'
 import {
+  ManagerOccupancyTable,
+  ManagerPageHeader,
   ManagerPeakHoursChart,
+  ManagerReportFilters,
   ManagerRevenueChart,
   ManagerSessionChart,
-} from '../../components/manager/ManagerReportCharts'
-import { ManagerReportFilters } from '../../components/manager/ManagerReportFilters'
-import { ManagerPageHeader, ManagerStatCard, formatCurrency } from '../../components/manager'
+  ManagerStatCard,
+  formatCurrency,
+} from '../../components/manager'
 import {
   managerReportsApi,
   type ManagerDashboardReport,
@@ -80,7 +82,7 @@ export function ManagerReportsPage() {
   }
 
   return (
-    <div className="p-4 md:p-8 lg:p-10">
+    <div className="relative mx-auto max-w-[118rem] p-4 md:p-8 lg:p-10">
       <ManagerPageHeader
         eyebrow="Manager // Báo cáo"
         title="Báo cáo doanh thu & vận hành"

@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
 import { MenuIcon, OverlayBackdrop, SkipLink, ThemeToggle } from '../components/common'
-import { StaffSidebar } from '../components/staff/StaffSidebar'
+import { StaffSidebar } from '../components/staff'
 import { useOverlayPanel } from '../hooks/useOverlayPanel'
 
 const STAFF_PAGE_TITLES: Record<string, string> = {

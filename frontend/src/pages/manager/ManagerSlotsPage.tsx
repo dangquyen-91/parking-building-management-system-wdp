@@ -1,9 +1,11 @@
 import { useState } from 'react'
-import { ManagerStatCard } from '../../components/manager'
-import { ManagerParkingSpaceHeader } from '../../components/manager/ManagerParkingSpaceHeader'
-import { ManagerParkingSpaceList } from '../../components/manager/ManagerParkingSpaceList'
-import { ManagerRowFormModal } from '../../components/manager/ManagerRowFormModal'
-import { ManagerSlotFormModal } from '../../components/manager/ManagerSlotFormModal'
+import {
+  ManagerParkingSpaceHeader,
+  ManagerParkingSpaceList,
+  ManagerRowFormModal,
+  ManagerSlotFormModal,
+  ManagerStatCard,
+} from '../../components/manager'
 import { useManagerParkingSpaces } from '../../hooks/useManagerParkingSpaces'
 import { useParkingSpaceFilters } from '../../hooks/useParkingSpaceFilters'
 import { parkingRowApi, type ParkingRow, type RowCreatePayload, type RowUpdatePayload } from '../../services/managerParkingRowApi'
@@ -131,7 +133,7 @@ export function ManagerSlotsPage() {
   }
 
   return (
-    <div className="p-4 md:p-8 lg:p-10">
+    <div className="relative mx-auto max-w-[118rem] p-4 md:p-8 lg:p-10">
       <ManagerParkingSpaceHeader
         buildings={buildings}
         floors={filteredFloorOptions}

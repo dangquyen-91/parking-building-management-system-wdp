@@ -1,5 +1,5 @@
 import type { GateLookupResult, GateSession } from '../services/staffGateApi'
-import { normalizePlate } from '../components/staff/staffGateUtils'
+import { normalizePlate } from '../components/staff/data/staffGateUtils'
 
 const WALKIN_TICKET_TTL_MS = 5 * 60 * 1000
 const STORAGE_KEY = 'pbms_staff_gate_qr_tickets'

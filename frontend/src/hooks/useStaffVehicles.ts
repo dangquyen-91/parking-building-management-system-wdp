@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { formatSessionSpot } from '../components/staff/staffGateUtils'
+import { formatSessionSpot } from '../components/staff/data/staffGateUtils'
 import { managerBuildingsApi, type Floor } from '../services/managerBuildingsApi'
 import {
   staffGateApi,

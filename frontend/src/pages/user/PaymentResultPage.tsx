@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { BookingTopNav } from '../../components/booking'
-import { SubscriptionCredentialQr } from '../../components/subscription/SubscriptionCredentialQr'
+import { SubscriptionCredentialQr } from '../../components/subscription'
 import { userSubscriptionApi, type Subscription } from '../../services/userSubscriptionApi'
 import { consumeStaffGatePaymentReturn } from '../../utils/staffGatePaymentReturn'
 import { consumeSubscriptionPaymentReturn } from '../../utils/subscriptionPaymentReturn'

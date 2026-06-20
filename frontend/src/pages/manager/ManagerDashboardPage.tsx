@@ -5,9 +5,11 @@ import {
   ManagerOverviewBookings,
   ManagerOverviewCapacity,
   ManagerOverviewQuickLinks,
+  ManagerPageHeader,
+  ManagerStatCard,
   type ManagerOverviewAlert,
-} from '../../components/manager/ManagerOverviewPanels'
-import { ManagerPageHeader, ManagerStatCard, formatCurrency } from '../../components/manager'
+  formatCurrency,
+} from '../../components/manager'
 import { managerBookingsApi, type ManagerBooking } from '../../services/managerBookingsApi'
 import { managerGateLogsApi } from '../../services/managerGateLogsApi'
 import {
@@ -117,7 +119,7 @@ export function ManagerDashboardPage() {
   const availableSlots = Math.max(0, (occupancy?.overall.totalCapacity ?? 0) - (occupancy?.overall.occupied ?? 0))
 
   return (
-    <div className="p-4 md:p-8 lg:p-10">
+    <div className="relative mx-auto max-w-[118rem] p-4 md:p-8 lg:p-10">
       <ManagerPageHeader
         eyebrow="Manager // Tổng quan"
         title="Tổng quan vận hành"

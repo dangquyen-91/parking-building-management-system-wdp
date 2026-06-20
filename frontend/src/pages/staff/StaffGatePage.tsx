@@ -10,7 +10,7 @@ import {
   StaffGateToast,
   type StaffGateMode,
 } from '../../components/staff'
-import { normalizePlate } from '../../components/staff/staffGateUtils'
+import { normalizePlate } from '../../components/staff/data/staffGateUtils'
 import { managerBuildingsApi, type Floor } from '../../services/managerBuildingsApi'
 import {
   staffGateApi,

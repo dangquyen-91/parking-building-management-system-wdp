@@ -1,11 +1,14 @@
 import { useState } from 'react'
-import { ResidentSubscriptionForm } from '../../components/subscription/ResidentSubscriptionForm'
-import { ResidentSubscriptionPaymentStep } from '../../components/subscription/ResidentSubscriptionPaymentStep'
-import { ResidentSubscriptionPlanSection } from '../../components/subscription/ResidentSubscriptionPlanSection'
-import { ResidentSubscriptionSlotSection } from '../../components/subscription/ResidentSubscriptionSlotSection'
-import { ResidentSubscriptionTopNav } from '../../components/subscription/ResidentSubscriptionTopNav'
-import { SubscriptionStepHeader, type SubscriptionStep } from '../../components/subscription/SubscriptionStepHeader'
-import { SubscriptionWizardActions } from '../../components/subscription/SubscriptionWizardActions'
+import {
+  ResidentSubscriptionForm,
+  ResidentSubscriptionPaymentStep,
+  ResidentSubscriptionPlanSection,
+  ResidentSubscriptionSlotSection,
+  ResidentSubscriptionTopNav,
+  SubscriptionStepHeader,
+  SubscriptionWizardActions,
+  type SubscriptionStep,
+} from '../../components/subscription'
 import { useResidentSubscription } from '../../hooks/useResidentSubscription'
 import { normalizePlate } from '../../utils/subscriptionUi'
 
