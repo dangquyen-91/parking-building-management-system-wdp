@@ -57,7 +57,7 @@ export function ManagerStaffPage() {
   }, [query, staff, statusFilter])
 
   return (
-    <div className="p-4 md:p-8 lg:p-10">
+    <div className="relative mx-auto max-w-[118rem] p-4 md:p-8 lg:p-10">
       <ManagerPageHeader
         eyebrow="Quản lý // Nhân viên"
         title="Quản lý nhân viên"

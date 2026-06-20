@@ -31,7 +31,12 @@ export function ManagerLayout() {
   })
 
   return (
-    <div className="h-screen overflow-hidden bg-page text-fg">
+    <div className="relative h-screen overflow-hidden bg-page text-fg">
+      <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
+        <div className="absolute -left-32 top-0 h-80 w-80 rounded-full bg-sky-500/15 blur-3xl" />
+        <div className="absolute right-0 top-24 h-96 w-96 rounded-full bg-emerald-500/10 blur-3xl" />
+        <div className="absolute bottom-0 left-1/3 h-80 w-80 rounded-full bg-violet-500/10 blur-3xl" />
+      </div>
       <SkipLink />
 
       {sidebarOpen && (
@@ -44,11 +49,11 @@ export function ManagerLayout() {
         </div>
 
         <div className="flex w-full flex-1 flex-col min-w-0 h-full">
-          <header className="lg:hidden sticky top-0 z-30 flex items-center gap-3 h-14 px-4 border-b border-theme bg-page/95 backdrop-blur-md shrink-0">
+          <header className="lg:hidden sticky top-0 z-30 flex items-center gap-3 h-14 px-4 border-b border-theme bg-page/85 backdrop-blur-xl shrink-0 shadow-sm">
             <button
               ref={menuButtonRef}
               type="button"
-              className="flex items-center justify-center w-10 h-10 rounded-xl text-muted hover:text-fg hover:bg-ghost transition-colors"
+              className="flex items-center justify-center w-10 h-10 rounded-xl border border-theme bg-badge text-muted shadow-sm transition-colors hover:text-fg hover:bg-ghost"
               aria-expanded={sidebarOpen}
               aria-controls="manager-sidebar"
               aria-label="Open manager navigation menu"

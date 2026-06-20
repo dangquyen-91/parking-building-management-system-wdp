@@ -8,9 +8,34 @@ import {
 } from '../../components/manager'
 import { managerBookingsApi, type ManagerBooking } from '../../services/managerBookingsApi'
 
+function normalizeSearch(value: string | number | null | undefined) {
+  return String(value ?? '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]/g, '')
+}
+
 function getCustomerSearchText(booking: ManagerBooking) {
   if (!booking.userId || typeof booking.userId === 'string') return ''
-  return `${booking.userId.fullName ?? ''} ${booking.userId.email ?? ''}`.toLowerCase()
+  return `${booking.userId.fullName ?? ''} ${booking.userId.email ?? ''} ${booking.userId.phone ?? ''}`
+}
+
+function getBookingSearchText(booking: ManagerBooking) {
+  return [
+    booking._id,
+    booking.licensePlate,
+    booking.phoneNumber,
+    booking.status,
+    booking.amount,
+    booking.durationHours,
+    booking.expectedArrivalTime,
+    booking.expectedExitTime,
+    booking.createdAt,
+    getCustomerSearchText(booking),
+  ]
+    .map(normalizeSearch)
+    .join(' ')
 }
 
 export function ManagerBookingsPage() {
@@ -39,14 +64,10 @@ export function ManagerBookingsPage() {
   }, [])
 
   const filteredBookings = useMemo(() => {
-    const normalizedQuery = query.trim().toLowerCase().replace(/\s/g, '')
+    const normalizedQuery = normalizeSearch(query)
 
     return bookings.filter((booking) => {
-      const matchesQuery =
-        !normalizedQuery ||
-        booking.licensePlate.toLowerCase().replace(/\s/g, '').includes(normalizedQuery) ||
-        booking.phoneNumber.toLowerCase().replace(/\s/g, '').includes(normalizedQuery) ||
-        getCustomerSearchText(booking).replace(/\s/g, '').includes(normalizedQuery)
+      const matchesQuery = !normalizedQuery || getBookingSearchText(booking).includes(normalizedQuery)
 
       if (!matchesQuery) return false
       if (statusFilter !== 'all' && booking.status !== statusFilter) return false
@@ -55,7 +76,7 @@ export function ManagerBookingsPage() {
   }, [bookings, query, statusFilter])
 
   return (
-    <div className="p-4 md:p-8 lg:p-10">
+    <div className="relative mx-auto max-w-[118rem] p-4 md:p-8 lg:p-10">
       <ManagerPageHeader
         eyebrow="Quản lý // Booking"
         title="Quản lý booking"

@@ -2,12 +2,12 @@ import { useEffect, useMemo, useState } from 'react'
 import {
   ManagerPageHeader,
   ManagerPlanFilters,
+  ManagerPlanFormModal,
   ManagerPlanList,
   ManagerPlanStats,
   type ManagerPlanStatusFilter,
   type ManagerPlanVehicleFilter,
 } from '../../components/manager'
-import { ManagerPlanFormModal } from '../../components/manager/ManagerPlanFormModal'
 import { managerPlansApi, type ManagerPlan, type ManagerPlanUpdatePayload } from '../../services/managerPlansApi'
 
 export function ManagerPlansPage() {
@@ -83,7 +83,7 @@ export function ManagerPlansPage() {
   }
 
   return (
-    <div className="p-4 md:p-8 lg:p-10">
+    <div className="relative mx-auto max-w-[118rem] p-4 md:p-8 lg:p-10">
       <ManagerPageHeader
         eyebrow="Quản lý // Gói gửi xe"
         title="Quản lý gói gửi xe"

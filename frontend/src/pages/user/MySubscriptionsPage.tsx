@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { SubscriptionCredentialQr } from '../../components/subscription/SubscriptionCredentialQr'
-import { ResidentSubscriptionTopNav } from '../../components/subscription/ResidentSubscriptionTopNav'
+import { ResidentSubscriptionTopNav, SubscriptionCredentialQr } from '../../components/subscription'
 import { userSubscriptionApi, type Subscription } from '../../services/userSubscriptionApi'
 import {
   formatSubscriptionDate,

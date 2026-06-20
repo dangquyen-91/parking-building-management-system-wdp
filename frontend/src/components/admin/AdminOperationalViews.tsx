@@ -3,7 +3,7 @@ import type { AdminBooking, AdminDashboardReport, AdminSubscription, AdminUser }
 import type { ManagerPlan, ManagerPlanUpdatePayload } from '../../services/managerPlansApi'
 import type { GateSession, GateUser, GateVehicleType, GateCustomerType } from '../../services/staffGateApi'
 import { isSubscriptionExpiringSoon } from '../../utils/managerSubscriptionUi'
-import { formatSessionSpot } from '../staff/staffGateUtils'
+import { formatSessionSpot } from '../staff/data/staffGateUtils'
 import { AdminStatCard } from './AdminStatCard'
 import { AdminStatusBadge } from './AdminStatusBadge'
 import { formatAdminCurrency } from './adminData'
