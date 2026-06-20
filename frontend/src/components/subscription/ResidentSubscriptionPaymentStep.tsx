@@ -2,6 +2,7 @@ import type {
   AvailableMotorcycleSubscriptions,
   AvailableSubscriptionFloor,
   Plan,
+  Subscription,
   SubscriptionPayment,
   VehicleType,
 } from '../../services/userSubscriptionApi'
@@ -16,6 +17,7 @@ type ResidentSubscriptionPaymentStepProps = {
   selectedSlotId: string
   carFloors: AvailableSubscriptionFloor[]
   motorcycleAvailability: AvailableMotorcycleSubscriptions | null
+  createdSubscription: Subscription | null
   payment: SubscriptionPayment | null
   canSubmit: boolean
   isSubmitting: boolean
@@ -30,6 +32,7 @@ export function ResidentSubscriptionPaymentStep({
   selectedSlotId,
   carFloors,
   motorcycleAvailability,
+  createdSubscription,
   payment,
   canSubmit,
   isSubmitting,
@@ -108,7 +111,7 @@ export function ResidentSubscriptionPaymentStep({
           )}
         </div>
 
-        {payment && <SubscriptionPaymentCard payment={payment} />}
+        {payment && createdSubscription && <SubscriptionPaymentCard payment={payment} subscription={createdSubscription} />}
       </div>
 
       <div className="border-t border-theme p-4 md:p-5">

@@ -71,6 +71,14 @@ export type AvailableMotorcycleSubscriptions = {
 
 export type Subscription = {
   _id: string
+  userId?:
+    | string
+    | {
+        _id: string
+        fullName?: string
+        email?: string
+        phone?: string
+      }
   planId: Plan
   licensePlate: string
   vehicleType: VehicleType
@@ -99,6 +107,13 @@ export type SubscriptionPayment = {
   accountNumber?: string
   accountName?: string
   bin?: string
+}
+
+export type SubscriptionCredentialQr = {
+  qrToken: string
+  qrImage?: string
+  licensePlate: string
+  subscriptionId: string
 }
 
 export type PurchaseSubscriptionPayload = {
@@ -186,6 +201,17 @@ export const userSubscriptionApi = {
     try {
       const response = await userSubscriptionHttp.patch<ApiEnvelope<{ subscription: Subscription }>>(
         `/subscriptions/${id}/cancel`,
+      )
+      return response.data.data
+    } catch (error) {
+      throw getApiError(error)
+    }
+  },
+
+  async getSubscriptionQr(id: string) {
+    try {
+      const response = await userSubscriptionHttp.get<ApiEnvelope<SubscriptionCredentialQr>>(
+        `/subscriptions/${id}/qr`,
       )
       return response.data.data
     } catch (error) {

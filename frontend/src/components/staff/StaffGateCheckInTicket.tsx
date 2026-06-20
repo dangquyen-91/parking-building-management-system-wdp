@@ -6,16 +6,17 @@ import { formatCustomerType, formatVehicleType } from './staffGateUtils'
 
 type StaffGateCheckInTicketProps = {
   session: GateSession
+  qrValue?: string
   onClose: () => void
 }
 
-export function StaffGateCheckInTicket({ session, onClose }: StaffGateCheckInTicketProps) {
+export function StaffGateCheckInTicket({ session, qrValue, onClose }: StaffGateCheckInTicketProps) {
   const [qrDataUrl, setQrDataUrl] = useState('')
   const [message, setMessage] = useState<string>()
 
   useEffect(() => {
     let ignore = false
-    const token = JSON.stringify({
+    const token = qrValue || JSON.stringify({
       type: 'parking-session-ticket',
       sessionId: session._id,
       licensePlate: session.licensePlate,
@@ -28,7 +29,7 @@ export function StaffGateCheckInTicket({ session, onClose }: StaffGateCheckInTic
     return () => {
       ignore = true
     }
-  }, [session])
+  }, [qrValue, session])
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/65 p-4 backdrop-blur-sm" role="dialog" aria-modal="true">

@@ -20,6 +20,7 @@ export function ResidentSubscriptionPage() {
     setLicensePlate,
     selectedSlotId,
     setSelectedSlotId,
+    createdSubscription,
     payment,
     isLoading,
     isSubmitting,
@@ -135,6 +136,7 @@ export function ResidentSubscriptionPage() {
                 selectedSlotId={selectedSlotId}
                 carFloors={carFloors}
                 motorcycleAvailability={motorcycleAvailability}
+                createdSubscription={createdSubscription}
                 payment={payment}
                 canSubmit={canSubmit}
                 isSubmitting={isSubmitting}

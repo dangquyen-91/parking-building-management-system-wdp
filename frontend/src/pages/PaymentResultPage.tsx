@@ -1,6 +1,8 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { BookingTopNav } from '../components/booking'
+import { SubscriptionCredentialQr } from '../components/subscription/SubscriptionCredentialQr'
+import { userSubscriptionApi, type Subscription } from '../services/userSubscriptionApi'
 import { consumeStaffGatePaymentReturn } from '../utils/staffGatePaymentReturn'
 import { consumeSubscriptionPaymentReturn } from '../utils/subscriptionPaymentReturn'
 
@@ -99,14 +101,40 @@ export function PaymentResultPage({ status }: PaymentResultPageProps) {
   const orderCode = searchParams.get('orderCode')
   const payosStatus = searchParams.get('status')
   const [staffPayment] = useState(() => consumeStaffGatePaymentReturn(orderCode))
-  const [isSubscriptionPayment] = useState(() => (
-    staffPayment ? false : consumeSubscriptionPaymentReturn(orderCode)
+  const [subscriptionPaymentReturn] = useState<ReturnType<typeof consumeSubscriptionPaymentReturn>>(() => (
+    staffPayment ? null : consumeSubscriptionPaymentReturn(orderCode)
   ))
+  const [paidSubscription, setPaidSubscription] = useState<Subscription | null>(null)
+  const [isLoadingSubscription, setIsLoadingSubscription] = useState(false)
   const copy = staffPayment
     ? getStaffResultCopy(status, staffPayment.licensePlate)
-    : isSubscriptionPayment
+    : subscriptionPaymentReturn
       ? subscriptionResultCopy[status]
       : resultCopy[status]
+
+  useEffect(() => {
+    if (status !== 'success' || !subscriptionPaymentReturn?.subscriptionId) return
+
+    let ignore = false
+    setIsLoadingSubscription(true)
+
+    const timeoutId = window.setTimeout(() => {
+      void userSubscriptionApi.getMySubscriptions()
+        .then((response) => {
+          if (ignore) return
+          const subscription = response.subscriptions.find((item) => item._id === subscriptionPaymentReturn.subscriptionId)
+          setPaidSubscription(subscription ?? null)
+        })
+        .finally(() => {
+          if (!ignore) setIsLoadingSubscription(false)
+        })
+    }, 1200)
+
+    return () => {
+      ignore = true
+      window.clearTimeout(timeoutId)
+    }
+  }, [subscriptionPaymentReturn, status])
 
   return (
     <div className="min-h-screen bg-page text-fg">
@@ -121,7 +149,7 @@ export function PaymentResultPage({ status }: PaymentResultPageProps) {
           <p className="mt-6 text-[10px] uppercase tracking-[0.2em] text-subtle">{copy.eyebrow}</p>
           <h1 className="mt-3 text-3xl font-bold tracking-tight text-fg md:text-4xl">{copy.title}</h1>
           <p className="mt-3 max-w-2xl text-sm text-muted">{copy.description}</p>
-          {status === 'success' && !isSubscriptionPayment && !staffPayment && (
+          {status === 'success' && !subscriptionPaymentReturn && !staffPayment && (
             <p className="mt-2 max-w-2xl text-sm font-medium text-emerald-700 dark:text-emerald-100">
               Email xác nhận booking sẽ được gửi đến địa chỉ bạn đã nhập sau khi hệ thống nhận kết quả thanh toán.
             </p>
@@ -147,6 +175,29 @@ export function PaymentResultPage({ status }: PaymentResultPageProps) {
               )}
             </div>
           </div>
+
+          {status === 'success' && subscriptionPaymentReturn && (
+            <div className="mt-7 rounded-lg border border-theme bg-badge p-4">
+              {isLoadingSubscription ? (
+                <p className="text-sm text-muted">Đang kiểm tra trạng thái gói để tạo thẻ QR cư dân...</p>
+              ) : paidSubscription?.status === 'active' ? (
+                <div className="grid gap-4 md:grid-cols-[14rem_minmax(0,1fr)] md:items-center">
+                  <SubscriptionCredentialQr subscription={paidSubscription} />
+                  <div>
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-subtle">Thẻ cư dân QR</p>
+                    <h2 className="mt-2 text-xl font-bold text-fg">{paidSubscription.licensePlate}</h2>
+                    <p className="mt-2 text-sm text-muted">
+                      Gói đã được kích hoạt. QR này dùng để chứng minh xe là cư dân đã đăng ký gói trong hệ thống.
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <p className="text-sm text-muted">
+                  Thanh toán đã hoàn tất. Nếu QR cư dân chưa hiện ngay, PayOS webhook có thể đang xử lý; vào “Gói của tôi” và làm mới sau vài giây.
+                </p>
+              )}
+            </div>
+          )}
 
           <div className="mt-7 flex flex-col gap-3 sm:flex-row">
             <Link
