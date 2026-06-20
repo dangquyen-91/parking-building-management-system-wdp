@@ -164,7 +164,7 @@ export const AdminSidebar = forwardRef<HTMLElement, AdminSidebarProps>(function 
         'liquid-glass-card flex flex-col border-r border-theme rounded-none',
         'max-lg:fixed max-lg:inset-y-0 max-lg:left-0 max-lg:z-50',
         'max-lg:w-[min(18rem,85vw)] max-lg:max-h-screen max-lg:overscroll-contain',
-        'lg:static lg:z-auto lg:w-full lg:min-h-screen lg:translate-x-0 lg:visible lg:pointer-events-auto',
+        'lg:fixed lg:inset-y-0 lg:left-0 lg:z-30 lg:h-screen lg:w-60 lg:translate-x-0 lg:visible lg:pointer-events-auto',
         'transition-transform duration-300 ease-out lg:transition-none',
         isOpen
           ? 'max-lg:translate-x-0 max-lg:visible max-lg:pointer-events-auto'
@@ -199,24 +199,6 @@ export const AdminSidebar = forwardRef<HTMLElement, AdminSidebarProps>(function 
         ))}
       </nav>
 
-      <div className="border-t border-theme px-3 py-4">
-        <NavLink
-          to="/"
-          className="flex items-center gap-2 rounded-xl px-3 py-2 text-xs text-subtle transition-colors hover:bg-ghost hover:text-fg"
-          onClick={onNavigate}
-        >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <path
-              d="M10 19l-7-7m0 0l7-7m-7 7h18"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-          Về trang chủ
-        </NavLink>
-      </div>
     </aside>
   )
 })

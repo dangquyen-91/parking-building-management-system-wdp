@@ -1,13 +1,12 @@
 import { useEffect, useMemo, useState } from 'react'
 import {
-  ManagerBookingFilters,
-  ManagerBookingList,
-  ManagerBookingStats,
-  type ManagerBookingStatusFilter,
-} from '../../components/manager'
-import { AdminPageShell } from '../../components/admin'
+  AdminBookingFilters,
+  AdminBookingList,
+  AdminBookingStats,
+  AdminPageShell,
+  type AdminBookingStatusFilter,
+} from '../../components/admin'
 import { adminApi, type AdminBooking } from '../../services/adminApi'
-import type { ManagerBooking } from '../../services/managerBookingsApi'
 
 function getCustomerSearchText(booking: AdminBooking) {
   if (!booking.userId || typeof booking.userId === 'string') return ''
@@ -17,7 +16,7 @@ function getCustomerSearchText(booking: AdminBooking) {
 export function AdminBookingsPage() {
   const [bookings, setBookings] = useState<AdminBooking[]>([])
   const [query, setQuery] = useState('')
-  const [statusFilter, setStatusFilter] = useState<ManagerBookingStatusFilter>('all')
+  const [statusFilter, setStatusFilter] = useState<AdminBookingStatusFilter>('all')
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -61,7 +60,7 @@ export function AdminBookingsPage() {
       title="Quản lý booking"
       description="Theo dõi lịch đặt chỗ ô tô, trạng thái thanh toán, thời gian dự kiến và thông tin khách hàng trên toàn hệ thống."
       actions={
-        <ManagerBookingFilters
+        <AdminBookingFilters
           query={query}
           statusFilter={statusFilter}
           onQueryChange={setQuery}
@@ -69,7 +68,7 @@ export function AdminBookingsPage() {
         />
       }
     >
-      <ManagerBookingStats bookings={bookings as ManagerBooking[]} isLoading={isLoading} />
+      <AdminBookingStats bookings={bookings} isLoading={isLoading} />
 
       {error && (
         <div className="mb-5 flex items-center justify-between gap-3 rounded-lg border border-theme bg-rose-500/10 p-4 text-sm text-rose-200">
@@ -80,7 +79,7 @@ export function AdminBookingsPage() {
         </div>
       )}
 
-      <ManagerBookingList bookings={filteredBookings as ManagerBooking[]} isLoading={isLoading} />
+      <AdminBookingList bookings={filteredBookings} isLoading={isLoading} />
     </AdminPageShell>
   )
 }

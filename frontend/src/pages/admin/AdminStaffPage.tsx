@@ -1,20 +1,19 @@
 import { useEffect, useMemo, useState } from 'react'
 import {
-  ManagerStaffFilters,
-  ManagerStaffList,
-  ManagerStaffStats,
-  type ManagerStaffStatusFilter,
-} from '../../components/manager'
-import { AdminPageShell } from '../../components/admin'
+  AdminPageShell,
+  AdminStaffFilters,
+  AdminStaffList,
+  AdminStaffStats,
+  type AdminStaffStatusFilter,
+} from '../../components/admin'
 import { adminApi, type AdminUser } from '../../services/adminApi'
-import type { ManagerStaffUser } from '../../services/managerStaffApi'
 import type { GateSession } from '../../services/staffGateApi'
 
 export function AdminStaffPage() {
   const [staff, setStaff] = useState<AdminUser[]>([])
   const [sessions, setSessions] = useState<GateSession[]>([])
   const [query, setQuery] = useState('')
-  const [statusFilter, setStatusFilter] = useState<ManagerStaffStatusFilter>('all')
+  const [statusFilter, setStatusFilter] = useState<AdminStaffStatusFilter>('all')
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -63,7 +62,7 @@ export function AdminStaffPage() {
       title="Quản lý nhân viên"
       description="Theo dõi tài khoản staff, thông tin liên hệ và số xe đang được từng nhân viên ghi nhận tại cổng."
       actions={
-        <ManagerStaffFilters
+        <AdminStaffFilters
           query={query}
           statusFilter={statusFilter}
           onQueryChange={setQuery}
@@ -71,7 +70,7 @@ export function AdminStaffPage() {
         />
       }
     >
-      <ManagerStaffStats staff={staff as ManagerStaffUser[]} sessions={sessions} isLoading={isLoading} />
+      <AdminStaffStats staff={staff} sessions={sessions} isLoading={isLoading} />
 
       {error && (
         <div className="mb-5 flex items-center justify-between gap-3 rounded-lg border border-theme bg-rose-500/10 p-4 text-sm text-rose-200">
@@ -86,7 +85,7 @@ export function AdminStaffPage() {
         Admin có thể theo dõi nhân viên tại đây. Việc chỉnh vai trò, khóa hoặc mở tài khoản nằm ở trang Người dùng.
       </div>
 
-      <ManagerStaffList staff={filteredStaff as ManagerStaffUser[]} sessions={sessions} isLoading={isLoading} />
+      <AdminStaffList staff={filteredStaff} sessions={sessions} isLoading={isLoading} />
     </AdminPageShell>
   )
 }

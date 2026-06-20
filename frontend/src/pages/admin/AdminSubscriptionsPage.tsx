@@ -1,22 +1,21 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
-  ManagerSubscriptionFilters,
-  type ManagerSubscriptionStatusFilter,
-  type ManagerSubscriptionVehicleFilter,
-} from '../../components/manager/ManagerSubscriptionFilters'
-import { ManagerSubscriptionList } from '../../components/manager/ManagerSubscriptionList'
-import { ManagerSubscriptionStats } from '../../components/manager/ManagerSubscriptionStats'
-import { AdminPageShell } from '../../components/admin'
+  AdminPageShell,
+  AdminSubscriptionFilters,
+  AdminSubscriptionList,
+  AdminSubscriptionStats,
+  type AdminSubscriptionStatusFilter,
+  type AdminSubscriptionVehicleFilter,
+} from '../../components/admin'
 import { adminApi, type AdminSubscription } from '../../services/adminApi'
-import type { ManagerSubscription } from '../../services/managerSubscriptionsApi'
 import { isSubscriptionExpiringSoon } from '../../utils/managerSubscriptionUi'
 
 export function AdminSubscriptionsPage() {
   const [subscriptions, setSubscriptions] = useState<AdminSubscription[]>([])
   const [activePlates, setActivePlates] = useState<Set<string>>(new Set())
   const [query, setQuery] = useState('')
-  const [status, setStatus] = useState<ManagerSubscriptionStatusFilter>('all')
-  const [vehicleType, setVehicleType] = useState<ManagerSubscriptionVehicleFilter>('all')
+  const [status, setStatus] = useState<AdminSubscriptionStatusFilter>('all')
+  const [vehicleType, setVehicleType] = useState<AdminSubscriptionVehicleFilter>('all')
   const [snapshotTime, setSnapshotTime] = useState(0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -50,7 +49,7 @@ export function AdminSubscriptionsPage() {
 
     return subscriptions.filter((subscription) => {
       if (vehicleType !== 'all' && subscription.vehicleType !== vehicleType) return false
-      if (status === 'expiring' && !isSubscriptionExpiringSoon(subscription as ManagerSubscription, snapshotTime)) return false
+      if (status === 'expiring' && !isSubscriptionExpiringSoon(subscription, snapshotTime)) return false
       if (status !== 'all' && status !== 'expiring' && subscription.status !== status) return false
       if (!normalizedQuery) return true
 
@@ -77,14 +76,14 @@ export function AdminSubscriptionsPage() {
         </button>
       }
     >
-      <ManagerSubscriptionStats
-        subscriptions={subscriptions as ManagerSubscription[]}
+      <AdminSubscriptionStats
+        subscriptions={subscriptions}
         activePlates={activePlates}
         snapshotTime={snapshotTime}
       />
 
       <section className="liquid-glass-card mb-5 rounded-lg p-4">
-        <ManagerSubscriptionFilters
+        <AdminSubscriptionFilters
           query={query}
           status={status}
           vehicleType={vehicleType}
@@ -103,8 +102,8 @@ export function AdminSubscriptionsPage() {
         </div>
       )}
 
-      <ManagerSubscriptionList
-        subscriptions={filteredSubscriptions as ManagerSubscription[]}
+      <AdminSubscriptionList
+        subscriptions={filteredSubscriptions}
         activePlates={activePlates}
         snapshotTime={snapshotTime}
         loading={loading}

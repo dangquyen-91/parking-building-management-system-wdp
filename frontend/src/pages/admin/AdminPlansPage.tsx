@@ -1,19 +1,19 @@
 import { useEffect, useMemo, useState } from 'react'
 import {
-  ManagerPlanFilters,
-  ManagerPlanList,
-  ManagerPlanStats,
-  type ManagerPlanStatusFilter,
-  type ManagerPlanVehicleFilter,
-} from '../../components/manager'
-import { ManagerPlanFormModal } from '../../components/manager/ManagerPlanFormModal'
-import { AdminPageShell } from '../../components/admin'
+  AdminPageShell,
+  AdminPlanFilters,
+  AdminPlanFormModal,
+  AdminPlanList,
+  AdminPlanStats,
+  type AdminPlanStatusFilter,
+  type AdminPlanVehicleFilter,
+} from '../../components/admin'
 import { managerPlansApi, type ManagerPlan, type ManagerPlanUpdatePayload } from '../../services/managerPlansApi'
 
 export function AdminPlansPage() {
   const [plans, setPlans] = useState<ManagerPlan[]>([])
-  const [vehicleFilter, setVehicleFilter] = useState<ManagerPlanVehicleFilter>('all')
-  const [statusFilter, setStatusFilter] = useState<ManagerPlanStatusFilter>('all')
+  const [vehicleFilter, setVehicleFilter] = useState<AdminPlanVehicleFilter>('all')
+  const [statusFilter, setStatusFilter] = useState<AdminPlanStatusFilter>('all')
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [editingPlan, setEditingPlan] = useState<ManagerPlan | null>(null)
@@ -83,7 +83,7 @@ export function AdminPlansPage() {
       title="Quản lý gói gửi xe"
       description="Điều chỉnh giá, thời hạn, nội dung và trạng thái các gói đăng ký cư dân."
       actions={
-        <ManagerPlanFilters
+        <AdminPlanFilters
           vehicleFilter={vehicleFilter}
           statusFilter={statusFilter}
           onVehicleFilterChange={setVehicleFilter}
@@ -91,7 +91,7 @@ export function AdminPlansPage() {
         />
       }
     >
-      <ManagerPlanStats plans={plans} isLoading={isLoading} />
+      <AdminPlanStats plans={plans} isLoading={isLoading} />
 
       {error && (
         <div className="mb-4 flex items-center justify-between gap-3 rounded-lg border border-theme bg-rose-500/10 p-4 text-sm text-rose-200">
@@ -102,7 +102,7 @@ export function AdminPlansPage() {
         </div>
       )}
 
-      <ManagerPlanList
+      <AdminPlanList
         plans={filteredPlans}
         isLoading={isLoading}
         updatingId={updatingId}
@@ -113,7 +113,7 @@ export function AdminPlansPage() {
         onToggle={(plan) => void handleToggle(plan)}
       />
 
-      <ManagerPlanFormModal
+      <AdminPlanFormModal
         plan={editingPlan}
         isSubmitting={isSubmitting}
         error={submitError}

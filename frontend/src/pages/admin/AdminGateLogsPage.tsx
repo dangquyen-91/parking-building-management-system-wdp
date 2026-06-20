@@ -1,22 +1,21 @@
 import { useEffect, useMemo, useState } from 'react'
 import {
-  ManagerGateLogFilters,
-  ManagerGateLogList,
-  ManagerGateLogStats,
-  type ManagerGateCustomerFilter,
-  type ManagerGateVehicleFilter,
-} from '../../components/manager'
-import { AdminPageShell } from '../../components/admin'
+  AdminGateLogFilters,
+  AdminGateLogList,
+  AdminGateLogStats,
+  AdminPageShell,
+  type AdminGateCustomerFilter,
+  type AdminGateVehicleFilter,
+} from '../../components/admin'
 import { adminApi, type AdminDashboardReport } from '../../services/adminApi'
-import type { ManagerGateDashboard } from '../../services/managerGateLogsApi'
 import type { GateSession } from '../../services/staffGateApi'
 
 export function AdminGateLogsPage() {
   const [sessions, setSessions] = useState<GateSession[]>([])
   const [dashboard, setDashboard] = useState<AdminDashboardReport | null>(null)
   const [query, setQuery] = useState('')
-  const [vehicleFilter, setVehicleFilter] = useState<ManagerGateVehicleFilter>('all')
-  const [customerFilter, setCustomerFilter] = useState<ManagerGateCustomerFilter>('all')
+  const [vehicleFilter, setVehicleFilter] = useState<AdminGateVehicleFilter>('all')
+  const [customerFilter, setCustomerFilter] = useState<AdminGateCustomerFilter>('all')
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -60,7 +59,7 @@ export function AdminGateLogsPage() {
       title="Giám sát xe vào / ra"
       description="Theo dõi xe đang trong bãi, nhân viên ghi nhận, vị trí đỗ và thống kê hoạt động cổng hôm nay."
       actions={
-        <ManagerGateLogFilters
+        <AdminGateLogFilters
           query={query}
           vehicleFilter={vehicleFilter}
           customerFilter={customerFilter}
@@ -70,7 +69,7 @@ export function AdminGateLogsPage() {
         />
       }
     >
-      <ManagerGateLogStats dashboard={dashboard as ManagerGateDashboard | null} isLoading={isLoading} />
+      <AdminGateLogStats dashboard={dashboard} isLoading={isLoading} />
 
       {error && (
         <div className="mb-5 flex items-center justify-between gap-3 rounded-lg border border-theme bg-rose-500/10 p-4 text-sm text-rose-200">
@@ -85,7 +84,7 @@ export function AdminGateLogsPage() {
         Danh sách chi tiết hiện hiển thị các xe đang trong bãi. Số lượt xe ra hôm nay được tổng hợp từ báo cáo hệ thống.
       </div>
 
-      <ManagerGateLogList sessions={filteredSessions} isLoading={isLoading} />
+      <AdminGateLogList sessions={filteredSessions} isLoading={isLoading} />
     </AdminPageShell>
   )
 }

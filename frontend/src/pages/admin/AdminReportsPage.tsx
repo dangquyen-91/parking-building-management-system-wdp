@@ -1,12 +1,14 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { AdminPageShell, AdminStatCard, formatAdminCurrency } from '../../components/admin'
-import { ManagerOccupancyTable } from '../../components/manager/ManagerOccupancyTable'
 import {
-  ManagerPeakHoursChart,
-  ManagerRevenueChart,
-  ManagerSessionChart,
-} from '../../components/manager/ManagerReportCharts'
-import { ManagerReportFilters } from '../../components/manager/ManagerReportFilters'
+  AdminOccupancyTable,
+  AdminPageShell,
+  AdminPeakHoursChart,
+  AdminReportFilters,
+  AdminRevenueChart,
+  AdminSessionChart,
+  AdminStatCard,
+  formatAdminCurrency,
+} from '../../components/admin'
 import {
   adminApi,
   type AdminDashboardReport,
@@ -15,12 +17,6 @@ import {
   type AdminRevenueReport,
   type AdminSessionStatsReport,
 } from '../../services/adminApi'
-import type {
-  ManagerOccupancyReport,
-  ManagerPeakHoursReport,
-  ManagerRevenueReport,
-  ManagerSessionReport,
-} from '../../services/managerReportsApi'
 
 function toDateInput(date: Date) {
   const offset = date.getTimezoneOffset()
@@ -34,32 +30,6 @@ type ReportFilters = {
   from: string
   to: string
   peakDays: number
-}
-
-function adaptRevenue(report: AdminRevenueReport): ManagerRevenueReport {
-  return report
-}
-
-function adaptSessions(report: AdminSessionStatsReport): ManagerSessionReport {
-  return {
-    ...report,
-    byVehicleType: {
-      motorcycle: report.byVehicleType.motorcycle ?? 0,
-      car: report.byVehicleType.car ?? 0,
-    },
-    byCustomerType: {
-      walk_in: report.byCustomerType.walk_in ?? 0,
-      resident: report.byCustomerType.resident ?? 0,
-    },
-  }
-}
-
-function adaptOccupancy(report: AdminOccupancyReport): ManagerOccupancyReport {
-  return report as ManagerOccupancyReport
-}
-
-function adaptPeakHours(report: AdminPeakHoursReport): ManagerPeakHoursReport {
-  return report
 }
 
 export function AdminReportsPage() {
@@ -123,7 +93,7 @@ export function AdminReportsPage() {
       title="Báo cáo thống kê"
       description="Theo dõi doanh thu, lượt xe, giờ cao điểm và công suất sử dụng trên toàn hệ thống bằng dữ liệu vận hành thực tế."
     >
-      <ManagerReportFilters
+      <AdminReportFilters
         from={from}
         to={to}
         peakDays={peakDays}
@@ -176,13 +146,13 @@ export function AdminReportsPage() {
       )}
 
       <div className="mt-5 grid gap-5 xl:grid-cols-2">
-        {revenue && <ManagerRevenueChart report={adaptRevenue(revenue)} />}
-        {sessions && <ManagerSessionChart report={adaptSessions(sessions)} />}
+        {revenue && <AdminRevenueChart report={revenue} />}
+        {sessions && <AdminSessionChart report={sessions} />}
       </div>
 
       <div className="mt-5 grid gap-5 xl:grid-cols-[1fr_1.3fr]">
-        {peakHours && <ManagerPeakHoursChart report={adaptPeakHours(peakHours)} />}
-        {occupancy && <ManagerOccupancyTable report={adaptOccupancy(occupancy)} />}
+        {peakHours && <AdminPeakHoursChart report={peakHours} />}
+        {occupancy && <AdminOccupancyTable report={occupancy} />}
       </div>
 
       <section className="liquid-glass-card mt-5 rounded-lg p-4 md:p-5">
