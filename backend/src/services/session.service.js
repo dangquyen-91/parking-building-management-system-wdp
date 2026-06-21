@@ -1,4 +1,4 @@
-import ParkingSession from '../models/parking-session.model.js';
+﻿import ParkingSession from '../models/parking-session.model.js';
 import ParkingSlot from '../models/parking-slot.model.js';
 import ParkingRow from '../models/parking-row.model.js';
 import Floor from '../models/floor.model.js';
@@ -9,7 +9,6 @@ import * as pricingService from './pricing.service.js';
 import * as payosService from './payos.service.js';
 import * as bookingService from './booking.service.js';
 import AppError from '../utils/appError.js';
-import logger from '../utils/logger.js';
 import QRCode from 'qrcode';
 import { verifyQRToken, signWalkInTicket } from '../utils/qrToken.js';
 
@@ -310,11 +309,12 @@ export const checkIn = async ({ slotId, rowId, licensePlate, vehicleType, staffI
   }
 };
 
-export const getActiveSessions = async ({ page = 1, limit = 20, vehicleType, licensePlate, floorId, buildingId } = {}) => {
+export const getActiveSessions = async ({ page = 1, limit = 20, vehicleType, licensePlate, floorId, buildingId, status } = {}) => {
   const pageNum = Math.max(1, parseInt(page));
   const limitNum = Math.min(100, Math.max(1, parseInt(limit)));
 
-  const filter = { status: 'active' };
+  const VALID_STATUSES = ['active', 'completed', 'cancelled'];
+  const filter = { status: VALID_STATUSES.includes(status) ? status : 'active' };
   if (vehicleType) filter.vehicleType = vehicleType;
   if (licensePlate) filter.licensePlate = new RegExp(licensePlate.toUpperCase(), 'i');
 
@@ -780,7 +780,7 @@ export const activateSessionFromWebhook = async (paymentId) => {
 
   const session = await ParkingSession.findById(payment.sessionId);
   if (!session) {
-    logger.error('Session missing for paid payment', { paymentId });
+    console.error('Session missing for paid payment', { paymentId });
     return null;
   }
   if (session.status !== 'active') {

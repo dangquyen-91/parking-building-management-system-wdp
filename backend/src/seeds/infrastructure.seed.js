@@ -1,10 +1,9 @@
-import mongoose from 'mongoose';
+﻿import mongoose from 'mongoose';
 import dns from 'dns';
 import Building from '../models/building.model.js';
 import Floor from '../models/floor.model.js';
 import ParkingSlot from '../models/parking-slot.model.js';
 import ParkingRow from '../models/parking-row.model.js';
-import logger from '../utils/logger.js';
 
 dns.setServers(['8.8.8.8', '1.1.1.1', '8.8.4.4']);
 
@@ -67,9 +66,9 @@ const ensureBuilding = async () => {
       address: '123 Demo Street',
       description: 'Seed building for infrastructure',
     });
-    logger.info(`Created building "${building.name}"`);
+    console.log(`Created building "${building.name}"`);
   } else {
-    logger.info(`Using existing building "${building.name}" (${building._id})`);
+    console.log(`Using existing building "${building.name}" (${building._id})`);
   }
   return building;
 };
@@ -81,7 +80,7 @@ const ensureFloor = async (buildingId, config) => {
     section: config.section,
   });
   if (floor) {
-    logger.info(`Hầm ${config.floorNumber} Khu ${config.section} already exists — keep`);
+    console.log(`Hầm ${config.floorNumber} Khu ${config.section} already exists — keep`);
     return floor;
   }
   floor = await Floor.create({
@@ -93,7 +92,7 @@ const ensureFloor = async (buildingId, config) => {
     totalSlots: config.totalSlots,
     description: config.description,
   });
-  logger.info(
+  console.log(
     `Created Hầm ${config.floorNumber} Khu ${config.section} (${config.vehicleType}/${config.floorType}, ${config.totalSlots})`
   );
   return floor;
@@ -102,7 +101,7 @@ const ensureFloor = async (buildingId, config) => {
 const ensureCarSlots = async (floor, prefix, count) => {
   const existing = await ParkingSlot.countDocuments({ floorId: floor._id });
   if (existing > 0) {
-    logger.info(`  ${prefix}: ${existing} slots already exist — skip`);
+    console.log(`  ${prefix}: ${existing} slots already exist — skip`);
     return;
   }
   const padLen = Math.max(String(count).length, 2);
@@ -113,13 +112,13 @@ const ensureCarSlots = async (floor, prefix, count) => {
     status: 'empty',
   }));
   await ParkingSlot.insertMany(docs);
-  logger.info(`  Created ${count} car slots (${prefix})`);
+  console.log(`  Created ${count} car slots (${prefix})`);
 };
 
 const ensureMotoRows = async (floor, { rowsPrefix, rowsCount, rowCapacity }) => {
   const existing = await ParkingRow.countDocuments({ floorId: floor._id });
   if (existing > 0) {
-    logger.info(`  ${rowsPrefix}: ${existing} rows already exist — skip`);
+    console.log(`  ${rowsPrefix}: ${existing} rows already exist — skip`);
     return;
   }
   const padLen = Math.max(String(rowsCount).length, 2);
@@ -131,7 +130,7 @@ const ensureMotoRows = async (floor, { rowsPrefix, rowsCount, rowCapacity }) => 
     status: 'available',
   }));
   await ParkingRow.insertMany(docs);
-  logger.info(`  Created ${rowsCount} motorcycle rows (${rowsPrefix}, ${rowCapacity} each)`);
+  console.log(`  Created ${rowsCount} motorcycle rows (${rowsPrefix}, ${rowCapacity} each)`);
 };
 
 const run = async () => {
@@ -141,7 +140,7 @@ const run = async () => {
   // hold multiple zones (replaced by buildingId+floorNumber+section).
   try {
     await Floor.collection.dropIndex('buildingId_1_floorNumber_1');
-    logger.info('Dropped legacy floor index buildingId_1_floorNumber_1');
+    console.log('Dropped legacy floor index buildingId_1_floorNumber_1');
   } catch {
     /* index not present — fine */
   }
@@ -152,7 +151,7 @@ const run = async () => {
       ParkingRow.deleteMany({}),
       Floor.deleteMany({}),
     ]);
-    logger.info('RESET: cleared all floors, car slots, motorcycle rows');
+    console.log('RESET: cleared all floors, car slots, motorcycle rows');
   }
 
   const building = await ensureBuilding();
@@ -168,11 +167,11 @@ const run = async () => {
   }
 
   await mongoose.disconnect();
-  logger.info('Infrastructure seed completed');
+  console.log('Infrastructure seed completed');
   process.exit(0);
 };
 
 run().catch((err) => {
-  logger.error('Infrastructure seed failed', { error: err.message });
+  console.error('Infrastructure seed failed', { error: err.message });
   process.exit(1);
 });

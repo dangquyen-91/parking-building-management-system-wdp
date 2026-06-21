@@ -1,7 +1,6 @@
-import cron from 'node-cron';
+﻿import cron from 'node-cron';
 import Booking from '../models/booking.model.js';
 import Payment from '../models/payment.model.js';
-import logger from '../utils/logger.js';
 
 const PENDING_TTL_MINUTES = 15;
 
@@ -12,7 +11,7 @@ const expirePaidBookingsPastExit = async () => {
     { status: 'expired' }
   );
   if (result.modifiedCount > 0) {
-    logger.info(`Expired ${result.modifiedCount} paid booking(s) past expectedExitTime (no-show)`);
+    console.log(`Expired ${result.modifiedCount} paid booking(s) past expectedExitTime (no-show)`);
   }
 };
 
@@ -29,7 +28,7 @@ const cancelStalePendingBookings = async () => {
       { status: 'expired' }
     );
   }
-  logger.info(`Cancelled ${stale.length} stale pending booking(s) older than ${PENDING_TTL_MINUTES} minutes`);
+  console.log(`Cancelled ${stale.length} stale pending booking(s) older than ${PENDING_TTL_MINUTES} minutes`);
 };
 
 export const startBookingJobs = () => {
@@ -38,8 +37,8 @@ export const startBookingJobs = () => {
       await expirePaidBookingsPastExit();
       await cancelStalePendingBookings();
     } catch (err) {
-      logger.error('Booking cron job failed', { error: err.message });
+      console.error('Booking cron job failed', { error: err.message });
     }
   });
-  logger.info('Booking cron jobs scheduled (every 5 minutes)');
+  console.log('Booking cron jobs scheduled (every 5 minutes)');
 };

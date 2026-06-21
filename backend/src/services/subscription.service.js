@@ -1,4 +1,4 @@
-import Subscription from '../models/subscription.model.js';
+﻿import Subscription from '../models/subscription.model.js';
 import Plan from '../models/plan.model.js';
 import Payment from '../models/payment.model.js';
 import User from '../models/user.model.js';
@@ -6,7 +6,6 @@ import ParkingSlot from '../models/parking-slot.model.js';
 import Floor from '../models/floor.model.js';
 import * as payosService from './payos.service.js';
 import AppError from '../utils/appError.js';
-import logger from '../utils/logger.js';
 import QRCode from 'qrcode';
 import { signSubscriptionQRToken } from '../utils/qrToken.js';
 
@@ -94,7 +93,7 @@ export const purchase = async ({ userId, planId, licensePlate, slotId }) => {
       try {
         await payosService.cancelPaymentLink(oldPayment.orderCode, 'Replaced by new purchase');
       } catch (err) {
-        logger.warn('Failed to cancel old PayOS payment link', { orderCode: oldPayment.orderCode, error: err.message });
+        console.warn('Failed to cancel old PayOS payment link', { orderCode: oldPayment.orderCode, error: err.message });
       }
       oldPayment.status = 'cancelled';
       await oldPayment.save();
@@ -205,7 +204,7 @@ const activatePaidPayment = async (payment) => {
 
   const subscription = await Subscription.findById(payment.subscriptionId).populate('planId');
   if (!subscription) {
-    logger.error('Subscription missing for paid payment', { paymentId: payment._id });
+    console.error('Subscription missing for paid payment', { paymentId: payment._id });
     return { processed: true, status: 'paid_but_no_sub' };
   }
   if (subscription.status === 'active') {
@@ -224,7 +223,7 @@ const activatePaidPayment = async (payment) => {
     { new: true }
   );
   if (!activated) {
-    logger.warn('Subscription was not pending when activating', { subscriptionId: subscription._id });
+    console.warn('Subscription was not pending when activating', { subscriptionId: subscription._id });
     return { processed: true, status: 'already_processed', subscriptionId: subscription._id };
   }
   return { processed: true, status: 'activated', subscriptionId: subscription._id };
@@ -266,7 +265,7 @@ export const handleWebhook = async (webhookBody) => {
   if (!payment) {
     const existing = await Payment.findOne({ orderCode: data.orderCode });
     if (!existing) {
-      logger.warn('Webhook received for unknown orderCode', { orderCode: data.orderCode });
+      console.warn('Webhook received for unknown orderCode', { orderCode: data.orderCode });
       return { processed: false, reason: 'order_not_found' };
     }
     // Already flipped (by the confirm endpoint or a duplicate webhook). If it
@@ -366,7 +365,7 @@ export const cancel = async (id, userId) => {
     try {
       await payosService.cancelPaymentLink(payment.orderCode, 'User cancelled subscription');
     } catch (err) {
-      logger.warn('Failed to cancel PayOS payment link', { error: err.message });
+      console.warn('Failed to cancel PayOS payment link', { error: err.message });
     }
     payment.status = 'cancelled';
     await payment.save();

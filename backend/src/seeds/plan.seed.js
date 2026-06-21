@@ -1,7 +1,6 @@
-import mongoose from 'mongoose';
+﻿import mongoose from 'mongoose';
 import dns from 'dns';
 import Plan from '../models/plan.model.js';
-import logger from '../utils/logger.js';
 
 dns.setServers(['8.8.8.8', '1.1.1.1', '8.8.4.4']);
 
@@ -44,14 +43,14 @@ const run = async () => {
   await mongoose.connect(process.env.MONGODB_URI);
   for (const plan of SEED_PLANS) {
     await Plan.findOneAndUpdate({ code: plan.code }, plan, { upsert: true, new: true });
-    logger.info(`Seeded plan ${plan.code} (${plan.price.toLocaleString()}đ)`);
+    console.log(`Seeded plan ${plan.code} (${plan.price.toLocaleString()}đ)`);
   }
   await mongoose.disconnect();
-  logger.info('Plan seed completed');
+  console.log('Plan seed completed');
   process.exit(0);
 };
 
 run().catch((err) => {
-  logger.error('Plan seed failed', { error: err.message });
+  console.error('Plan seed failed', { error: err.message });
   process.exit(1);
 });
