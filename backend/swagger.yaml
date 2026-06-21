@@ -3928,7 +3928,9 @@ paths:
       tags: [Reports]
       summary: Overview dashboard (admin, manager)
       description: |
-        Quick overview for today: revenue split by source, activity counts, occupancy %.
+        Snapshot for today: revenue by source + breakdown by vehicle type (motorcycle/car),
+        activity counts (active sessions, subscriptions, pending bookings, today check-ins/outs),
+        and overall occupancy utilization %.
       security:
         - BearerAuth: []
       responses:
@@ -3946,11 +3948,30 @@ paths:
                       revenueToday:
                         type: object
                         properties:
-                          subscription: { type: integer }
-                          booking: { type: integer }
-                          sessionTransfer: { type: integer }
-                          sessionCash: { type: integer }
-                          total: { type: integer }
+                          subscription: { type: integer, example: 2000000 }
+                          booking: { type: integer, example: 500000 }
+                          sessionTransfer: { type: integer, example: 300000 }
+                          sessionCash: { type: integer, example: 150000 }
+                          total: { type: integer, example: 2950000 }
+                          byVehicleType:
+                            type: object
+                            properties:
+                              motorcycle:
+                                type: object
+                                properties:
+                                  subscription: { type: integer }
+                                  booking: { type: integer }
+                                  sessionTransfer: { type: integer }
+                                  sessionCash: { type: integer }
+                                  total: { type: integer }
+                              car:
+                                type: object
+                                properties:
+                                  subscription: { type: integer }
+                                  booking: { type: integer }
+                                  sessionTransfer: { type: integer }
+                                  sessionCash: { type: integer }
+                                  total: { type: integer }
                       activity:
                         type: object
                         properties:
@@ -3971,36 +3992,196 @@ paths:
   /reports/revenue:
     get:
       tags: [Reports]
-      summary: Revenue breakdown by date range (admin, manager)
+      summary: Revenue breakdown by period (admin, manager)
       description: |
-        Daily revenue grouped by source. Defaults to last 30 days.
-        Revenue sources:
-        - subscription: resident plan purchases
-        - booking: pre-paid walk-in car bookings
-        - sessionTransfer: PayOS payment at exit (walk-in/overtime)
-        - sessionCash: cash collected at exit
+        Revenue grouped by source and aggregated by day / week / month.
+        Defaults to last 30 days grouped by day.
+
+        **Revenue sources:**
+        - `subscription` – resident plan purchases (via PayOS)
+        - `booking` – pre-paid walk-in car bookings (via PayOS)
+        - `sessionTransfer` – PayOS payment at exit
+        - `sessionCash` – cash collected at exit
       security:
         - BearerAuth: []
       parameters:
         - in: query
           name: from
-          schema: { type: string, format: date }
-          example: '2026-05-01'
+          schema: { type: string, format: date, example: '2026-05-01' }
         - in: query
           name: to
-          schema: { type: string, format: date }
-          example: '2026-05-31'
+          schema: { type: string, format: date, example: '2026-05-31' }
+        - in: query
+          name: groupBy
+          schema: { type: string, enum: [day, week, month], default: day }
+          description: Aggregate periods by day (YYYY-MM-DD), week (YYYY-Www), or month (YYYY-MM)
       responses:
         '200':
           description: Revenue report
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      from: { type: string, format: date-time }
+                      to: { type: string, format: date-time }
+                      groupBy: { type: string, enum: [day, week, month] }
+                      totals:
+                        type: object
+                        properties:
+                          subscription: { type: integer }
+                          booking: { type: integer }
+                          sessionTransfer: { type: integer }
+                          sessionCash: { type: integer }
+                          total: { type: integer }
+                          transactions: { type: integer }
+                      periods:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            period: { type: string, example: '2026-05-01' }
+                            subscription: { type: integer }
+                            booking: { type: integer }
+                            sessionTransfer: { type: integer }
+                            sessionCash: { type: integer }
+                            total: { type: integer }
+                            transactions: { type: integer }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /reports/revenue/by-vehicle:
+    get:
+      tags: [Reports]
+      summary: Revenue split by vehicle type (admin, manager)
+      description: |
+        Revenue broken down by **motorcycle** vs **car**, each showing subscription/booking/
+        sessionTransfer/sessionCash sub-totals. Supports groupBy day/week/month.
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: query
+          name: from
+          schema: { type: string, format: date, example: '2026-05-01' }
+        - in: query
+          name: to
+          schema: { type: string, format: date, example: '2026-05-31' }
+        - in: query
+          name: groupBy
+          schema: { type: string, enum: [day, week, month], default: day }
+      responses:
+        '200':
+          description: Revenue by vehicle type
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      from: { type: string, format: date-time }
+                      to: { type: string, format: date-time }
+                      groupBy: { type: string }
+                      totals:
+                        type: object
+                        properties:
+                          motorcycle:
+                            type: object
+                            properties:
+                              subscription: { type: integer }
+                              booking: { type: integer }
+                              sessionTransfer: { type: integer }
+                              sessionCash: { type: integer }
+                              total: { type: integer }
+                              transactions: { type: integer }
+                          car:
+                            type: object
+                            properties:
+                              subscription: { type: integer }
+                              booking: { type: integer }
+                              sessionTransfer: { type: integer }
+                              sessionCash: { type: integer }
+                              total: { type: integer }
+                              transactions: { type: integer }
+                      periods:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            period: { type: string, example: '2026-05-01' }
+                            motorcycle: { type: object }
+                            car: { type: object }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /reports/revenue/comparison:
+    get:
+      tags: [Reports]
+      summary: Revenue comparison current vs previous period (admin, manager)
+      description: |
+        Compares total revenue between the **current** period and the **previous** same-length period.
+        Returns absolute values, change percentage, and trend direction.
+
+        | period | Current | Previous |
+        |--------|---------|----------|
+        | `week` | Mon–today | previous Mon–Sun |
+        | `month` | 1st–today | entire previous month |
+        | `year` | Jan 1–today | entire previous year |
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: query
+          name: period
+          schema: { type: string, enum: [week, month, year], default: month }
+      responses:
+        '200':
+          description: Revenue comparison
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      period: { type: string, enum: [week, month, year] }
+                      current:
+                        type: object
+                        properties:
+                          from: { type: string, format: date-time }
+                          to: { type: string, format: date-time }
+                          subscription: { type: integer }
+                          booking: { type: integer }
+                          sessionTransfer: { type: integer }
+                          sessionCash: { type: integer }
+                          total: { type: integer }
+                          transactions: { type: integer }
+                      previous:
+                        type: object
+                        properties:
+                          from: { type: string, format: date-time }
+                          to: { type: string, format: date-time }
+                          total: { type: integer }
+                          transactions: { type: integer }
+                      changePercent: { type: number, example: 19.5, nullable: true }
+                      trend: { type: string, enum: [up, down, flat, no_data] }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
 
   /reports/sessions:
     get:
       tags: [Reports]
-      summary: Session count stats by date range (admin, manager)
-      description: Total check-ins by vehicle type, customer type, and daily breakdown. Default last 7 days.
+      summary: Session statistics (admin, manager)
+      description: |
+        Parking session stats for a date range (default last 7 days). Includes:
+        - Count by vehicle type, customer type, status
+        - Average / min / max parking duration and fee per vehicle type (completed sessions only)
+        - Duration distribution in time buckets (0–1h, 1–2h, 2–4h, 4–8h, 8–24h, over 24h)
+        - Daily breakdown with motorcycle / car split
       security:
         - BearerAuth: []
       parameters:
@@ -4013,19 +4194,328 @@ paths:
       responses:
         '200':
           description: Session stats
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      from: { type: string, format: date-time }
+                      to: { type: string, format: date-time }
+                      totalSessions: { type: integer }
+                      byVehicleType:
+                        type: object
+                        properties:
+                          motorcycle: { type: integer }
+                          car: { type: integer }
+                      byCustomerType:
+                        type: object
+                        properties:
+                          resident: { type: integer }
+                          walk_in: { type: integer }
+                      byStatus:
+                        type: object
+                        properties:
+                          active: { type: integer }
+                          completed: { type: integer }
+                          cancelled: { type: integer }
+                      durationStats:
+                        type: object
+                        description: Keyed by vehicleType, completed sessions only
+                        additionalProperties:
+                          type: object
+                          properties:
+                            count: { type: integer }
+                            avgDurationMinutes: { type: integer, example: 95 }
+                            minDurationMinutes: { type: integer }
+                            maxDurationMinutes: { type: integer }
+                            avgFee: { type: integer, example: 15000 }
+                            totalFee: { type: integer }
+                      durationDistribution:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            range: { type: string, example: '1-2h' }
+                            count: { type: integer }
+                      daily:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            date: { type: string, format: date }
+                            total: { type: integer }
+                            motorcycle: { type: integer }
+                            car: { type: integer }
+                            completed: { type: integer }
+                            totalFee: { type: integer }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /reports/subscriptions:
+    get:
+      tags: [Reports]
+      summary: Subscription analytics (admin, manager)
+      description: |
+        Subscription lifecycle report for a date range (default last 30 days):
+        - Currently active subscriptions by plan and vehicle type
+        - Expiring soon alerts: next 7 days and next 30 days
+        - New / cancelled / expired counts in the period
+        - Revenue per plan in the period
+        - Daily new subscription activity
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: query
+          name: from
+          schema: { type: string, format: date }
+        - in: query
+          name: to
+          schema: { type: string, format: date }
+      responses:
+        '200':
+          description: Subscription analytics
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      from: { type: string, format: date-time }
+                      to: { type: string, format: date-time }
+                      active:
+                        type: object
+                        properties:
+                          total: { type: integer }
+                          byVehicleType:
+                            type: object
+                            properties:
+                              motorcycle: { type: integer }
+                              car: { type: integer }
+                          byPlan:
+                            type: array
+                            items:
+                              type: object
+                              properties:
+                                planCode: { type: string, example: MOTO_MONTHLY }
+                                planName: { type: string }
+                                vehicleType: { type: string }
+                                count: { type: integer }
+                      period:
+                        type: object
+                        properties:
+                          newSubscriptions: { type: integer }
+                          cancelledSubscriptions: { type: integer }
+                          expiredSubscriptions: { type: integer }
+                      expiring:
+                        type: object
+                        properties:
+                          in7Days: { type: integer }
+                          in30Days: { type: integer }
+                      revenueByPlan:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            planCode: { type: string }
+                            planName: { type: string }
+                            vehicleType: { type: string }
+                            total: { type: integer }
+                            count: { type: integer }
+                      daily:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            date: { type: string, format: date }
+                            new: { type: integer }
+                            cancelled: { type: integer }
+                            expired: { type: integer }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /reports/bookings:
+    get:
+      tags: [Reports]
+      summary: Booking funnel report (admin, manager)
+      description: |
+        Booking analytics for a date range (default last 30 days):
+        - Count by status (pending / paid / used / expired / cancelled)
+        - **Conversion rate**: % of paid bookings that were actually used
+        - **No-show rate**: % of paid bookings that expired without being used
+        - Average booking duration and amount
+        - Daily breakdown
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: query
+          name: from
+          schema: { type: string, format: date }
+        - in: query
+          name: to
+          schema: { type: string, format: date }
+      responses:
+        '200':
+          description: Booking funnel report
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      from: { type: string, format: date-time }
+                      to: { type: string, format: date-time }
+                      summary:
+                        type: object
+                        properties:
+                          total: { type: integer }
+                          byStatus:
+                            type: object
+                            properties:
+                              pending: { type: integer }
+                              paid: { type: integer }
+                              used: { type: integer }
+                              expired: { type: integer }
+                              cancelled: { type: integer }
+                          revenueByStatus: { type: object }
+                      funnel:
+                        type: object
+                        properties:
+                          created: { type: integer }
+                          paid: { type: integer }
+                          used: { type: integer }
+                          noShow: { type: integer }
+                          cancelled: { type: integer }
+                          conversionRate: { type: integer, example: 78, description: '% of paid bookings that were used' }
+                          noShowRate: { type: integer, example: 12, description: '% of paid bookings that expired' }
+                      durationStats:
+                        type: object
+                        nullable: true
+                        properties:
+                          avgDurationHours: { type: number, example: 3.5 }
+                          minDurationHours: { type: number }
+                          maxDurationHours: { type: number }
+                          avgAmount: { type: integer }
+                          totalAmount: { type: integer }
+                      daily:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            date: { type: string, format: date }
+                            created: { type: integer }
+                            paid: { type: integer }
+                            used: { type: integer }
+                            cancelled: { type: integer }
+                            expired: { type: integer }
+                            revenue: { type: integer }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
 
   /reports/occupancy:
     get:
       tags: [Reports]
-      summary: Current occupancy by floor (admin, manager)
-      description: Real-time occupancy per floor + overall utilization %.
+      summary: Current occupancy snapshot by floor (admin, manager)
+      description: |
+        Real-time occupancy per floor and overall utilization %.
+        - Car resident floors: slot-status based (empty/occupied/reserved/maintenance)
+        - Car visitor floors: active session count vs totalSlots
+        - Motorcycle floors: ParkingRow occupiedCount vs capacity
       security:
         - BearerAuth: []
       responses:
         '200':
-          description: Occupancy report
+          description: Occupancy snapshot
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      overall:
+                        type: object
+                        properties:
+                          totalCapacity: { type: integer }
+                          occupied: { type: integer }
+                          utilizationPercent: { type: integer, example: 65 }
+                      floors:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            floorId: { type: string }
+                            floorNumber: { type: integer }
+                            section: { type: string }
+                            floorType: { type: string, enum: [resident, visitor] }
+                            vehicleType: { type: string, enum: [motorcycle, car] }
+                            building: { type: object }
+                            occupied: { type: integer }
+                            empty: { type: integer }
+                            utilizationPercent: { type: integer }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /reports/occupancy/trend:
+    get:
+      tags: [Reports]
+      summary: Historical occupancy trend (admin, manager)
+      description: |
+        Daily check-in counts vs total capacity over a date range (default last 30 days).
+        Optionally filter to a specific floor with `floorId`.
+        Returns `utilizationEstimate` (daily check-ins / totalCapacity × 100) and the peak day.
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: query
+          name: from
+          schema: { type: string, format: date }
+        - in: query
+          name: to
+          schema: { type: string, format: date }
+        - in: query
+          name: floorId
+          schema: { type: string }
+          description: Filter to a specific floor (MongoDB ObjectId)
+      responses:
+        '200':
+          description: Occupancy trend
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      from: { type: string, format: date-time }
+                      to: { type: string, format: date-time }
+                      totalCapacity: { type: integer }
+                      avgDailyCheckIns: { type: integer }
+                      peakDay:
+                        type: object
+                        nullable: true
+                        properties:
+                          date: { type: string, format: date }
+                          checkIns: { type: integer }
+                      daily:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            date: { type: string, format: date }
+                            motorcycle: { type: integer }
+                            car: { type: integer }
+                            total: { type: integer }
+                            completed: { type: integer }
+                            utilizationEstimate: { type: integer, example: 72 }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
 
@@ -4033,7 +4523,9 @@ paths:
     get:
       tags: [Reports]
       summary: Peak hour analysis (admin, manager)
-      description: Hourly check-in distribution over last N days (default 7). Helps identify rush hours.
+      description: |
+        Hourly check-in distribution over the last N days (default 7).
+        Returns 24 buckets (hour 0–23) with motorcycle/car/total counts and the single busiest hour.
       security:
         - BearerAuth: []
       parameters:
@@ -4043,6 +4535,89 @@ paths:
       responses:
         '200':
           description: Peak hours
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      from: { type: string, format: date-time }
+                      to: { type: string, format: date-time }
+                      days: { type: integer }
+                      peakHour:
+                        type: object
+                        properties:
+                          hour: { type: integer, example: 8 }
+                          count: { type: integer }
+                      hourly:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            hour: { type: integer }
+                            motorcycle: { type: integer }
+                            car: { type: integer }
+                            total: { type: integer }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /reports/staff:
+    get:
+      tags: [Reports]
+      summary: Staff performance report (admin, manager)
+      description: |
+        Per-staff breakdown for a date range (default last 30 days):
+        - Check-ins handled (motorcycle / car split)
+        - Check-outs handled and total revenue processed
+        - Cash transactions and cash amount collected
+        Results sorted by check-ins descending; includes team totals.
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: query
+          name: from
+          schema: { type: string, format: date }
+        - in: query
+          name: to
+          schema: { type: string, format: date }
+      responses:
+        '200':
+          description: Staff performance report
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      from: { type: string, format: date-time }
+                      to: { type: string, format: date-time }
+                      totals:
+                        type: object
+                        properties:
+                          checkIns: { type: integer }
+                          checkOuts: { type: integer }
+                          totalRevenue: { type: integer }
+                          cashAmount: { type: integer }
+                      staff:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            staffId: { type: string }
+                            fullName: { type: string }
+                            email: { type: string }
+                            role: { type: string }
+                            checkIns: { type: integer }
+                            motorcycleCheckIns: { type: integer }
+                            carCheckIns: { type: integer }
+                            checkOuts: { type: integer }
+                            totalRevenue: { type: integer }
+                            cashTransactions: { type: integer }
+                            cashAmount: { type: integer }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
 
