@@ -8,7 +8,7 @@ import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import connectDB from './config/database.js';
 import errorMiddleware from './middlewares/error.middleware.js';
-import { apiLimiter, authLimiter } from './middlewares/rate-limit.middleware.js';
+import { apiLimiter } from './middlewares/rate-limit.middleware.js';
 import authRoutes from './routes/auth.routes.js';
 import userRoutes from './routes/user.routes.js';
 import buildingRoutes from './routes/building.routes.js';
@@ -44,7 +44,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument, { explore
 app.use('/webhooks', webhookRoutes);
 
 app.use('/api/v1', apiLimiter);
-app.use('/api/v1/auth', authLimiter, authRoutes);
+app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/users', userRoutes);
 app.use('/api/v1/buildings', buildingRoutes);
 app.use('/api/v1/floors', floorRoutes);
