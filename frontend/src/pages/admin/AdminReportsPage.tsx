@@ -83,7 +83,7 @@ export function AdminReportsPage() {
 
   const busiestFloors = useMemo(() => {
     return [...(occupancy?.floors ?? [])]
-      .sort((a, b) => b.utilizationPercent - a.utilizationPercent)
+      .sort((a, b) => (b.utilizationPercent ?? 0) - (a.utilizationPercent ?? 0))
       .slice(0, 4)
   }, [occupancy])
 
@@ -116,36 +116,36 @@ export function AdminReportsPage() {
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <AdminStatCard
           label="Doanh thu trong kỳ"
-          value={revenue ? formatAdminCurrency(revenue.totals.total) : isLoading ? '-' : '0 VND'}
-          detail={`${revenue?.totals.transactions ?? 0} giao dịch đã thanh toán`}
+          value={revenue ? formatAdminCurrency(revenue.totals?.total ?? 0) : isLoading ? '-' : '0 VND'}
+          detail={`${revenue?.totals?.transactions ?? 0} giao dịch đã thanh toán`}
           tone="amber"
         />
         <AdminStatCard
           label="Lượt xe trong kỳ"
           value={sessions?.totalSessions ?? (isLoading ? '-' : 0)}
-          detail={`Vãng lai ${sessions?.byCustomerType.walk_in ?? 0} · Cư dân ${sessions?.byCustomerType.resident ?? 0}`}
+          detail={`Vãng lai ${sessions?.byCustomerType?.walk_in ?? 0} · Cư dân ${sessions?.byCustomerType?.resident ?? 0}`}
           tone="sky"
         />
         <AdminStatCard
           label="Xe đang trong bãi"
-          value={dashboard?.activity.activeSessions ?? (isLoading ? '-' : 0)}
-          detail={`Vào hôm nay ${dashboard?.activity.checkinsToday ?? 0} · Ra ${dashboard?.activity.checkoutsToday ?? 0}`}
+          value={dashboard?.activity?.activeSessions ?? (isLoading ? '-' : 0)}
+          detail={`Vào hôm nay ${dashboard?.activity?.checkinsToday ?? 0} · Ra ${dashboard?.activity?.checkoutsToday ?? 0}`}
           tone="emerald"
         />
         <AdminStatCard
           label="Công suất sử dụng"
-          value={occupancy ? `${occupancy.overall.utilizationPercent}%` : isLoading ? '-' : '0%'}
-          detail={`${occupancy?.overall.occupied ?? 0}/${occupancy?.overall.totalCapacity ?? 0} vị trí đang dùng`}
+          value={occupancy ? `${occupancy.overall?.utilizationPercent ?? 0}%` : isLoading ? '-' : '0%'}
+          detail={`${occupancy?.overall?.occupied ?? 0}/${occupancy?.overall?.totalCapacity ?? 0} vị trí đang dùng`}
           tone="violet"
         />
       </div>
 
-      {revenue && (
+      {revenue?.totals && (
         <section className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-          <AdminStatCard label="Doanh thu gói" value={formatAdminCurrency(revenue.totals.subscription)} detail="Thanh toán mua gói gửi xe" tone="violet" />
-          <AdminStatCard label="Doanh thu booking" value={formatAdminCurrency(revenue.totals.booking)} detail="Thanh toán đặt chỗ trước" tone="emerald" />
-          <AdminStatCard label="Vãng lai chuyển khoản" value={formatAdminCurrency(revenue.totals.sessionTransfer)} detail="Phiên gửi xe thanh toán online" tone="sky" />
-          <AdminStatCard label="Vãng lai tiền mặt" value={formatAdminCurrency(revenue.totals.sessionCash)} detail="Phiên gửi xe thu tại cổng" tone="amber" />
+          <AdminStatCard label="Doanh thu gói" value={formatAdminCurrency(revenue.totals.subscription ?? 0)} detail="Thanh toán mua gói gửi xe" tone="violet" />
+          <AdminStatCard label="Doanh thu booking" value={formatAdminCurrency(revenue.totals.booking ?? 0)} detail="Thanh toán đặt chỗ trước" tone="emerald" />
+          <AdminStatCard label="Vãng lai chuyển khoản" value={formatAdminCurrency(revenue.totals.sessionTransfer ?? 0)} detail="Phiên gửi xe thanh toán online" tone="sky" />
+          <AdminStatCard label="Vãng lai tiền mặt" value={formatAdminCurrency(revenue.totals.sessionCash ?? 0)} detail="Phiên gửi xe thu tại cổng" tone="amber" />
         </section>
       )}
 

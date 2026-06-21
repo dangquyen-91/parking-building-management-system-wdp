@@ -100,21 +100,22 @@ export function DashboardPage() {
         adminApi.getBookings({ status: 'paid', page: 1, limit: 5 }),
       ])
 
+      const userRows = users.users ?? []
       setSummary({
-        users: users.total,
-        activeUsers: users.users.filter((user) => user.isActive).length,
-        buildings: buildings.total,
-        floors: floors.total,
-        slots: slots.total,
-        rows: rows.total,
-        bookings: bookingsData.total,
-        subscriptions: subscriptions.total,
-        plans: plans.plans.length,
+        users: users.total ?? userRows.length,
+        activeUsers: userRows.filter((user) => user.isActive).length,
+        buildings: buildings.total ?? buildings.buildings?.length ?? 0,
+        floors: floors.total ?? floors.floors?.length ?? 0,
+        slots: slots.total ?? slots.slots?.length ?? 0,
+        rows: rows.total ?? rows.rows?.length ?? 0,
+        bookings: bookingsData.total ?? bookingsData.bookings?.length ?? 0,
+        subscriptions: subscriptions.total ?? subscriptions.subscriptions?.length ?? 0,
+        plans: plans.plans?.length ?? 0,
       })
       setReport(dashboardReport)
       setOccupancy(occupancyReport)
-      setSessions(sessionData.sessions)
-      setBookings(paidBookings.bookings)
+      setSessions(sessionData.sessions ?? [])
+      setBookings(paidBookings.bookings ?? [])
       setSnapshotTime(Date.now())
     } catch (loadError) {
       setError(loadError instanceof Error ? loadError.message : 'Không thể tải dữ liệu admin.')
@@ -131,7 +132,7 @@ export function DashboardPage() {
   const alerts = useMemo(() => {
     const result: Array<{ id: string; title: string; detail: string; to: string; tone: 'pending' | 'maintenance' | 'occupied' | 'warning' }> = []
 
-    occupancy?.floors.forEach((floor) => {
+    ;(occupancy?.floors ?? []).forEach((floor) => {
       const location = `${floor.building?.name ?? 'Tòa nhà'} / Tầng ${floor.floorNumber}`
 
       if (floor.utilizationPercent >= 90) {

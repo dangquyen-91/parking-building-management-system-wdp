@@ -1,5 +1,5 @@
-import type { BookingPayment } from '../../services/bookingApi'
-import { formatBookingCurrency } from './bookingUtils'
+import type { BookingPayment } from '../../../services/bookingApi'
+import { formatBookingCurrency } from '../bookingUtils'
 
 type BookingPaymentPanelProps = {
   payment: BookingPayment

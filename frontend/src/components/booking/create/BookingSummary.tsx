@@ -1,4 +1,4 @@
-import { formatBookingCurrency, formatBookingDateTime, normalizeBookingPlate } from './bookingUtils'
+import { formatBookingCurrency, formatBookingDateTime, normalizeBookingPlate } from '../bookingUtils'
 
 type BookingSummaryProps = {
   email: string

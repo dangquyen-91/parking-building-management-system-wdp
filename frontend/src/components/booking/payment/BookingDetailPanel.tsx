@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
-import type { Booking, BookingStatus } from '../../services/bookingApi'
-import { formatBookingCurrency, formatBookingDateTime } from './bookingUtils'
+import type { Booking, BookingStatus } from '../../../services/bookingApi'
+import { formatBookingCurrency, formatBookingDateTime } from '../bookingUtils'
 
 type BookingDetailPanelProps = {
   booking: Booking

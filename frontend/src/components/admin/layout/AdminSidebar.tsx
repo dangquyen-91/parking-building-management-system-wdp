@@ -1,7 +1,7 @@
 import { forwardRef, type ReactNode } from 'react'
 import { NavLink } from 'react-router-dom'
-import { LogoIcon } from '../common/icons'
-import { LogoutButton } from '../common/LogoutButton'
+import { LogoIcon } from '../../common/icons'
+import { LogoutButton } from '../../common/LogoutButton'
 
 const ADMIN_NAV_ITEMS = [
   { to: '/admin', label: 'Tổng quan', detail: 'Sức khỏe toàn hệ thống', icon: 'grid' },

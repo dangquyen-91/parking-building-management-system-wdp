@@ -122,6 +122,7 @@ export type AdminOccupancyReport = {
 export type AdminRevenueReport = {
   from: string
   to: string
+  groupBy?: 'day' | 'week' | 'month'
   totals: {
     subscription: number
     booking: number
@@ -130,7 +131,17 @@ export type AdminRevenueReport = {
     total: number
     transactions: number
   }
-  daily: Array<{
+  periods: Array<{
+    period: string
+    subscription: number
+    booking: number
+    sessionTransfer: number
+    sessionCash: number
+    total: number
+    transactions: number
+  }>
+  /** Compatibility with older report API responses. */
+  daily?: Array<{
     date: string
     subscription: number
     booking: number

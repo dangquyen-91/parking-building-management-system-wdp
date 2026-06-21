@@ -1,5 +1,5 @@
 import type { FormEvent, ReactNode } from 'react'
-import { MAX_DURATION_HOURS } from './bookingUtils'
+import { MAX_DURATION_HOURS } from '../bookingUtils'
 
 type BookingFormProps = {
   email: string

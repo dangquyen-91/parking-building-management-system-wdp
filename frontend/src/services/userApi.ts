@@ -13,6 +13,11 @@ export type UpdateProfilePayload = {
   phone?: string
 }
 
+export type ChangePasswordPayload = {
+  currentPassword: string
+  newPassword: string
+}
+
 const userHttp = axios.create({
   baseURL: API_BASE_URL,
   headers: {
@@ -60,6 +65,16 @@ export const userApi = {
     try {
       const response = await userHttp.patch<ApiEnvelope<{ user: AuthUser }>>('/users/me', payload)
       setStoredAuthUser(response.data.data.user)
+
+      return response.data.data
+    } catch (error) {
+      throw getApiError(error)
+    }
+  },
+
+  async changePassword(payload: ChangePasswordPayload) {
+    try {
+      const response = await userHttp.patch<ApiEnvelope<{ user: AuthUser }>>('/users/me/password', payload)
 
       return response.data.data
     } catch (error) {
