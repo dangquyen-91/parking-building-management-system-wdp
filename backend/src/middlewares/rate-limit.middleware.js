@@ -1,13 +1,5 @@
 import rateLimit from 'express-rate-limit';
 
-export const apiLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 100,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { status: 'fail', message: 'Too many requests, please try again later' },
-});
-
 // Chỉ áp dụng cho /login và /register
 export const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
