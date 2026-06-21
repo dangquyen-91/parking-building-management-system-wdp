@@ -1,4 +1,4 @@
-import type { GateSession, GateUser } from '../../../services/staffGateApi'
+import type { GateSession, GateSessionStatus, GateUser } from '../../../services/staffGateApi'
 import { formatCustomerType, formatSessionSpot, formatVehicleType } from '../../staff/data/staffGateUtils'
 import { ManagerStatusBadge } from '../common/ManagerStatusBadge'
 
@@ -12,8 +12,9 @@ function formatDateTime(value: string) {
   }).format(new Date(value))
 }
 
-function formatDuration(value: string) {
-  const minutes = Math.max(0, Math.floor((Date.now() - new Date(value).getTime()) / 60_000))
+function formatDuration(entryTime: string, exitTime?: string) {
+  const end = exitTime ? new Date(exitTime).getTime() : Date.now()
+  const minutes = Math.max(0, Math.floor((end - new Date(entryTime).getTime()) / 60_000))
   const hours = Math.floor(minutes / 60)
   const remainingMinutes = minutes % 60
   return hours > 0 ? `${hours} giờ ${remainingMinutes} phút` : `${remainingMinutes} phút`
@@ -22,6 +23,12 @@ function formatDuration(value: string) {
 function getStaffName(staff?: GateUser | string | null) {
   if (!staff) return 'Không xác định'
   return typeof staff === 'string' ? staff : staff.fullName || staff.email || 'Không xác định'
+}
+
+const statusBadge: Record<GateSessionStatus, { status: 'active' | 'checkout' | 'cancelled'; label: string }> = {
+  active: { status: 'active', label: 'Đang trong bãi' },
+  completed: { status: 'checkout', label: 'Đã ra' },
+  cancelled: { status: 'cancelled', label: 'Đã hủy' },
 }
 
 type ManagerGateLogCardProps = {
@@ -42,7 +49,7 @@ function InfoCell({
   wrap?: boolean
 }) {
   return (
-    <div className="min-w-0 rounded-xl bg-page/55 p-3">
+    <div className="flex min-h-20 min-w-0 flex-col justify-start rounded-xl bg-page/55 p-3">
       <p className="text-xs text-subtle">{label}</p>
       <p
         className={[
@@ -60,11 +67,15 @@ function InfoCell({
 
 export function ManagerGateLogCard({ session }: ManagerGateLogCardProps) {
   const spotLabel = formatSessionSpot(session)
+  const badge = statusBadge[session.status]
+  const timeLabel = session.status === 'completed' ? 'Thời gian ra' : 'Thời gian vào'
+  const timeValue = session.status === 'completed' && session.exitTime ? session.exitTime : session.entryTime
+  const durationLabel = session.status === 'active' ? 'Đã gửi' : 'Thời lượng'
 
   return (
     <article className="rounded-2xl border border-theme bg-badge p-3 shadow-sm transition-all hover:-translate-y-0.5 hover:bg-ghost hover:shadow-lg">
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-[1.15fr_repeat(4,minmax(0,1fr))_minmax(9rem,auto)] xl:items-stretch">
-        <div className="min-w-0 rounded-xl bg-page/55 p-3">
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-6 xl:items-stretch">
+        <div className="flex min-h-20 min-w-0 flex-col justify-start rounded-xl bg-page/55 p-3">
           <p className="truncate text-lg font-black tracking-[0.06em] text-fg">{session.licensePlate}</p>
           <p className="mt-1 truncate text-xs text-subtle">{session._id}</p>
         </div>
@@ -76,11 +87,16 @@ export function ManagerGateLogCard({ session }: ManagerGateLogCardProps) {
         />
         <InfoCell label="Vị trí" value={spotLabel} title={spotLabel} wrap />
         <InfoCell label="Nhân viên ghi nhận" value={getStaffName(session.staffId)} />
-        <InfoCell label="Thời gian vào" value={formatDateTime(session.entryTime)} />
+        <InfoCell label={timeLabel} value={formatDateTime(timeValue)} />
 
-        <div className="flex min-w-0 flex-col justify-center gap-2 rounded-xl bg-page/55 p-3">
-          <ManagerStatusBadge status="active" label="Đang trong bãi" />
-          <p className="truncate text-xs text-muted">Đã gửi {formatDuration(session.entryTime)}</p>
+        <div className="flex min-h-20 min-w-0 flex-col items-start justify-start rounded-xl bg-page/55 p-3 text-left">
+          <p className="text-xs text-subtle">Trạng thái</p>
+          <div className="mt-1">
+            <ManagerStatusBadge status={badge.status} label={badge.label} />
+          </div>
+          <p className="mt-1 w-full truncate text-xs leading-5 text-muted">
+            {durationLabel} {formatDuration(session.entryTime, session.exitTime)}
+          </p>
         </div>
       </div>
 

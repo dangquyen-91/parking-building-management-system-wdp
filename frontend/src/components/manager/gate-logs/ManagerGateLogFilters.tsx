@@ -1,27 +1,32 @@
-import type { GateCustomerType, GateVehicleType } from '../../../services/staffGateApi'
+import type { GateCustomerType, GateSessionStatus, GateVehicleType } from '../../../services/staffGateApi'
 
 export type ManagerGateVehicleFilter = 'all' | GateVehicleType
 export type ManagerGateCustomerFilter = 'all' | GateCustomerType
+export type ManagerGateStatusFilter = GateSessionStatus
 
 type ManagerGateLogFiltersProps = {
   query: string
+  statusFilter: ManagerGateStatusFilter
   vehicleFilter: ManagerGateVehicleFilter
   customerFilter: ManagerGateCustomerFilter
   onQueryChange: (value: string) => void
+  onStatusFilterChange: (value: ManagerGateStatusFilter) => void
   onVehicleFilterChange: (value: ManagerGateVehicleFilter) => void
   onCustomerFilterChange: (value: ManagerGateCustomerFilter) => void
 }
 
 export function ManagerGateLogFilters({
   query,
+  statusFilter,
   vehicleFilter,
   customerFilter,
   onQueryChange,
+  onStatusFilterChange,
   onVehicleFilterChange,
   onCustomerFilterChange,
 }: ManagerGateLogFiltersProps) {
   return (
-    <div className="grid w-full gap-3 md:grid-cols-3 xl:w-auto xl:min-w-[44rem]">
+    <div className="grid w-full gap-3 md:grid-cols-2 xl:w-auto xl:min-w-[58rem] xl:grid-cols-4">
       <label className="grid gap-1 text-xs font-medium text-subtle">
         Tìm biển số
         <input
@@ -30,6 +35,19 @@ export function ManagerGateLogFilters({
           onChange={(event) => onQueryChange(event.target.value)}
           placeholder="Ví dụ: 51G-882.14"
         />
+      </label>
+
+      <label className="grid gap-1 text-xs font-medium text-subtle">
+        Trạng thái
+        <select
+          className="h-10 rounded-lg border border-theme bg-page px-3 text-sm text-fg"
+          value={statusFilter}
+          onChange={(event) => onStatusFilterChange(event.target.value as ManagerGateStatusFilter)}
+        >
+          <option value="active">Trong bãi</option>
+          <option value="completed">Đã ra</option>
+          <option value="cancelled">Đã hủy</option>
+        </select>
       </label>
 
       <label className="grid gap-1 text-xs font-medium text-subtle">

@@ -5,6 +5,7 @@ import {
   ManagerGateLogStats,
   ManagerPageHeader,
   type ManagerGateCustomerFilter,
+  type ManagerGateStatusFilter,
   type ManagerGateVehicleFilter,
 } from '../../components/manager'
 import { managerGateLogsApi, type ManagerGateDashboard } from '../../services/managerGateLogsApi'
@@ -18,6 +19,7 @@ export function ManagerGateLogsPage() {
   const [sessions, setSessions] = useState<GateSession[]>([])
   const [dashboard, setDashboard] = useState<ManagerGateDashboard | null>(null)
   const [query, setQuery] = useState('')
+  const [statusFilter, setStatusFilter] = useState<ManagerGateStatusFilter>('active')
   const [vehicleFilter, setVehicleFilter] = useState<ManagerGateVehicleFilter>('all')
   const [customerFilter, setCustomerFilter] = useState<ManagerGateCustomerFilter>('all')
   const [isLoading, setIsLoading] = useState(true)
@@ -29,7 +31,7 @@ export function ManagerGateLogsPage() {
 
     try {
       const [sessionsResponse, dashboardResponse] = await Promise.all([
-        managerGateLogsApi.getActiveSessions({ limit: 100 }),
+        managerGateLogsApi.getActiveSessions({ status: statusFilter, limit: 100 }),
         managerGateLogsApi.getDashboard(),
       ])
       setSessions(sessionsResponse.sessions ?? [])
@@ -44,7 +46,7 @@ export function ManagerGateLogsPage() {
   useEffect(() => {
     const timeoutId = window.setTimeout(() => void loadGateLogs(), 0)
     return () => window.clearTimeout(timeoutId)
-  }, [])
+  }, [statusFilter])
 
   const filteredSessions = useMemo(() => {
     const normalizedQuery = normalizePlateSearch(query)
@@ -56,20 +58,24 @@ export function ManagerGateLogsPage() {
       return true
     })
   }, [customerFilter, query, sessions, vehicleFilter])
-  const isFiltered = Boolean(query.trim()) || vehicleFilter !== 'all' || customerFilter !== 'all'
+
+  const isFiltered =
+    statusFilter !== 'active' || Boolean(query.trim()) || vehicleFilter !== 'all' || customerFilter !== 'all'
 
   return (
     <div className="relative mx-auto max-w-[118rem] p-4 md:p-8 lg:p-10">
       <ManagerPageHeader
         eyebrow="Quản lý // Hoạt động cổng"
         title="Giám sát xe vào / ra"
-        description="Theo dõi xe đang trong bãi, nhân viên ghi nhận, vị trí đỗ và thống kê hoạt động cổng hôm nay."
+        description="Theo dõi xe đang trong bãi, lịch sử xe đã ra, nhân viên ghi nhận và vị trí đỗ."
         actions={
           <ManagerGateLogFilters
             query={query}
+            statusFilter={statusFilter}
             vehicleFilter={vehicleFilter}
             customerFilter={customerFilter}
             onQueryChange={setQuery}
+            onStatusFilterChange={setStatusFilter}
             onVehicleFilterChange={setVehicleFilter}
             onCustomerFilterChange={setCustomerFilter}
           />
@@ -80,6 +86,7 @@ export function ManagerGateLogsPage() {
         dashboard={dashboard}
         sessions={filteredSessions}
         totalSessions={sessions.length}
+        statusFilter={statusFilter}
         isFiltered={isFiltered}
         isLoading={isLoading}
       />
@@ -94,7 +101,7 @@ export function ManagerGateLogsPage() {
       )}
 
       <div className="mb-4 rounded-lg border border-theme bg-badge px-4 py-3 text-xs text-muted">
-        Danh sách chi tiết hiện hiển thị các xe đang trong bãi. Số lượt xe ra hôm nay được tổng hợp từ báo cáo hệ thống.
+        Danh sách chi tiết thay đổi theo trạng thái đang chọn. Mặc định là xe đang trong bãi; chọn “Đã ra” để xem lịch sử checkout.
       </div>
 
       <ManagerGateLogList sessions={filteredSessions} isLoading={isLoading} />

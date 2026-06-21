@@ -8,6 +8,7 @@ import {
   StaffGateSessionActivity,
   StaffGateSummary,
   StaffGateToast,
+  StaffPageHeader,
   type StaffGateMode,
 } from '../../components/staff'
 import { normalizePlate } from '../../components/staff/data/staffGateUtils'
@@ -414,7 +415,20 @@ export function StaffGatePage() {
 
   return (
     <div className="mx-auto max-w-[1500px] p-4 md:p-8 lg:p-10">
-      <div className="mb-6 flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
+      <StaffPageHeader
+        eyebrow="Cổng đang hoạt động"
+        title="Điều phối xe vào / ra"
+        description="Tra cứu biển số, xác minh QR, phân bổ vị trí và hoàn tất thanh toán ngay tại cổng."
+        actions={
+          <StaffGateSummary
+            activeCount={activeSessions.length}
+            completedCount={completedSessions.length}
+            availableCount={Math.max(0, availableCount)}
+          />
+        }
+      />
+
+      <div className="hidden">
         <div>
           <div className="mb-3 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-subtle">
             <span className="size-2 rounded-full bg-emerald-500 shadow-[0_0_12px_rgba(34,197,94,0.8)]" />

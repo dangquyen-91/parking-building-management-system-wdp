@@ -24,6 +24,7 @@ export { ManagerPlanStats } from './plans/ManagerPlanStats'
 export {
   ManagerGateLogFilters,
   type ManagerGateCustomerFilter,
+  type ManagerGateStatusFilter,
   type ManagerGateVehicleFilter,
 } from './gate-logs/ManagerGateLogFilters'
 export { ManagerGateLogList } from './gate-logs/ManagerGateLogList'
