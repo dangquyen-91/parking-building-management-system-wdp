@@ -9,13 +9,11 @@ const NAV_LINKS = [
   { href: '#how-it-works', label: 'Cách hoạt động' },
   { href: '#features', label: 'Tính năng' },
   { href: '#resident-plans', label: 'Gói cư dân' },
-  { href: '#resources', label: 'Tài nguyên' },
-  { href: '#blog', label: 'Blog' },
 ] as const
 
 export function Header() {
   const [menuOpen, setMenuOpen] = useState(false)
-  const [authUser, setAuthUser] = useState<AuthUser>()
+  const [authUser, setAuthUser] = useState<AuthUser | undefined>(() => getStoredAuthUser())
   const [logoutStatus, setLogoutStatus] = useState<'idle' | 'loading'>('idle')
   const mobileNavRef = useRef<HTMLElement>(null)
   const menuButtonRef = useRef<HTMLButtonElement>(null)
@@ -28,8 +26,6 @@ export function Header() {
   })
 
   useEffect(() => {
-    setAuthUser(getStoredAuthUser())
-
     const handleStorage = () => {
       setAuthUser(getStoredAuthUser())
     }
@@ -140,13 +136,22 @@ export function Header() {
                   <p className="mt-0.5 truncate text-xs text-subtle">{authUser.email}</p>
                 </div>
                 {authUser.role === 'user' && (
-                  <Link
-                    to="/profile"
-                    className="text-sm text-muted hover:text-fg py-2 px-2 rounded-lg hover:bg-ghost transition-colors"
-                    onClick={closeMenu}
-                  >
-                    Hồ sơ
-                  </Link>
+                  <>
+                    <Link
+                      to="/my-bookings"
+                      className="rounded-lg px-2 py-2 text-sm text-muted transition-colors hover:bg-ghost hover:text-fg"
+                      onClick={closeMenu}
+                    >
+                      Đặt chỗ của tôi
+                    </Link>
+                    <Link
+                      to="/profile"
+                      className="rounded-lg px-2 py-2 text-sm text-muted transition-colors hover:bg-ghost hover:text-fg"
+                      onClick={closeMenu}
+                    >
+                      Hồ sơ
+                    </Link>
+                  </>
                 )}
                 <button
                   type="button"
