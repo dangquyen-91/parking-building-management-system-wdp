@@ -1,5 +1,5 @@
 import type { ManagerGateDashboard } from '../../../services/managerGateLogsApi'
-import type { GateSession } from '../../../services/staffGateApi'
+import type { GateSession, GateSessionStatus } from '../../../services/staffGateApi'
 import { formatCurrency } from '../managerData'
 import { ManagerStatCard } from '../common/ManagerStatCard'
 
@@ -7,14 +7,31 @@ type ManagerGateLogStatsProps = {
   dashboard: ManagerGateDashboard | null
   sessions: GateSession[]
   totalSessions: number
+  statusFilter: GateSessionStatus
   isFiltered: boolean
   isLoading: boolean
+}
+
+const statusCopy: Record<GateSessionStatus, { label: string; detail: string }> = {
+  active: {
+    label: 'Đang trong bãi',
+    detail: 'Phiên gửi xe đang hoạt động',
+  },
+  completed: {
+    label: 'Đã ra',
+    detail: 'Lịch sử xe đã checkout',
+  },
+  cancelled: {
+    label: 'Đã hủy',
+    detail: 'Phiên gửi xe đã bị hủy',
+  },
 }
 
 export function ManagerGateLogStats({
   dashboard,
   sessions,
   totalSessions,
+  statusFilter,
   isFiltered,
   isLoading,
 }: ManagerGateLogStatsProps) {
@@ -23,14 +40,14 @@ export function ManagerGateLogStats({
   const carCount = sessions.filter((session) => session.vehicleType === 'car').length
   const residentCount = sessions.filter((session) => session.customerType === 'resident').length
   const walkInCount = sessions.filter((session) => session.customerType === 'walk_in').length
-  const activeValue = isFiltered ? sessions.length : activity?.activeSessions ?? 0
+  const mainValue = statusFilter === 'active' && !isFiltered ? activity?.activeSessions ?? 0 : sessions.length
 
   return (
     <div className="mb-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
       <ManagerStatCard
-        label="Đang trong bãi"
-        value={isLoading ? '-' : activeValue}
-        detail={isFiltered ? `Đang hiển thị trên ${totalSessions} phiên` : 'Phiên gửi xe đang hoạt động'}
+        label={statusCopy[statusFilter].label}
+        value={isLoading ? '-' : mainValue}
+        detail={isFiltered ? `Đang hiển thị trên ${totalSessions} phiên` : statusCopy[statusFilter].detail}
         tone="emerald"
       />
 

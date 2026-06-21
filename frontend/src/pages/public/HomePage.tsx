@@ -19,6 +19,14 @@ export function HomePage() {
     return <Navigate to="/manager" replace />
   }
 
+  if (authUser?.role === 'staff') {
+    return <Navigate to="/staff" replace />
+  }
+
+  if (authUser?.role === 'admin') {
+    return <Navigate to="/admin" replace />
+  }
+
   return (
     <div className="bg-page text-fg min-h-screen">
       <SkipLink />

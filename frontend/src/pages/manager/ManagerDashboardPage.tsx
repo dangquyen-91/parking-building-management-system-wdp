@@ -129,7 +129,7 @@ export function ManagerDashboardPage() {
             type="button"
             disabled={loading}
             onClick={() => void loadOverview()}
-            className="rounded-lg border border-theme px-4 py-2.5 text-sm font-semibold text-fg hover:bg-ghost disabled:opacity-50"
+            className="h-12 rounded-2xl border border-theme bg-page px-5 text-sm font-black text-fg shadow-sm transition-colors hover:bg-ghost disabled:opacity-50"
           >
             {loading ? 'Đang tải...' : 'Làm mới dữ liệu'}
           </button>
@@ -137,7 +137,7 @@ export function ManagerDashboardPage() {
       />
 
       {error && (
-        <div className="mb-5 rounded-lg border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-700 dark:text-red-300">
+        <div className="mb-5 rounded-2xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-700 shadow-sm dark:text-red-300">
           {error}
         </div>
       )}
@@ -147,21 +147,25 @@ export function ManagerDashboardPage() {
           label="Xe đang trong bãi"
           value={dashboard?.activity.activeSessions ?? '...'}
           detail={`${availableSlots} vị trí còn trống`}
+          tone="sky"
         />
         <ManagerStatCard
           label="Hoạt động hôm nay"
           value={`${dashboard?.activity.checkinsToday ?? 0}/${dashboard?.activity.checkoutsToday ?? 0}`}
           detail="Lượt xe vào / lượt xe ra"
+          tone="emerald"
         />
         <ManagerStatCard
           label="Doanh thu hôm nay"
           value={dashboard ? formatCurrency(dashboard.revenueToday.total) : '...'}
           detail={`Tiền mặt ${formatCurrency(dashboard?.revenueToday.sessionCash ?? 0)}`}
+          tone="amber"
         />
         <ManagerStatCard
           label="Nhân viên hoạt động"
           value={`${activeStaff}/${staff.length}`}
           detail={`${dashboard?.activity.pendingBookings ?? 0} booking đang chờ`}
+          tone="violet"
         />
       </div>
 
