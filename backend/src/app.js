@@ -1,4 +1,4 @@
-import express from 'express';
+﻿import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
@@ -23,7 +23,6 @@ import reportRoutes from './routes/report.routes.js';
 import webhookRoutes from './routes/webhook.routes.js';
 import { startSubscriptionJobs } from './jobs/subscription.job.js';
 import { startBookingJobs } from './jobs/booking.job.js';
-import logger from './utils/logger.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const swaggerDocument = YAML.load(join(__dirname, '../swagger.yaml'));
@@ -31,7 +30,7 @@ const swaggerDocument = YAML.load(join(__dirname, '../swagger.yaml'));
 const app = express();
 
 connectDB().catch((err) => {
-  logger.error('Failed to connect to MongoDB', { error: err.message });
+  console.error('Failed to connect to MongoDB', { error: err.message });
   process.exit(1);
 });
 
@@ -67,8 +66,8 @@ app.use(errorMiddleware);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  logger.info(`Server running on port ${PORT} in ${process.env.NODE_ENV} mode`);
-  logger.info(`Swagger UI available at http://localhost:${PORT}/api-docs`);
+  console.log(`Server running on port ${PORT} in ${process.env.NODE_ENV} mode`);
+  console.log(`Swagger UI available at http://localhost:${PORT}/api-docs`);
   startSubscriptionJobs();
   startBookingJobs();
 });

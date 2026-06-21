@@ -1,5 +1,4 @@
-import logger from '../utils/logger.js';
-
+﻿
 // Brevo (Sendinblue) transactional email over HTTPS — works on hosts that
 // block outbound SMTP ports (e.g. Render free tier blocks 465/587).
 const BREVO_ENDPOINT = 'https://api.brevo.com/v3/smtp/email';
@@ -41,7 +40,7 @@ const buildHtml = (booking) => `
 export const sendBookingConfirmation = async (booking) => {
   const { BREVO_API_KEY, BREVO_SENDER_EMAIL } = process.env;
   if (!BREVO_API_KEY || !BREVO_SENDER_EMAIL) {
-    logger.warn('Email not configured (BREVO_API_KEY/BREVO_SENDER_EMAIL missing) — emails skipped');
+    console.warn('Email not configured (BREVO_API_KEY/BREVO_SENDER_EMAIL missing) — emails skipped');
     return;
   }
   if (!booking?.email) return;
@@ -67,15 +66,15 @@ export const sendBookingConfirmation = async (booking) => {
 
     if (!res.ok) {
       const body = await res.text();
-      logger.error('Failed to send booking confirmation email', {
+      console.error('Failed to send booking confirmation email', {
         status: res.status,
         body,
         email: booking.email,
       });
       return;
     }
-    logger.info('Booking confirmation email sent', { email: booking.email, bookingId: booking._id });
+    console.log('Booking confirmation email sent', { email: booking.email, bookingId: booking._id });
   } catch (err) {
-    logger.error('Failed to send booking confirmation email', { error: err.message, email: booking.email });
+    console.error('Failed to send booking confirmation email', { error: err.message, email: booking.email });
   }
 };

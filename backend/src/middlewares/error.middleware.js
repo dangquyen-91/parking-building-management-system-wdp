@@ -1,5 +1,4 @@
-import AppError from '../utils/appError.js';
-import logger from '../utils/logger.js';
+﻿import AppError from '../utils/appError.js';
 
 const handleCastError = (err) => new AppError(`Invalid ${err.path}: ${err.value}`, 400);
 
@@ -30,7 +29,7 @@ const errorMiddleware = (err, req, res, next) => {
   if (error.name === 'TokenExpiredError') error = handleJWTExpiredError();
 
   if (error.statusCode >= 500) {
-    logger.error(error.message, { stack: err.stack, path: req.path, method: req.method });
+    console.error(error.message, { stack: err.stack, path: req.path, method: req.method });
   }
 
   res.status(error.statusCode).json({

@@ -1,8 +1,7 @@
-import cron from 'node-cron';
+﻿import cron from 'node-cron';
 import Subscription from '../models/subscription.model.js';
 import Payment from '../models/payment.model.js';
 import ParkingSlot from '../models/parking-slot.model.js';
-import logger from '../utils/logger.js';
 
 const PENDING_TTL_MINUTES = 60;
 
@@ -24,7 +23,7 @@ const expireActiveSubscriptions = async () => {
     sub.status = 'expired';
     await sub.save();
   }
-  logger.info(`Expired ${subsToExpire.length} active subscription(s) past endDate; released slots`);
+  console.log(`Expired ${subsToExpire.length} active subscription(s) past endDate; released slots`);
 };
 
 const cancelStalePending = async () => {
@@ -46,7 +45,7 @@ const cancelStalePending = async () => {
       { status: 'expired' }
     );
   }
-  logger.info(`Cancelled ${stale.length} stale pending subscription(s) older than ${PENDING_TTL_MINUTES} minutes`);
+  console.log(`Cancelled ${stale.length} stale pending subscription(s) older than ${PENDING_TTL_MINUTES} minutes`);
 };
 
 export const startSubscriptionJobs = () => {
@@ -55,8 +54,8 @@ export const startSubscriptionJobs = () => {
       await expireActiveSubscriptions();
       await cancelStalePending();
     } catch (err) {
-      logger.error('Subscription cron job failed', { error: err.message });
+      console.error('Subscription cron job failed', { error: err.message });
     }
   });
-  logger.info('Subscription cron jobs scheduled (every 15 minutes)');
+  console.log('Subscription cron jobs scheduled (every 15 minutes)');
 };
