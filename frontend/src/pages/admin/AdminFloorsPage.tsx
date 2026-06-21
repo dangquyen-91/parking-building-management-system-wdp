@@ -47,21 +47,22 @@ export function AdminFloorsPage() {
       description="Admin xem toàn bộ tầng, tòa nhà, sức chứa, trạng thái vận hành và quản lý phụ trách."
     >
       {error && (
-        <div className="mb-4 rounded-lg border border-rose-400/40 bg-rose-500/10 p-3 text-sm text-rose-100">
+        <div className="mb-4 rounded-2xl border border-rose-400/40 bg-rose-500/10 p-4 text-sm text-rose-700 dark:text-rose-200">
           {error}
         </div>
       )}
 
       <div className="grid gap-3 md:grid-cols-3">
-        <AdminStatCard label="Tầng" value={isLoading ? '-' : occupancy?.floors.length ?? 0} detail="Tầng đang hoạt động từ API" />
-        <AdminStatCard label="Tổng sức chứa" value={isLoading ? '-' : occupancy?.overall.totalCapacity ?? 0} detail="Trên toàn bộ tòa nhà" />
-        <AdminStatCard label="Đang dùng" value={isLoading ? '-' : occupancy?.overall.occupied ?? 0} detail={`${occupancy?.overall.utilizationPercent ?? 0}% sử dụng`} />
+        <AdminStatCard label="Tầng" value={isLoading ? '-' : occupancy?.floors.length ?? 0} detail="Tầng đang hoạt động từ API" tone="violet" />
+        <AdminStatCard label="Tổng sức chứa" value={isLoading ? '-' : occupancy?.overall.totalCapacity ?? 0} detail="Trên toàn bộ tòa nhà" tone="sky" />
+        <AdminStatCard label="Đang dùng" value={isLoading ? '-' : occupancy?.overall.occupied ?? 0} detail={`${occupancy?.overall.utilizationPercent ?? 0}% sử dụng`} tone="emerald" />
       </div>
 
-      <section className="liquid-glass-card mt-5 rounded-lg p-4 md:p-5">
+      <section className="liquid-glass-card mt-5 rounded-2xl border border-sky-500/15 p-4 shadow-sm md:p-5">
+        <span className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-violet-500 via-sky-500 to-emerald-500" />
         <div className="mb-4">
-          <p className="text-[10px] uppercase tracking-[0.18em] text-subtle">Tòa nhà</p>
-          <h2 className="mt-1 text-base font-semibold text-fg">Danh sách tầng</h2>
+          <p className="text-[10px] font-black uppercase tracking-[0.18em] text-sky-600 dark:text-sky-300">Tòa nhà</p>
+          <h2 className="mt-1 text-lg font-black text-fg">Danh sách tầng</h2>
         </div>
 
         <div className="grid gap-3">
@@ -73,11 +74,14 @@ export function AdminFloorsPage() {
             const status = floor.maintenance ? 'warning' : 'enabled'
 
             return (
-              <article key={floor.floorId} className="rounded-lg border border-theme bg-badge p-4">
-                <div className="grid gap-4 lg:grid-cols-[1fr_7rem_7rem_8rem_9rem] lg:items-center">
-                  <div>
-                    <p className="text-base font-semibold text-fg">{floor.building?.name ?? 'Tòa nhà'} / Tầng {floor.floorNumber}</p>
-                    <p className="mt-1 text-xs text-subtle">{vehicleTypeLabels[floor.vehicleType]} / {floorTypeLabels[floor.floorType]}</p>
+              <article key={floor.floorId} className="rounded-2xl border border-theme bg-badge p-4 transition-all hover:border-sky-500/25 hover:bg-sky-500/5">
+                <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_7rem_7rem_8rem_9rem] lg:items-center">
+                  <div className="flex min-w-0 items-center gap-3">
+                    <span className={`flex size-11 shrink-0 items-center justify-center rounded-2xl text-sm font-black ${floor.vehicleType === 'car' ? 'bg-violet-500/15 text-violet-700 dark:text-violet-200' : 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-200'}`}>{floor.floorNumber}</span>
+                    <div className="min-w-0">
+                      <p className="truncate text-base font-black text-fg">{floor.building?.name ?? 'Tòa nhà'} / Tầng {floor.floorNumber}</p>
+                      <p className="mt-1 text-xs text-subtle">{vehicleTypeLabels[floor.vehicleType]} / {floorTypeLabels[floor.floorType]}</p>
+                    </div>
                   </div>
                   <div>
                     <p className="text-xs text-subtle">Trống</p>
@@ -93,8 +97,8 @@ export function AdminFloorsPage() {
                   </div>
                   <AdminStatusBadge status={status} />
                 </div>
-                <div className="mt-4 h-2 overflow-hidden rounded-full bg-page">
-                  <div className="h-full rounded-full bg-btn-primary" style={{ width: `${percent}%` }} />
+                <div className="mt-4 h-2.5 overflow-hidden rounded-full bg-page">
+                  <div className={`h-full rounded-full ${percent >= 90 ? 'bg-gradient-to-r from-amber-500 to-rose-500' : percent >= 60 ? 'bg-gradient-to-r from-sky-500 to-violet-500' : 'bg-gradient-to-r from-emerald-500 to-cyan-400'}`} style={{ width: `${percent}%` }} />
                 </div>
               </article>
             )
