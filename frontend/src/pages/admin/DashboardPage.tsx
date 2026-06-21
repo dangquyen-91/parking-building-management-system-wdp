@@ -24,6 +24,29 @@ const adminLinks = [
   { to: '/admin/reports', label: 'Báo cáo', detail: 'Doanh thu, công suất và lưu lượng' },
 ]
 
+const quickLinkStyles = [
+  {
+    glow: 'from-violet-500/20',
+    icon: 'bg-violet-500 text-white shadow-violet-500/30',
+    arrow: 'text-violet-500',
+  },
+  {
+    glow: 'from-sky-500/20',
+    icon: 'bg-sky-500 text-white shadow-sky-500/30',
+    arrow: 'text-sky-500',
+  },
+  {
+    glow: 'from-emerald-500/20',
+    icon: 'bg-emerald-500 text-white shadow-emerald-500/30',
+    arrow: 'text-emerald-500',
+  },
+  {
+    glow: 'from-amber-500/20',
+    icon: 'bg-amber-500 text-white shadow-amber-500/30',
+    arrow: 'text-amber-500',
+  },
+] as const
+
 export function DashboardPage() {
   const [summary, setSummary] = useState({
     users: 0,
@@ -191,35 +214,55 @@ export function DashboardPage() {
           label="Doanh thu hôm nay"
           value={isLoading ? '-' : formatAdminCurrency(report?.revenueToday.total ?? 0)}
           detail={`Booking ${formatAdminCurrency(report?.revenueToday.booking ?? 0)}`}
+          tone="amber"
         />
         <AdminStatCard
           label="Xe đang trong bãi"
           value={isLoading ? '-' : report?.activity.activeSessions ?? 0}
           detail={`${availableSlots} vị trí còn trống`}
+          tone="sky"
         />
         <AdminStatCard
           label="Hoạt động hôm nay"
           value={isLoading ? '-' : `${report?.activity.checkinsToday ?? 0}/${report?.activity.checkoutsToday ?? 0}`}
           detail="Lượt xe vào / lượt xe ra"
+          tone="emerald"
         />
         <AdminStatCard
           label="Tài khoản hoạt động"
           value={isLoading ? '-' : `${summary.activeUsers}/${summary.users}`}
           detail={`${summary.buildings} tòa nhà / ${summary.floors} tầng`}
+          tone="violet"
         />
       </div>
 
       <section className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        {adminLinks.map((item) => (
-          <Link key={item.to} to={item.to} className="rounded-lg border border-theme bg-badge p-4 transition-colors hover:bg-ghost">
-            <p className="text-sm font-semibold text-fg">{item.label}</p>
-            <p className="mt-1 text-xs text-muted">{item.detail}</p>
+        {adminLinks.map((item, index) => {
+          const styles = quickLinkStyles[index]
+          return (
+          <Link
+            key={item.to}
+            to={item.to}
+            className={`group relative overflow-hidden rounded-2xl border border-theme bg-gradient-to-br ${styles.glow} via-badge to-badge p-4 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg`}
+          >
+            <div className="relative flex items-center gap-3">
+              <span className={`flex size-11 shrink-0 items-center justify-center rounded-2xl text-sm font-black shadow-lg ${styles.icon}`}>
+                {String(index + 1).padStart(2, '0')}
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block text-sm font-bold text-fg">{item.label}</span>
+                <span className="mt-1 block line-clamp-1 text-xs text-muted">{item.detail}</span>
+              </span>
+              <span className={`text-xl transition-transform group-hover:translate-x-1 ${styles.arrow}`}>→</span>
+            </div>
           </Link>
-        ))}
+          )
+        })}
       </section>
 
       <div className="mt-5 grid gap-5 xl:grid-cols-[1.4fr_1fr]">
-        <section className="liquid-glass-card rounded-lg p-4 md:p-5">
+        <section className="liquid-glass-card rounded-2xl border border-sky-500/15 p-4 shadow-sm md:p-5">
+          <span className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-sky-500 via-cyan-400 to-emerald-400" />
           <div className="mb-4 flex items-start justify-between gap-3">
             <div>
               <p className="text-[10px] uppercase tracking-[0.18em] text-subtle">Công suất</p>
@@ -235,7 +278,7 @@ export function DashboardPage() {
           ) : (
             <div className="grid gap-3 md:grid-cols-2">
               {(occupancy?.floors ?? []).slice(0, 6).map((floor) => (
-                <article key={floor.floorId} className="rounded-lg border border-theme bg-badge p-4">
+                <article key={floor.floorId} className="rounded-2xl border border-theme bg-badge p-4 transition-all hover:border-sky-500/30 hover:bg-sky-500/5">
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <p className="font-semibold text-fg">
@@ -248,9 +291,15 @@ export function DashboardPage() {
                       label={`${floor.utilizationPercent}%`}
                     />
                   </div>
-                  <div className="mt-4 h-2 overflow-hidden rounded-full bg-page">
+                  <div className="mt-4 h-2.5 overflow-hidden rounded-full bg-page">
                     <div
-                      className="h-full rounded-full bg-btn-primary"
+                      className={`h-full rounded-full ${
+                        floor.utilizationPercent >= 90
+                          ? 'bg-gradient-to-r from-amber-500 to-rose-500'
+                          : floor.utilizationPercent >= 60
+                            ? 'bg-gradient-to-r from-sky-500 to-violet-500'
+                            : 'bg-gradient-to-r from-emerald-500 to-cyan-400'
+                      }`}
                       style={{ width: `${Math.min(100, floor.utilizationPercent)}%` }}
                     />
                   </div>
@@ -263,7 +312,8 @@ export function DashboardPage() {
           )}
         </section>
 
-        <section className="liquid-glass-card rounded-lg p-4 md:p-5">
+        <section className="liquid-glass-card rounded-2xl border border-rose-500/15 p-4 shadow-sm md:p-5">
+          <span className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-amber-400 via-orange-500 to-rose-500" />
           <div className="mb-4">
             <p className="text-[10px] uppercase tracking-[0.18em] text-subtle">Cần chú ý</p>
             <h2 className="mt-1 text-base font-semibold text-fg">Cảnh báo hệ thống</h2>
@@ -276,7 +326,7 @@ export function DashboardPage() {
           ) : (
             <div className="space-y-2">
               {alerts.slice(0, 6).map((alert) => (
-                <Link key={alert.id} to={alert.to} className="block rounded-lg border border-theme bg-badge p-3 hover:bg-ghost">
+                <Link key={alert.id} to={alert.to} className="block rounded-2xl border border-theme bg-badge p-3 transition-colors hover:border-rose-500/25 hover:bg-rose-500/5">
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <p className="text-sm font-semibold text-fg">{alert.title}</p>
@@ -292,7 +342,8 @@ export function DashboardPage() {
       </div>
 
       <div className="mt-5 grid gap-5 xl:grid-cols-2">
-        <section className="liquid-glass-card rounded-lg p-4 md:p-5">
+        <section className="liquid-glass-card rounded-2xl border border-emerald-500/15 p-4 shadow-sm md:p-5">
+          <span className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-emerald-500 to-cyan-400" />
           <div className="mb-4 flex items-start justify-between gap-3">
             <div>
               <p className="text-[10px] uppercase tracking-[0.18em] text-subtle">Hoạt động cổng</p>
@@ -308,7 +359,7 @@ export function DashboardPage() {
           ) : (
             <div className="space-y-2">
               {sessions.map((session) => (
-                <article key={session._id} className="flex items-center justify-between gap-3 rounded-lg border border-theme bg-badge p-3">
+                <article key={session._id} className="flex items-center justify-between gap-3 rounded-2xl border border-theme bg-badge p-3 transition-colors hover:border-emerald-500/25 hover:bg-emerald-500/5">
                   <div className="min-w-0">
                     <p className="truncate text-sm font-semibold text-fg">{session.licensePlate}</p>
                     <p className="mt-1 text-xs text-subtle">
@@ -322,7 +373,8 @@ export function DashboardPage() {
           )}
         </section>
 
-        <section className="liquid-glass-card rounded-lg p-4 md:p-5">
+        <section className="liquid-glass-card rounded-2xl border border-violet-500/15 p-4 shadow-sm md:p-5">
+          <span className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-violet-500 to-fuchsia-500" />
           <div className="mb-4 flex items-start justify-between gap-3">
             <div>
               <p className="text-[10px] uppercase tracking-[0.18em] text-subtle">Booking sắp đến</p>
@@ -338,7 +390,7 @@ export function DashboardPage() {
           ) : (
             <div className="space-y-2">
               {bookings.map((booking) => (
-                <article key={booking._id} className="flex items-center justify-between gap-3 rounded-lg border border-theme bg-badge p-3">
+                <article key={booking._id} className="flex items-center justify-between gap-3 rounded-2xl border border-theme bg-badge p-3 transition-colors hover:border-violet-500/25 hover:bg-violet-500/5">
                   <div className="min-w-0">
                     <p className="truncate text-sm font-semibold text-fg">{booking.licensePlate}</p>
                     <p className="mt-1 text-xs text-subtle">Dự kiến đến {formatDateTime(booking.expectedArrivalTime)}</p>
@@ -351,17 +403,18 @@ export function DashboardPage() {
         </section>
       </div>
 
-      <section className="liquid-glass-card mt-5 rounded-lg p-4 md:p-5">
+      <section className="liquid-glass-card mt-5 rounded-2xl border border-theme p-4 shadow-sm md:p-5">
+        <span className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-violet-500 via-sky-500 to-emerald-500" />
         <div className="mb-4">
           <p className="text-[10px] uppercase tracking-[0.18em] text-subtle">Phạm vi quản trị</p>
           <h2 className="mt-1 text-base font-semibold text-fg">Tài nguyên hệ thống</h2>
         </div>
 
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-          <AdminStatCard label="Chỗ đỗ ô tô" value={summary.slots} detail={`${summary.rows} hàng xe máy đang cấu hình`} />
-          <AdminStatCard label="Booking" value={summary.bookings} detail={`${report?.activity.pendingBookings ?? 0} booking đang pending`} />
-          <AdminStatCard label="Gói cư dân" value={summary.subscriptions} detail={`${report?.activity.activeSubscriptions ?? 0} gói đang hoạt động`} />
-          <AdminStatCard label="Gói giá" value={summary.plans} detail="Các plan có trong hệ thống" />
+          <AdminStatCard label="Chỗ đỗ ô tô" value={summary.slots} detail={`${summary.rows} hàng xe máy đang cấu hình`} tone="sky" />
+          <AdminStatCard label="Booking" value={summary.bookings} detail={`${report?.activity.pendingBookings ?? 0} booking đang pending`} tone="amber" />
+          <AdminStatCard label="Gói cư dân" value={summary.subscriptions} detail={`${report?.activity.activeSubscriptions ?? 0} gói đang hoạt động`} tone="emerald" />
+          <AdminStatCard label="Gói giá" value={summary.plans} detail="Các plan có trong hệ thống" tone="violet" />
         </div>
       </section>
     </AdminPageShell>

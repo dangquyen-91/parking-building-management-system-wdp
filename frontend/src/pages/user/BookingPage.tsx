@@ -69,10 +69,12 @@ export function BookingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-page text-fg">
+    <div className="relative min-h-screen overflow-hidden bg-[linear-gradient(145deg,#fafafa_0%,#f5f3ff_52%,#f0f9ff_100%)] text-fg dark:bg-[linear-gradient(145deg,#0f1117_0%,#131122_52%,#0b1720_100%)]">
+      <div className="pointer-events-none absolute left-[-8rem] top-24 h-80 w-80 rounded-full bg-violet-300/10 blur-3xl" />
+      <div className="pointer-events-none absolute right-[-7rem] top-56 h-96 w-96 rounded-full bg-sky-300/10 blur-3xl" />
       <BookingTopNav />
 
-      <main id="main" tabIndex={-1} className="mx-auto max-w-7xl p-4 md:p-8 lg:p-10">
+      <main id="main" tabIndex={-1} className="relative z-10 mx-auto max-w-7xl p-4 md:p-8 lg:p-10">
         <BookingHero durationHours={durationHours} estimatedFee={estimatedFee} />
 
         {error && <BookingErrorBanner error={error} />}

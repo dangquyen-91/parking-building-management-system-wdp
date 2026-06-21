@@ -4,12 +4,10 @@ import { BrandLink, SkipLink, ThemeToggle, UserMenu } from '../common'
 import { authApi, getStoredAuthUser, type AuthUser } from '../../services/authApi'
 
 export function BookingTopNav() {
-  const [authUser, setAuthUser] = useState<AuthUser>()
+  const [authUser, setAuthUser] = useState<AuthUser | undefined>(() => getStoredAuthUser())
   const [logoutStatus, setLogoutStatus] = useState<'idle' | 'loading'>('idle')
 
   useEffect(() => {
-    setAuthUser(getStoredAuthUser())
-
     const handleStorage = () => {
       setAuthUser(getStoredAuthUser())
     }
@@ -39,7 +37,7 @@ export function BookingTopNav() {
   return (
     <>
       <SkipLink />
-      <header className="sticky top-0 z-40 border-b border-theme bg-page/95 px-4 backdrop-blur-md md:px-8 lg:px-10">
+      <header className="sticky top-0 z-40 border-b border-white/50 bg-white/75 px-4 shadow-sm backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/75 md:px-8 lg:px-10">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4">
           <BrandLink className="flex items-center gap-2 text-sm font-medium text-fg hover:text-fg" />
           <nav className="flex items-center gap-2" aria-label="User navigation">

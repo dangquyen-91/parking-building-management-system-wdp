@@ -60,17 +60,27 @@ export function UserMenu({
           role="menu"
         >
           {user.role === 'user' && (
-            <Link
-              to="/profile"
-              className={[
-                'block px-4 py-3 text-sm font-medium transition-colors hover:bg-sky-500/10 hover:text-sky-700 dark:hover:text-sky-100',
-                activeItem === 'profile' ? 'bg-sky-500/10 text-sky-700 dark:text-sky-100' : 'text-muted',
-              ].join(' ')}
-              role="menuitem"
-              onClick={() => setIsOpen(false)}
-            >
-              Hồ sơ
-            </Link>
+            <>
+              <Link
+                to="/my-bookings"
+                className="block px-4 py-3 text-sm font-medium text-muted transition-colors hover:bg-sky-500/10 hover:text-sky-700 dark:hover:text-sky-100"
+                role="menuitem"
+                onClick={() => setIsOpen(false)}
+              >
+                Đặt chỗ của tôi
+              </Link>
+              <Link
+                to="/profile"
+                className={[
+                  'block border-t border-theme px-4 py-3 text-sm font-medium transition-colors hover:bg-sky-500/10 hover:text-sky-700 dark:hover:text-sky-100',
+                  activeItem === 'profile' ? 'bg-sky-500/10 text-sky-700 dark:text-sky-100' : 'text-muted',
+                ].join(' ')}
+                role="menuitem"
+                onClick={() => setIsOpen(false)}
+              >
+                Hồ sơ
+              </Link>
+            </>
           )}
           <button
             type="button"
