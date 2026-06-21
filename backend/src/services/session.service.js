@@ -310,11 +310,12 @@ export const checkIn = async ({ slotId, rowId, licensePlate, vehicleType, staffI
   }
 };
 
-export const getActiveSessions = async ({ page = 1, limit = 20, vehicleType, licensePlate, floorId, buildingId } = {}) => {
+export const getActiveSessions = async ({ page = 1, limit = 20, vehicleType, licensePlate, floorId, buildingId, status } = {}) => {
   const pageNum = Math.max(1, parseInt(page));
   const limitNum = Math.min(100, Math.max(1, parseInt(limit)));
 
-  const filter = { status: 'active' };
+  const VALID_STATUSES = ['active', 'completed', 'cancelled'];
+  const filter = { status: VALID_STATUSES.includes(status) ? status : 'active' };
   if (vehicleType) filter.vehicleType = vehicleType;
   if (licensePlate) filter.licensePlate = new RegExp(licensePlate.toUpperCase(), 'i');
 
