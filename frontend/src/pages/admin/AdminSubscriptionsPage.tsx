@@ -70,7 +70,7 @@ export function AdminSubscriptionsPage() {
           type="button"
           disabled={loading}
           onClick={() => void loadSubscriptions()}
-          className="h-10 rounded-lg border border-theme px-4 text-sm font-semibold text-fg hover:bg-ghost disabled:opacity-50"
+          className="h-11 rounded-xl border border-emerald-500/25 bg-emerald-500/10 px-5 text-sm font-bold text-emerald-700 transition hover:bg-emerald-500 hover:text-white disabled:opacity-50 dark:text-emerald-200"
         >
           {loading ? 'Đang tải...' : 'Làm mới'}
         </button>
@@ -82,7 +82,8 @@ export function AdminSubscriptionsPage() {
         snapshotTime={snapshotTime}
       />
 
-      <section className="liquid-glass-card mb-5 rounded-lg p-4">
+      <section className="liquid-glass-card mb-5 rounded-2xl border border-emerald-500/15 p-4 shadow-sm">
+        <span className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-emerald-500 via-sky-500 to-violet-500" />
         <AdminSubscriptionFilters
           query={query}
           status={status}
@@ -94,7 +95,7 @@ export function AdminSubscriptionsPage() {
       </section>
 
       {error && (
-        <div className="mb-5 flex items-center justify-between gap-3 rounded-lg border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-700 dark:text-red-300">
+        <div className="mb-5 flex items-center justify-between gap-3 rounded-2xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-700 dark:text-red-300">
           <span>{error}</span>
           <button type="button" className="font-semibold underline" onClick={() => void loadSubscriptions()}>
             Thử lại
