@@ -16,7 +16,7 @@ export const create = async (req, res, next) => {
 export const lookup = async (req, res, next) => {
   try {
     const result = await bookingService.lookup(req.query);
-    success(res, result, 'Bookings retrieved by phone + plate');
+    success(res, result, 'Bookings retrieved by email + plate');
   } catch (err) {
     next(err);
   }
@@ -54,10 +54,24 @@ export const cancel = async (req, res, next) => {
     const booking = await bookingService.cancel({
       id: req.params.id,
       userId: req.user?._id || null,
-      phoneNumber: req.body?.phoneNumber,
+      email: req.body?.email,
       licensePlate: req.body?.licensePlate,
     });
     success(res, { booking }, 'Booking cancelled');
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const confirm = async (req, res, next) => {
+  try {
+    const booking = await bookingService.confirm({
+      id: req.params.id,
+      userId: req.user?._id || null,
+      email: req.body?.email,
+      licensePlate: req.body?.licensePlate,
+    });
+    success(res, { booking }, 'Booking payment confirmed');
   } catch (err) {
     next(err);
   }

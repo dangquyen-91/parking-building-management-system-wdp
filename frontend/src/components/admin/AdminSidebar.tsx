@@ -37,6 +37,17 @@ const ADMIN_NAV_ITEMS = [
     ),
   },
   {
+    to: '/admin/managers',
+    label: 'Manager',
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <circle cx="8" cy="8" r="3" stroke="currentColor" strokeWidth="1.5" />
+        <path d="M3 19c0-2.8 2.2-5 5-5s5 2.2 5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+        <path d="M15 6h6M15 11h6M15 16h4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      </svg>
+    ),
+  },
+  {
     to: '/admin/buildings',
     label: 'Tòa nhà',
     icon: (
@@ -98,6 +109,26 @@ const ADMIN_NAV_ITEMS = [
     ),
   },
   {
+    to: '/admin/plans',
+    label: 'Gói giá',
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M5 6.5A2.5 2.5 0 0 1 7.5 4H19v16H7.5A2.5 2.5 0 0 1 5 17.5v-11Z" stroke="currentColor" strokeWidth="1.5" />
+        <path d="M8 8h7M8 12h7M8 16h4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      </svg>
+    ),
+  },
+  {
+    to: '/admin/subscriptions',
+    label: 'Gói cư dân',
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M6 20V5.5A1.5 1.5 0 0 1 7.5 4h9A1.5 1.5 0 0 1 18 5.5V20" stroke="currentColor" strokeWidth="1.5" />
+        <path d="M9 8h6M9 12h6M9 16h3M4 20h16" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      </svg>
+    ),
+  },
+  {
     to: '/admin/reports',
     label: 'Báo cáo',
     icon: (
@@ -133,7 +164,7 @@ export const AdminSidebar = forwardRef<HTMLElement, AdminSidebarProps>(function 
         'liquid-glass-card flex flex-col border-r border-theme rounded-none',
         'max-lg:fixed max-lg:inset-y-0 max-lg:left-0 max-lg:z-50',
         'max-lg:w-[min(18rem,85vw)] max-lg:max-h-screen max-lg:overscroll-contain',
-        'lg:static lg:z-auto lg:w-full lg:min-h-screen lg:translate-x-0 lg:visible lg:pointer-events-auto',
+        'lg:fixed lg:inset-y-0 lg:left-0 lg:z-30 lg:h-screen lg:w-60 lg:translate-x-0 lg:visible lg:pointer-events-auto',
         'transition-transform duration-300 ease-out lg:transition-none',
         isOpen
           ? 'max-lg:translate-x-0 max-lg:visible max-lg:pointer-events-auto'
@@ -168,24 +199,6 @@ export const AdminSidebar = forwardRef<HTMLElement, AdminSidebarProps>(function 
         ))}
       </nav>
 
-      <div className="border-t border-theme px-3 py-4">
-        <NavLink
-          to="/"
-          className="flex items-center gap-2 rounded-xl px-3 py-2 text-xs text-subtle transition-colors hover:bg-ghost hover:text-fg"
-          onClick={onNavigate}
-        >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <path
-              d="M10 19l-7-7m0 0l7-7m-7 7h18"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-          Về trang chủ
-        </NavLink>
-      </div>
     </aside>
   )
 })

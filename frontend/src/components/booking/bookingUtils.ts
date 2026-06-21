@@ -1,5 +1,5 @@
-export const CAR_BASE_FEE = 20000
-export const CAR_DAILY_CAP = 120000
+export const CAR_BLOCK_HOURS = 4
+export const CAR_BLOCK_FEE = 35000
 export const MAX_DURATION_HOURS = 24
 
 export function toDateTimeLocalValue(date: Date) {
@@ -23,9 +23,7 @@ export function normalizeBookingPlate(value: string) {
 }
 
 export function computeBookingAmount(durationHours: number) {
-  const fullDays = Math.floor(durationHours / 24)
-  const remainderHours = durationHours - fullDays * 24
-  const remainderFee = Math.min(remainderHours * CAR_BASE_FEE, CAR_DAILY_CAP)
+  const blocks = Math.max(1, Math.ceil(durationHours / CAR_BLOCK_HOURS))
 
-  return fullDays * CAR_DAILY_CAP + remainderFee
+  return blocks * CAR_BLOCK_FEE
 }

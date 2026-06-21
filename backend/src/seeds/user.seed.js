@@ -1,7 +1,6 @@
-import mongoose from 'mongoose';
+﻿import mongoose from 'mongoose';
 import dns from 'dns';
 import User from '../models/user.model.js';
-import logger from '../utils/logger.js';
 
 dns.setServers(['8.8.8.8', '1.1.1.1', '8.8.4.4']);
 
@@ -39,18 +38,18 @@ const run = async () => {
       existing.phone = data.phone;
       existing.isActive = true;
       await existing.save({ validateBeforeSave: false });
-      logger.info(`Updated existing user ${data.email} (role=${data.role}) — password NOT changed`);
+      console.log(`Updated existing user ${data.email} (role=${data.role}) — password NOT changed`);
     } else {
       await User.create(data);
-      logger.info(`Created user ${data.email} (role=${data.role}) — password: ${data.password}`);
+      console.log(`Created user ${data.email} (role=${data.role}) — password: ${data.password}`);
     }
   }
   await mongoose.disconnect();
-  logger.info('User seed completed');
+  console.log('User seed completed');
   process.exit(0);
 };
 
 run().catch((err) => {
-  logger.error('User seed failed', { error: err.message });
+  console.error('User seed failed', { error: err.message });
   process.exit(1);
 });

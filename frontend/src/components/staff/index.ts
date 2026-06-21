@@ -1,14 +1,24 @@
-export { StaffActiveTickets } from './StaffActiveTickets'
-export { StaffCheckInPanel } from './StaffCheckInPanel'
-export { StaffCheckOutPanel } from './StaffCheckOutPanel'
-export { StaffGateActivity } from './StaffGateActivity'
-export { StaffGateActiveSessions } from './StaffGateActiveSessions'
-export { StaffGateCheckInForm } from './StaffGateCheckInForm'
-export { StaffGateCheckoutPanel } from './StaffGateCheckoutPanel'
-export { StaffGateModeTabs, type StaffGateMode } from './StaffGateModeTabs'
-export { StaffGateSessionActivity } from './StaffGateSessionActivity'
-export { StaffGateSummary } from './StaffGateSummary'
-export { StaffPageHeader } from './StaffPageHeader'
+export { StaffPageHeader } from './common/StaffPageHeader'
+export { StaffGateField } from './common/StaffGateField'
+export { StaffSidebar } from './layout/StaffSidebar'
+export { StaffAssignedParking } from './parking/StaffAssignedParking'
+export { StaffCheckInPanel } from './gate/StaffCheckInPanel'
+export { StaffCheckOutPanel } from './gate/StaffCheckOutPanel'
+export { StaffGateActivity } from './gate/StaffGateActivity'
+export { StaffGateCheckInForm } from './gate/StaffGateCheckInForm'
+export { StaffGateCheckInTicket } from './gate/StaffGateCheckInTicket'
+export { StaffGateCameraScanner } from './gate/StaffGateCameraScanner'
+export { StaffGateCheckoutPanel } from './gate/StaffGateCheckoutPanel'
+export { StaffGateQrVerifier } from './gate/StaffGateQrVerifier'
+export { StaffGateQrScanner } from './gate/StaffGateQrScanner'
+export { StaffGateModeTabs, type StaffGateMode } from './gate/StaffGateModeTabs'
+export { StaffGateSessionActivity } from './gate/StaffGateSessionActivity'
+export { StaffGateSummary } from './gate/StaffGateSummary'
+export { StaffGateToast } from './gate/StaffGateToast'
+export { StaffActiveTickets } from './vehicles/StaffActiveTickets'
+export { StaffVehicleFilters } from './vehicles/StaffVehicleFilters'
+export { StaffVehicleList } from './vehicles/StaffVehicleList'
+export { StaffVehicleStats } from './vehicles/StaffVehicleStats'
 export {
   INITIAL_TICKETS,
   STAFF_INCIDENTS,
@@ -23,4 +33,4 @@ export {
   type ParkingTicket,
   type StaffIncident,
   type VisitorType,
-} from './staffGateData'
+} from './data/staffGateData'

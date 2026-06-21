@@ -4,6 +4,7 @@ import {
   type AvailableCarSubscriptions,
   type AvailableMotorcycleSubscriptions,
   type Plan,
+  type Subscription,
   type SubscriptionPayment,
   type VehicleType,
 } from '../services/userSubscriptionApi'
@@ -16,6 +17,7 @@ export function useResidentSubscription() {
   const [licensePlate, setLicensePlate] = useState('')
   const [selectedSlotId, setSelectedSlotId] = useState('')
   const [availableData, setAvailableData] = useState<AvailableCarSubscriptions | AvailableMotorcycleSubscriptions | null>(null)
+  const [createdSubscription, setCreatedSubscription] = useState<Subscription | null>(null)
   const [payment, setPayment] = useState<SubscriptionPayment | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -41,7 +43,7 @@ export function useResidentSubscription() {
         setPlans(activePlans)
         setSelectedPlanId((current) => {
           if (current && activePlans.some((plan) => plan._id === current)) return current
-          return activePlans[0]?._id ?? ''
+          return ''
         })
         setAvailableData(availableResponse)
         setSelectedSlotId('')
@@ -49,8 +51,7 @@ export function useResidentSubscription() {
         if (!isMounted) return
         setError(err instanceof Error ? err.message : 'Không thể tải dữ liệu gói cư dân.')
       } finally {
-        if (!isMounted) return
-        setIsLoading(false)
+        if (isMounted) setIsLoading(false)
       }
     }
 
@@ -76,6 +77,7 @@ export function useResidentSubscription() {
 
   function handleVehicleTypeChange(value: VehicleType) {
     setVehicleType(value)
+    setCreatedSubscription(null)
     setPayment(null)
     setMessage(null)
     setSelectedSlotId('')
@@ -87,6 +89,7 @@ export function useResidentSubscription() {
     setIsSubmitting(true)
     setError(null)
     setMessage(null)
+    setCreatedSubscription(null)
     setPayment(null)
 
     try {
@@ -95,6 +98,7 @@ export function useResidentSubscription() {
         licensePlate: normalizePlate(licensePlate),
         slotId: vehicleType === 'car' ? selectedSlotId : undefined,
       })
+      setCreatedSubscription(result.subscription)
       setPayment(result.payment)
       setMessage('Đã tạo đơn mua gói. Vui lòng thanh toán để kích hoạt quyền cư dân cho biển số này.')
     } catch (err) {
@@ -113,6 +117,7 @@ export function useResidentSubscription() {
     setLicensePlate,
     selectedSlotId,
     setSelectedSlotId,
+    createdSubscription,
     payment,
     isLoading,
     isSubmitting,
