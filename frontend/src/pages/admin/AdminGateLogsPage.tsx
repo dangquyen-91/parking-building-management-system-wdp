@@ -72,7 +72,7 @@ export function AdminGateLogsPage() {
       <AdminGateLogStats dashboard={dashboard} isLoading={isLoading} />
 
       {error && (
-        <div className="mb-5 flex items-center justify-between gap-3 rounded-lg border border-theme bg-rose-500/10 p-4 text-sm text-rose-200">
+        <div className="mb-5 flex items-center justify-between gap-3 rounded-2xl border border-rose-500/25 bg-rose-500/10 p-4 text-sm text-rose-700 dark:text-rose-200">
           <span>{error}</span>
           <button type="button" className="font-semibold hover:underline" onClick={() => void loadGateLogs()}>
             Thử lại
@@ -80,8 +80,9 @@ export function AdminGateLogsPage() {
         </div>
       )}
 
-      <div className="mb-4 rounded-lg border border-theme bg-badge px-4 py-3 text-xs text-muted">
-        Danh sách chi tiết hiện hiển thị các xe đang trong bãi. Số lượt xe ra hôm nay được tổng hợp từ báo cáo hệ thống.
+      <div className="mb-5 flex items-start gap-3 rounded-2xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-xs leading-5 text-emerald-800 dark:text-emerald-200">
+        <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-emerald-500 text-xs font-black text-white">●</span>
+        <span>Danh sách chi tiết hiện hiển thị các xe đang trong bãi. Số lượt xe ra hôm nay được tổng hợp từ báo cáo hệ thống.</span>
       </div>
 
       <AdminGateLogList sessions={filteredSessions} isLoading={isLoading} />
