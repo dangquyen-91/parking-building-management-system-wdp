@@ -53,7 +53,7 @@ export function AdminFloorsPage() {
       )}
 
       <div className="grid gap-3 md:grid-cols-3">
-        <AdminStatCard label="Tầng" value={isLoading ? '-' : occupancy?.floors.length ?? 0} detail="Tầng đang hoạt động từ API" tone="violet" />
+        <AdminStatCard label="Tầng" value={isLoading ? '-' : occupancy?.floors?.length ?? 0} detail="Tầng đang hoạt động từ API" tone="violet" />
         <AdminStatCard label="Tổng sức chứa" value={isLoading ? '-' : occupancy?.overall.totalCapacity ?? 0} detail="Trên toàn bộ tòa nhà" tone="sky" />
         <AdminStatCard label="Đang dùng" value={isLoading ? '-' : occupancy?.overall.occupied ?? 0} detail={`${occupancy?.overall.utilizationPercent ?? 0}% sử dụng`} tone="emerald" />
       </div>
@@ -67,8 +67,8 @@ export function AdminFloorsPage() {
 
         <div className="grid gap-3">
           {isLoading && <p className="text-sm text-muted">Đang tải tầng...</p>}
-          {!isLoading && (occupancy?.floors.length ?? 0) === 0 && <p className="text-sm text-muted">Không tìm thấy tầng.</p>}
-          {!isLoading && occupancy?.floors.map((floor) => {
+          {!isLoading && (occupancy?.floors?.length ?? 0) === 0 && <p className="text-sm text-muted">Không tìm thấy tầng.</p>}
+          {!isLoading && (occupancy?.floors ?? []).map((floor) => {
             const percent = floor.utilizationPercent
             const capacity = floor.totalCapacity ?? floor.totalSlots ?? 0
             const status = floor.maintenance ? 'warning' : 'enabled'

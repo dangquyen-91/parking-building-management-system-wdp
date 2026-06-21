@@ -1,4 +1,4 @@
-import { adminStatusTone, type AdminStatus } from './adminData'
+import { adminStatusTone, type AdminStatus } from '../adminData'
 
 type AdminStatusBadgeProps = {
   status: AdminStatus

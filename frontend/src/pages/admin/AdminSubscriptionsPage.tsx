@@ -29,8 +29,8 @@ export function AdminSubscriptionsPage() {
         adminApi.getSubscriptions({ page: 1, limit: 100 }),
         adminApi.getSessions({ page: 1, limit: 100 }),
       ])
-      setSubscriptions(subscriptionData.subscriptions)
-      setActivePlates(new Set(sessionData.sessions.map((session) => session.licensePlate)))
+      setSubscriptions(subscriptionData.subscriptions ?? [])
+      setActivePlates(new Set((sessionData.sessions ?? []).map((session) => session.licensePlate)))
       setSnapshotTime(Date.now())
     } catch (loadError) {
       setError(loadError instanceof Error ? loadError.message : 'Không thể tải danh sách người dùng gói.')

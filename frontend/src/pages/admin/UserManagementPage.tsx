@@ -60,8 +60,8 @@ export function UserManagementPage() {
         setError('')
         const response = await adminApi.getUsers({ limit: 100, sort: 'createdAt', order: 'desc' })
         if (!ignore) {
-          setUsers(response.users)
-          setTotal(response.total)
+          setUsers(response.users ?? [])
+          setTotal(response.total ?? 0)
         }
       } catch (loadError) {
         if (!ignore) setError(loadError instanceof Error ? loadError.message : 'Không thể tải người dùng')

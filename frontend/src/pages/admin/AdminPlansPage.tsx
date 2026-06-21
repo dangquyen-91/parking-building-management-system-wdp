@@ -26,7 +26,7 @@ export function AdminPlansPage() {
     setError(null)
     try {
       const data = await managerPlansApi.getPlans()
-      setPlans(data.plans)
+      setPlans(data.plans ?? [])
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Không thể tải danh sách gói.')
     } finally {
