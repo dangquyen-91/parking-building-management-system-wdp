@@ -1,4 +1,4 @@
-import { formatBookingCurrency } from './bookingUtils'
+import { formatBookingCurrency } from '../bookingUtils'
 
 type BookingHeroProps = {
   durationHours: number

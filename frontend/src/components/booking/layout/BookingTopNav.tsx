@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { BrandLink, SkipLink, ThemeToggle, UserMenu } from '../common'
-import { authApi, getStoredAuthUser, type AuthUser } from '../../services/authApi'
+import { BrandLink, SkipLink, ThemeToggle, UserMenu } from '../../common'
+import { authApi, getStoredAuthUser, type AuthUser } from '../../../services/authApi'
 
 export function BookingTopNav() {
   const [authUser, setAuthUser] = useState<AuthUser | undefined>(() => getStoredAuthUser())
