@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 import type { Building, Floor } from '../../../services/managerBuildingsApi'
 import type { ParkingRow } from '../../../services/managerParkingRowApi'
 import type { ParkingSlot } from '../../../services/managerParkingSlotApi'
+import { AdminParkingSlotDiagram } from './AdminParkingSlotDiagram'
 
 export function AdminParkingSpaceList({ isLoading, hasError, filteredSlots, filteredRows, visibleSlotFloors, visibleRowFloors, slotsByFloor, rowsByFloor, buildingMap, onEditSlot, onDeleteSlot, onEditRow }: { isLoading: boolean; hasError: boolean; filteredSlots: ParkingSlot[]; filteredRows: ParkingRow[]; visibleSlotFloors: Floor[]; visibleRowFloors: Floor[]; slotsByFloor: Map<string, ParkingSlot[]>; rowsByFloor: Map<string, ParkingRow[]>; buildingMap: Map<string, Building>; onEditSlot: (slot: ParkingSlot) => void; onDeleteSlot: (slot: ParkingSlot) => void; onEditRow: (row: ParkingRow) => void }) {
   if (hasError) return null
@@ -16,19 +17,24 @@ export function AdminParkingSpaceList({ isLoading, hasError, filteredSlots, filt
   return (
     <section className="grid gap-5">
       {visibleSlotFloors.map((floor) => (
-        <InfrastructureSection key={floor._id} eyebrow={`${buildingName(floor) ?? 'Tòa nhà'} // Tầng ${floor.floorNumber}`} title="Ô đỗ ô tô">
-          {(slotsByFloor.get(floor._id) ?? []).map((slot) => (
-            <article key={slot._id} className="rounded-lg border border-theme bg-badge p-3">
-              <div className="flex items-center justify-between">
-                <div><p className="font-semibold text-fg">{slot.slotCode}</p><p className="mt-1 text-xs text-subtle">{slot.status}</p></div>
-                <div className="flex gap-1">
-                  <button className="rounded-lg border border-theme px-2.5 py-1 text-xs text-fg" onClick={() => onEditSlot(slot)}>Sửa</button>
-                  <button className="rounded-lg border border-rose-500/30 px-2.5 py-1 text-xs text-rose-400" onClick={() => onDeleteSlot(slot)}>Xóa</button>
-                </div>
-              </div>
-            </article>
-          ))}
-        </InfrastructureSection>
+        <section key={floor._id} className="liquid-glass-card rounded-[1.75rem] border border-sky-500/15 p-4 shadow-sm md:p-5">
+          <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-[0.18em] text-sky-600 dark:text-sky-300">
+                {buildingName(floor) ?? 'Tòa nhà'} // Tầng {floor.floorNumber}
+              </p>
+              <h2 className="mt-1 text-lg font-black text-fg">Sơ đồ ô đỗ ô tô</h2>
+            </div>
+            <span className="rounded-full border border-sky-500/20 bg-sky-500/10 px-3 py-1 text-xs font-bold text-sky-700 dark:text-sky-200">
+              {(slotsByFloor.get(floor._id) ?? []).length} ô
+            </span>
+          </div>
+          <AdminParkingSlotDiagram
+            slots={slotsByFloor.get(floor._id) ?? []}
+            onEdit={onEditSlot}
+            onDelete={onDeleteSlot}
+          />
+        </section>
       ))}
       {visibleRowFloors.map((floor) => (
         <InfrastructureSection key={floor._id} eyebrow={`${buildingName(floor) ?? 'Tòa nhà'} // Tầng ${floor.floorNumber}`} title="Hàng xe máy">
