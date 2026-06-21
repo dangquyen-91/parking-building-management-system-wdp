@@ -6,14 +6,14 @@ import { LogoutButton } from '../common/LogoutButton'
 const ADMIN_NAV_ITEMS = [
   { to: '/admin', label: 'Tổng quan', detail: 'Sức khỏe toàn hệ thống', icon: 'grid' },
   { to: '/admin/users', label: 'Người dùng', detail: 'Tài khoản và phân quyền', icon: 'users' },
-  { to: '/admin/managers', label: 'Manager', detail: 'Đội ngũ quản lý', icon: 'manager' },
+  { to: '/admin/managers', label: 'Quản lý', detail: 'Đội ngũ manager', icon: 'manager' },
   { to: '/admin/buildings', label: 'Tòa nhà', detail: 'Hạ tầng bãi xe', icon: 'building' },
   { to: '/admin/floors', label: 'Tầng', detail: 'Công suất từng tầng', icon: 'floors' },
   { to: '/admin/bookings', label: 'Đặt chỗ', detail: 'Booking toàn hệ thống', icon: 'calendar' },
   { to: '/admin/slots', label: 'Chỗ đỗ', detail: 'Ô đỗ và hàng xe', icon: 'slots' },
-  { to: '/admin/gate-logs', label: 'Nhật ký cổng', detail: 'Xe vào, xe ra', icon: 'gate' },
+  { to: '/admin/gate-logs', label: 'Nhật ký cổng', detail: 'Xe vào và xe ra', icon: 'gate' },
   { to: '/admin/staff', label: 'Nhân viên', detail: 'Tài khoản vận hành', icon: 'staff' },
-  { to: '/admin/plans', label: 'Gói giá', detail: 'Giá và thời hạn', icon: 'plan' },
+  { to: '/admin/plans', label: 'Gói gửi xe', detail: 'Giá và thời hạn', icon: 'plan' },
   { to: '/admin/subscriptions', label: 'Gói cư dân', detail: 'Người dùng đã đăng ký', icon: 'subscription' },
   { to: '/admin/reports', label: 'Báo cáo', detail: 'Doanh thu và vận hành', icon: 'report' },
 ] as const
@@ -96,9 +96,9 @@ function AdminIcon({ name }: { name: AdminIconName }) {
 
 function linkClassName({ isActive }: { isActive: boolean }) {
   return [
-    'group flex items-center gap-3 rounded-2xl border px-3 py-3 text-sm transition-all duration-200',
+    'group flex min-h-[3.25rem] w-full min-w-0 items-center gap-3 rounded-xl border px-2.5 py-2 text-sm transition-all duration-200',
     isActive
-      ? 'border-violet-400/40 bg-violet-500 text-white shadow-lg shadow-violet-500/20'
+      ? 'border-violet-400/50 bg-gradient-to-r from-violet-600 to-violet-500 text-white shadow-md shadow-violet-500/20'
       : 'border-transparent text-muted hover:border-theme hover:bg-ghost hover:text-fg',
   ].join(' ')
 }
@@ -127,48 +127,48 @@ export const AdminSidebar = forwardRef<HTMLElement, AdminSidebarProps>(function 
           : 'max-lg:-translate-x-full max-lg:invisible max-lg:pointer-events-none',
       ].join(' ')}
     >
-      <div className="border-b border-theme p-5">
+      <div className="shrink-0 border-b border-theme p-4">
         <NavLink
           to="/admin"
           className="flex min-w-0 items-center gap-3 text-fg"
           aria-label="Trung tâm quản trị hệ thống"
           onClick={onNavigate}
         >
-          <span className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-badge shadow-sm">
-            <LogoIcon size={22} />
+          <span className="flex size-10 shrink-0 items-center justify-center rounded-xl border border-theme bg-badge shadow-sm">
+            <LogoIcon size={20} />
           </span>
           <span className="min-w-0 leading-tight">
-            <span className="block truncate text-base font-black">Quản trị hệ thống</span>
-            <span className="mt-1 block truncate text-[11px] font-black uppercase tracking-[0.24em] text-subtle">
-              Admin Center
+            <span className="block truncate text-sm font-black">Quản trị hệ thống</span>
+            <span className="mt-1 block truncate text-[9px] font-bold uppercase tracking-[0.18em] text-subtle">
+              Trung tâm quản trị
             </span>
           </span>
         </NavLink>
 
-        <div className="mt-5 rounded-2xl border border-violet-500/25 bg-violet-500/10 p-3">
-          <div className="flex items-center gap-2 text-xs font-bold text-violet-700 dark:text-violet-200">
+        <div className="mt-3 rounded-xl border border-violet-500/25 bg-violet-500/10 px-3 py-2.5">
+          <div className="flex items-center gap-2 text-[11px] font-bold text-violet-700 dark:text-violet-200">
             <span className="size-2 rounded-full bg-violet-500 shadow-[0_0_12px_rgba(139,92,246,0.9)]" />
             Hệ thống đang hoạt động
           </div>
-          <p className="mt-1 text-[11px] text-muted">Giám sát tài khoản, hạ tầng và doanh thu</p>
+          <p className="mt-1 line-clamp-1 text-[10px] text-muted">Giám sát tài khoản, hạ tầng và doanh thu</p>
         </div>
       </div>
 
-      <nav className="flex flex-1 flex-col gap-1 overflow-y-auto px-3 py-4" aria-label="Điều hướng admin">
+      <nav className="sidebar-scrollbar flex min-h-0 flex-1 flex-col gap-0.5 overflow-y-auto overflow-x-hidden px-2.5 py-2.5" aria-label="Điều hướng admin">
         {ADMIN_NAV_ITEMS.map(({ to, label, detail, icon }) => (
           <NavLink key={to} to={to} className={linkClassName} end onClick={onNavigate}>
-            <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-badge/70">
+            <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-badge/70 transition-colors group-hover:bg-badge">
               <AdminIcon name={icon} />
             </span>
-            <span className="min-w-0">
-              <span className="block truncate font-bold">{label}</span>
-              <span className="mt-0.5 block truncate text-[11px] opacity-70">{detail}</span>
+            <span className="block min-w-0 flex-1 overflow-hidden leading-tight">
+              <span className="block truncate text-[13px] font-bold">{label}</span>
+              <span className="mt-0.5 block truncate text-[10px] opacity-70">{detail}</span>
             </span>
           </NavLink>
         ))}
       </nav>
 
-      <div className="border-t border-theme p-4">
+      <div className="shrink-0 border-t border-theme p-2.5">
         <LogoutButton />
       </div>
     </aside>
