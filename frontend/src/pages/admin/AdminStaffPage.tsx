@@ -73,7 +73,7 @@ export function AdminStaffPage() {
       <AdminStaffStats staff={staff} sessions={sessions} isLoading={isLoading} />
 
       {error && (
-        <div className="mb-5 flex items-center justify-between gap-3 rounded-lg border border-theme bg-rose-500/10 p-4 text-sm text-rose-200">
+        <div className="mb-5 flex items-center justify-between gap-3 rounded-2xl border border-rose-500/25 bg-rose-500/10 p-4 text-sm text-rose-700 dark:text-rose-200">
           <span>{error}</span>
           <button type="button" className="font-semibold hover:underline" onClick={() => void loadStaffData()}>
             Thử lại
@@ -81,8 +81,9 @@ export function AdminStaffPage() {
         </div>
       )}
 
-      <div className="mb-4 rounded-lg border border-theme bg-badge px-4 py-3 text-xs text-muted">
-        Admin có thể theo dõi nhân viên tại đây. Việc chỉnh vai trò, khóa hoặc mở tài khoản nằm ở trang Người dùng.
+      <div className="mb-5 flex items-start gap-3 rounded-2xl border border-sky-500/20 bg-sky-500/10 px-4 py-3 text-xs leading-5 text-sky-800 dark:text-sky-200">
+        <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-sky-500 text-xs font-black text-white">i</span>
+        <span>Admin có thể theo dõi nhân viên tại đây. Việc chỉnh vai trò, khóa hoặc mở tài khoản nằm ở trang Người dùng.</span>
       </div>
 
       <AdminStaffList staff={filteredStaff} sessions={sessions} isLoading={isLoading} />

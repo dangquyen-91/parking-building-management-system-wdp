@@ -87,10 +87,10 @@ export function AdminStaffFilters({
   onStatusFilterChange: (value: AdminStaffStatusFilter) => void
 }) {
   return (
-    <div className="grid w-full gap-3 sm:grid-cols-2 xl:min-w-[32rem]">
-      <Field label="Tìm nhân viên"><input className={inputClass} value={query} onChange={(e) => onQueryChange(e.target.value)} placeholder="Tên, email hoặc số điện thoại" /></Field>
+    <div className="grid w-full gap-3 rounded-2xl border border-theme bg-page/55 p-3 shadow-sm backdrop-blur-sm sm:grid-cols-2 xl:min-w-[34rem]">
+      <Field label="Tìm nhân viên"><input className="h-11 min-w-0 rounded-xl border border-theme bg-page px-3 text-sm text-fg outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/15" value={query} onChange={(e) => onQueryChange(e.target.value)} placeholder="Tên, email hoặc số điện thoại" /></Field>
       <Field label="Trạng thái">
-        <select className={inputClass} value={statusFilter} onChange={(e) => onStatusFilterChange(e.target.value as AdminStaffStatusFilter)}>
+        <select className="h-11 min-w-0 rounded-xl border border-theme bg-page px-3 text-sm text-fg outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-500/15" value={statusFilter} onChange={(e) => onStatusFilterChange(e.target.value as AdminStaffStatusFilter)}>
           <option value="all">Tất cả</option><option value="active">Đang hoạt động</option><option value="inactive">Đã khóa</option>
         </select>
       </Field>
@@ -101,12 +101,12 @@ export function AdminStaffFilters({
 export function AdminStaffStats({ staff, sessions, isLoading }: { staff: AdminUser[]; sessions: GateSession[]; isLoading: boolean }) {
   const active = staff.filter((item) => item.isActive).length
   const handlers = new Set(sessions.map((item) => typeof item.staffId === 'string' ? item.staffId : item.staffId?._id).filter(Boolean))
-  return <Stats items={[
-    ['Tổng nhân viên', isLoading ? '-' : staff.length, 'Tài khoản vai trò staff'],
-    ['Đang hoạt động', isLoading ? '-' : active, `${staff.length - active} tài khoản đã khóa`],
-    ['Đang phụ trách xe', isLoading ? '-' : handlers.size, 'Có phiên gửi xe hoạt động'],
-    ['Xe đang theo dõi', isLoading ? '-' : sessions.length, 'Chưa checkout'],
-  ]} />
+  return <div className="mb-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+    <AdminStatCard label="Tổng nhân viên" value={isLoading ? '-' : staff.length} detail="Tài khoản vai trò staff" tone="violet" />
+    <AdminStatCard label="Đang hoạt động" value={isLoading ? '-' : active} detail={`${staff.length - active} tài khoản đã khóa`} tone="emerald" />
+    <AdminStatCard label="Đang phụ trách xe" value={isLoading ? '-' : handlers.size} detail="Có phiên gửi xe hoạt động" tone="sky" />
+    <AdminStatCard label="Xe đang theo dõi" value={isLoading ? '-' : sessions.length} detail="Chưa checkout" tone="amber" />
+  </div>
 }
 
 export function AdminStaffList({ staff, sessions, isLoading }: { staff: AdminUser[]; sessions: GateSession[]; isLoading: boolean }) {
@@ -117,18 +117,24 @@ export function AdminStaffList({ staff, sessions, isLoading }: { staff: AdminUse
       {staff.map((user) => {
         const activeSessions = sessions.filter((session) => (typeof session.staffId === 'string' ? session.staffId : session.staffId?._id) === user._id)
         return (
-          <article key={user._id} className="liquid-glass-card rounded-lg p-4">
+          <article key={user._id} className="liquid-glass-card group rounded-2xl border border-emerald-500/10 p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:border-emerald-500/25 hover:shadow-lg">
+            <span className={`absolute inset-x-0 top-0 h-1 ${user.isActive ? 'bg-gradient-to-r from-emerald-500 to-cyan-400' : 'bg-gradient-to-r from-amber-500 to-rose-500'}`} />
             <div className="flex items-start justify-between gap-3">
-              <div className="min-w-0"><p className="truncate text-lg font-semibold text-fg">{user.fullName}</p><p className="mt-1 truncate text-xs text-subtle">{user.email}</p></div>
+              <div className="flex min-w-0 items-center gap-3">
+                <span className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-emerald-500/15 text-xs font-black text-emerald-700 dark:text-emerald-200">
+                  {user.fullName.trim().split(/\s+/).slice(-2).map((part) => part[0]).join('').toUpperCase()}
+                </span>
+                <div className="min-w-0"><p className="truncate text-lg font-black text-fg">{user.fullName}</p><p className="mt-1 truncate text-xs text-subtle">{user.email}</p></div>
+              </div>
               <AdminStatusBadge status={user.isActive ? 'active' : 'inactive'} />
             </div>
             <dl className="mt-5 grid grid-cols-2 gap-3 text-sm">
-              <Value label="Số điện thoại" value={user.phone || 'Chưa cập nhật'} />
-              <Value label="Xe phụ trách" value={activeSessions.length} />
-              <Value label="Ô tô" value={activeSessions.filter((item) => item.vehicleType === 'car').length} />
-              <Value label="Xe máy" value={activeSessions.filter((item) => item.vehicleType === 'motorcycle').length} />
+              <div className="rounded-xl border border-theme bg-page/35 p-3"><Value label="Số điện thoại" value={user.phone || 'Chưa cập nhật'} /></div>
+              <div className="rounded-xl border border-theme bg-page/35 p-3"><Value label="Xe phụ trách" value={activeSessions.length} /></div>
+              <div className="rounded-xl border border-theme bg-page/35 p-3"><Value label="Ô tô" value={activeSessions.filter((item) => item.vehicleType === 'car').length} /></div>
+              <div className="rounded-xl border border-theme bg-page/35 p-3"><Value label="Xe máy" value={activeSessions.filter((item) => item.vehicleType === 'motorcycle').length} /></div>
             </dl>
-            {!!activeSessions.length && <div className="mt-4 flex flex-wrap gap-2 border-t border-theme pt-3">{activeSessions.slice(0, 5).map((item) => <span key={item._id} className="rounded-full border border-theme px-2.5 py-1 text-[11px] font-semibold text-fg">{item.licensePlate}</span>)}</div>}
+            {!!activeSessions.length && <div className="mt-4 border-t border-theme pt-3"><p className="mb-2 text-[10px] font-black uppercase tracking-[0.16em] text-subtle">Biển số đang phụ trách</p><div className="flex flex-wrap gap-2">{activeSessions.slice(0, 5).map((item) => <span key={item._id} className="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-1 text-[11px] font-bold text-emerald-700 dark:text-emerald-200">{item.licensePlate}</span>)}</div></div>}
           </article>
         )
       })}
