@@ -1,7 +1,6 @@
-import mongoose from 'mongoose';
+﻿import mongoose from 'mongoose';
 import dns from 'dns';
 import Pricing from '../models/pricing.model.js';
-import logger from '../utils/logger.js';
 
 dns.setServers(['8.8.8.8', '1.1.1.1', '8.8.4.4']);
 
@@ -37,14 +36,14 @@ const run = async () => {
       pricing,
       { upsert: true, new: true }
     );
-    logger.info(`Seeded pricing for ${pricing.vehicleType}`);
+    console.log(`Seeded pricing for ${pricing.vehicleType}`);
   }
   await mongoose.disconnect();
-  logger.info('Pricing seed completed');
+  console.log('Pricing seed completed');
   process.exit(0);
 };
 
 run().catch((err) => {
-  logger.error('Pricing seed failed', { error: err.message });
+  console.error('Pricing seed failed', { error: err.message });
   process.exit(1);
 });

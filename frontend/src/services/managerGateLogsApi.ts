@@ -1,7 +1,7 @@
 import axios, { AxiosError, AxiosHeaders } from 'axios'
 import { API_BASE_URL } from './apiConfig'
 import { AUTH_STORAGE_KEYS } from './authApi'
-import type { GateSession, GateVehicleType } from './staffGateApi'
+import type { GateSession, GateSessionStatus, GateVehicleType } from './staffGateApi'
 
 type ApiEnvelope<T> = {
   status: 'success' | 'error'
@@ -60,6 +60,7 @@ function getApiError(error: unknown) {
 
 export const managerGateLogsApi = {
   async getActiveSessions(params?: {
+    status?: GateSessionStatus
     vehicleType?: GateVehicleType
     licensePlate?: string
     page?: number

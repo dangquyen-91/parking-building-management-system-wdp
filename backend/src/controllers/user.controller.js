@@ -28,6 +28,35 @@ export const updateMe = async (req, res, next) => {
   }
 };
 
+export const changePassword = async (req, res, next) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    const user = await userService.changePassword(req.user._id, currentPassword, newPassword);
+    success(res, { user }, 'Password changed successfully');
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const addVehicle = async (req, res, next) => {
+  try {
+    const { licensePlate, vehicleType } = req.body;
+    const user = await userService.addVehicle(req.user._id, licensePlate, vehicleType);
+    success(res, { user }, 'Vehicle added', 201);
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const removeVehicle = async (req, res, next) => {
+  try {
+    const user = await userService.removeVehicle(req.user._id, req.params.vehicleId);
+    success(res, { user }, 'Vehicle removed');
+  } catch (err) {
+    next(err);
+  }
+};
+
 export const getOne = async (req, res, next) => {
   try {
     const user = await userService.getUserById(req.params.id);
@@ -48,7 +77,7 @@ export const update = async (req, res, next) => {
 
 export const changeRole = async (req, res, next) => {
   try {
-    const user = await userService.changeRole(req.params.id, req.body.role);
+    const user = await userService.changeRole(req.params.id, req.body.role, req.user._id);
     success(res, { user }, 'User role updated');
   } catch (err) {
     next(err);
@@ -57,7 +86,7 @@ export const changeRole = async (req, res, next) => {
 
 export const updateStatus = async (req, res, next) => {
   try {
-    const user = await userService.updateStatus(req.params.id, req.body.isActive);
+    const user = await userService.updateStatus(req.params.id, req.body.isActive, req.user._id);
     success(res, { user }, `User ${req.body.isActive ? 'activated' : 'deactivated'}`);
   } catch (err) {
     next(err);

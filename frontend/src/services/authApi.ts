@@ -98,6 +98,11 @@ export function getStoredAuthUser() {
   }
 }
 
+export function setStoredAuthUser(user: AuthUser) {
+  localStorage.setItem(AUTH_STORAGE_KEYS.user, JSON.stringify(user))
+  window.dispatchEvent(new Event('auth-user-updated'))
+}
+
 export function getDefaultRouteForRole(role?: AuthRole) {
   if (role === 'admin') return '/dashboard'
   if (role === 'manager') return '/manager'

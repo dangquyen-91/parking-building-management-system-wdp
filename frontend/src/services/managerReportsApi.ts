@@ -20,8 +20,25 @@ export type RevenueSummary = {
 export type ManagerRevenueReport = {
   from: string
   to: string
+  groupBy?: 'day' | 'week' | 'month'
   totals: RevenueSummary
-  daily: Array<RevenueSummary & { date: string }>
+  daily?: Array<RevenueSummary & { date: string }>
+  periods?: Array<RevenueSummary & { period: string }>
+}
+
+export type ManagerRevenueByVehicleReport = {
+  from: string
+  to: string
+  groupBy?: 'day' | 'week' | 'month'
+  totals: {
+    motorcycle: RevenueSummary
+    car: RevenueSummary
+  }
+  periods: Array<{
+    period: string
+    motorcycle: RevenueSummary
+    car: RevenueSummary
+  }>
 }
 
 export type ManagerSessionReport = {
@@ -30,7 +47,15 @@ export type ManagerSessionReport = {
   totalSessions: number
   byVehicleType: Record<string, number>
   byCustomerType: Record<string, number>
-  daily: Array<{ date: string; count: number }>
+  daily: Array<{
+    date: string
+    count?: number
+    total?: number
+    motorcycle?: number
+    car?: number
+    completed?: number
+    totalFee?: number
+  }>
 }
 
 export type ManagerOccupancyFloor = {
@@ -126,6 +151,8 @@ export const managerReportsApi = {
   getDashboard: () => getReport<ManagerDashboardReport>('/reports/dashboard'),
   getRevenue: (params: { from: string; to: string }) =>
     getReport<ManagerRevenueReport>('/reports/revenue', params),
+  getRevenueByVehicle: (params: { from: string; to: string }) =>
+    getReport<ManagerRevenueByVehicleReport>('/reports/revenue/by-vehicle', params),
   getSessions: (params: { from: string; to: string }) =>
     getReport<ManagerSessionReport>('/reports/sessions', params),
   getOccupancy: () => getReport<ManagerOccupancyReport>('/reports/occupancy'),
