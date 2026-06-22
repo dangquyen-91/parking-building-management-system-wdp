@@ -1,5 +1,9 @@
-import { useEffect, useMemo, useState } from "react";
-import { Linking, Modal } from "react-native";
+import { useMemo, useState } from "react";
+import { Linking, Modal, Platform } from "react-native";
+import DateTimePicker, {
+  type DateTimePickerChangeEvent,
+} from "@react-native-community/datetimepicker";
+import type { WebViewNavigation } from "react-native-webview/lib/WebViewTypes";
 import { WebView } from "react-native-webview";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import { toast } from "sonner-native";
@@ -7,42 +11,24 @@ import { toast } from "sonner-native";
 import { GlassCard, Label, Page } from "../../components/parking-ui";
 import { useCurrentUserQuery } from "../../hooks/useAuth";
 import {
+  useCancelBookingMutation,
+  useConfirmBookingMutation,
   useCreateBookingMutation,
+  useGuestBookingsQuery,
+  useUpsertGuestBookingMutation,
   useSaveGuestBookingMutation,
   useMyBookingsQuery,
 } from "../../hooks/useBookings";
 import {
-  type Booking,
+  type Booking as BookingRecord,
   type CreateBookingResult,
+  type StoredGuestBooking,
 } from "../../types/bookings";
 import { Pressable, ScrollView, Text, TextInput, View } from "../../tw";
 
-const pad = (value: number) => String(value).padStart(2, "0");
-
-const toLocalInputValue = (date: Date) => {
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(
-    date.getHours(),
-  )}:${pad(date.getMinutes())}`;
-};
-
-const parseLocalInputValue = (value: string) => {
-  const match = value.trim().match(/^(\d{4})-(\d{2})-(\d{2})\s+(\d{2}):(\d{2})$/);
-
-  if (!match) {
-    return null;
-  }
-
-  const [, year, month, day, hour, minute] = match;
-  const date = new Date(
-    Number(year),
-    Number(month) - 1,
-    Number(day),
-    Number(hour),
-    Number(minute),
-  );
-
-  return Number.isNaN(date.getTime()) ? null : date;
-};
+const HOUR_MS = 60 * 60 * 1000;
+const BOOKING_BLOCK_HOURS = 4;
+const BOOKING_BLOCK_FEE = 35000;
 
 const formatDateTime = (value: string) =>
   new Date(value).toLocaleString("vi-VN", {
@@ -53,13 +39,33 @@ const formatDateTime = (value: string) =>
   });
 
 const formatMoney = (value: number) => `${value.toLocaleString("vi-VN")} VND`;
+const formatPickerDate = (value: Date) =>
+  value.toLocaleDateString("vi-VN", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  });
+const formatPickerTime = (value: Date) =>
+  value.toLocaleTimeString("vi-VN", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+const formatDurationHours = (value: number) => `${value} hour${value > 1 ? "s" : ""}`;
+const calculateBookingEstimate = (durationHours: number) =>
+  Math.max(1, Math.ceil(durationHours / BOOKING_BLOCK_HOURS)) * BOOKING_BLOCK_FEE;
+
+const isValidEmail = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
+type PickerField =
+  | "arrivalDate"
+  | "arrivalTime"
+  | null;
 
 const inputStyle = {
   paddingHorizontal: 16,
   paddingVertical: 14,
 };
 
-const getStatusTone = (status: Booking["status"]) => {
+const getStatusTone = (status: BookingRecord["status"]) => {
   if (status === "paid" || status === "used") {
     return "text-btn-primary";
   }
@@ -71,57 +77,84 @@ const getStatusTone = (status: Booking["status"]) => {
   return "text-fg";
 };
 
-export default function Booking() {
+const withDatePart = (source: Date, nextDate: Date) => {
+  const updated = new Date(source);
+  updated.setFullYear(nextDate.getFullYear(), nextDate.getMonth(), nextDate.getDate());
+  return updated;
+};
+
+const withTimePart = (source: Date, nextTime: Date) => {
+  const updated = new Date(source);
+  updated.setHours(nextTime.getHours(), nextTime.getMinutes(), 0, 0);
+  return updated;
+};
+
+export default function BookingScreen() {
   const now = useMemo(() => new Date(), []);
-  const [phoneNumber, setPhoneNumber] = useState("");
+  const defaultArrival = useMemo(() => new Date(now.getTime() + HOUR_MS), [now]);
+  const defaultExit = useMemo(() => new Date(now.getTime() + 3 * HOUR_MS), [now]);
+  const [guestEmail, setGuestEmail] = useState("");
   const [licensePlate, setLicensePlate] = useState("");
-  const [arrivalTime, setArrivalTime] = useState(
-    toLocalInputValue(new Date(now.getTime() + 60 * 60 * 1000)),
-  );
-  const [exitTime, setExitTime] = useState(
-    toLocalInputValue(new Date(now.getTime() + 3 * 60 * 60 * 1000)),
+  const [arrivalTime, setArrivalTime] = useState(defaultArrival);
+  const [selectedDurationHours, setSelectedDurationHours] = useState(
+    Math.ceil((defaultExit.getTime() - defaultArrival.getTime()) / HOUR_MS),
   );
   const [createdBooking, setCreatedBooking] = useState<CreateBookingResult | null>(null);
   const [paymentUrl, setPaymentUrl] = useState<string | null>(null);
+  const [pickerField, setPickerField] = useState<PickerField>(null);
+  const [durationModalVisible, setDurationModalVisible] = useState(false);
 
   const { data: currentUser } = useCurrentUserQuery();
   const createBookingMutation = useCreateBookingMutation();
   const saveGuestBookingMutation = useSaveGuestBookingMutation();
+  const upsertGuestBookingMutation = useUpsertGuestBookingMutation();
+  const confirmBookingMutation = useConfirmBookingMutation();
+  const cancelBookingMutation = useCancelBookingMutation();
   const myBookingsQuery = useMyBookingsQuery(Boolean(currentUser));
+  const guestBookingsQuery = useGuestBookingsQuery(!currentUser);
 
-  useEffect(() => {
-    if (currentUser?.phone && !phoneNumber) {
-      setPhoneNumber(currentUser.phone);
+  const email = currentUser?.email ?? guestEmail;
+  const exitTime = useMemo(
+    () => new Date(arrivalTime.getTime() + selectedDurationHours * HOUR_MS),
+    [arrivalTime, selectedDurationHours],
+  );
+
+  const estimatedAmount = calculateBookingEstimate(selectedDurationHours);
+
+  const bookingList = currentUser
+    ? (myBookingsQuery.data?.bookings ?? [])
+    : (guestBookingsQuery.data ?? []);
+
+  const syncGuestBooking = async (booking: BookingRecord) => {
+    if (currentUser) {
+      return;
     }
-  }, [currentUser, phoneNumber]);
 
-  const durationHours = useMemo(() => {
-    const arrival = parseLocalInputValue(arrivalTime);
-    const exit = parseLocalInputValue(exitTime);
+    const currentPayment = createdBooking?.booking._id === booking._id
+      ? createdBooking?.payment
+      : (bookingList.find((item) => item._id === booking._id) as StoredGuestBooking | undefined)?.payment;
 
-    if (!arrival || !exit || exit <= arrival) {
-      return null;
-    }
-
-    return Math.ceil((exit.getTime() - arrival.getTime()) / (60 * 60 * 1000));
-  }, [arrivalTime, exitTime]);
-
-  const estimatedAmount = durationHours ? Math.min(durationHours * 20000, 120000) : null;
+    await upsertGuestBookingMutation.mutateAsync({
+      ...booking,
+      payment: currentPayment,
+      savedAt: new Date().toISOString(),
+    });
+  };
 
   const handleCreateBooking = async () => {
-    const arrival = parseLocalInputValue(arrivalTime);
-    const exit = parseLocalInputValue(exitTime);
+    const arrival = arrivalTime;
+    const exit = exitTime;
 
-    if (!phoneNumber.trim() || !licensePlate.trim()) {
+    if (!email.trim() || !licensePlate.trim()) {
       toast.error("Missing information", {
-        description: "Please enter phone number and license plate.",
+        description: "Please enter email and license plate.",
       });
       return;
     }
 
-    if (!arrival || !exit) {
-      toast.error("Invalid time", {
-        description: "Use the format YYYY-MM-DD HH:mm.",
+    if (!isValidEmail(email)) {
+      toast.error("Invalid email", {
+        description: "Please enter a valid email address.",
       });
       return;
     }
@@ -140,7 +173,7 @@ export default function Booking() {
       return;
     }
 
-    const hours = Math.ceil((exit.getTime() - arrival.getTime()) / (60 * 60 * 1000));
+    const hours = selectedDurationHours;
     if (hours < 1 || hours > 24) {
       toast.error("Invalid duration", {
         description: "Booking duration must be from 1 to 24 hours.",
@@ -157,7 +190,7 @@ export default function Booking() {
 
     try {
       const result = await createBookingMutation.mutateAsync({
-        phoneNumber: phoneNumber.trim(),
+        email: email.trim().toLowerCase(),
         licensePlate: licensePlate.trim(),
         expectedArrivalTime: arrival.toISOString(),
         expectedExitTime: exit.toISOString(),
@@ -173,6 +206,93 @@ export default function Booking() {
       toast.error("Booking failed", {
         description: error instanceof Error ? error.message : "Please try again.",
       });
+    }
+  };
+
+  const activePickerValue = (() => {
+    switch (pickerField) {
+      case "arrivalDate":
+      case "arrivalTime":
+      default:
+        return arrivalTime;
+    }
+  })();
+
+  const activePickerMode = pickerField === "arrivalTime" ? "time" : "date";
+
+  const activePickerMinimumDate = (() => {
+    switch (pickerField) {
+      case "arrivalDate":
+        return new Date();
+      default:
+        return undefined;
+    }
+  })();
+
+  const handlePickerChange = (_event: DateTimePickerChangeEvent, selectedDate: Date) => {
+    if (pickerField === "arrivalDate") {
+      const nextArrival = withDatePart(arrivalTime, selectedDate);
+      setArrivalTime(nextArrival);
+    } else if (pickerField === "arrivalTime") {
+      const nextArrival = withTimePart(arrivalTime, selectedDate);
+      setArrivalTime(nextArrival);
+    }
+
+    if (Platform.OS === "android") {
+      setPickerField(null);
+    }
+  };
+
+  const handlePickerDismiss = () => {
+    setPickerField(null);
+  };
+
+  const handleBookingStateSync = async (nextAction: "confirm" | "cancel") => {
+    if (!createdBooking) {
+      return;
+    }
+
+    try {
+      const payload = {
+        id: createdBooking.booking._id,
+        email: currentUser ? undefined : createdBooking.booking.email,
+        licensePlate: currentUser ? undefined : createdBooking.booking.licensePlate,
+      };
+      const result = nextAction === "confirm"
+        ? await confirmBookingMutation.mutateAsync(payload)
+        : await cancelBookingMutation.mutateAsync(payload);
+
+      const nextBooking = result.booking;
+      setCreatedBooking((current) => (current ? { ...current, booking: nextBooking } : current));
+      await syncGuestBooking(nextBooking);
+      setPaymentUrl(null);
+
+      toast.success(
+        nextAction === "confirm" ? "Payment synced" : "Booking updated",
+        {
+          description:
+            nextAction === "confirm"
+              ? "Booking status has been refreshed from the server."
+              : "Pending booking has been cancelled.",
+        },
+      );
+    } catch (error) {
+      toast.error("Unable to sync booking", {
+        description: error instanceof Error ? error.message : "Please refresh later.",
+      });
+    }
+  };
+
+  const handlePaymentNavigationChange = ({ url }: WebViewNavigation) => {
+    const normalizedUrl = url.toLowerCase();
+
+    if (normalizedUrl.includes("/payment/success")) {
+      void handleBookingStateSync("confirm");
+      return;
+    }
+
+    if (normalizedUrl.includes("/payment/cancel")) {
+      void handleBookingStateSync("cancel");
     }
   };
 
@@ -209,7 +329,7 @@ export default function Booking() {
             </View>
             <View className="flex-1 gap-1">
               <Text className="font-sans text-lg font-extrabold text-fg">
-                Visitor car booking
+                Visitor booking
               </Text>
               <Text className="font-sans text-sm leading-5 text-subtle">
                 Pay before arrival. Pending bookings expire if payment is not completed.
@@ -219,14 +339,16 @@ export default function Booking() {
 
           <View className="gap-3">
             <View className="gap-2">
-              <Label>Phone number</Label>
+              <Label>Email</Label>
               <TextInput
-                keyboardType="phone-pad"
-                onChangeText={setPhoneNumber}
-                placeholder="0900000000"
+                autoCapitalize="none"
+                editable={!currentUser?.email}
+                keyboardType="email-address"
+                onChangeText={setGuestEmail}
+                placeholder="guest@example.com"
                 placeholderTextColor="#6b7280"
                 style={inputStyle}
-                value={phoneNumber}
+                value={email}
                 className="rounded-[14px] border border-border-theme bg-input px-4 py-3.5 font-sans text-base text-fg"
               />
             </View>
@@ -236,7 +358,7 @@ export default function Booking() {
               <TextInput
                 autoCapitalize="characters"
                 onChangeText={setLicensePlate}
-                placeholder="59A24872"
+                placeholder="59-AB24872"
                 placeholderTextColor="#6b7280"
                 style={inputStyle}
                 value={licensePlate}
@@ -244,28 +366,52 @@ export default function Booking() {
               />
             </View>
 
-            <View className="flex-row gap-3">
-              <View className="flex-1 gap-2">
+            <View className="gap-3">
+              <View className="gap-2">
                 <Label>Arrival</Label>
-                <TextInput
-                  onChangeText={setArrivalTime}
-                  placeholder="YYYY-MM-DD HH:mm"
-                  placeholderTextColor="#6b7280"
-                  style={inputStyle}
-                  value={arrivalTime}
-                  className="rounded-[14px] border border-border-theme bg-input px-4 py-3.5 font-sans text-[13px] text-fg"
-                />
+                <View className="flex-row gap-3">
+                  <Pressable
+                    className="flex-1 rounded-[14px] border border-border-theme bg-input px-4 py-3.5"
+                    onPress={() => setPickerField("arrivalDate")}
+                    style={inputStyle}
+                  >
+                    <Text className="font-sans text-[13px] text-fg">
+                      {formatPickerDate(arrivalTime)}
+                    </Text>
+                  </Pressable>
+                  <Pressable
+                    className="flex-1 rounded-[14px] border border-border-theme bg-input px-4 py-3.5"
+                    onPress={() => setPickerField("arrivalTime")}
+                    style={inputStyle}
+                  >
+                    <Text className="font-sans text-[13px] text-fg">
+                      {formatPickerTime(arrivalTime)}
+                    </Text>
+                  </Pressable>
+                </View>
               </View>
-              <View className="flex-1 gap-2">
+
+              <View className="gap-2">
                 <Label>Exit</Label>
-                <TextInput
-                  onChangeText={setExitTime}
-                  placeholder="YYYY-MM-DD HH:mm"
-                  placeholderTextColor="#6b7280"
-                  style={inputStyle}
-                  value={exitTime}
-                  className="rounded-[14px] border border-border-theme bg-input px-4 py-3.5 font-sans text-[13px] text-fg"
-                />
+                <View className="flex-row gap-3">
+                  <Pressable
+                    className="flex-1 rounded-[14px] border border-border-theme bg-input px-4 py-3.5"
+                    onPress={() => setDurationModalVisible(true)}
+                    style={inputStyle}
+                  >
+                    <Text className="font-sans text-[13px] text-fg">
+                      {formatDurationHours(selectedDurationHours)}
+                    </Text>
+                  </Pressable>
+                  <View
+                    className="flex-1 rounded-[14px] border border-border-theme bg-input px-4 py-3.5"
+                    style={inputStyle}
+                  >
+                    <Text className="font-sans text-[13px] text-fg">
+                      {`${formatPickerDate(exitTime)} ${formatPickerTime(exitTime)}`}
+                    </Text>
+                  </View>
+                </View>
               </View>
             </View>
           </View>
@@ -282,13 +428,13 @@ export default function Booking() {
             <View className="items-end gap-1">
               <Label>Duration</Label>
               <Text className="font-sans text-base font-bold text-muted">
-                {durationHours ? `${durationHours}h` : "--"}
+                {selectedDurationHours}h
               </Text>
             </View>
           </View>
           <Text className="font-sans text-sm leading-5 text-subtle">
-            Car parking is estimated at 20,000 VND per started hour, capped at
-            120,000 VND per day. The server confirms the final amount.
+            Car parking is charged at 35,000 VND per 4-hour block, rounded up.
+            For example, 5-8 hours is 70,000 VND and 9-12 hours is 105,000 VND.
           </Text>
         </GlassCard>
 
@@ -384,8 +530,146 @@ export default function Booking() {
               </GlassCard>
             ) : null}
           </View>
-        ) : null}
+        ) : (
+          <View className="gap-3">
+            <View className="flex-row items-center justify-between">
+              <Label>Guest bookings on this device</Label>
+              {guestBookingsQuery.isFetching ? (
+                <Text className="font-sans text-xs font-bold text-subtle">Loading</Text>
+              ) : null}
+            </View>
+
+            {bookingList.slice(0, 3).map((booking) => (
+              <GlassCard key={booking._id} className="gap-2.5">
+                <View className="flex-row items-center justify-between gap-3">
+                  <View className="flex-1 gap-1">
+                    <Text selectable className="font-sans text-base font-extrabold text-fg">
+                      {booking.licensePlate}
+                    </Text>
+                    <Text className="font-sans text-sm text-subtle">
+                      {(booking as StoredGuestBooking).email}
+                    </Text>
+                  </View>
+                  <Text
+                    className={`font-sans text-xs font-extrabold uppercase ${getStatusTone(
+                      booking.status,
+                    )}`}
+                  >
+                    {booking.status}
+                  </Text>
+                </View>
+                <Text className="font-sans text-sm text-subtle">
+                  {formatDateTime(booking.expectedArrivalTime)} -{" "}
+                  {formatDateTime(booking.expectedExitTime)}
+                </Text>
+                <Text className="font-sans text-sm font-bold text-muted">
+                  {formatMoney(booking.amount)}
+                </Text>
+              </GlassCard>
+            ))}
+
+            {!guestBookingsQuery.isFetching && bookingList.length === 0 ? (
+              <GlassCard className="gap-1">
+                <Text className="font-sans text-base font-extrabold text-fg">
+                  No guest bookings yet
+                </Text>
+                <Text className="font-sans text-sm text-subtle">
+                  Bookings created without signing in will stay visible during this app session.
+                </Text>
+              </GlassCard>
+            ) : null}
+          </View>
+        )}
       </ScrollView>
+
+      <Modal
+        animationType="slide"
+        onRequestClose={() => setPickerField(null)}
+        transparent
+        visible={Boolean(pickerField)}
+      >
+        <View className="flex-1 justify-end bg-black/60">
+          <View className="gap-4 rounded-t-[28px] bg-page px-5 pb-8 pt-5">
+            <View className="flex-row items-center justify-between">
+              <Text className="font-sans text-lg font-extrabold text-fg">
+                {pickerField === "arrivalDate" && "Select arrival date"}
+                {pickerField === "arrivalTime" && "Select arrival time"}
+              </Text>
+              <Pressable
+                className="rounded-full bg-badge px-4 py-2"
+                onPress={() => setPickerField(null)}
+              >
+                <Text className="font-sans text-sm font-bold text-fg">Done</Text>
+              </Pressable>
+            </View>
+
+            <View className="items-center rounded-[20px] bg-glass-card py-3">
+              <DateTimePicker
+                display="spinner"
+                minuteInterval={15}
+                minimumDate={activePickerMinimumDate}
+                mode={activePickerMode}
+                onDismiss={handlePickerDismiss}
+                onValueChange={handlePickerChange}
+                value={activePickerValue}
+              />
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      <Modal
+        animationType="slide"
+        onRequestClose={() => setDurationModalVisible(false)}
+        transparent
+        visible={durationModalVisible}
+      >
+        <View className="flex-1 justify-end bg-black/60">
+          <View className="gap-4 rounded-t-[28px] bg-page px-5 pb-8 pt-5">
+            <View className="flex-row items-center justify-between">
+              <Text className="font-sans text-lg font-extrabold text-fg">
+                Select parking duration
+              </Text>
+              <Pressable
+                className="rounded-full bg-badge px-4 py-2"
+                onPress={() => setDurationModalVisible(false)}
+              >
+                <Text className="font-sans text-sm font-bold text-fg">Done</Text>
+              </Pressable>
+            </View>
+
+            <ScrollView className="max-h-80" contentContainerClassName="gap-2 pb-2">
+              {Array.from({ length: 24 }, (_, index) => {
+                const hours = index + 1;
+                const isSelected = hours === selectedDurationHours;
+
+                return (
+                  <Pressable
+                    key={hours}
+                    className={`rounded-[18px] border px-4 py-4 ${
+                      isSelected
+                        ? "border-btn-primary bg-btn-primary"
+                        : "border-border-theme bg-glass-card"
+                    }`}
+                    onPress={() => {
+                      setSelectedDurationHours(hours);
+                      setDurationModalVisible(false);
+                    }}
+                  >
+                    <Text
+                      className={`font-sans text-base font-bold ${
+                        isSelected ? "text-btn-primary-fg" : "text-fg"
+                      }`}
+                    >
+                      {formatDurationHours(hours)}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
 
       <Modal
         animationType="slide"
@@ -416,6 +700,7 @@ export default function Booking() {
 
           {paymentUrl ? (
             <WebView
+              onNavigationStateChange={handlePaymentNavigationChange}
               source={{ uri: paymentUrl }}
               startInLoadingState
               className="flex-1"

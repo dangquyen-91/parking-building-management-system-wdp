@@ -60,6 +60,16 @@ const TabsLayout = () => {
         }}
       />
       <Tabs.Screen
+        name="subscription"
+        options={{
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons name={focused ? "card" : "card-outline"} color={color} size={24} />
+          ),
+          tabBarLabel: "Subscription",
+          title: "Subscription",
+        }}
+      />
+      <Tabs.Screen
         name="profile"
         options={{
           tabBarIcon: ({ color, focused }) => (

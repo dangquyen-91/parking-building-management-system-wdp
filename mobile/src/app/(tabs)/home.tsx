@@ -168,6 +168,14 @@ export default function Home() {
               </Pressable>
             </Link>
 
+            <Link href="/(tabs)/subscription" asChild>
+              <Pressable className="items-center rounded-full border border-border-strong bg-badge py-4">
+                <Text className="font-sans text-base font-extrabold text-fg">
+                  Resident subscriptions
+                </Text>
+              </Pressable>
+            </Link>
+
             <Link href="/(tabs)/profile" asChild>
               <Pressable className="items-center rounded-full border border-border-strong bg-badge py-4">
                 <Text className="font-sans text-base font-extrabold text-fg">
@@ -242,7 +250,7 @@ export default function Home() {
                   No bookings yet
                 </Text>
                 <Text className="font-sans text-sm leading-5 text-subtle">
-                  Visitor bookings you create on this device will appear here.
+                  Visitor bookings you create in this app session will appear here.
                 </Text>
               </View>
               <Link href="/(tabs)/booking" asChild>
