@@ -24,11 +24,11 @@ export function StaffVehicleCard({ session, floorMap, onCheckout }: StaffVehicle
     <article className="group overflow-hidden rounded-2xl border border-theme bg-page/70 shadow-sm transition-all hover:-translate-y-0.5 hover:border-theme-strong hover:bg-ghost hover:shadow-lg">
       <div className="grid gap-4 p-4 lg:grid-cols-[1.05fr_0.8fr_1.25fr_1fr_auto] lg:items-center">
         <div className="min-w-0">
+          <p className="mb-2 pl-4 text-[10px] font-bold uppercase tracking-[0.12em] text-subtle">Biển số xe</p>
           <div className="flex items-center gap-2">
             <span className="size-2 shrink-0 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(34,197,94,0.8)]" />
             <p className="truncate text-2xl font-black tracking-[0.06em] text-fg">{session.licensePlate}</p>
           </div>
-          <p className="mt-1 truncate pl-4 text-[11px] text-subtle">Mã phiên: {session._id}</p>
         </div>
 
         <InfoBlock label="Phân loại">
