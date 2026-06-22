@@ -19,6 +19,14 @@ export { StaffActiveTickets } from './vehicles/StaffActiveTickets'
 export { StaffVehicleFilters } from './vehicles/StaffVehicleFilters'
 export { StaffVehicleList } from './vehicles/StaffVehicleList'
 export { StaffVehicleStats } from './vehicles/StaffVehicleStats'
+export { StaffShiftCheckoutList } from './shift/StaffShiftCheckoutList'
+export { StaffShiftHandoverPanel } from './shift/StaffShiftHandoverPanel'
+export { StaffShiftStatCard } from './shift/StaffShiftStatCard'
+export {
+  getSessionStaffName,
+  isShiftSessionToday,
+  type ShiftStat,
+} from './shift/staffShiftUtils'
 export {
   INITIAL_TICKETS,
   STAFF_INCIDENTS,
