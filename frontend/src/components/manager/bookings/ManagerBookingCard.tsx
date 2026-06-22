@@ -40,8 +40,8 @@ export function ManagerBookingCard({ booking }: ManagerBookingCardProps) {
     <article className="group rounded-2xl border border-theme bg-badge p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:bg-ghost hover:shadow-lg">
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-6 xl:items-center">
         <div className="min-w-0">
+          <p className="text-xs text-subtle">Biển số xe</p>
           <p className="truncate text-lg font-black tracking-[0.06em] text-fg">{booking.licensePlate}</p>
-          <p className="mt-1 truncate text-xs text-subtle">{booking._id}</p>
         </div>
         <div className="min-w-0">
           <p className="text-xs text-subtle">Khách hàng</p>

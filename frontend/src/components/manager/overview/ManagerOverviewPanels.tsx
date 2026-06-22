@@ -177,12 +177,50 @@ const QUICK_LINKS = [
   { to: '/manager/reports', label: 'Báo cáo', detail: 'Xem doanh thu và vận hành' },
 ]
 
+function QuickLinkIcon({ to }: { to: string }) {
+  if (to.includes('bookings')) {
+    return (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <rect x="4" y="5" width="16" height="15" rx="2" stroke="currentColor" strokeWidth="1.6" />
+        <path d="M8 3v4M16 3v4M4 10h16" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+      </svg>
+    )
+  }
+
+  if (to.includes('slots')) {
+    return (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M5 16h14l-1.5-5h-11L5 16Z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+        <path d="M8 18h.01M16 18h.01M8.5 11l1-3h5l1 3" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+      </svg>
+    )
+  }
+
+  if (to.includes('reports')) {
+    return (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M6 20V5h12v15H6Z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+        <path d="M9 16v-4M12 16V8M15 16v-6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+      </svg>
+    )
+  }
+
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M4 18V8.5A2.5 2.5 0 0 1 6.5 6h11A2.5 2.5 0 0 1 20 8.5V18" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+      <path d="M7 18v-6h10v6M9 10h6M3 18h18" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+    </svg>
+  )
+}
+
 export function ManagerOverviewQuickLinks() {
   return (
     <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
       {QUICK_LINKS.map((item) => (
         <Link key={item.to} to={item.to} className="group relative overflow-hidden rounded-2xl border border-theme bg-badge p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:bg-ghost hover:shadow-lg">
-          <span className="absolute right-4 top-4 size-8 rounded-full bg-sky-500/10 transition-transform group-hover:scale-125" />
+          <span className="absolute right-4 top-4 flex size-10 items-center justify-center rounded-2xl border border-sky-500/20 bg-sky-500/10 text-sky-700 shadow-sm transition-transform group-hover:scale-110 dark:text-sky-200">
+            <QuickLinkIcon to={item.to} />
+          </span>
           <p className="relative text-sm font-black text-fg">{item.label}</p>
           <p className="mt-1 text-xs text-muted">{item.detail}</p>
         </Link>

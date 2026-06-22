@@ -1,5 +1,6 @@
 import { forwardRef } from 'react'
 import { NavLink } from 'react-router-dom'
+import { ThemeToggle } from '../../common'
 import { LogoIcon } from '../../common/icons'
 import { LogoutButton } from '../../common/LogoutButton'
 
@@ -90,6 +91,7 @@ export const StaffSidebar = forwardRef<HTMLElement, StaffSidebarProps>(function 
       ].join(' ')}
     >
       <div className="border-b border-theme p-5">
+        <div className="flex items-center justify-between gap-3">
         <NavLink
           to="/staff"
           className="flex min-w-0 items-center gap-3 text-fg"
@@ -104,6 +106,8 @@ export const StaffSidebar = forwardRef<HTMLElement, StaffSidebarProps>(function 
             <span className="mt-0.5 block truncate text-[11px] font-medium text-subtle">Điều phối bãi xe</span>
           </span>
         </NavLink>
+        <ThemeToggle className="shrink-0 border border-theme bg-badge shadow-sm" />
+        </div>
 
         <div className="mt-5 rounded-2xl border border-emerald-500/25 bg-emerald-500/10 p-3">
           <div className="flex items-center gap-2 text-xs font-bold text-emerald-700 dark:text-emerald-200">
