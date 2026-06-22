@@ -1,62 +1,134 @@
+import { useEffect, useMemo, useState } from 'react'
 import {
-  INITIAL_TICKETS,
   StaffPageHeader,
-  calculateMotorbikeFee,
+  StaffShiftCheckoutList,
+  StaffShiftHandoverPanel,
+  StaffShiftStatCard,
   formatStaffCurrency,
+  getSessionStaffName,
+  isShiftSessionToday,
+  type ShiftStat,
 } from '../../components/staff'
+import { staffGateApi, type GateSession } from '../../services/staffGateApi'
 
 export function StaffShiftPage() {
-  const activeTickets = INITIAL_TICKETS.filter((ticket) => ticket.status === 'active')
-  const completedTickets = INITIAL_TICKETS.filter((ticket) => ticket.status === 'completed')
-  const revenue = completedTickets.reduce((total, ticket) => {
-    if (!ticket.checkOutAt) return total
+  const [activeSessions, setActiveSessions] = useState<GateSession[]>([])
+  const [completedSessions, setCompletedSessions] = useState<GateSession[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-    return total + calculateMotorbikeFee(ticket.checkInAt, ticket.checkOutAt).fee
-  }, 0)
+  async function loadShiftData() {
+    setIsLoading(true)
+    setError(null)
 
-  const stats = [
-    { label: 'Check-in', value: activeTickets.length + completedTickets.length, detail: 'Tong ve trong mock ca truc' },
-    { label: 'Checkout', value: completedTickets.length, detail: 'Xe da ra khoi bai' },
-    { label: 'Open tickets', value: activeTickets.length, detail: 'Xe con dang gui' },
-    { label: 'Cash total', value: formatStaffCurrency(revenue), detail: 'Doanh thu da checkout' },
+    try {
+      const [activeResponse, completedResponse] = await Promise.all([
+        staffGateApi.getActiveSessions({ status: 'active', limit: 100, refreshAt: Date.now() }),
+        staffGateApi.getActiveSessions({ status: 'completed', limit: 100, refreshAt: Date.now() }),
+      ])
+
+      setActiveSessions(activeResponse.sessions ?? [])
+      setCompletedSessions(completedResponse.sessions ?? [])
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Không tải được dữ liệu tổng kết ca.')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => void loadShiftData(), 0)
+    return () => window.clearTimeout(timeoutId)
+  }, [])
+
+  const todayCompletedSessions = useMemo(
+    () => completedSessions.filter((session) => isShiftSessionToday(session.exitTime)),
+    [completedSessions],
+  )
+
+  const todayCheckins = useMemo(
+    () => [...activeSessions, ...completedSessions].filter((session) => isShiftSessionToday(session.entryTime)),
+    [activeSessions, completedSessions],
+  )
+
+  const revenue = todayCompletedSessions.reduce((total, session) => total + (session.fee || 0), 0)
+  const cashRevenue = todayCompletedSessions
+    .filter((session) => session.paymentMethod === 'cash')
+    .reduce((total, session) => total + (session.fee || 0), 0)
+  const transferRevenue = todayCompletedSessions
+    .filter((session) => session.paymentMethod === 'transfer')
+    .reduce((total, session) => total + (session.fee || 0), 0)
+
+  const stats: ShiftStat[] = [
+    {
+      label: 'Xe vào hôm nay',
+      value: isLoading ? '-' : todayCheckins.length,
+      detail: 'Tổng lượt check-in trong ngày',
+      tone: 'sky',
+    },
+    {
+      label: 'Xe ra hôm nay',
+      value: isLoading ? '-' : todayCompletedSessions.length,
+      detail: 'Phiên đã hoàn tất checkout',
+      tone: 'emerald',
+    },
+    {
+      label: 'Xe còn trong bãi',
+      value: isLoading ? '-' : activeSessions.length,
+      detail: 'Cần bàn giao cho ca tiếp theo',
+      tone: 'amber',
+    },
+    {
+      label: 'Doanh thu ca',
+      value: isLoading ? '-' : formatStaffCurrency(revenue),
+      detail: `Tiền mặt ${formatStaffCurrency(cashRevenue)} · CK ${formatStaffCurrency(transferRevenue)}`,
+      tone: 'violet',
+    },
   ]
 
+  const lastStaffName = todayCompletedSessions[0]
+    ? getSessionStaffName(todayCompletedSessions[0])
+    : 'Nhân viên hiện tại'
+
   return (
-    <div className="p-4 md:p-8 lg:p-10">
+    <div className="mx-auto max-w-[1500px] p-4 md:p-8 lg:p-10">
       <StaffPageHeader
-        eyebrow="Staff // Shift"
-        title="Shift Summary"
-        description="Tong ket ca truc de ban giao cho nhan vien tiep theo hoac manager."
+        eyebrow="Bàn giao ca trực"
+        title="Tổng kết ca"
+        description="Đối soát lượt xe, doanh thu và ghi chú trước khi bàn giao cho ca tiếp theo."
+        actions={
+          <button
+            type="button"
+            onClick={() => void loadShiftData()}
+            disabled={isLoading}
+            className="h-12 rounded-2xl border border-theme bg-page px-5 text-sm font-black text-fg shadow-sm transition-colors hover:bg-ghost disabled:opacity-60"
+          >
+            {isLoading ? 'Đang cập nhật...' : 'Làm mới dữ liệu'}
+          </button>
+        }
       />
+
+      {error && (
+        <p className="mb-5 rounded-2xl border border-rose-500/40 bg-rose-500/10 p-4 text-sm text-rose-700 dark:text-rose-200">
+          {error}
+        </p>
+      )}
 
       <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
         {stats.map((stat) => (
-          <div key={stat.label} className="rounded-lg border border-theme bg-badge p-4">
-            <p className="text-xs font-medium uppercase tracking-[0.14em] text-subtle">{stat.label}</p>
-            <p className="mt-3 text-2xl font-semibold text-fg">{stat.value}</p>
-            <p className="mt-1 text-xs text-muted">{stat.detail}</p>
-          </div>
+          <StaffShiftStatCard key={stat.label} stat={stat} />
         ))}
       </div>
 
-      <section className="liquid-glass-card mt-5 rounded-lg p-4 md:p-5">
-        <div className="mb-4">
-          <p className="text-[10px] uppercase tracking-[0.18em] text-subtle">Handover</p>
-          <h2 className="mt-1 text-base font-semibold text-fg">Ghi chu ban giao</h2>
-        </div>
-        <textarea
-          rows={5}
-          placeholder="Nhap ghi chu: ve mat, khu dang khoa, xe can theo doi..."
-          className="auth-input w-full resize-none rounded-lg border px-3 py-3 text-sm text-fg"
+      <div className="mt-5 grid gap-5 xl:grid-cols-[minmax(0,1fr)_24rem]">
+        <StaffShiftCheckoutList sessions={todayCompletedSessions} isLoading={isLoading} />
+        <StaffShiftHandoverPanel
+          lastStaffName={lastStaffName}
+          cashRevenue={cashRevenue}
+          transferRevenue={transferRevenue}
+          activeCount={activeSessions.length}
         />
-        <button
-          type="button"
-          className="mt-4 h-11 rounded-lg bg-btn-primary px-4 text-sm font-semibold text-btn-primary-fg transition-transform hover:-translate-y-0.5"
-        >
-          Luu tong ket ca
-        </button>
-      </section>
+      </div>
     </div>
   )
 }
-

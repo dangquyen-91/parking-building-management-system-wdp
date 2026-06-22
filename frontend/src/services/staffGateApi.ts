@@ -230,6 +230,7 @@ export const staffGateApi = {
   async getActiveSessions(params?: {
     vehicleType?: GateVehicleType
     licensePlate?: string
+    status?: GateSessionStatus
     page?: number
     limit?: number
     refreshAt?: number
