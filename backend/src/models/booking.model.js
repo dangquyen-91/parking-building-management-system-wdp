@@ -4,7 +4,7 @@ export const BOOKING_STATUSES = ['pending', 'paid', 'used', 'expired', 'cancelle
 
 const bookingSchema = new mongoose.Schema(
   {
-    phoneNumber: { type: String, required: true, trim: true },
+    email: { type: String, required: true, trim: true, lowercase: true },
     licensePlate: { type: String, required: true, trim: true, uppercase: true },
     vehicleType: { type: String, enum: ['car'], default: 'car', required: true },
     expectedArrivalTime: { type: Date, required: true },
@@ -21,7 +21,7 @@ const bookingSchema = new mongoose.Schema(
 );
 
 bookingSchema.index({ licensePlate: 1, status: 1 });
-bookingSchema.index({ phoneNumber: 1, status: 1 });
+bookingSchema.index({ email: 1, status: 1 });
 bookingSchema.index({ status: 1, expectedArrivalTime: 1, expectedExitTime: 1 });
 bookingSchema.index({ userId: 1, status: 1 });
 

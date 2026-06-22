@@ -1,7 +1,6 @@
 import axios, { AxiosError, AxiosHeaders } from 'axios'
+import { API_BASE_URL } from './apiConfig'
 import { AUTH_STORAGE_KEYS } from './authApi'
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5000/api/v1'
 
 type ApiEnvelope<T> = {
   status: 'success' | 'error'
@@ -55,6 +54,15 @@ export type GateUser = {
   email?: string
 }
 
+export type GateBooking = {
+  _id: string
+  expectedArrivalTime: string
+  expectedExitTime: string
+  durationHours: number
+  amount: number
+  status: 'paid'
+}
+
 export type GateSession = {
   _id: string
   slotId: GateSlot | string | null
@@ -92,6 +100,7 @@ export type GateLookupResult = {
       durationDays?: number
     }
   } | null
+  booking: GateBooking | null
   hint: {
     lastVisit: {
       vehicleType: GateVehicleType
@@ -109,14 +118,38 @@ export type GateLookupResult = {
 export type GateCheckoutPreview = {
   sessionId: string
   customerType: GateCustomerType
+  bookingId?: string | null
   entryTime: string
   exitTime: string
   fee: number
+  toCollect: number
+  prepaidAmount: number
+  overtimeHours: number
+  overtimeFee: number
   note?: string
   breakdown?: {
+    durationMs?: number
+    blocks?: number
+    blockHours?: number
+    blockFee?: number
+    detail?: string
     hours?: number
     turns?: number
     nights?: number
+    prepaidAmount?: number
+    fullStayFee?: number
+  } | null
+  pricing?: {
+    vehicleType: GateVehicleType
+    mode: 'time_block' | 'fixed_block'
+    blockHours?: number | null
+    blockFee?: number | null
+    timeBlocks?: Array<{
+      startHour: number
+      endHour: number
+      fee: number
+      label?: string
+    }>
   } | null
 }
 
@@ -142,6 +175,13 @@ type SlotsResponse = {
   page: number
   limit: number
   totalPages?: number
+}
+
+export type GateEntryQr = {
+  qrToken: string
+  qrImage?: string
+  licensePlate: string
+  expiresInSeconds?: number
 }
 
 const staffHttp = axios.create({
@@ -192,6 +232,7 @@ export const staffGateApi = {
     licensePlate?: string
     page?: number
     limit?: number
+    refreshAt?: number
   }) {
     try {
       const response = await staffHttp.get<ApiEnvelope<ActiveSessionsResponse>>('/sessions', { params })
@@ -207,9 +248,21 @@ export const staffGateApi = {
     slotId?: string
     rowId?: string
     note?: string
+    qrToken?: string
   }) {
     try {
       const response = await staffHttp.post<ApiEnvelope<{ session: GateSession }>>('/sessions/check-in', payload)
+      return response.data.data
+    } catch (error) {
+      throw getApiError(error)
+    }
+  },
+
+  async requestEntryQr(licensePlate: string) {
+    try {
+      const response = await staffHttp.post<ApiEnvelope<GateEntryQr>>('/sessions/entry-qr', {
+        licensePlate,
+      })
       return response.data.data
     } catch (error) {
       throw getApiError(error)
@@ -227,10 +280,11 @@ export const staffGateApi = {
     }
   },
 
-  async checkoutCash(sessionId: string) {
+  async checkoutCash(sessionId: string, payload?: { qrToken: string; scannedPlate: string }) {
     try {
       const response = await staffHttp.post<ApiEnvelope<{ session: GateSession }>>(
         `/sessions/${sessionId}/checkout/cash`,
+        payload,
       )
       return response.data.data
     } catch (error) {
@@ -238,12 +292,13 @@ export const staffGateApi = {
     }
   },
 
-  async checkoutTransfer(sessionId: string) {
+  async checkoutTransfer(sessionId: string, payload?: { qrToken: string; scannedPlate: string }) {
     try {
       const response = await staffHttp.post<
         ApiEnvelope<{
           session: GateSession
           payment: {
+            orderCode?: number
             amount: number
             checkoutUrl?: string
             qrCode?: string
@@ -251,7 +306,7 @@ export const staffGateApi = {
           note?: string
           fee?: number
         }>
-      >(`/sessions/${sessionId}/checkout/transfer`)
+      >(`/sessions/${sessionId}/checkout/transfer`, payload)
       return response.data.data
     } catch (error) {
       throw getApiError(error)

@@ -9,16 +9,18 @@ export function CtaSection() {
   const reduceMotion = useReducedMotion()
 
   return (
-    <section id="demo" className="section-surface px-6 md:px-12 lg:px-16 py-20 lg:py-28 border-t border-theme">
-      <div className="max-w-7xl mx-auto">
+    <section id="demo" className="section-surface relative overflow-hidden border-t border-theme px-6 py-20 md:px-12 lg:px-16 lg:py-28">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_15%_20%,rgba(139,92,246,0.18),transparent_32%),radial-gradient(circle_at_85%_80%,rgba(14,165,233,0.16),transparent_34%)]" />
+      <div className="relative mx-auto max-w-7xl">
         <motion.div
           ref={ref}
-          className="liquid-glass-card rounded-3xl px-8 py-12 md:px-14 md:py-16 text-center"
+          className="liquid-glass-card relative overflow-hidden rounded-[2rem] border border-violet-500/20 px-8 py-12 text-center shadow-2xl md:px-14 md:py-16"
           initial="hidden"
           animate={inView ? 'visible' : 'hidden'}
           variants={reduceMotion ? undefined : fadeUp}
         >
-          <p className="text-[10px] tracking-[0.2em] text-subtle uppercase mb-4">
+          <span className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-violet-500 via-sky-500 to-emerald-500" />
+          <p className="mb-4 text-[10px] font-black uppercase tracking-[0.2em] text-violet-600 dark:text-violet-300">
             Triển khai // Bản mẫu
           </p>
           <h2
@@ -39,7 +41,7 @@ export function CtaSection() {
           >
             <Link
               to="/booking"
-              className="inline-flex text-sm font-medium bg-btn-primary text-btn-primary-fg hover:opacity-90 transition-opacity rounded-full px-6 py-3"
+              className="inline-flex rounded-full bg-gradient-to-r from-violet-500 to-sky-500 px-6 py-3 text-sm font-bold text-white shadow-lg shadow-violet-500/20 transition-transform hover:-translate-y-0.5"
             >
               Đặt chỗ
             </Link>

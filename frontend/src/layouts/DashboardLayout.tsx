@@ -1,19 +1,22 @@
-import { useEffect, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
 import { AdminSidebar } from '../components/admin'
 import { MenuIcon, OverlayBackdrop, SkipLink, ThemeToggle } from '../components/common'
 import { useOverlayPanel } from '../hooks/useOverlayPanel'
 
 const PAGE_TITLES: Record<string, string> = {
-  '/admin': 'Dashboard',
-  '/admin/users': 'User Management',
-  '/admin/buildings': 'Buildings',
-  '/admin/floors': 'Floors',
-  '/admin/bookings': 'Bookings',
-  '/admin/slots': 'Slots',
-  '/admin/gate-logs': 'Gate Logs',
-  '/admin/staff': 'Staff',
-  '/admin/reports': 'Reports',
+  '/admin': 'Tổng quan hệ thống',
+  '/admin/users': 'Quản lý người dùng',
+  '/admin/managers': 'Quản lý manager',
+  '/admin/buildings': 'Tòa nhà & tầng',
+  '/admin/floors': 'Công suất tầng',
+  '/admin/bookings': 'Quản lý booking',
+  '/admin/slots': 'Quản lý chỗ đỗ',
+  '/admin/gate-logs': 'Nhật ký cổng',
+  '/admin/staff': 'Quản lý nhân viên',
+  '/admin/plans': 'Gói gửi xe',
+  '/admin/subscriptions': 'Người dùng gói',
+  '/admin/reports': 'Báo cáo hệ thống',
 }
 
 export function DashboardLayout() {
@@ -30,39 +33,36 @@ export function DashboardLayout() {
     onClose: () => setSidebarOpen(false),
   })
 
-  useEffect(() => {
-    setSidebarOpen(false)
-  }, [pathname])
-
   return (
-    <div className="min-h-screen bg-page text-fg">
+    <div className="relative h-screen overflow-hidden bg-[radial-gradient(circle_at_top_left,rgba(139,92,246,0.18),transparent_34%),radial-gradient(circle_at_85%_10%,rgba(14,165,233,0.12),transparent_32%),linear-gradient(135deg,var(--page-bg),var(--page-bg))] text-fg">
       <SkipLink />
 
       {sidebarOpen && (
-        <OverlayBackdrop onClose={closeSidebar} label="Close navigation menu" />
+        <OverlayBackdrop onClose={closeSidebar} label="Đóng menu quản trị" />
       )}
 
-      <div className="flex min-h-screen w-full">
-        <div className="max-lg:w-0 max-lg:min-w-0 max-lg:shrink-0 max-lg:overflow-visible lg:w-60 lg:shrink-0">
+      <div className="flex h-full w-full">
+        <div className="max-lg:w-0 max-lg:min-w-0 max-lg:shrink-0 max-lg:overflow-visible lg:w-72 lg:shrink-0">
           <AdminSidebar ref={sidebarRef} isOpen={sidebarOpen} onNavigate={closeSidebar} />
         </div>
 
-        <div className="flex w-full flex-1 flex-col min-w-0 min-h-screen lg:min-h-0">
-          <header className="lg:hidden sticky top-0 z-30 flex items-center gap-3 h-14 px-4 border-b border-theme bg-page/95 backdrop-blur-md shrink-0">
+        <div className="flex h-full w-full min-w-0 flex-1 flex-col">
+          <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center gap-3 border-b border-theme bg-page/85 px-4 shadow-sm backdrop-blur-xl lg:hidden">
             <button
               ref={menuButtonRef}
               type="button"
-              className="flex items-center justify-center w-10 h-10 rounded-xl text-muted hover:text-fg hover:bg-ghost transition-colors"
+              className="flex size-11 items-center justify-center rounded-2xl border border-theme bg-badge text-muted shadow-sm transition-colors hover:bg-ghost hover:text-fg"
               aria-expanded={sidebarOpen}
               aria-controls="admin-sidebar"
-              aria-label="Open navigation menu"
+              aria-label="Mở menu quản trị"
               onClick={() => setSidebarOpen(true)}
             >
               <MenuIcon />
             </button>
-            <p className="text-sm font-medium text-fg truncate flex-1" aria-hidden="true">
-              {pageTitle}
-            </p>
+            <div className="min-w-0 flex-1" aria-hidden="true">
+              <p className="truncate text-sm font-black text-fg">{pageTitle}</p>
+              <p className="text-[11px] text-subtle">Trung tâm quản trị hệ thống</p>
+            </div>
             <ThemeToggle />
           </header>
 

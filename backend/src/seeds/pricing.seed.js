@@ -1,30 +1,30 @@
-import mongoose from 'mongoose';
+﻿import mongoose from 'mongoose';
 import dns from 'dns';
 import Pricing from '../models/pricing.model.js';
-import logger from '../utils/logger.js';
 
 dns.setServers(['8.8.8.8', '1.1.1.1', '8.8.4.4']);
 
 const SEED_PRICINGS = [
   {
     vehicleType: 'motorcycle',
-    baseFee: 5000,
-    baseUnit: 'turn',
-    overnightFee: 5000,
-    overnightStartHour: 22,
-    overnightEndHour: 6,
-    dailyCap: null,
-    description: '5,000đ/lượt (≤24h), +5,000đ/đêm chạm khung 22:00-06:00',
+    mode: 'time_block',
+    blockHours: null,
+    blockFee: null,
+    timeBlocks: [
+      { startHour: 6, endHour: 17, fee: 5000, label: 'Ngày (06:00-17:00)' },
+      { startHour: 17, endHour: 22, fee: 10000, label: 'Tối (17:00-22:00)' },
+      { startHour: 22, endHour: 6, fee: 15000, label: 'Đêm (22:00-06:00)' },
+    ],
+    description:
+      'Theo khung giờ: 06-17 = 5k, 17-22 = 10k, 22-06 = 15k (chạm khung nào tính khung đó)',
   },
   {
     vehicleType: 'car',
-    baseFee: 20000,
-    baseUnit: 'hour',
-    overnightFee: 30000,
-    overnightStartHour: 22,
-    overnightEndHour: 6,
-    dailyCap: 120000,
-    description: '20,000đ/giờ (làm tròn lên 1h), cap 120,000đ/24h, +30,000đ/đêm',
+    mode: 'fixed_block',
+    blockHours: 4,
+    blockFee: 35000,
+    timeBlocks: [],
+    description: '35,000đ mỗi 4 giờ (làm tròn lên block 4h, vd 9h = 3 block = 105k)',
   },
 ];
 
@@ -36,14 +36,14 @@ const run = async () => {
       pricing,
       { upsert: true, new: true }
     );
-    logger.info(`Seeded pricing for ${pricing.vehicleType}`);
+    console.log(`Seeded pricing for ${pricing.vehicleType}`);
   }
   await mongoose.disconnect();
-  logger.info('Pricing seed completed');
+  console.log('Pricing seed completed');
   process.exit(0);
 };
 
 run().catch((err) => {
-  logger.error('Pricing seed failed', { error: err.message });
+  console.error('Pricing seed failed', { error: err.message });
   process.exit(1);
 });

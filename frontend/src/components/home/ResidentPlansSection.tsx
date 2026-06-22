@@ -8,20 +8,29 @@ const RESIDENT_PLANS = [
   {
     name: 'Gói xe máy cư dân',
     price: 'Theo tháng',
-    description: 'Dùng sức chứa chung của tầng xe máy cư dân, không cần chọn ô cố định.',
-    highlights: ['Biển số được nhận diện là cư dân', 'Staff check-in nhanh tại cổng', 'Phù hợp xe máy gửi thường xuyên'],
+    description: 'Dùng sức chứa chung, không cần chọn ô cố định.',
+    highlights: ['Nhận diện biển số cư dân', 'Check-in nhanh tại cổng'],
+    accent: 'from-sky-500/25',
+    color: 'text-sky-600 dark:text-sky-300',
+    bar: 'from-sky-500 to-cyan-400',
   },
   {
     name: 'Gói ô tô cư dân',
     price: 'Theo tháng',
-    description: 'Chọn ô đỗ cố định trên tầng cư dân để giữ chỗ riêng cho biển số của bạn.',
-    highlights: ['Có ô đỗ cố định', 'Ưu tiên tầng cư dân', 'Theo dõi hiệu lực gói trong tài khoản'],
+    description: 'Giữ một ô đỗ riêng trên tầng cư dân.',
+    highlights: ['Ô đỗ cố định', 'Theo dõi hiệu lực online'],
+    accent: 'from-violet-500/25',
+    color: 'text-violet-600 dark:text-violet-300',
+    bar: 'from-violet-500 to-fuchsia-500',
   },
   {
     name: 'Thanh toán online',
     price: 'PayOS',
-    description: 'Tạo đơn mua gói và thanh toán trực tuyến, trạng thái được cập nhật sau khi giao dịch thành công.',
-    highlights: ['Tự động ghi nhận gói', 'Quản lý đơn đang chờ thanh toán', 'Có thể hủy đơn pending'],
+    description: 'Thanh toán trực tuyến và kích hoạt tự động.',
+    highlights: ['Ghi nhận giao dịch tự động', 'Quản lý đơn đang chờ'],
+    accent: 'from-emerald-500/25',
+    color: 'text-emerald-600 dark:text-emerald-300',
+    bar: 'from-emerald-500 to-lime-400',
   },
 ] as const
 
@@ -34,8 +43,8 @@ export function ResidentPlansSection() {
     <SectionShell
       id="resident-plans"
       eyebrow="Cư dân // Gói tháng"
-      title="Mua gói gửi xe cư dân ngay trên hệ thống"
-      description="Người dùng chọn loại xe, nhập biển số và thanh toán gói cư dân. Khi gói có hiệu lực, cổng sẽ tự nhận diện biển số là cư dân."
+      title="Gói cư dân, đăng ký trong vài phút"
+      description="Chọn loại xe, nhập biển số và thanh toán trực tuyến."
       tone="alt"
     >
       <motion.div
@@ -51,15 +60,16 @@ export function ResidentPlansSection() {
             custom={index * 0.1}
             variants={reduceMotion ? undefined : scaleIn}
             whileHover={reduceMotion ? undefined : { y: -4, transition: { duration: 0.2 } }}
-            className="liquid-glass-card rounded-lg p-6"
+            className={`liquid-glass-card relative overflow-hidden rounded-3xl bg-gradient-to-br ${plan.accent} via-transparent to-transparent p-6 ${index === 1 ? 'border border-violet-500/30 shadow-xl shadow-violet-500/10' : ''}`}
           >
-            <p className="text-[10px] uppercase tracking-[0.18em] text-subtle">{plan.price}</p>
-            <h3 className="mt-3 text-lg font-semibold text-fg">{plan.name}</h3>
-            <p className="mt-3 text-sm leading-relaxed text-muted">{plan.description}</p>
-            <ul className="mt-5 grid gap-3 text-sm text-muted">
+            <span className={`absolute inset-x-0 top-0 h-1 bg-gradient-to-r ${plan.bar}`} />
+            <p className={`text-[10px] font-black uppercase tracking-[0.18em] ${plan.color}`}>{plan.price}</p>
+            <h3 className="mt-3 text-xl font-black text-fg">{plan.name}</h3>
+            <p className="mt-3 text-sm leading-6 text-muted">{plan.description}</p>
+            <ul className="mt-5 grid gap-2 text-sm text-muted">
               {plan.highlights.map((item) => (
                 <li key={item} className="flex gap-2">
-                  <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-btn-primary" />
+                  <span className={`mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-gradient-to-r ${plan.bar}`} />
                   <span>{item}</span>
                 </li>
               ))}
@@ -71,12 +81,12 @@ export function ResidentPlansSection() {
       <div className="mt-8 flex flex-wrap items-center gap-3">
         <Link
           to="/subscriptions"
-          className="inline-flex rounded-full bg-btn-primary px-6 py-3 text-sm font-medium text-btn-primary-fg transition-opacity hover:opacity-90"
+          className="inline-flex rounded-full bg-gradient-to-r from-violet-500 to-sky-500 px-6 py-3 text-sm font-bold text-white shadow-lg shadow-violet-500/20 transition-transform hover:-translate-y-0.5"
         >
           Mua gói cư dân
         </Link>
         <Link
-          to="/my-bookings"
+          to="/my-subscriptions"
           className="inline-flex rounded-full border border-theme-strong px-6 py-3 text-sm font-medium text-fg transition-opacity hover:opacity-80"
         >
           Xem gói của tôi

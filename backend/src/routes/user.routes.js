@@ -1,10 +1,22 @@
 import { Router } from 'express';
-import { getAll, getMe, updateMe, getOne, update, changeRole, updateStatus } from '../controllers/user.controller.js';
+import {
+  getAll,
+  getMe,
+  updateMe,
+  changePassword,
+  addVehicle,
+  removeVehicle,
+  getOne,
+  update,
+  changeRole,
+  updateStatus,
+} from '../controllers/user.controller.js';
 import { authenticate, authorize } from '../middlewares/auth.middleware.js';
 import validate from '../middlewares/validate.middleware.js';
-import { privateCache, noCache } from '../middlewares/cache.middleware.js';
 import {
   updateMeSchema,
+  changePasswordSchema,
+  addVehicleSchema,
   updateUserSchema,
   changeRoleSchema,
   updateStatusSchema,
@@ -14,14 +26,21 @@ const router = Router();
 
 router.use(authenticate);
 
-router.get('/me', privateCache(60), getMe);
-router.patch('/me', noCache, validate(updateMeSchema), updateMe);
+// Profile
+router.get('/me', getMe);
+router.patch('/me', validate(updateMeSchema), updateMe);
+router.patch('/me/password', validate(changePasswordSchema), changePassword);
 
-router.get('/', authorize('admin', 'manager'), privateCache(30), getAll);
-router.get('/:id', authorize('admin', 'manager'), privateCache(30), getOne);
+// Vehicles
+router.post('/me/vehicles', validate(addVehicleSchema), addVehicle);
+router.delete('/me/vehicles/:vehicleId', removeVehicle);
 
-router.patch('/:id', authorize('admin'), noCache, validate(updateUserSchema), update);
-router.patch('/:id/role', authorize('admin'), noCache, validate(changeRoleSchema), changeRole);
-router.patch('/:id/status', authorize('admin'), noCache, validate(updateStatusSchema), updateStatus);
+// Admin / Manager
+router.get('/', authorize('admin', 'manager'), getAll);
+router.get('/:id', authorize('admin', 'manager'), getOne);
+
+router.patch('/:id', authorize('admin'), validate(updateUserSchema), update);
+router.patch('/:id/role', authorize('admin'), validate(changeRoleSchema), changeRole);
+router.patch('/:id/status', authorize('admin'), validate(updateStatusSchema), updateStatus);
 
 export default router;

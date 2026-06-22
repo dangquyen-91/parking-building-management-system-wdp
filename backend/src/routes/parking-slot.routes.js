@@ -10,7 +10,6 @@ import {
 } from '../controllers/parking-slot.controller.js';
 import { authenticate, authorize } from '../middlewares/auth.middleware.js';
 import validate from '../middlewares/validate.middleware.js';
-import { privateCache, noCache } from '../middlewares/cache.middleware.js';
 import {
   createSlotSchema,
   bulkCreateSchema,
@@ -21,15 +20,15 @@ const router = Router();
 
 router.use(authenticate);
 
-router.get('/available-for-subscription', privateCache(15), getAvailableForSubscription);
+router.get('/available-for-subscription', getAvailableForSubscription);
 
-router.get('/', authorize('admin', 'manager', 'staff'), privateCache(30), getAll);
-router.get('/:id', authorize('admin', 'manager', 'staff'), privateCache(30), getOne);
+router.get('/', authorize('admin', 'manager', 'staff'), getAll);
+router.get('/:id', authorize('admin', 'manager', 'staff'), getOne);
 
-router.post('/', authorize('admin', 'manager'), noCache, validate(createSlotSchema), create);
-router.post('/bulk', authorize('admin', 'manager'), noCache, validate(bulkCreateSchema), bulkCreate);
+router.post('/', authorize('admin', 'manager'), validate(createSlotSchema), create);
+router.post('/bulk', authorize('admin', 'manager'), validate(bulkCreateSchema), bulkCreate);
 
-router.patch('/:id', authorize('admin', 'manager', 'staff'), noCache, validate(updateSlotSchema), update);
-router.delete('/:id', authorize('admin', 'manager'), noCache, remove);
+router.patch('/:id', authorize('admin', 'manager', 'staff'), validate(updateSlotSchema), update);
+router.delete('/:id', authorize('admin', 'manager'), remove);
 
 export default router;
