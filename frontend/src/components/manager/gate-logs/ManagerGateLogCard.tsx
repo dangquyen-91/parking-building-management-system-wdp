@@ -76,8 +76,8 @@ export function ManagerGateLogCard({ session }: ManagerGateLogCardProps) {
     <article className="rounded-2xl border border-theme bg-badge p-3 shadow-sm transition-all hover:-translate-y-0.5 hover:bg-ghost hover:shadow-lg">
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-6 xl:items-stretch">
         <div className="flex min-h-20 min-w-0 flex-col justify-start rounded-xl bg-page/55 p-3">
+          <p className="text-xs text-subtle">Biển số xe</p>
           <p className="truncate text-lg font-black tracking-[0.06em] text-fg">{session.licensePlate}</p>
-          <p className="mt-1 truncate text-xs text-subtle">{session._id}</p>
         </div>
 
         <InfoCell

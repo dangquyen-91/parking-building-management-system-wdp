@@ -1,5 +1,6 @@
 import { forwardRef } from 'react'
 import { NavLink } from 'react-router-dom'
+import { ThemeToggle } from '../../common'
 import { LogoIcon } from '../../common/icons'
 import { LogoutButton } from '../../common/LogoutButton'
 
@@ -115,6 +116,7 @@ export const ManagerSidebar = forwardRef<HTMLElement, ManagerSidebarProps>(funct
       ].join(' ')}
     >
       <div className="border-b border-theme p-5">
+        <div className="flex items-center justify-between gap-3">
         <NavLink
           to="/manager"
           className="flex min-w-0 items-center gap-3 text-fg"
@@ -131,6 +133,8 @@ export const ManagerSidebar = forwardRef<HTMLElement, ManagerSidebarProps>(funct
             </span>
           </span>
         </NavLink>
+        <ThemeToggle className="shrink-0 border border-theme bg-badge shadow-sm" />
+        </div>
 
         <div className="mt-5 rounded-2xl border border-sky-500/25 bg-sky-500/10 p-3">
           <div className="flex items-center gap-2 text-xs font-bold text-sky-700 dark:text-sky-200">
@@ -156,6 +160,13 @@ export const ManagerSidebar = forwardRef<HTMLElement, ManagerSidebarProps>(funct
       </nav>
 
       <div className="border-t border-theme p-4">
+        <div className="hidden">
+          <div>
+            <p className="text-xs font-bold text-fg">Giao diện</p>
+            <p className="text-[11px] text-subtle">Sáng / tối</p>
+          </div>
+          <ThemeToggle className="border border-theme bg-page shadow-sm" />
+        </div>
         <LogoutButton />
       </div>
     </aside>

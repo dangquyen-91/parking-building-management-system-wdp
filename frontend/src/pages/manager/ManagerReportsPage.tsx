@@ -4,6 +4,7 @@ import {
   ManagerPageHeader,
   ManagerPeakHoursChart,
   ManagerReportFilters,
+  ManagerRevenueByVehicleChart,
   ManagerRevenueChart,
   ManagerSessionChart,
   ManagerStatCard,
@@ -14,6 +15,7 @@ import {
   type ManagerDashboardReport,
   type ManagerOccupancyReport,
   type ManagerPeakHoursReport,
+  type ManagerRevenueByVehicleReport,
   type ManagerRevenueReport,
   type ManagerSessionReport,
 } from '../../services/managerReportsApi'
@@ -39,6 +41,7 @@ export function ManagerReportsPage() {
   const [filters, setFilters] = useState<ReportFilters>({ from: sevenDaysAgo, to: today, peakDays: 7 })
   const [dashboard, setDashboard] = useState<ManagerDashboardReport | null>(null)
   const [revenue, setRevenue] = useState<ManagerRevenueReport | null>(null)
+  const [revenueByVehicle, setRevenueByVehicle] = useState<ManagerRevenueByVehicleReport | null>(null)
   const [sessions, setSessions] = useState<ManagerSessionReport | null>(null)
   const [occupancy, setOccupancy] = useState<ManagerOccupancyReport | null>(null)
   const [peakHours, setPeakHours] = useState<ManagerPeakHoursReport | null>(null)
@@ -50,9 +53,10 @@ export function ManagerReportsPage() {
     setError('')
 
     try {
-      const [dashboardData, revenueData, sessionData, occupancyData, peakHoursData] = await Promise.all([
+      const [dashboardData, revenueData, revenueByVehicleData, sessionData, occupancyData, peakHoursData] = await Promise.all([
         managerReportsApi.getDashboard(),
         managerReportsApi.getRevenue({ from: filters.from, to: filters.to }),
+        managerReportsApi.getRevenueByVehicle({ from: filters.from, to: filters.to }),
         managerReportsApi.getSessions({ from: filters.from, to: filters.to }),
         managerReportsApi.getOccupancy(),
         managerReportsApi.getPeakHours(filters.peakDays),
@@ -60,6 +64,7 @@ export function ManagerReportsPage() {
 
       setDashboard(dashboardData)
       setRevenue(revenueData)
+      setRevenueByVehicle(revenueByVehicleData)
       setSessions(sessionData)
       setOccupancy(occupancyData)
       setPeakHours(peakHoursData)
@@ -81,6 +86,11 @@ export function ManagerReportsPage() {
     }
   }
 
+  const handlePeakDaysChange = (value: number) => {
+    setPeakDays(value)
+    setFilters((current) => ({ ...current, peakDays: value }))
+  }
+
   return (
     <div className="relative mx-auto max-w-[118rem] p-4 md:p-8 lg:p-10">
       <ManagerPageHeader
@@ -96,7 +106,7 @@ export function ManagerReportsPage() {
         loading={loading}
         onFromChange={setFrom}
         onToChange={setTo}
-        onPeakDaysChange={setPeakDays}
+        onPeakDaysChange={handlePeakDaysChange}
         onApply={applyFilters}
       />
 
@@ -141,10 +151,31 @@ export function ManagerReportsPage() {
         </section>
       )}
 
+      {revenueByVehicle && (
+        <section className="mt-5 grid gap-3 sm:grid-cols-2">
+          <ManagerStatCard
+            label="Doanh thu xe máy"
+            value={formatCurrency(revenueByVehicle.totals.motorcycle.total)}
+            detail={`${revenueByVehicle.totals.motorcycle.transactions} giao dịch`}
+          />
+          <ManagerStatCard
+            label="Doanh thu ô tô"
+            value={formatCurrency(revenueByVehicle.totals.car.total)}
+            detail={`${revenueByVehicle.totals.car.transactions} giao dịch`}
+          />
+        </section>
+      )}
+
       <div className="mt-5 grid gap-5 xl:grid-cols-2">
         {revenue && <ManagerRevenueChart report={revenue} />}
         {sessions && <ManagerSessionChart report={sessions} />}
       </div>
+
+      {revenueByVehicle && (
+        <div className="mt-5">
+          <ManagerRevenueByVehicleChart report={revenueByVehicle} />
+        </div>
+      )}
 
       <div className="mt-5 grid gap-5 xl:grid-cols-[1fr_1.3fr]">
         {peakHours && <ManagerPeakHoursChart report={peakHours} />}

@@ -55,6 +55,7 @@ export { ManagerSubscriptionStats } from './subscriptions/ManagerSubscriptionSta
 export { ManagerOccupancyTable } from './reports/ManagerOccupancyTable'
 export {
   ManagerPeakHoursChart,
+  ManagerRevenueByVehicleChart,
   ManagerRevenueChart,
   ManagerSessionChart,
 } from './reports/ManagerReportCharts'

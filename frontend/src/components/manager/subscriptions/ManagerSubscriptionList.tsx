@@ -56,6 +56,7 @@ export function ManagerSubscriptionList({
             <article key={subscription._id} className="rounded-lg border border-theme bg-badge p-4">
               <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-[1.15fr_1fr_1fr_1fr_auto] xl:items-center">
                 <div className="min-w-0">
+                  <p className="text-xs text-subtle">Biển số xe</p>
                   <div className="flex flex-wrap items-center gap-2">
                     <p className="truncate text-lg font-semibold text-fg">{subscription.licensePlate}</p>
                     {activePlates.has(subscription.licensePlate) && <ManagerStatusBadge status="checkin" label="Đang trong bãi" />}
