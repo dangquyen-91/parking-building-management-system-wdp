@@ -1,12 +1,17 @@
-import { Image } from "expo-image";
 import { useEffect, useMemo, useState } from "react";
-import { Linking, Modal } from "react-native";
-import Ionicons from "react-native-vector-icons/Ionicons";
-import { WebView } from "react-native-webview";
 import type { WebViewNavigation } from "react-native-webview/lib/WebViewTypes";
 import { toast } from "sonner-native";
 
-import { GlassCard, Label, Page } from "../../components/parking-ui";
+import {
+  SubscriptionActiveCard,
+  SubscriptionGateCard,
+  SubscriptionHistorySection,
+  SubscriptionPaymentCard,
+  SubscriptionPaymentModal,
+  SubscriptionPurchaseFormCard,
+  SubscriptionQrModal,
+} from "@/components/subscription";
+import { Page } from "@/components/parking-ui";
 import { useCurrentUserQuery } from "../../hooks/useAuth";
 import {
   useAvailableSubscriptionSlotsQuery,
@@ -19,48 +24,9 @@ import {
 } from "../../hooks/useSubscriptions";
 import type {
   CarSubscriptionAvailabilityResult,
-  Plan,
   PurchaseSubscriptionResult,
-  Subscription,
 } from "../../types/subscriptions";
-import { Link, Pressable, ScrollView, Text, TextInput, View } from "../../tw";
-
-const formatMoney = (value: number) => `${value.toLocaleString("vi-VN")} VND`;
-
-const formatDate = (value?: string | null) =>
-  value
-    ? new Date(value).toLocaleDateString("vi-VN", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-      })
-    : "Not started";
-
-const formatDateTime = (value?: string | null) =>
-  value
-    ? new Date(value).toLocaleString("vi-VN", {
-        day: "2-digit",
-        hour: "2-digit",
-        minute: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-      })
-    : "Not available";
-
-const formatVehicleType = (value: Plan["vehicleType"]) =>
-  value === "car" ? "Car" : "Motorcycle";
-
-const getSubscriptionTone = (status: Subscription["status"]) => {
-  if (status === "active") {
-    return "text-btn-primary";
-  }
-
-  if (status === "expired" || status === "cancelled") {
-    return "text-faint";
-  }
-
-  return "text-fg";
-};
+import { Pressable, ScrollView, Text } from "../../tw";
 
 const normalizeLicensePlate = (value: string) =>
   value.toUpperCase().replace(/\s+/g, "");
@@ -114,7 +80,9 @@ export default function SubscriptionScreen() {
   );
 
   const activeSubscription = useMemo(
-    () => mySubscriptionsQuery.data?.subscriptions.find((item) => item.status === "active") ?? null,
+    () =>
+      mySubscriptionsQuery.data?.subscriptions.find((item) => item.status === "active") ??
+      null,
     [mySubscriptionsQuery.data?.subscriptions],
   );
 
@@ -262,6 +230,8 @@ export default function SubscriptionScreen() {
   };
 
   const paymentSummary = purchaseResult?.payment;
+  const isLoadingActiveQr =
+    subscriptionQrMutation.isPending && selectedQrSubscriptionId === activeSubscription?._id;
 
   if (!currentUser) {
     return (
@@ -274,26 +244,7 @@ export default function SubscriptionScreen() {
           contentInsetAdjustmentBehavior="automatic"
           contentContainerClassName="gap-4 px-5 pb-[120px]"
         >
-          <GlassCard className="gap-4">
-            <View className="h-12 w-12 items-center justify-center rounded-full bg-badge">
-              <Ionicons name="lock-closed" color="#ffffff" size={22} />
-            </View>
-            <View className="gap-1">
-              <Text className="font-sans text-xl font-extrabold text-fg">
-                Sign in required
-              </Text>
-              <Text className="font-sans text-sm leading-5 text-subtle">
-                Resident subscriptions are attached to your account and vehicle plate.
-              </Text>
-            </View>
-            <Link href="/(auth)/login" asChild>
-              <Pressable className="items-center rounded-full bg-btn-primary py-4">
-                <Text className="font-sans text-base font-extrabold text-btn-primary-fg">
-                  Sign in
-                </Text>
-              </Pressable>
-            </Link>
-          </GlassCard>
+          <SubscriptionGateCard />
         </ScrollView>
       </Page>
     );
@@ -309,182 +260,24 @@ export default function SubscriptionScreen() {
         contentInsetAdjustmentBehavior="automatic"
         contentContainerClassName="gap-4 px-5 pb-[120px]"
       >
-        <GlassCard className="gap-4">
-          <View className="flex-row items-center gap-3">
-            <View className="h-11 w-11 items-center justify-center rounded-[14px] bg-btn-primary">
-              <Ionicons name="card" color="#000000" size={22} />
-            </View>
-            <View className="flex-1 gap-1">
-              <Text className="font-sans text-lg font-extrabold text-fg">
-                Buy a resident plan
-              </Text>
-              <Text className="font-sans text-sm leading-5 text-subtle">
-                Car plans reserve a fixed resident slot. Motorcycle plans share resident capacity.
-              </Text>
-            </View>
-          </View>
-
-          <View className="gap-3">
-            <View className="gap-2">
-              <Label>License plate</Label>
-              <TextInput
-                autoCapitalize="characters"
-                onChangeText={setLicensePlate}
-                placeholder="59-AB24872"
-                placeholderTextColor="#6b7280"
-                value={licensePlate}
-                className="rounded-[14px] border border-border-theme bg-input px-4 py-3.5 font-sans text-base text-fg"
-              />
-            </View>
-
-            <View className="gap-2">
-              <Label>Choose plan</Label>
-              {plansQuery.isLoading ? (
-                <GlassCard className="gap-1">
-                  <Text className="font-sans text-base font-extrabold text-fg">
-                    Loading plans...
-                  </Text>
-                </GlassCard>
-              ) : (
-                <View className="gap-2">
-                  {(plansQuery.data ?? []).map((plan) => {
-                    const isSelected = plan._id === selectedPlanId;
-
-                    return (
-                      <Pressable
-                        key={plan._id}
-                        className={`rounded-[18px] border px-4 py-4 ${
-                          isSelected
-                            ? "border-btn-primary bg-btn-primary"
-                            : "border-border-theme bg-glass-card"
-                        }`}
-                        onPress={() => setSelectedPlanId(plan._id)}
-                      >
-                        <View className="flex-row items-start justify-between gap-3">
-                          <View className="flex-1 gap-1">
-                            <Text
-                              className={`font-sans text-base font-extrabold ${
-                                isSelected ? "text-btn-primary-fg" : "text-fg"
-                              }`}
-                            >
-                              {plan.name}
-                            </Text>
-                            <Text
-                              className={`font-sans text-sm ${
-                                isSelected ? "text-btn-primary-fg" : "text-subtle"
-                              }`}
-                            >
-                              {formatVehicleType(plan.vehicleType)} · {plan.durationDays} days
-                            </Text>
-                            {plan.description ? (
-                              <Text
-                                className={`font-sans text-sm leading-5 ${
-                                  isSelected ? "text-btn-primary-fg" : "text-subtle"
-                                }`}
-                              >
-                                {plan.description}
-                              </Text>
-                            ) : null}
-                          </View>
-                          <Text
-                            className={`font-sans text-sm font-extrabold ${
-                              isSelected ? "text-btn-primary-fg" : "text-fg"
-                            }`}
-                          >
-                            {formatMoney(plan.price)}
-                          </Text>
-                        </View>
-                      </Pressable>
-                    );
-                  })}
-                </View>
-              )}
-            </View>
-
-            {selectedPlan?.vehicleType === "car" ? (
-              <View className="gap-2">
-                <View className="flex-row items-center justify-between gap-3">
-                  <Label>Resident car slot</Label>
-                  {availabilityQuery.isFetching ? (
-                    <Text className="font-sans text-xs font-bold text-subtle">Loading</Text>
-                  ) : null}
-                </View>
-
-                {availableCarSlots.length > 0 ? (
-                  <ScrollView
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                    contentContainerClassName="gap-2 pr-1"
-                  >
-                    {availableCarSlots.map(({ floor, slot }) => {
-                      const isSelected = slot._id === selectedSlotId;
-                      const buildingName =
-                        floor.building?.name ?? floor.building?.address ?? "Resident building";
-
-                      return (
-                        <Pressable
-                          key={slot._id}
-                          className={`min-w-[170px] rounded-[18px] border px-4 py-4 ${
-                            isSelected
-                              ? "border-btn-primary bg-btn-primary"
-                              : "border-border-theme bg-glass-card"
-                          }`}
-                          onPress={() => setSelectedSlotId(slot._id)}
-                        >
-                          <Text
-                            className={`font-sans text-base font-extrabold ${
-                              isSelected ? "text-btn-primary-fg" : "text-fg"
-                            }`}
-                          >
-                            {slot.slotCode}
-                          </Text>
-                          <Text
-                            className={`font-sans text-sm ${
-                              isSelected ? "text-btn-primary-fg" : "text-subtle"
-                            }`}
-                          >
-                            Floor B{floor.floorNumber}
-                          </Text>
-                          <Text
-                            className={`font-sans text-xs leading-5 ${
-                              isSelected ? "text-btn-primary-fg" : "text-subtle"
-                            }`}
-                          >
-                            {buildingName}
-                          </Text>
-                        </Pressable>
-                      );
-                    })}
-                  </ScrollView>
-                ) : (
-                  <GlassCard className="gap-1">
-                    <Text className="font-sans text-base font-extrabold text-fg">
-                      No resident car slots available
-                    </Text>
-                    <Text className="font-sans text-sm leading-5 text-subtle">
-                      Try again later or choose another plan after a slot becomes free.
-                    </Text>
-                  </GlassCard>
-                )}
-              </View>
-            ) : selectedPlan?.vehicleType === "motorcycle" ? (
-              <GlassCard className="gap-2">
-                <Label>Resident motorcycle capacity</Label>
-                <Text className="font-sans text-xl font-extrabold text-fg">
-                  {availabilityQuery.data?.vehicleType === "motorcycle"
-                    ? `${availabilityQuery.data.availableCount} spots left`
-                    : "Checking capacity..."}
-                </Text>
-                {availabilityQuery.data?.vehicleType === "motorcycle" ? (
-                  <Text className="font-sans text-sm leading-5 text-subtle">
-                    {availabilityQuery.data.soldCount}/{availabilityQuery.data.totalCapacity} sold.
-                    {availabilityQuery.data.note ? ` ${availabilityQuery.data.note}` : ""}
-                  </Text>
-                ) : null}
-              </GlassCard>
-            ) : null}
-          </View>
-        </GlassCard>
+        <SubscriptionPurchaseFormCard
+          availableCarSlots={availableCarSlots}
+          availabilityLoading={availabilityQuery.isFetching}
+          licensePlate={licensePlate}
+          motorcycleAvailability={
+            availabilityQuery.data?.vehicleType === "motorcycle"
+              ? availabilityQuery.data
+              : undefined
+          }
+          onChangeLicensePlate={setLicensePlate}
+          onSelectPlan={setSelectedPlanId}
+          onSelectSlot={setSelectedSlotId}
+          plans={plansQuery.data ?? []}
+          plansLoading={plansQuery.isLoading}
+          selectedPlan={selectedPlan}
+          selectedPlanId={selectedPlanId}
+          selectedSlotId={selectedSlotId}
+        />
 
         <Pressable
           className="items-center rounded-full bg-btn-primary py-4"
@@ -498,316 +291,73 @@ export default function SubscriptionScreen() {
           </Text>
         </Pressable>
 
-        {paymentSummary ? (
-          <GlassCard className="gap-4">
-            <View className="flex-row items-start justify-between gap-3">
-              <View className="flex-1 gap-1">
-                <Label>Payment pending</Label>
-                <Text className="font-sans text-xl font-extrabold text-fg">
-                  {formatMoney(paymentSummary.amount)}
-                </Text>
-                <Text className="font-sans text-sm text-subtle">
-                  Order #{paymentSummary.orderCode}
-                </Text>
-              </View>
-              <Text
-                className={`rounded-full bg-badge px-3 py-1 font-sans text-xs font-bold uppercase ${getSubscriptionTone(
-                  purchaseResult?.subscription.status ?? "pending",
-                )}`}
-              >
-                {purchaseResult?.subscription.status ?? "pending"}
-              </Text>
-            </View>
-
-            <View className="gap-2 rounded-[14px] bg-surface-alt p-3">
-              <Text selectable className="font-sans text-base font-extrabold text-fg">
-                {purchaseResult?.subscription.licensePlate}
-              </Text>
-              <Text className="font-sans text-sm text-subtle">
-                {purchaseResult?.subscription.planId.name}
-              </Text>
-            </View>
-
-            <View className="flex-row gap-3">
-              <Pressable
-                className="flex-1 items-center rounded-full bg-btn-primary py-3.5"
-                onPress={() => setPaymentUrl(paymentSummary.checkoutUrl)}
-              >
-                <Text className="font-sans text-base font-extrabold text-btn-primary-fg">
-                  Open payment
-                </Text>
-              </Pressable>
-              <Pressable
-                className="flex-1 items-center rounded-full border border-border-strong bg-badge py-3.5"
-                disabled={confirmSubscriptionMutation.isPending}
-                onPress={() => handlePaymentStateSync("confirm")}
-              >
-                <Text className="font-sans text-base font-extrabold text-fg">
-                  Sync status
-                </Text>
-              </Pressable>
-            </View>
-          </GlassCard>
+        {paymentSummary && purchaseResult ? (
+          <SubscriptionPaymentCard
+            confirmPending={confirmSubscriptionMutation.isPending}
+            onOpenPayment={setPaymentUrl}
+            onSyncStatus={() => handlePaymentStateSync("confirm")}
+            purchaseResult={purchaseResult}
+          />
         ) : null}
 
         {activeSubscription ? (
-          <GlassCard className="gap-4">
-            <View className="flex-row items-center justify-between gap-3">
-              <View className="gap-1">
-                <Label>Active subscription</Label>
-                <Text className="font-sans text-xl font-extrabold text-fg">
-                  {activeSubscription.planId.name}
-                </Text>
-              </View>
-              <Text className="font-sans text-xs font-extrabold uppercase text-btn-primary">
-                {activeSubscription.status}
-              </Text>
-            </View>
-
-            <View className="gap-2 rounded-[14px] bg-surface-alt p-3">
-              <Text selectable className="font-sans text-base font-extrabold text-fg">
-                {activeSubscription.licensePlate}
-              </Text>
-              <Text className="font-sans text-sm text-subtle">
-                Valid until {formatDate(activeSubscription.endDate)}
-              </Text>
-              {activeSubscription.slotId?.slotCode ? (
-                <Text className="font-sans text-sm text-subtle">
-                  Reserved slot: {activeSubscription.slotId.slotCode}
-                </Text>
-              ) : null}
-            </View>
-
-            <Pressable
-              className="items-center rounded-full bg-btn-primary py-3.5"
-              disabled={
-                subscriptionQrMutation.isPending &&
-                selectedQrSubscriptionId === activeSubscription._id
-              }
-              onPress={() => handleOpenQr(activeSubscription._id)}
-            >
-              <Text className="font-sans text-base font-extrabold text-btn-primary-fg">
-                {subscriptionQrMutation.isPending &&
-                selectedQrSubscriptionId === activeSubscription._id
-                  ? "Loading QR..."
-                  : "View entry QR"}
-              </Text>
-            </Pressable>
-          </GlassCard>
+          <SubscriptionActiveCard
+            isLoadingQr={Boolean(isLoadingActiveQr)}
+            onOpenQr={handleOpenQr}
+            subscription={activeSubscription}
+          />
         ) : null}
 
-        <View className="gap-3">
-          <View className="flex-row items-center justify-between">
-            <View className="gap-1">
-              <Label>My subscriptions</Label>
-              <Text className="font-sans text-2xl font-black text-fg">
-                Purchase history
-              </Text>
-            </View>
-            <Pressable
-              className="rounded-full border border-border-strong bg-badge px-4 py-2"
-              disabled={mySubscriptionsQuery.isFetching}
-              onPress={handleRefreshSubscriptions}
-            >
-              <Text className="font-sans text-sm font-bold text-fg">
-                {mySubscriptionsQuery.isFetching ? "Refreshing..." : "Refresh"}
-              </Text>
-            </Pressable>
-          </View>
-
-          {(mySubscriptionsQuery.data?.subscriptions ?? []).map((subscription) => (
-            <GlassCard key={subscription._id} className="gap-3">
-              <View className="flex-row items-start justify-between gap-3">
-                <View className="flex-1 gap-1">
-                  <Text className="font-sans text-lg font-extrabold text-fg">
-                    {subscription.planId.name}
-                  </Text>
-                  <Text selectable className="font-sans text-sm text-subtle">
-                    {subscription.licensePlate}
-                  </Text>
-                </View>
-                <Text
-                  className={`font-sans text-xs font-extrabold uppercase ${getSubscriptionTone(
-                    subscription.status,
-                  )}`}
-                >
-                  {subscription.status}
-                </Text>
-              </View>
-
-              <View className="gap-1">
-                <Text className="font-sans text-sm text-subtle">
-                  {formatVehicleType(subscription.vehicleType)} · {formatMoney(subscription.planId.price)}
-                </Text>
-                <Text className="font-sans text-sm text-subtle">
-                  Created: {formatDateTime(subscription.createdAt)}
-                </Text>
-                <Text className="font-sans text-sm text-subtle">
-                  Valid: {formatDate(subscription.startDate)} - {formatDate(subscription.endDate)}
-                </Text>
-                {subscription.slotId?.slotCode ? (
-                  <Text className="font-sans text-sm text-subtle">
-                    Slot: {subscription.slotId.slotCode}
-                  </Text>
-                ) : null}
-              </View>
-
-              {subscription.status === "pending" ? (
-                <View className="flex-row gap-3">
-                  <Pressable
-                    className="flex-1 items-center rounded-full bg-btn-primary py-3"
-                    disabled={confirmSubscriptionMutation.isPending}
-                    onPress={() =>
-                      confirmSubscriptionMutation
-                        .mutateAsync(subscription._id)
-                        .then(() => {
-                          toast.success("Subscription synced");
-                        })
-                        .catch((error: unknown) => {
-                          toast.error("Sync failed", {
-                            description:
-                              error instanceof Error ? error.message : "Please try again later.",
-                          });
-                        })
-                    }
-                  >
-                    <Text className="font-sans text-sm font-extrabold text-btn-primary-fg">
-                      Confirm payment
-                    </Text>
-                  </Pressable>
-                  <Pressable
-                    className="flex-1 items-center rounded-full border border-border-strong bg-badge py-3"
-                    disabled={cancelSubscriptionMutation.isPending}
-                    onPress={() =>
-                      cancelSubscriptionMutation
-                        .mutateAsync(subscription._id)
-                        .then(() => {
-                          toast.success("Subscription cancelled");
-                        })
-                        .catch((error: unknown) => {
-                          toast.error("Cancel failed", {
-                            description:
-                              error instanceof Error ? error.message : "Please try again later.",
-                          });
-                        })
-                    }
-                  >
-                    <Text className="font-sans text-sm font-extrabold text-fg">
-                      Cancel
-                    </Text>
-                  </Pressable>
-                </View>
-              ) : subscription.status === "active" ? (
-                <Pressable
-                  className="items-center rounded-full border border-border-strong bg-badge py-3"
-                  disabled={
-                    subscriptionQrMutation.isPending &&
-                    selectedQrSubscriptionId === subscription._id
-                  }
-                  onPress={() => handleOpenQr(subscription._id)}
-                >
-                  <Text className="font-sans text-sm font-extrabold text-fg">
-                    Open QR
-                  </Text>
-                </Pressable>
-              ) : null}
-            </GlassCard>
-          ))}
-
-          {!mySubscriptionsQuery.isFetching &&
-          (mySubscriptionsQuery.data?.subscriptions?.length ?? 0) === 0 ? (
-            <GlassCard className="gap-1">
-              <Text className="font-sans text-base font-extrabold text-fg">
-                No subscriptions yet
-              </Text>
-              <Text className="font-sans text-sm text-subtle">
-                Buy a resident plan above and it will appear here after creation.
-              </Text>
-            </GlassCard>
-          ) : null}
-        </View>
+        <SubscriptionHistorySection
+          cancelPending={cancelSubscriptionMutation.isPending}
+          confirmPending={confirmSubscriptionMutation.isPending}
+          isFetching={mySubscriptionsQuery.isFetching}
+          isLoadingQrForId={
+            subscriptionQrMutation.isPending ? selectedQrSubscriptionId : null
+          }
+          onCancel={(subscriptionId) => {
+            cancelSubscriptionMutation
+              .mutateAsync(subscriptionId)
+              .then(() => {
+                toast.success("Subscription cancelled");
+              })
+              .catch((error: unknown) => {
+                toast.error("Cancel failed", {
+                  description:
+                    error instanceof Error ? error.message : "Please try again later.",
+                });
+              });
+          }}
+          onConfirm={(subscriptionId) => {
+            confirmSubscriptionMutation
+              .mutateAsync(subscriptionId)
+              .then(() => {
+                toast.success("Subscription synced");
+              })
+              .catch((error: unknown) => {
+                toast.error("Sync failed", {
+                  description:
+                    error instanceof Error ? error.message : "Please try again later.",
+                });
+              });
+          }}
+          onOpenQr={handleOpenQr}
+          onRefresh={handleRefreshSubscriptions}
+          subscriptions={mySubscriptionsQuery.data?.subscriptions ?? []}
+        />
       </ScrollView>
 
-      <Modal
-        animationType="slide"
-        onRequestClose={() => setPaymentUrl(null)}
-        presentationStyle="fullScreen"
-        visible={Boolean(paymentUrl)}
-      >
-        <View className="flex-1 bg-page">
-          <View className="flex-row items-center justify-between border-b border-border-theme bg-glass-card px-4 pb-3 pt-14">
-            <Pressable
-              className="h-10 w-10 items-center justify-center rounded-full bg-badge"
-              onPress={() => setPaymentUrl(null)}
-            >
-              <Ionicons name="close" color="#ffffff" size={22} />
-            </Pressable>
+      <SubscriptionPaymentModal
+        onClose={() => setPaymentUrl(null)}
+        onNavigationStateChange={handlePaymentNavigationChange}
+        paymentUrl={paymentUrl}
+      />
 
-            <Text className="font-sans text-base font-extrabold text-fg">
-              PayOS payment
-            </Text>
-
-            <Pressable
-              className="h-10 w-10 items-center justify-center rounded-full bg-badge"
-              onPress={() => {
-                if (paymentUrl) {
-                  void Linking.openURL(paymentUrl);
-                }
-              }}
-            >
-              <Ionicons name="open-outline" color="#ffffff" size={20} />
-            </Pressable>
-          </View>
-
-          {paymentUrl ? (
-            <WebView
-              className="flex-1"
-              onNavigationStateChange={handlePaymentNavigationChange}
-              source={{ uri: paymentUrl }}
-              startInLoadingState
-            />
-          ) : null}
-        </View>
-      </Modal>
-
-      <Modal
-        animationType="slide"
-        onRequestClose={handleCloseQr}
-        transparent
+      <SubscriptionQrModal
+        onClose={handleCloseQr}
+        qrData={subscriptionQrMutation.data}
         visible={qrModalVisible}
-      >
-        <View className="flex-1 justify-end bg-black/60">
-          <View className="gap-4 rounded-t-[28px] bg-page px-5 pb-8 pt-5">
-            <View className="flex-row items-center justify-between">
-              <Text className="font-sans text-lg font-extrabold text-fg">
-                Resident entry QR
-              </Text>
-              <Pressable
-                className="rounded-full bg-badge px-4 py-2"
-                onPress={handleCloseQr}
-              >
-                <Text className="font-sans text-sm font-bold text-fg">Done</Text>
-              </Pressable>
-            </View>
-
-            {subscriptionQrMutation.data ? (
-              <GlassCard className="items-center gap-3">
-                <Image
-                  contentFit="contain"
-                  source={{ uri: subscriptionQrMutation.data.qrImage }}
-                  style={{ width: 260, height: 260 }}
-                />
-                <Text className="font-sans text-lg font-extrabold text-fg">
-                  {subscriptionQrMutation.data.licensePlate}
-                </Text>
-                <Text selectable className="font-sans text-xs text-subtle">
-                  {subscriptionQrMutation.data.qrToken}
-                </Text>
-              </GlassCard>
-            ) : null}
-          </View>
-        </View>
-      </Modal>
+      />
     </Page>
   );
 }

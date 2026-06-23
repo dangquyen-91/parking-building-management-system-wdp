@@ -1,14 +1,19 @@
 import { useMemo, useState } from "react";
-import { Linking, Modal, Platform } from "react-native";
-import DateTimePicker, {
-  type DateTimePickerChangeEvent,
-} from "@react-native-community/datetimepicker";
+import { Platform } from "react-native";
 import type { WebViewNavigation } from "react-native-webview/lib/WebViewTypes";
-import { WebView } from "react-native-webview";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import { toast } from "sonner-native";
 
-import { GlassCard, Label, Page } from "../../components/parking-ui";
+import {
+  BookingDurationModal,
+  BookingEstimateCard,
+  BookingFormCard,
+  BookingHistorySection,
+  BookingPaymentCard,
+  BookingPaymentModal,
+  BookingPickerModal,
+} from "@/components/booking";
+import { GlassCard, Page } from "@/components/parking-ui";
 import { useCurrentUserQuery } from "../../hooks/useAuth";
 import {
   useCancelBookingMutation,
@@ -24,58 +29,28 @@ import {
   type CreateBookingResult,
   type StoredGuestBooking,
 } from "../../types/bookings";
-import { Pressable, ScrollView, Text, TextInput, View } from "../../tw";
+import type { DateTimePickerChangeEvent } from "@react-native-community/datetimepicker";
+import { createBookingPayloadSchema } from "@/schema";
+import { getFieldErrors } from "@/utils/validation";
+import { Pressable, ScrollView, Text, View } from "../../tw";
 
 const HOUR_MS = 60 * 60 * 1000;
 const BOOKING_BLOCK_HOURS = 4;
 const BOOKING_BLOCK_FEE = 35000;
 
-const formatDateTime = (value: string) =>
-  new Date(value).toLocaleString("vi-VN", {
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    month: "2-digit",
-  });
-
-const formatMoney = (value: number) => `${value.toLocaleString("vi-VN")} VND`;
-const formatPickerDate = (value: Date) =>
-  value.toLocaleDateString("vi-VN", {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  });
-const formatPickerTime = (value: Date) =>
-  value.toLocaleTimeString("vi-VN", {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-const formatDurationHours = (value: number) => `${value} hour${value > 1 ? "s" : ""}`;
 const calculateBookingEstimate = (durationHours: number) =>
   Math.max(1, Math.ceil(durationHours / BOOKING_BLOCK_HOURS)) * BOOKING_BLOCK_FEE;
 
-const isValidEmail = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
 type PickerField =
   | "arrivalDate"
   | "arrivalTime"
   | null;
 
-const inputStyle = {
-  paddingHorizontal: 16,
-  paddingVertical: 14,
-};
-
-const getStatusTone = (status: BookingRecord["status"]) => {
-  if (status === "paid" || status === "used") {
-    return "text-btn-primary";
-  }
-
-  if (status === "cancelled" || status === "expired") {
-    return "text-faint";
-  }
-
-  return "text-fg";
-};
+type BookingField =
+  | "email"
+  | "licensePlate"
+  | "expectedArrivalTime"
+  | "expectedExitTime";
 
 const withDatePart = (source: Date, nextDate: Date) => {
   const updated = new Date(source);
@@ -91,18 +66,15 @@ const withTimePart = (source: Date, nextTime: Date) => {
 
 export default function BookingScreen() {
   const now = useMemo(() => new Date(), []);
-  const defaultArrival = useMemo(() => new Date(now.getTime() + HOUR_MS), [now]);
-  const defaultExit = useMemo(() => new Date(now.getTime() + 3 * HOUR_MS), [now]);
   const [guestEmail, setGuestEmail] = useState("");
   const [licensePlate, setLicensePlate] = useState("");
-  const [arrivalTime, setArrivalTime] = useState(defaultArrival);
-  const [selectedDurationHours, setSelectedDurationHours] = useState(
-    Math.ceil((defaultExit.getTime() - defaultArrival.getTime()) / HOUR_MS),
-  );
+  const [arrivalTime, setArrivalTime] = useState<Date | null>(null);
+  const [selectedDurationHours, setSelectedDurationHours] = useState<number | null>(null);
   const [createdBooking, setCreatedBooking] = useState<CreateBookingResult | null>(null);
   const [paymentUrl, setPaymentUrl] = useState<string | null>(null);
   const [pickerField, setPickerField] = useState<PickerField>(null);
   const [durationModalVisible, setDurationModalVisible] = useState(false);
+  const [errors, setErrors] = useState<Partial<Record<BookingField, string>>>({});
 
   const { data: currentUser } = useCurrentUserQuery();
   const createBookingMutation = useCreateBookingMutation();
@@ -115,11 +87,16 @@ export default function BookingScreen() {
 
   const email = currentUser?.email ?? guestEmail;
   const exitTime = useMemo(
-    () => new Date(arrivalTime.getTime() + selectedDurationHours * HOUR_MS),
+    () =>
+      arrivalTime && selectedDurationHours
+        ? new Date(arrivalTime.getTime() + selectedDurationHours * HOUR_MS)
+        : null,
     [arrivalTime, selectedDurationHours],
   );
 
-  const estimatedAmount = calculateBookingEstimate(selectedDurationHours);
+  const estimatedAmount = selectedDurationHours
+    ? calculateBookingEstimate(selectedDurationHours)
+    : null;
 
   const bookingList = currentUser
     ? (myBookingsQuery.data?.bookings ?? [])
@@ -144,56 +121,69 @@ export default function BookingScreen() {
   const handleCreateBooking = async () => {
     const arrival = arrivalTime;
     const exit = exitTime;
+    const hours = selectedDurationHours;
 
-    if (!email.trim() || !licensePlate.trim()) {
-      toast.error("Missing information", {
-        description: "Please enter email and license plate.",
-      });
+    const nextErrors: Partial<Record<BookingField, string>> = {};
+
+    if (!arrival) {
+      nextErrors.expectedArrivalTime = "Please select an arrival time.";
+    }
+
+    if (!hours || !exit) {
+      nextErrors.expectedExitTime = "Please select a parking duration.";
+    }
+
+    if (Object.keys(nextErrors).length > 0) {
+      setErrors(nextErrors);
       return;
     }
 
-    if (!isValidEmail(email)) {
-      toast.error("Invalid email", {
-        description: "Please enter a valid email address.",
-      });
+    if(!arrival || !exit || !hours){
+      setErrors(nextErrors);
       return;
     }
+
+    const validation = createBookingPayloadSchema.safeParse({
+      email,
+      licensePlate,
+      expectedArrivalTime: arrival.toISOString(),
+      expectedExitTime: exit.toISOString(),
+    });
+
+    if (!validation.success) {
+      setErrors(getFieldErrors<BookingField>(validation.error));
+      return;
+    }
+
+    const rangeErrors: Partial<Record<BookingField, string>> = {};
 
     if (arrival <= new Date()) {
-      toast.error("Invalid time", {
-        description: "Arrival time must be in the future.",
-      });
-      return;
+      rangeErrors.expectedArrivalTime = "Arrival time must be in the future.";
     }
 
     if (exit <= arrival) {
-      toast.error("Invalid time", {
-        description: "Exit time must be after arrival time.",
-      });
-      return;
+      rangeErrors.expectedExitTime = "Exit time must be after arrival time.";
     }
 
-    const hours = selectedDurationHours;
     if (hours < 1 || hours > 24) {
-      toast.error("Invalid duration", {
-        description: "Booking duration must be from 1 to 24 hours.",
-      });
-      return;
+      rangeErrors.expectedExitTime = "Booking duration must be from 1 to 24 hours.";
     }
 
     if (arrival.getTime() - Date.now() > 24 * 60 * 60 * 1000) {
-      toast.error("Invalid arrival", {
-        description: "Bookings can only be made up to 24 hours ahead.",
-      });
+      rangeErrors.expectedArrivalTime = "Bookings can only be made up to 24 hours ahead.";
+    }
+
+    if (Object.keys(rangeErrors).length > 0) {
+      setErrors(rangeErrors);
       return;
     }
 
+    setErrors({});
+
     try {
       const result = await createBookingMutation.mutateAsync({
-        email: email.trim().toLowerCase(),
-        licensePlate: licensePlate.trim(),
-        expectedArrivalTime: arrival.toISOString(),
-        expectedExitTime: exit.toISOString(),
+        ...validation.data,
+        email: validation.data.email.toLowerCase(),
       });
       setCreatedBooking(result);
       if (!currentUser) {
@@ -214,7 +204,7 @@ export default function BookingScreen() {
       case "arrivalDate":
       case "arrivalTime":
       default:
-        return arrivalTime;
+        return arrivalTime ?? new Date(now.getTime() + HOUR_MS);
     }
   })();
 
@@ -231,11 +221,15 @@ export default function BookingScreen() {
 
   const handlePickerChange = (_event: DateTimePickerChangeEvent, selectedDate: Date) => {
     if (pickerField === "arrivalDate") {
-      const nextArrival = withDatePart(arrivalTime, selectedDate);
+      const baseArrival = arrivalTime ?? new Date(now.getTime() + HOUR_MS);
+      const nextArrival = withDatePart(baseArrival, selectedDate);
       setArrivalTime(nextArrival);
+      setErrors((current) => ({ ...current, expectedArrivalTime: undefined }));
     } else if (pickerField === "arrivalTime") {
-      const nextArrival = withTimePart(arrivalTime, selectedDate);
+      const baseArrival = arrivalTime ?? new Date(now.getTime() + HOUR_MS);
+      const nextArrival = withTimePart(baseArrival, selectedDate);
       setArrivalTime(nextArrival);
+      setErrors((current) => ({ ...current, expectedArrivalTime: undefined }));
     }
 
     if (Platform.OS === "android") {
@@ -304,19 +298,11 @@ export default function BookingScreen() {
     setPaymentUrl(url);
   };
 
-  const openPaymentInBrowser = async () => {
-    if (!paymentUrl) {
-      return;
-    }
-
-    await Linking.openURL(paymentUrl);
-  };
-
   return (
     <Page
       eyebrow="Reservation"
       title="Book visitor parking"
-      subtitle="Hold a visitor car space for the next 24 hours, then complete payment to activate it."
+      subtitle="Hold a slot for the next 24 hours, then complete payment to activate it."
     >
       <ScrollView
         contentInsetAdjustmentBehavior="automatic"
@@ -337,106 +323,31 @@ export default function BookingScreen() {
             </View>
           </View>
 
-          <View className="gap-3">
-            <View className="gap-2">
-              <Label>Email</Label>
-              <TextInput
-                autoCapitalize="none"
-                editable={!currentUser?.email}
-                keyboardType="email-address"
-                onChangeText={setGuestEmail}
-                placeholder="guest@example.com"
-                placeholderTextColor="#6b7280"
-                style={inputStyle}
-                value={email}
-                className="rounded-[14px] border border-border-theme bg-input px-4 py-3.5 font-sans text-base text-fg"
-              />
-            </View>
-
-            <View className="gap-2">
-              <Label>License plate</Label>
-              <TextInput
-                autoCapitalize="characters"
-                onChangeText={setLicensePlate}
-                placeholder="59-AB24872"
-                placeholderTextColor="#6b7280"
-                style={inputStyle}
-                value={licensePlate}
-                className="rounded-[14px] border border-border-theme bg-input px-4 py-3.5 font-sans text-base text-fg"
-              />
-            </View>
-
-            <View className="gap-3">
-              <View className="gap-2">
-                <Label>Arrival</Label>
-                <View className="flex-row gap-3">
-                  <Pressable
-                    className="flex-1 rounded-[14px] border border-border-theme bg-input px-4 py-3.5"
-                    onPress={() => setPickerField("arrivalDate")}
-                    style={inputStyle}
-                  >
-                    <Text className="font-sans text-[13px] text-fg">
-                      {formatPickerDate(arrivalTime)}
-                    </Text>
-                  </Pressable>
-                  <Pressable
-                    className="flex-1 rounded-[14px] border border-border-theme bg-input px-4 py-3.5"
-                    onPress={() => setPickerField("arrivalTime")}
-                    style={inputStyle}
-                  >
-                    <Text className="font-sans text-[13px] text-fg">
-                      {formatPickerTime(arrivalTime)}
-                    </Text>
-                  </Pressable>
-                </View>
-              </View>
-
-              <View className="gap-2">
-                <Label>Exit</Label>
-                <View className="flex-row gap-3">
-                  <Pressable
-                    className="flex-1 rounded-[14px] border border-border-theme bg-input px-4 py-3.5"
-                    onPress={() => setDurationModalVisible(true)}
-                    style={inputStyle}
-                  >
-                    <Text className="font-sans text-[13px] text-fg">
-                      {formatDurationHours(selectedDurationHours)}
-                    </Text>
-                  </Pressable>
-                  <View
-                    className="flex-1 rounded-[14px] border border-border-theme bg-input px-4 py-3.5"
-                    style={inputStyle}
-                  >
-                    <Text className="font-sans text-[13px] text-fg">
-                      {`${formatPickerDate(exitTime)} ${formatPickerTime(exitTime)}`}
-                    </Text>
-                  </View>
-                </View>
-              </View>
-            </View>
-          </View>
+          <BookingFormCard
+            arrivalTime={arrivalTime}
+            currentUserEmail={currentUser?.email}
+            email={email}
+            errors={errors}
+            exitTime={exitTime}
+            licensePlate={licensePlate}
+            onChangeEmail={(value) => {
+              setGuestEmail(value);
+              setErrors((current) => ({ ...current, email: undefined }));
+            }}
+            onChangeLicensePlate={(value) => {
+              setLicensePlate(value);
+              setErrors((current) => ({ ...current, licensePlate: undefined }));
+            }}
+            onOpenDurationPicker={() => setDurationModalVisible(true)}
+            onOpenPicker={setPickerField}
+            selectedDurationHours={selectedDurationHours}
+          />
         </GlassCard>
 
-        <GlassCard className="gap-3">
-          <View className="flex-row items-center justify-between">
-            <View className="gap-1">
-              <Label>Estimate</Label>
-              <Text className="font-sans text-xl font-extrabold text-fg">
-                {estimatedAmount ? formatMoney(estimatedAmount) : "Check time range"}
-              </Text>
-            </View>
-            <View className="items-end gap-1">
-              <Label>Duration</Label>
-              <Text className="font-sans text-base font-bold text-muted">
-                {selectedDurationHours}h
-              </Text>
-            </View>
-          </View>
-          <Text className="font-sans text-sm leading-5 text-subtle">
-            Car parking is charged at 35,000 VND per 4-hour block, rounded up.
-            For example, 5-8 hours is 70,000 VND and 9-12 hours is 105,000 VND.
-          </Text>
-        </GlassCard>
+        <BookingEstimateCard
+          estimatedAmount={estimatedAmount}
+          selectedDurationHours={selectedDurationHours}
+        />
 
         <Pressable
           className="items-center rounded-full bg-btn-primary py-4"
@@ -449,265 +360,57 @@ export default function BookingScreen() {
         </Pressable>
 
         {createdBooking ? (
-          <GlassCard className="gap-4">
-            <View className="flex-row items-start justify-between gap-3">
-              <View className="flex-1 gap-1">
-                <Label>Payment required</Label>
-                <Text className="font-sans text-xl font-extrabold text-fg">
-                  {formatMoney(createdBooking.payment.amount)}
-                </Text>
-                <Text className="font-sans text-sm text-subtle">
-                  Order #{createdBooking.payment.orderCode}
-                </Text>
-              </View>
-              <Text className="rounded-full bg-badge px-3 py-1 font-sans text-xs font-bold uppercase text-fg">
-                {createdBooking.booking.status}
-              </Text>
-            </View>
-
-            <View className="gap-2 rounded-[14px] bg-surface-alt p-3">
-              <Text selectable className="font-sans text-base font-extrabold text-fg">
-                {createdBooking.booking.licensePlate}
-              </Text>
-              <Text className="font-sans text-sm text-subtle">
-                {formatDateTime(createdBooking.booking.expectedArrivalTime)} -{" "}
-                {formatDateTime(createdBooking.booking.expectedExitTime)}
-              </Text>
-            </View>
-
-            <Pressable
-              className="items-center rounded-full bg-btn-primary py-3.5"
-              onPress={() => openPayment(createdBooking.payment.checkoutUrl)}
-            >
-              <Text className="font-sans text-base font-extrabold text-btn-primary-fg">
-                Open payment
-              </Text>
-            </Pressable>
-          </GlassCard>
+          <BookingPaymentCard
+            bookingResult={createdBooking}
+            onOpenPayment={openPayment}
+          />
         ) : null}
 
         {currentUser ? (
-          <View className="gap-3">
-            <View className="flex-row items-center justify-between">
-              <Label>My bookings</Label>
-              {myBookingsQuery.isFetching ? (
-                <Text className="font-sans text-xs font-bold text-subtle">Loading</Text>
-              ) : null}
-            </View>
-
-            {(myBookingsQuery.data?.bookings ?? []).slice(0, 3).map((booking) => (
-              <GlassCard key={booking._id} className="gap-2.5">
-                <View className="flex-row items-center justify-between gap-3">
-                  <Text selectable className="font-sans text-base font-extrabold text-fg">
-                    {booking.licensePlate}
-                  </Text>
-                  <Text
-                    className={`font-sans text-xs font-extrabold uppercase ${getStatusTone(
-                      booking.status,
-                    )}`}
-                  >
-                    {booking.status}
-                  </Text>
-                </View>
-                <Text className="font-sans text-sm text-subtle">
-                  {formatDateTime(booking.expectedArrivalTime)} -{" "}
-                  {formatDateTime(booking.expectedExitTime)}
-                </Text>
-                <Text className="font-sans text-sm font-bold text-muted">
-                  {formatMoney(booking.amount)}
-                </Text>
-              </GlassCard>
-            ))}
-
-            {myBookingsQuery.data?.bookings?.length === 0 ? (
-              <GlassCard className="gap-1">
-                <Text className="font-sans text-base font-extrabold text-fg">
-                  No bookings yet
-                </Text>
-                <Text className="font-sans text-sm text-subtle">
-                  Your latest visitor parking bookings will appear here.
-                </Text>
-              </GlassCard>
-            ) : null}
-          </View>
+          <BookingHistorySection
+            bookings={myBookingsQuery.data?.bookings ?? []}
+            emptyDescription="Your latest visitor parking bookings will appear here."
+            emptyTitle="No bookings yet"
+            isFetching={myBookingsQuery.isFetching}
+            label="My bookings"
+          />
         ) : (
-          <View className="gap-3">
-            <View className="flex-row items-center justify-between">
-              <Label>Guest bookings on this device</Label>
-              {guestBookingsQuery.isFetching ? (
-                <Text className="font-sans text-xs font-bold text-subtle">Loading</Text>
-              ) : null}
-            </View>
-
-            {bookingList.slice(0, 3).map((booking) => (
-              <GlassCard key={booking._id} className="gap-2.5">
-                <View className="flex-row items-center justify-between gap-3">
-                  <View className="flex-1 gap-1">
-                    <Text selectable className="font-sans text-base font-extrabold text-fg">
-                      {booking.licensePlate}
-                    </Text>
-                    <Text className="font-sans text-sm text-subtle">
-                      {(booking as StoredGuestBooking).email}
-                    </Text>
-                  </View>
-                  <Text
-                    className={`font-sans text-xs font-extrabold uppercase ${getStatusTone(
-                      booking.status,
-                    )}`}
-                  >
-                    {booking.status}
-                  </Text>
-                </View>
-                <Text className="font-sans text-sm text-subtle">
-                  {formatDateTime(booking.expectedArrivalTime)} -{" "}
-                  {formatDateTime(booking.expectedExitTime)}
-                </Text>
-                <Text className="font-sans text-sm font-bold text-muted">
-                  {formatMoney(booking.amount)}
-                </Text>
-              </GlassCard>
-            ))}
-
-            {!guestBookingsQuery.isFetching && bookingList.length === 0 ? (
-              <GlassCard className="gap-1">
-                <Text className="font-sans text-base font-extrabold text-fg">
-                  No guest bookings yet
-                </Text>
-                <Text className="font-sans text-sm text-subtle">
-                  Bookings created without signing in will stay visible during this app session.
-                </Text>
-              </GlassCard>
-            ) : null}
-          </View>
+          <BookingHistorySection
+            bookings={bookingList}
+            emptyDescription="Bookings created without signing in will stay visible during this app session."
+            emptyTitle="No guest bookings yet"
+            isFetching={guestBookingsQuery.isFetching}
+            label="Guest bookings on this device"
+            showEmail
+          />
         )}
       </ScrollView>
 
-      <Modal
-        animationType="slide"
-        onRequestClose={() => setPickerField(null)}
-        transparent
-        visible={Boolean(pickerField)}
-      >
-        <View className="flex-1 justify-end bg-black/60">
-          <View className="gap-4 rounded-t-[28px] bg-page px-5 pb-8 pt-5">
-            <View className="flex-row items-center justify-between">
-              <Text className="font-sans text-lg font-extrabold text-fg">
-                {pickerField === "arrivalDate" && "Select arrival date"}
-                {pickerField === "arrivalTime" && "Select arrival time"}
-              </Text>
-              <Pressable
-                className="rounded-full bg-badge px-4 py-2"
-                onPress={() => setPickerField(null)}
-              >
-                <Text className="font-sans text-sm font-bold text-fg">Done</Text>
-              </Pressable>
-            </View>
+      <BookingPickerModal
+        minimumDate={activePickerMinimumDate}
+        mode={activePickerMode}
+        onChange={handlePickerChange}
+        onDismiss={handlePickerDismiss}
+        pickerField={pickerField}
+        value={activePickerValue}
+      />
 
-            <View className="items-center rounded-[20px] bg-glass-card py-3">
-              <DateTimePicker
-                display="spinner"
-                minuteInterval={15}
-                minimumDate={activePickerMinimumDate}
-                mode={activePickerMode}
-                onDismiss={handlePickerDismiss}
-                onValueChange={handlePickerChange}
-                value={activePickerValue}
-              />
-            </View>
-          </View>
-        </View>
-      </Modal>
-
-      <Modal
-        animationType="slide"
-        onRequestClose={() => setDurationModalVisible(false)}
-        transparent
+      <BookingDurationModal
+        onClose={() => setDurationModalVisible(false)}
+        onSelectDuration={(hours) => {
+          setSelectedDurationHours(hours);
+          setDurationModalVisible(false);
+          setErrors((current) => ({ ...current, expectedExitTime: undefined }));
+        }}
+        selectedDurationHours={selectedDurationHours}
         visible={durationModalVisible}
-      >
-        <View className="flex-1 justify-end bg-black/60">
-          <View className="gap-4 rounded-t-[28px] bg-page px-5 pb-8 pt-5">
-            <View className="flex-row items-center justify-between">
-              <Text className="font-sans text-lg font-extrabold text-fg">
-                Select parking duration
-              </Text>
-              <Pressable
-                className="rounded-full bg-badge px-4 py-2"
-                onPress={() => setDurationModalVisible(false)}
-              >
-                <Text className="font-sans text-sm font-bold text-fg">Done</Text>
-              </Pressable>
-            </View>
+      />
 
-            <ScrollView className="max-h-80" contentContainerClassName="gap-2 pb-2">
-              {Array.from({ length: 24 }, (_, index) => {
-                const hours = index + 1;
-                const isSelected = hours === selectedDurationHours;
-
-                return (
-                  <Pressable
-                    key={hours}
-                    className={`rounded-[18px] border px-4 py-4 ${
-                      isSelected
-                        ? "border-btn-primary bg-btn-primary"
-                        : "border-border-theme bg-glass-card"
-                    }`}
-                    onPress={() => {
-                      setSelectedDurationHours(hours);
-                      setDurationModalVisible(false);
-                    }}
-                  >
-                    <Text
-                      className={`font-sans text-base font-bold ${
-                        isSelected ? "text-btn-primary-fg" : "text-fg"
-                      }`}
-                    >
-                      {formatDurationHours(hours)}
-                    </Text>
-                  </Pressable>
-                );
-              })}
-            </ScrollView>
-          </View>
-        </View>
-      </Modal>
-
-      <Modal
-        animationType="slide"
-        onRequestClose={() => setPaymentUrl(null)}
-        presentationStyle="fullScreen"
-        visible={Boolean(paymentUrl)}
-      >
-        <View className="flex-1 bg-page">
-          <View className="flex-row items-center justify-between border-b border-border-theme bg-glass-card px-4 pb-3 pt-14">
-            <Pressable
-              className="h-10 w-10 items-center justify-center rounded-full bg-badge"
-              onPress={() => setPaymentUrl(null)}
-            >
-              <Ionicons name="close" color="#ffffff" size={22} />
-            </Pressable>
-
-            <Text className="font-sans text-base font-extrabold text-fg">
-              PayOS payment
-            </Text>
-
-            <Pressable
-              className="h-10 w-10 items-center justify-center rounded-full bg-badge"
-              onPress={openPaymentInBrowser}
-            >
-              <Ionicons name="open-outline" color="#ffffff" size={20} />
-            </Pressable>
-          </View>
-
-          {paymentUrl ? (
-            <WebView
-              onNavigationStateChange={handlePaymentNavigationChange}
-              source={{ uri: paymentUrl }}
-              startInLoadingState
-              className="flex-1"
-            />
-          ) : null}
-        </View>
-      </Modal>
+      <BookingPaymentModal
+        onClose={() => setPaymentUrl(null)}
+        onNavigationStateChange={handlePaymentNavigationChange}
+        paymentUrl={paymentUrl}
+      />
     </Page>
   );
 }

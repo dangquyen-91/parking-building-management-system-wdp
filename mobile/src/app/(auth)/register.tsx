@@ -5,7 +5,11 @@ import { toast } from "sonner-native";
 import { KeyboardAvoidingView, Platform } from "react-native";
 
 import { useRegisterMutation } from "@/hooks/useAuth";
+import { registerPayloadSchema } from "@/schema";
+import { getFieldErrors } from "@/utils/validation";
 import { Link, Pressable, ScrollView, Text, TextInput, View } from "../../tw";
+
+type RegisterField = "fullName" | "email" | "phone" | "password";
 
 export default function Register() {
   const [fullName, setFullName] = useState("");
@@ -13,22 +17,28 @@ export default function Register() {
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [errors, setErrors] = useState<Partial<Record<RegisterField, string>>>({});
   const registerMutation = useRegisterMutation();
 
   const handleRegister = async () => {
-    if (!fullName.trim() || !email.trim() || !password) {
-      toast.error("Missing information", {
-        description: "Please enter your full name, email, and password.",
-      });
+    const validation = registerPayloadSchema.safeParse({
+      fullName,
+      email,
+      phone: phone || undefined,
+      password,
+    });
+
+    if (!validation.success) {
+      setErrors(getFieldErrors<RegisterField>(validation.error));
       return;
     }
 
+    setErrors({});
+
     try {
       await registerMutation.mutateAsync({
-        fullName: fullName.trim(),
-        email: email.trim(),
-        phone: phone.trim() || undefined,
-        password,
+        ...validation.data,
+        phone: validation.data.phone || undefined,
       });
       toast.success("Account created", {
         description: "Please sign in with your new account.",
@@ -89,12 +99,20 @@ export default function Register() {
                 Full name
               </Text>
               <TextInput
-                onChangeText={setFullName}
+                onChangeText={(value) => {
+                  setFullName(value);
+                  setErrors((current) => ({ ...current, fullName: undefined }));
+                }}
                 placeholder="Lam Hoang"
                 placeholderTextColor="#6b7280"
                 value={fullName}
                 className="rounded-[16px] border border-border-theme bg-input py-4 pl-5 pr-4 font-sans text-base text-fg"
               />
+              {errors.fullName ? (
+                <Text className="font-sans text-sm text-red-400">
+                  {errors.fullName}
+                </Text>
+              ) : null}
             </View>
 
             <View className="gap-2">
@@ -104,12 +122,20 @@ export default function Register() {
               <TextInput
                 autoCapitalize="none"
                 keyboardType="email-address"
-                onChangeText={setEmail}
+                onChangeText={(value) => {
+                  setEmail(value);
+                  setErrors((current) => ({ ...current, email: undefined }));
+                }}
                 placeholder="customer@example.com"
                 placeholderTextColor="#6b7280"
                 value={email}
                 className="rounded-[16px] border border-border-theme bg-input py-4 pl-5 pr-4 font-sans text-base text-fg"
               />
+              {errors.email ? (
+                <Text className="font-sans text-sm text-red-400">
+                  {errors.email}
+                </Text>
+              ) : null}
             </View>
 
             <View className="gap-2">
@@ -118,12 +144,20 @@ export default function Register() {
               </Text>
               <TextInput
                 keyboardType="phone-pad"
-                onChangeText={setPhone}
+                onChangeText={(value) => {
+                  setPhone(value);
+                  setErrors((current) => ({ ...current, phone: undefined }));
+                }}
                 placeholder="090 000 0000"
                 placeholderTextColor="#6b7280"
                 value={phone}
                 className="rounded-[16px] border border-border-theme bg-input py-4 pl-5 pr-4 font-sans text-base text-fg"
               />
+              {errors.phone ? (
+                <Text className="font-sans text-sm text-red-400">
+                  {errors.phone}
+                </Text>
+              ) : null}
             </View>
 
             <View className="gap-2">
@@ -132,7 +166,10 @@ export default function Register() {
               </Text>
               <View className="flex-row items-center rounded-[16px] border border-border-theme bg-input">
                 <TextInput
-                  onChangeText={setPassword}
+                  onChangeText={(value) => {
+                    setPassword(value);
+                    setErrors((current) => ({ ...current, password: undefined }));
+                  }}
                   placeholder="Create password"
                   placeholderTextColor="#6b7280"
                   secureTextEntry={!showPassword}
@@ -150,6 +187,11 @@ export default function Register() {
                   />
                 </Pressable>
               </View>
+              {errors.password ? (
+                <Text className="font-sans text-sm text-red-400">
+                  {errors.password}
+                </Text>
+              ) : null}
             </View>
 
             <Pressable

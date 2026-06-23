@@ -4,24 +4,31 @@ import { router } from "expo-router";
 import { toast } from "sonner-native";
 
 import { useLoginMutation } from "@/hooks/useAuth";
+import { loginPayloadSchema } from "@/schema";
+import { getFieldErrors } from "@/utils/validation";
 import { Link, Pressable, ScrollView, Text, TextInput, View } from "../../tw";
+
+type LoginField = "email" | "password";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [errors, setErrors] = useState<Partial<Record<LoginField, string>>>({});
   const loginMutation = useLoginMutation();
 
   const handleLogin = async () => {
-    if (!email.trim() || !password) {
-      toast.error("Missing information", {
-        description: "Please enter your email and password.",
-      });
+    const validation = loginPayloadSchema.safeParse({ email, password });
+
+    if (!validation.success) {
+      setErrors(getFieldErrors<LoginField>(validation.error));
       return;
     }
 
+    setErrors({});
+
     try {
-      await loginMutation.mutateAsync({ email: email.trim(), password });
+      await loginMutation.mutateAsync(validation.data);
       toast.success("Signed in", {
         description: "Welcome back.",
       });
@@ -77,12 +84,20 @@ export default function Login() {
               <TextInput
                 autoCapitalize="none"
                 keyboardType="email-address"
-                onChangeText={setEmail}
+                onChangeText={(value) => {
+                  setEmail(value);
+                  setErrors((current) => ({ ...current, email: undefined }));
+                }}
                 placeholder="customer@example.com"
                 placeholderTextColor="#6b7280"
                 value={email}
                 className="rounded-[16px] border border-border-theme bg-input py-4 pl-5 pr-4 font-sans text-base text-fg"
               />
+              {errors.email ? (
+                <Text className="font-sans text-sm text-red-400">
+                  {errors.email}
+                </Text>
+              ) : null}
             </View>
 
             <View className="gap-2">
@@ -91,7 +106,10 @@ export default function Login() {
               </Text>
               <View className="flex-row items-center rounded-[16px] border border-border-theme bg-input">
                 <TextInput
-                  onChangeText={setPassword}
+                  onChangeText={(value) => {
+                    setPassword(value);
+                    setErrors((current) => ({ ...current, password: undefined }));
+                  }}
                   placeholder="Enter password"
                   placeholderTextColor="#6b7280"
                   secureTextEntry={!showPassword}
@@ -109,6 +127,11 @@ export default function Login() {
                   />
                 </Pressable>
               </View>
+              {errors.password ? (
+                <Text className="font-sans text-sm text-red-400">
+                  {errors.password}
+                </Text>
+              ) : null}
             </View>
 
             <View className="flex-row items-center justify-between">

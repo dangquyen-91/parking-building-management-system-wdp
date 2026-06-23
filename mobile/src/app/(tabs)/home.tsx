@@ -3,12 +3,10 @@ import Ionicons from "react-native-vector-icons/Ionicons";
 import { toast } from "sonner-native";
 
 import { GlassCard, Label } from "../../components/parking-ui";
-import {
-  useGuestBookingsQuery,
-  useMyBookingsQuery,
-} from "../../hooks/useBookings";
+import { useMyBookingsQuery } from "../../hooks/useBookings";
 import { useCurrentUserQuery, useLogoutMutation } from "../../hooks/useAuth";
 import type { Booking, StoredGuestBooking } from "../../types/bookings";
+import { formatDateTime, formatMoney } from "@/utils/format";
 import { Link, Pressable, ScrollView, Text, View } from "../../tw";
 
 const features = [
@@ -34,16 +32,6 @@ const features = [
   },
 ];
 
-const formatDateTime = (value: string) =>
-  new Date(value).toLocaleString("vi-VN", {
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    month: "2-digit",
-  });
-
-const formatMoney = (value: number) => `${value.toLocaleString("vi-VN")} VND`;
-
 const getStatusTone = (status: Booking["status"]) => {
   if (status === "paid" || status === "used") {
     return "text-btn-primary";
@@ -60,16 +48,11 @@ const getStoredPaymentUrl = (booking: Booking | StoredGuestBooking) =>
   (booking as StoredGuestBooking).payment?.checkoutUrl;
 
 export default function Home() {
-  const { data: currentUser, isLoading: isAuthLoading } = useCurrentUserQuery();
+  const { data: currentUser } = useCurrentUserQuery();
   const myBookingsQuery = useMyBookingsQuery(Boolean(currentUser));
-  const guestBookingsQuery = useGuestBookingsQuery(!isAuthLoading && !currentUser);
   const logoutMutation = useLogoutMutation();
-  const homeBookings = currentUser
-    ? (myBookingsQuery.data?.bookings ?? [])
-    : (guestBookingsQuery.data ?? []);
-  const isBookingsLoading = currentUser
-    ? myBookingsQuery.isFetching
-    : guestBookingsQuery.isFetching;
+  const homeBookings = currentUser ? (myBookingsQuery.data?.bookings ?? []) : [];
+  const isBookingsLoading = Boolean(currentUser) && myBookingsQuery.isFetching;
 
   const handleLogout = async () => {
     try {
@@ -247,16 +230,16 @@ export default function Home() {
               </View>
               <View className="gap-1">
                 <Text className="font-sans text-base font-extrabold text-fg">
-                  No bookings yet
+                  No subscription yet
                 </Text>
                 <Text className="font-sans text-sm leading-5 text-subtle">
-                  Visitor bookings you create in this app session will appear here.
+                  Sign in to view and manage your recent reservations here.
                 </Text>
               </View>
               <Link href="/(tabs)/booking" asChild>
                 <Pressable className="items-center rounded-full bg-btn-primary py-3.5">
                   <Text className="font-sans text-base font-extrabold text-btn-primary-fg">
-                    Book parking
+                    Get subscription
                   </Text>
                 </Pressable>
               </Link>

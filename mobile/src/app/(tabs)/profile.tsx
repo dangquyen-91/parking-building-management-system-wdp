@@ -3,6 +3,7 @@ import { toast } from "sonner-native";
 
 import { GlassCard, Label, Page } from "../../components/parking-ui";
 import { useCurrentUserQuery, useLogoutMutation } from "../../hooks/useAuth";
+import { formatRole } from "@/utils/format";
 import { Link, Pressable, ScrollView, Text, View } from "../../tw";
 
 const getInitials = (name?: string) => {
@@ -18,9 +19,6 @@ const getInitials = (name?: string) => {
     .join("")
     .toUpperCase();
 };
-
-const formatRole = (role?: string) =>
-  role ? role.replace(/_/g, " ").replace(/\b\w/g, (char) => char.toUpperCase()) : "User";
 
 export default function Profile() {
   const {
@@ -120,15 +118,6 @@ export default function Profile() {
 
             <View className="gap-3">
               <Pressable
-                className="items-center rounded-full border border-border-strong bg-badge py-4"
-                disabled={isFetching}
-                onPress={handleRefresh}
-              >
-                <Text className="font-sans text-base font-extrabold text-fg">
-                  {isFetching ? "Refreshing..." : "Refresh profile"}
-                </Text>
-              </Pressable>
-              <Pressable
                 className="items-center rounded-full bg-btn-primary py-4"
                 disabled={logoutMutation.isPending}
                 onPress={handleLogout}
@@ -149,7 +138,7 @@ export default function Profile() {
                 Sign in required
               </Text>
               <Text className="font-sans text-sm leading-5 text-subtle">
-                Sign in to view your account profile from the parking API.
+                Sign in to view your account profile.
               </Text>
             </View>
             <Link href="/(auth)/login" asChild>
