@@ -138,3 +138,7 @@ export type MotorcycleSubscriptionAvailabilityResult = {
 export type SubscriptionAvailabilityResult =
   | CarSubscriptionAvailabilityResult
   | MotorcycleSubscriptionAvailabilityResult;
+
+export const isCarSubscriptionAvailabilityResult = (
+  value: SubscriptionAvailabilityResult | undefined,
+): value is CarSubscriptionAvailabilityResult => value?.vehicleType === "car";

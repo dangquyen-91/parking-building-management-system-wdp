@@ -3,7 +3,7 @@ import type { WebViewNavigation } from "react-native-webview/lib/WebViewTypes";
 import { WebView } from "react-native-webview";
 import Ionicons from "react-native-vector-icons/Ionicons";
 
-import { Pressable, Text, View } from "@/tw";
+import { Pressable, Text, View, useThemeColors } from "@/tw";
 
 type BookingPaymentModalProps = {
   onClose: () => void;
@@ -16,6 +16,8 @@ export function BookingPaymentModal({
   onNavigationStateChange,
   paymentUrl,
 }: BookingPaymentModalProps) {
+  const { iconPrimary } = useThemeColors();
+
   return (
     <Modal
       animationType="slide"
@@ -29,7 +31,7 @@ export function BookingPaymentModal({
             className="h-10 w-10 items-center justify-center rounded-full bg-badge"
             onPress={onClose}
           >
-            <Ionicons name="close" color="#ffffff" size={22} />
+            <Ionicons name="close" color={iconPrimary} size={22} />
           </Pressable>
 
           <Text className="font-sans text-base font-extrabold text-fg">
@@ -44,7 +46,7 @@ export function BookingPaymentModal({
               }
             }}
           >
-            <Ionicons name="open-outline" color="#ffffff" size={20} />
+            <Ionicons name="open-outline" color={iconPrimary} size={20} />
           </Pressable>
         </View>
 

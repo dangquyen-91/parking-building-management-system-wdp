@@ -1,21 +1,20 @@
 import { Tabs } from "expo-router";
 import Ionicons from "react-native-vector-icons/Ionicons";
 
-import { useCSSVariable } from "../../tw";
+import { useThemeColors } from "../../tw";
 
 const TabsLayout = () => {
-  const fg = useCSSVariable("--color-fg");
-  const border = useCSSVariable("--color-border-strong");
+  const { borderStrong, fg, tabBar, tabInactive } = useThemeColors();
 
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
         tabBarActiveTintColor: fg,
-        tabBarInactiveTintColor: "#d1d5db",
+        tabBarInactiveTintColor: tabInactive,
         tabBarStyle: {
-          backgroundColor: "#2b2b2b",
-          borderColor: border,
+          backgroundColor: tabBar,
+          borderColor: borderStrong,
           borderWidth: 1,
           borderRadius: 18,
           bottom: 15,

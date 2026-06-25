@@ -67,15 +67,6 @@ export function SubscriptionPaymentCard({
             Open payment
           </Text>
         </Pressable>
-        <Pressable
-          className="flex-1 items-center rounded-full border border-border-strong bg-badge py-3.5"
-          disabled={confirmPending}
-          onPress={onSyncStatus}
-        >
-          <Text className="font-sans text-base font-extrabold text-fg">
-            Sync status
-          </Text>
-        </Pressable>
       </View>
     </GlassCard>
   );

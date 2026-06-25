@@ -1,6 +1,6 @@
 import { Label } from "@/components/parking-ui";
 import { formatDurationHours, formatPickerDate, formatPickerTime } from "@/utils/format";
-import { Pressable, Text, TextInput, View } from "@/tw";
+import { Pressable, Text, TextInput, View, useThemeColors } from "@/tw";
 
 type BookingField =
   | "email"
@@ -42,6 +42,8 @@ export function BookingFormCard({
   onOpenPicker,
   selectedDurationHours,
 }: BookingFormCardProps) {
+  const { placeholder } = useThemeColors();
+
   return (
     <View className="gap-3">
       <View className="gap-2">
@@ -52,7 +54,7 @@ export function BookingFormCard({
           keyboardType="email-address"
           onChangeText={onChangeEmail}
           placeholder="guest@example.com"
-          placeholderTextColor="#6b7280"
+          placeholderTextColor={placeholder}
           style={inputStyle}
           value={email}
           className="rounded-[14px] border border-border-theme bg-input px-4 py-3.5 font-sans text-base text-fg"
@@ -68,7 +70,7 @@ export function BookingFormCard({
           autoCapitalize="characters"
           onChangeText={onChangeLicensePlate}
           placeholder="59-AB24872"
-          placeholderTextColor="#6b7280"
+          placeholderTextColor={placeholder}
           style={inputStyle}
           value={licensePlate}
           className="rounded-[14px] border border-border-theme bg-input px-4 py-3.5 font-sans text-base text-fg"

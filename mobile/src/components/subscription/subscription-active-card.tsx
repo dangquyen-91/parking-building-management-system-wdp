@@ -4,14 +4,12 @@ import { formatDate } from "@/utils/format";
 import { Pressable, Text, View } from "@/tw";
 
 type SubscriptionActiveCardProps = {
-  isLoadingQr: boolean;
-  onOpenQr: (subscriptionId: string) => void;
+  onViewDetails: (subscriptionId: string) => void;
   subscription: Subscription;
 };
 
 export function SubscriptionActiveCard({
-  isLoadingQr,
-  onOpenQr,
+  onViewDetails,
   subscription,
 }: SubscriptionActiveCardProps) {
   return (
@@ -44,11 +42,10 @@ export function SubscriptionActiveCard({
 
       <Pressable
         className="items-center rounded-full bg-btn-primary py-3.5"
-        disabled={isLoadingQr}
-        onPress={() => onOpenQr(subscription._id)}
+        onPress={() => onViewDetails(subscription._id)}
       >
         <Text className="font-sans text-base font-extrabold text-btn-primary-fg">
-          {isLoadingQr ? "Loading QR..." : "View entry QR"}
+          View subscription details
         </Text>
       </Pressable>
     </GlassCard>

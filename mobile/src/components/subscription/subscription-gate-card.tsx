@@ -1,12 +1,14 @@
 import { GlassCard } from "@/components/parking-ui";
-import { Link, Pressable, Text, View } from "@/tw";
+import { Link, Pressable, Text, View, useThemeColors } from "@/tw";
 import Ionicons from "react-native-vector-icons/Ionicons";
 
 export function SubscriptionGateCard() {
+  const { iconPrimary } = useThemeColors();
+
   return (
     <GlassCard className="gap-4">
       <View className="h-12 w-12 items-center justify-center rounded-full bg-badge">
-        <Ionicons name="lock-closed" color="#ffffff" size={22} />
+        <Ionicons name="lock-closed" color={iconPrimary} size={22} />
       </View>
       <View className="gap-1">
         <Text className="font-sans text-xl font-extrabold text-fg">

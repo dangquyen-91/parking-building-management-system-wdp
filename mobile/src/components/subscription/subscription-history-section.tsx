@@ -24,11 +24,9 @@ type SubscriptionHistorySectionProps = {
   cancelPending: boolean;
   confirmPending: boolean;
   isFetching: boolean;
-  isLoadingQrForId: string | null;
   onCancel: (subscriptionId: string) => void;
   onConfirm: (subscriptionId: string) => void;
-  onOpenQr: (subscriptionId: string) => void;
-  onRefresh: () => void;
+  onViewDetails: (subscriptionId: string) => void;
   subscriptions: Subscription[];
 };
 
@@ -36,31 +34,25 @@ export function SubscriptionHistorySection({
   cancelPending,
   confirmPending,
   isFetching,
-  isLoadingQrForId,
   onCancel,
   onConfirm,
-  onOpenQr,
-  onRefresh,
+  onViewDetails,
   subscriptions,
 }: SubscriptionHistorySectionProps) {
   return (
     <View className="gap-3">
-      <View className="flex-row items-center justify-between">
+      <View className="gap-1">
         <View className="gap-1">
           <Label>My subscriptions</Label>
           <Text className="font-sans text-2xl font-black text-fg">
             Purchase history
           </Text>
         </View>
-        <Pressable
-          className="rounded-full border border-border-strong bg-badge px-4 py-2"
-          disabled={isFetching}
-          onPress={onRefresh}
-        >
-          <Text className="font-sans text-sm font-bold text-fg">
-            {isFetching ? "Refreshing..." : "Refresh"}
+        {isFetching ? (
+          <Text className="font-sans text-xs font-bold text-subtle">
+            Refreshing...
           </Text>
-        </Pressable>
+        ) : null}
       </View>
 
       {subscriptions.map((subscription) => (
@@ -125,11 +117,10 @@ export function SubscriptionHistorySection({
           ) : subscription.status === "active" ? (
             <Pressable
               className="items-center rounded-full border border-border-strong bg-badge py-3"
-              disabled={isLoadingQrForId === subscription._id}
-              onPress={() => onOpenQr(subscription._id)}
+              onPress={() => onViewDetails(subscription._id)}
             >
               <Text className="font-sans text-sm font-extrabold text-fg">
-                Open QR
+                View details
               </Text>
             </Pressable>
           ) : null}

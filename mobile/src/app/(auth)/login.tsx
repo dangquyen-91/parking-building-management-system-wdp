@@ -6,11 +6,20 @@ import { toast } from "sonner-native";
 import { useLoginMutation } from "@/hooks/useAuth";
 import { loginPayloadSchema } from "@/schema";
 import { getFieldErrors } from "@/utils/validation";
-import { Link, Pressable, ScrollView, Text, TextInput, View } from "../../tw";
+import {
+  Link,
+  Pressable,
+  ScrollView,
+  Text,
+  TextInput,
+  View,
+  useThemeColors,
+} from "../../tw";
 
 type LoginField = "email" | "password";
 
 export default function Login() {
+  const { iconMuted, iconPrimary, placeholder } = useThemeColors();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -50,7 +59,7 @@ export default function Login() {
           <View className="flex-row items-center justify-between">
             <Link href="/(tabs)/home" asChild>
               <Pressable className="h-11 w-11 items-center justify-center rounded-full border border-border-theme bg-badge">
-                <Ionicons name="chevron-back" color="#ffffff" size={22} />
+                <Ionicons name="chevron-back" color={iconPrimary} size={22} />
               </Pressable>
             </Link>
 
@@ -89,7 +98,7 @@ export default function Login() {
                   setErrors((current) => ({ ...current, email: undefined }));
                 }}
                 placeholder="customer@example.com"
-                placeholderTextColor="#6b7280"
+                placeholderTextColor={placeholder}
                 value={email}
                 className="rounded-[16px] border border-border-theme bg-input py-4 pl-5 pr-4 font-sans text-base text-fg"
               />
@@ -111,7 +120,7 @@ export default function Login() {
                     setErrors((current) => ({ ...current, password: undefined }));
                   }}
                   placeholder="Enter password"
-                  placeholderTextColor="#6b7280"
+                  placeholderTextColor={placeholder}
                   secureTextEntry={!showPassword}
                   value={password}
                   className="min-h-[56px] flex-1 py-4 pl-5 pr-2 font-sans text-base text-fg"
@@ -122,7 +131,7 @@ export default function Login() {
                 >
                   <Ionicons
                     name={showPassword ? "eye-off-outline" : "eye-outline"}
-                    color="#d1d5db"
+                    color={iconMuted}
                     size={21}
                   />
                 </Pressable>

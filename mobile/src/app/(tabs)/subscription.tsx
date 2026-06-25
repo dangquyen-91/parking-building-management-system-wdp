@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import type { WebViewNavigation } from "react-native-webview/lib/WebViewTypes";
 import { toast } from "sonner-native";
 
@@ -9,8 +10,8 @@ import {
   SubscriptionPaymentCard,
   SubscriptionPaymentModal,
   SubscriptionPurchaseFormCard,
-  SubscriptionQrModal,
 } from "@/components/subscription";
+import { AppRefreshControl } from "@/components/common/refresh-control";
 import { Page } from "@/components/parking-ui";
 import { useCurrentUserQuery } from "../../hooks/useAuth";
 import {
@@ -20,7 +21,6 @@ import {
   useMySubscriptionsQuery,
   usePurchaseSubscriptionMutation,
   useSubscriptionPlansQuery,
-  useSubscriptionQrMutation,
 } from "../../hooks/useSubscriptions";
 import type {
   CarSubscriptionAvailabilityResult,
@@ -42,13 +42,26 @@ const flattenAvailableCarSlots = (data?: CarSubscriptionAvailabilityResult) =>
   );
 
 export default function SubscriptionScreen() {
-  const [licensePlate, setLicensePlate] = useState("");
-  const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
-  const [selectedSlotId, setSelectedSlotId] = useState<string | null>(null);
+  const router = useRouter();
+  const params = useLocalSearchParams<{
+    licensePlate?: string | string[];
+    selectedPlanId?: string | string[];
+    selectedSlotId?: string | string[];
+  }>();
+  const routeSelectedPlanId =
+    typeof params.selectedPlanId === "string" ? params.selectedPlanId : null;
+  const routeSelectedSlotId =
+    typeof params.selectedSlotId === "string" ? params.selectedSlotId : null;
+  const routeLicensePlate =
+    typeof params.licensePlate === "string" ? params.licensePlate : null;
+  const [licensePlate, setLicensePlate] = useState(() => routeLicensePlate ?? "");
+  const [selectedPlanId, setSelectedPlanId] = useState<string | null>(
+    () => routeSelectedPlanId,
+  );
+  const selectedSlotId = routeSelectedSlotId;
   const [purchaseResult, setPurchaseResult] = useState<PurchaseSubscriptionResult | null>(null);
   const [paymentUrl, setPaymentUrl] = useState<string | null>(null);
-  const [qrModalVisible, setQrModalVisible] = useState(false);
-  const [selectedQrSubscriptionId, setSelectedQrSubscriptionId] = useState<string | null>(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const { data: currentUser } = useCurrentUserQuery();
   const plansQuery = useSubscriptionPlansQuery(Boolean(currentUser));
@@ -56,13 +69,19 @@ export default function SubscriptionScreen() {
   const purchaseSubscriptionMutation = usePurchaseSubscriptionMutation();
   const confirmSubscriptionMutation = useConfirmSubscriptionMutation();
   const cancelSubscriptionMutation = useCancelSubscriptionMutation();
-  const subscriptionQrMutation = useSubscriptionQrMutation();
 
-  const selectedPlan = useMemo(
-    () => plansQuery.data?.find((plan) => plan._id === selectedPlanId) ?? null,
-    [plansQuery.data, selectedPlanId],
-  );
+  const selectedPlan = useMemo(() => {
+    const plans = plansQuery.data ?? [];
 
+    return (
+      plans.find((plan) => plan._id === selectedPlanId) ??
+      plans.find((plan) => plan._id === routeSelectedPlanId) ??
+      plans[0] ??
+      null
+    );
+  }, [plansQuery.data, routeSelectedPlanId, selectedPlanId]);
+
+  const resolvedSelectedPlanId = selectedPlan?._id ?? null;
   const selectedVehicleType = selectedPlan?.vehicleType ?? "car";
   const availabilityQuery = useAvailableSubscriptionSlotsQuery(
     selectedVehicleType,
@@ -85,27 +104,18 @@ export default function SubscriptionScreen() {
       null,
     [mySubscriptionsQuery.data?.subscriptions],
   );
-
-  useEffect(() => {
-    if (!plansQuery.data?.length) {
-      return;
-    }
-
-    if (!selectedPlanId || !plansQuery.data.some((plan) => plan._id === selectedPlanId)) {
-      setSelectedPlanId(plansQuery.data[0]._id);
-    }
-  }, [plansQuery.data, selectedPlanId]);
-
-  useEffect(() => {
+  const resolvedSelectedSlotId = useMemo(() => {
     if (selectedPlan?.vehicleType !== "car") {
-      setSelectedSlotId(null);
-      return;
+      return null;
     }
 
-    if (!availableCarSlots.some(({ slot }) => slot._id === selectedSlotId)) {
-      setSelectedSlotId(availableCarSlots[0]?.slot._id ?? null);
-    }
-  }, [availableCarSlots, selectedPlan?.vehicleType, selectedSlotId]);
+    return (
+      availableCarSlots.find(({ slot }) => slot._id === selectedSlotId)?.slot._id ??
+      availableCarSlots.find(({ slot }) => slot._id === routeSelectedSlotId)?.slot._id ??
+      availableCarSlots[0]?.slot._id ??
+      null
+    );
+  }, [availableCarSlots, routeSelectedSlotId, selectedPlan?.vehicleType, selectedSlotId]);
 
   const handlePurchase = async () => {
     if (!selectedPlan) {
@@ -123,7 +133,7 @@ export default function SubscriptionScreen() {
       return;
     }
 
-    if (selectedPlan.vehicleType === "car" && !selectedSlotId) {
+    if (selectedPlan.vehicleType === "car" && !resolvedSelectedSlotId) {
       toast.error("Slot required", {
         description: "Choose an available resident slot for the car subscription.",
       });
@@ -134,7 +144,8 @@ export default function SubscriptionScreen() {
       const result = await purchaseSubscriptionMutation.mutateAsync({
         planId: selectedPlan._id,
         licensePlate: normalizedPlate,
-        slotId: selectedPlan.vehicleType === "car" ? selectedSlotId ?? undefined : undefined,
+        slotId:
+          selectedPlan.vehicleType === "car" ? resolvedSelectedSlotId ?? undefined : undefined,
       });
 
       setPurchaseResult(result);
@@ -160,15 +171,8 @@ export default function SubscriptionScreen() {
           ? await confirmSubscriptionMutation.mutateAsync(purchaseResult.subscription._id)
           : await cancelSubscriptionMutation.mutateAsync(purchaseResult.subscription._id);
 
-      setPurchaseResult((current) =>
-        current
-          ? {
-              ...current,
-              subscription: result.subscription,
-            }
-          : current,
-      );
       setPaymentUrl(null);
+      setPurchaseResult(null);
 
       toast.success(
         action === "confirm" ? "Subscription synced" : "Subscription cancelled",
@@ -179,6 +183,15 @@ export default function SubscriptionScreen() {
               : "The pending subscription has been cancelled.",
         },
       );
+
+      if (action === "confirm") {
+        router.push({
+          pathname: "/subscription/[subscriptionId]",
+          params: {
+            subscriptionId: result.subscription._id,
+          },
+        });
+      }
     } catch (error) {
       toast.error("Unable to sync subscription", {
         description: error instanceof Error ? error.message : "Please refresh later.",
@@ -199,39 +212,50 @@ export default function SubscriptionScreen() {
     }
   };
 
-  const handleOpenQr = async (subscriptionId: string) => {
-    try {
-      setSelectedQrSubscriptionId(subscriptionId);
-      const result = await subscriptionQrMutation.mutateAsync(subscriptionId);
-      setQrModalVisible(true);
-      toast.success("QR loaded", {
-        description: `Entry QR ready for ${result.licensePlate}.`,
-      });
-    } catch (error) {
-      setSelectedQrSubscriptionId(null);
-      toast.error("Cannot load QR", {
-        description: error instanceof Error ? error.message : "Please try again later.",
-      });
-    }
-  };
-
-  const handleCloseQr = () => {
-    setQrModalVisible(false);
-    setSelectedQrSubscriptionId(null);
-    subscriptionQrMutation.reset();
-  };
-
   const handleRefreshSubscriptions = async () => {
-    const result = await mySubscriptionsQuery.refetch();
+    setIsRefreshing(true);
 
-    if (result.isSuccess) {
-      toast.success("Subscriptions refreshed");
+    try {
+      const results = await Promise.all([
+        plansQuery.refetch(),
+        mySubscriptionsQuery.refetch(),
+        ...(selectedPlan ? [availabilityQuery.refetch()] : []),
+      ]);
+
+      if (results.every((result) => result.isSuccess)) {
+        toast.success("Subscriptions refreshed");
+      }
+    } finally {
+      setIsRefreshing(false);
     }
+  };
+
+  const handleOpenSlotPicker = () => {
+    if (!selectedPlan || selectedPlan.vehicleType !== "car") {
+      return;
+    }
+
+    router.push({
+      pathname: "/resident-slot-picker",
+      params: {
+        licensePlate,
+        selectedPlanId: selectedPlan._id,
+        selectedSlotId: resolvedSelectedSlotId ?? undefined,
+      },
+    });
   };
 
   const paymentSummary = purchaseResult?.payment;
-  const isLoadingActiveQr =
-    subscriptionQrMutation.isPending && selectedQrSubscriptionId === activeSubscription?._id;
+  const handleOpenSubscriptionDetails = (subscriptionId?: string) => {
+    if (!subscriptionId) {
+      return;
+    }
+
+    router.push({
+      pathname: "/subscription/[subscriptionId]",
+      params: { subscriptionId },
+    });
+  };
 
   if (!currentUser) {
     return (
@@ -243,6 +267,12 @@ export default function SubscriptionScreen() {
         <ScrollView
           contentInsetAdjustmentBehavior="automatic"
           contentContainerClassName="gap-4 px-5 pb-[120px]"
+          refreshControl={
+            <AppRefreshControl
+              onRefresh={handleRefreshSubscriptions}
+              refreshing={isRefreshing}
+            />
+          }
         >
           <SubscriptionGateCard />
         </ScrollView>
@@ -259,6 +289,12 @@ export default function SubscriptionScreen() {
       <ScrollView
         contentInsetAdjustmentBehavior="automatic"
         contentContainerClassName="gap-4 px-5 pb-[120px]"
+        refreshControl={
+          <AppRefreshControl
+            onRefresh={handleRefreshSubscriptions}
+            refreshing={isRefreshing}
+          />
+        }
       >
         <SubscriptionPurchaseFormCard
           availableCarSlots={availableCarSlots}
@@ -270,13 +306,13 @@ export default function SubscriptionScreen() {
               : undefined
           }
           onChangeLicensePlate={setLicensePlate}
+          onOpenSlotPicker={handleOpenSlotPicker}
           onSelectPlan={setSelectedPlanId}
-          onSelectSlot={setSelectedSlotId}
           plans={plansQuery.data ?? []}
           plansLoading={plansQuery.isLoading}
           selectedPlan={selectedPlan}
-          selectedPlanId={selectedPlanId}
-          selectedSlotId={selectedSlotId}
+          selectedPlanId={resolvedSelectedPlanId}
+          selectedSlotId={resolvedSelectedSlotId}
         />
 
         <Pressable
@@ -302,8 +338,7 @@ export default function SubscriptionScreen() {
 
         {activeSubscription ? (
           <SubscriptionActiveCard
-            isLoadingQr={Boolean(isLoadingActiveQr)}
-            onOpenQr={handleOpenQr}
+            onViewDetails={handleOpenSubscriptionDetails}
             subscription={activeSubscription}
           />
         ) : null}
@@ -312,9 +347,6 @@ export default function SubscriptionScreen() {
           cancelPending={cancelSubscriptionMutation.isPending}
           confirmPending={confirmSubscriptionMutation.isPending}
           isFetching={mySubscriptionsQuery.isFetching}
-          isLoadingQrForId={
-            subscriptionQrMutation.isPending ? selectedQrSubscriptionId : null
-          }
           onCancel={(subscriptionId) => {
             cancelSubscriptionMutation
               .mutateAsync(subscriptionId)
@@ -331,8 +363,9 @@ export default function SubscriptionScreen() {
           onConfirm={(subscriptionId) => {
             confirmSubscriptionMutation
               .mutateAsync(subscriptionId)
-              .then(() => {
+              .then((result) => {
                 toast.success("Subscription synced");
+                handleOpenSubscriptionDetails(result.subscription._id);
               })
               .catch((error: unknown) => {
                 toast.error("Sync failed", {
@@ -341,8 +374,7 @@ export default function SubscriptionScreen() {
                 });
               });
           }}
-          onOpenQr={handleOpenQr}
-          onRefresh={handleRefreshSubscriptions}
+          onViewDetails={handleOpenSubscriptionDetails}
           subscriptions={mySubscriptionsQuery.data?.subscriptions ?? []}
         />
       </ScrollView>
@@ -351,12 +383,6 @@ export default function SubscriptionScreen() {
         onClose={() => setPaymentUrl(null)}
         onNavigationStateChange={handlePaymentNavigationChange}
         paymentUrl={paymentUrl}
-      />
-
-      <SubscriptionQrModal
-        onClose={handleCloseQr}
-        qrData={subscriptionQrMutation.data}
-        visible={qrModalVisible}
       />
     </Page>
   );
