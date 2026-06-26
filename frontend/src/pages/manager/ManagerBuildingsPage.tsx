@@ -247,6 +247,7 @@ export function ManagerBuildingsPage() {
             ? {
                 buildingId: activeFloor.buildingId,
                 floorNumber: activeFloor.floorNumber,
+                section: activeFloor.section,
                 vehicleType: activeFloor.vehicleType,
                 floorType: activeFloor.floorType,
                 totalSlots: activeFloor.totalSlots,
