@@ -3,7 +3,7 @@ import { success } from '../utils/response.js';
 
 export const getAll = async (req, res, next) => {
   try {
-    const result = await userService.getAllUsers(req.query);
+    const result = await userService.getAllUsers(req.query, req.user);
     success(res, result, 'Users retrieved');
   } catch (err) {
     next(err);
@@ -59,7 +59,7 @@ export const removeVehicle = async (req, res, next) => {
 
 export const getOne = async (req, res, next) => {
   try {
-    const user = await userService.getUserById(req.params.id);
+    const user = await userService.getUserById(req.params.id, req.user);
     success(res, { user }, 'User retrieved');
   } catch (err) {
     next(err);
@@ -68,7 +68,7 @@ export const getOne = async (req, res, next) => {
 
 export const update = async (req, res, next) => {
   try {
-    const user = await userService.updateUser(req.params.id, req.body);
+    const user = await userService.updateUser(req.params.id, req.body, req.user);
     success(res, { user }, 'User updated');
   } catch (err) {
     next(err);
@@ -86,7 +86,7 @@ export const changeRole = async (req, res, next) => {
 
 export const updateStatus = async (req, res, next) => {
   try {
-    const user = await userService.updateStatus(req.params.id, req.body.isActive, req.user._id);
+    const user = await userService.updateStatus(req.params.id, req.body.isActive, req.user);
     success(res, { user }, `User ${req.body.isActive ? 'activated' : 'deactivated'}`);
   } catch (err) {
     next(err);

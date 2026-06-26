@@ -8,10 +8,10 @@ const router = Router();
 
 router.use(authenticate);
 
-router.get('/', authorize('admin', 'manager', 'staff'), getAll);
-router.get('/:id', authorize('admin', 'manager', 'staff'), getOne);
-router.post('/', authorize('admin', 'manager'), validate(createBuildingSchema), create);
-router.patch('/:id', authorize('admin', 'manager'), validate(updateBuildingSchema), update);
+router.get('/', authorize('admin', 'manager'), getAll);
+router.get('/:id', authorize('admin', 'manager'), getOne);
+router.post('/', authorize('admin'), validate(createBuildingSchema), create);
+router.patch('/:id', authorize('admin'), validate(updateBuildingSchema), update);
 router.delete('/:id', authorize('admin'), remove);
 
 export default router;
