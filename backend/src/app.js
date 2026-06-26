@@ -19,6 +19,7 @@ import parkingRowRoutes from './routes/parking-row.routes.js';
 import planRoutes from './routes/plan.routes.js';
 import subscriptionRoutes from './routes/subscription.routes.js';
 import bookingRoutes from './routes/booking.routes.js';
+import paymentRoutes from './routes/payment.routes.js';
 import reportRoutes from './routes/report.routes.js';
 import webhookRoutes from './routes/webhook.routes.js';
 import { startSubscriptionJobs } from './jobs/subscription.job.js';
@@ -54,6 +55,7 @@ app.use('/api/v1/parking-rows', parkingRowRoutes);
 app.use('/api/v1/plans', planRoutes);
 app.use('/api/v1/subscriptions', subscriptionRoutes);
 app.use('/api/v1/bookings', bookingRoutes);
+app.use('/api/v1/payments', paymentRoutes);
 app.use('/api/v1/reports', reportRoutes);
 
 app.get('/health', (_req, res) =>
