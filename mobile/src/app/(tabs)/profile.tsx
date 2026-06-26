@@ -5,7 +5,6 @@ import { toast } from "sonner-native";
 import { GlassCard, Label, Page } from "../../components/parking-ui";
 import { ThemeToggle } from "../../components/theme-toggle";
 import { useCurrentUserQuery, useLogoutMutation } from "../../hooks/useAuth";
-import { useMySubscriptionsQuery } from "../../hooks/useSubscriptions";
 import { formatRole } from "@/utils/format";
 import { Link, Pressable, ScrollView, Text, View, useThemeColors } from "../../tw";
 
@@ -31,7 +30,6 @@ export default function Profile() {
     error,
     isLoading,
   } = useCurrentUserQuery();
-  const mySubscriptionsQuery = useMySubscriptionsQuery(Boolean(currentUser));
   const logoutMutation = useLogoutMutation();
 
   const profileItems = currentUser
@@ -58,22 +56,7 @@ export default function Profile() {
   };
 
   const handleOpenMySubscription = () => {
-    const subscriptions = mySubscriptionsQuery.data?.subscriptions ?? [];
-    const selectedSubscription =
-      subscriptions.find((subscription) => subscription.status === "active") ??
-      subscriptions[0];
-
-    if (!selectedSubscription) {
-      router.push("/(tabs)/subscription");
-      return;
-    }
-
-    router.push({
-      pathname: "/subscription/[subscriptionId]",
-      params: {
-        subscriptionId: selectedSubscription._id,
-      },
-    });
+    router.push("/subscription/history");
   };
 
   return (

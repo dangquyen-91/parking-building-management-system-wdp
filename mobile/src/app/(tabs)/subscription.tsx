@@ -6,7 +6,6 @@ import { toast } from "sonner-native";
 import {
   SubscriptionActiveCard,
   SubscriptionGateCard,
-  SubscriptionHistorySection,
   SubscriptionPaymentCard,
   SubscriptionPaymentModal,
   SubscriptionPurchaseFormCard,
@@ -317,9 +316,7 @@ export default function SubscriptionScreen() {
 
         {paymentSummary && purchaseResult ? (
           <SubscriptionPaymentCard
-            confirmPending={confirmSubscriptionMutation.isPending}
             onOpenPayment={setPaymentUrl}
-            onSyncStatus={() => handlePaymentStateSync("confirm")}
             purchaseResult={purchaseResult}
           />
         ) : null}
@@ -330,39 +327,6 @@ export default function SubscriptionScreen() {
             subscription={activeSubscription}
           />
         ) : null}
-
-        <SubscriptionHistorySection
-          cancelPending={cancelSubscriptionMutation.isPending}
-          confirmPending={confirmSubscriptionMutation.isPending}
-          isFetching={mySubscriptionsQuery.isFetching}
-          onCancel={(subscriptionId) => {
-            cancelSubscriptionMutation
-              .mutateAsync(subscriptionId)
-              .then(() => {
-                toast.success("Đã hủy gói gửi xe");
-              })
-              .catch((error: unknown) => {
-                toast.error("Hủy gói thất bại", {
-                  description: error instanceof Error ? error.message : "Vui lòng thử lại sau.",
-                });
-              });
-          }}
-          onConfirm={(subscriptionId) => {
-            confirmSubscriptionMutation
-              .mutateAsync(subscriptionId)
-              .then((result) => {
-                toast.success("Đã đồng bộ gói gửi xe");
-                handleOpenSubscriptionDetails(result.subscription._id);
-              })
-              .catch((error: unknown) => {
-                toast.error("Đồng bộ thất bại", {
-                  description: error instanceof Error ? error.message : "Vui lòng thử lại sau.",
-                });
-              });
-          }}
-          onViewDetails={handleOpenSubscriptionDetails}
-          subscriptions={mySubscriptionsQuery.data?.subscriptions ?? []}
-        />
       </ScrollView>
 
       <SubscriptionPaymentModal
