@@ -1,6 +1,6 @@
 import axios, { AxiosError, AxiosHeaders } from 'axios'
+import { API_BASE_URL } from './apiConfig'
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5000/api/v1'
 const ACCESS_TOKEN_KEY = 'accessToken'
 
 type ApiEnvelope<T> = {
@@ -27,6 +27,7 @@ export type Floor = {
     address?: string
   } | string
   floorNumber: number
+  section?: string
   vehicleType: 'motorcycle' | 'car'
   floorType: 'resident' | 'visitor'
   totalSlots: number
@@ -43,6 +44,7 @@ export type BuildingPayload = {
 export type FloorPayload = {
   buildingId: string
   floorNumber: number
+  section?: string
   vehicleType: 'motorcycle' | 'car'
   floorType: 'resident' | 'visitor'
   totalSlots: number

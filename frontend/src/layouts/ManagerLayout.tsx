@@ -5,13 +5,15 @@ import { ManagerSidebar } from '../components/manager'
 import { useOverlayPanel } from '../hooks/useOverlayPanel'
 
 const MANAGER_PAGE_TITLES: Record<string, string> = {
-  '/manager': 'Manager Overview',
-  '/manager/buildings': 'Buildings',
-  '/manager/slots': 'Slots & Zones',
-  '/manager/bookings': 'Bookings',
-  '/manager/gate-logs': 'Gate Logs',
-  '/manager/staff': 'Staff',
-  '/manager/reports': 'Reports',
+  '/manager': 'Tổng quan vận hành',
+  '/manager/buildings': 'Tòa nhà & tầng',
+  '/manager/slots': 'Chỗ đỗ',
+  '/manager/bookings': 'Quản lý booking',
+  '/manager/gate-logs': 'Hoạt động cổng',
+  '/manager/staff': 'Nhân viên',
+  '/manager/plans': 'Gói gửi xe',
+  '/manager/subscriptions': 'Người dùng gói',
+  '/manager/reports': 'Báo cáo vận hành',
 }
 
 export function ManagerLayout() {
@@ -29,38 +31,37 @@ export function ManagerLayout() {
   })
 
   return (
-    <div className="h-screen overflow-hidden bg-page text-fg">
+    <div className="relative h-screen overflow-hidden bg-[radial-gradient(circle_at_top_left,rgba(14,165,233,0.18),transparent_34%),radial-gradient(circle_at_85%_10%,rgba(16,185,129,0.12),transparent_32%),linear-gradient(135deg,var(--page-bg),var(--page-bg))] text-fg">
       <SkipLink />
 
-      {sidebarOpen && (
-        <OverlayBackdrop onClose={closeSidebar} label="Close manager navigation menu" />
-      )}
+      {sidebarOpen && <OverlayBackdrop onClose={closeSidebar} label="Đóng menu quản lý" />}
 
       <div className="flex h-full w-full">
-        <div className="max-lg:w-0 max-lg:min-w-0 max-lg:shrink-0 max-lg:overflow-visible lg:w-60 lg:shrink-0">
+        <div className="max-lg:w-0 max-lg:min-w-0 max-lg:shrink-0 max-lg:overflow-visible lg:w-72 lg:shrink-0">
           <ManagerSidebar ref={sidebarRef} isOpen={sidebarOpen} onNavigate={closeSidebar} />
         </div>
 
-        <div className="flex w-full flex-1 flex-col min-w-0 h-full">
-          <header className="lg:hidden sticky top-0 z-30 flex items-center gap-3 h-14 px-4 border-b border-theme bg-page/95 backdrop-blur-md shrink-0">
+        <div className="flex h-full min-w-0 flex-1 flex-col">
+          <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center gap-3 border-b border-theme bg-page/85 px-4 shadow-sm backdrop-blur-xl lg:hidden">
             <button
               ref={menuButtonRef}
               type="button"
-              className="flex items-center justify-center w-10 h-10 rounded-xl text-muted hover:text-fg hover:bg-ghost transition-colors"
+              className="flex size-11 items-center justify-center rounded-2xl border border-theme bg-badge text-muted shadow-sm transition-colors hover:bg-ghost hover:text-fg"
               aria-expanded={sidebarOpen}
               aria-controls="manager-sidebar"
-              aria-label="Open manager navigation menu"
+              aria-label="Mở menu quản lý"
               onClick={() => setSidebarOpen(true)}
             >
               <MenuIcon />
             </button>
-            <p className="text-sm font-medium text-fg truncate flex-1" aria-hidden="true">
-              {pageTitle}
-            </p>
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-black text-fg">{pageTitle}</p>
+              <p className="text-[11px] text-subtle">Trung tâm điều hành bãi xe</p>
+            </div>
             <ThemeToggle />
           </header>
 
-          <main id="main" tabIndex={-1} className="flex-1 min-w-0 overflow-auto">
+          <main id="main" tabIndex={-1} className="min-w-0 flex-1 overflow-auto">
             <Outlet />
           </main>
         </div>
@@ -68,4 +69,3 @@ export function ManagerLayout() {
     </div>
   )
 }
-

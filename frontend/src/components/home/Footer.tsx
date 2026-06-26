@@ -6,8 +6,7 @@ const FOOTER_LINKS = [
   { href: '#about', label: 'Giới thiệu' },
   { href: '#how-it-works', label: 'Cách hoạt động' },
   { href: '#features', label: 'Tính năng' },
-  { href: '#resources', label: 'Tài nguyên' },
-  { href: '#blog', label: 'Blog' },
+  { href: '#resident-plans', label: 'Gói cư dân' },
   { to: '/login', label: 'Đăng nhập' },
   { to: '/register', label: 'Đăng ký' },
 ] as const

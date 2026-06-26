@@ -1,16 +1,17 @@
 import { Router } from 'express';
-import { getAll, getOne, update } from '../controllers/plan.controller.js';
+import { getAll, getOne, create, update, remove } from '../controllers/plan.controller.js';
 import { authenticate, authorize } from '../middlewares/auth.middleware.js';
 import validate from '../middlewares/validate.middleware.js';
-import { privateCache, noCache } from '../middlewares/cache.middleware.js';
-import { updatePlanSchema } from '../validations/plan.validation.js';
+import { createPlanSchema, updatePlanSchema } from '../validations/plan.validation.js';
 
 const router = Router();
 
 router.use(authenticate);
 
-router.get('/', privateCache(300), getAll);
-router.get('/:id', privateCache(300), getOne);
-router.patch('/:id', authorize('admin', 'manager'), noCache, validate(updatePlanSchema), update);
+router.get('/', getAll);
+router.get('/:id', getOne);
+router.post('/', authorize('admin', 'manager'), validate(createPlanSchema), create);
+router.patch('/:id', authorize('admin', 'manager'), validate(updatePlanSchema), update);
+router.delete('/:id', authorize('admin', 'manager'), remove);
 
 export default router;

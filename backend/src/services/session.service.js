@@ -1,4 +1,4 @@
-import ParkingSession from '../models/parking-session.model.js';
+﻿import ParkingSession from '../models/parking-session.model.js';
 import ParkingSlot from '../models/parking-slot.model.js';
 import ParkingRow from '../models/parking-row.model.js';
 import Floor from '../models/floor.model.js';
@@ -9,7 +9,41 @@ import * as pricingService from './pricing.service.js';
 import * as payosService from './payos.service.js';
 import * as bookingService from './booking.service.js';
 import AppError from '../utils/appError.js';
-import logger from '../utils/logger.js';
+import QRCode from 'qrcode';
+import { verifyQRToken, signWalkInTicket } from '../utils/qrToken.js';
+
+const WALKIN_TICKET_TTL_MS = 5 * 60 * 1000; // must be redeemed at check-in within 5 minutes
+
+// Both customer types carry exactly one QR for the whole visit, never
+// re-minted: residents reuse their permanent subscription QR, walk-ins reuse
+// the ticket minted at requestEntryQR (verified again here, then persisted
+// as-is on the session so checkout matches the same physical ticket).
+const attachQR = async (session, activeSub, qrToken) => {
+  const finalToken = activeSub ? activeSub.qrToken : qrToken;
+  if (!activeSub) {
+    await ParkingSession.findByIdAndUpdate(session._id, { qrToken: finalToken });
+  }
+  const qrImage = await QRCode.toDataURL(finalToken, { errorCorrectionLevel: 'M', width: 300, margin: 2 });
+  const populated = await session.populate(SESSION_POPULATE);
+  return { session: populated, qrToken: finalToken, qrImage };
+};
+
+// Step 1 of walk-in entry: gate camera reads a plate with no subscription
+// behind it. Mint the ticket QR for that exact plate; the gate scans it back
+// (step 2, inside checkIn) to confirm check-in, then the same QR is kept for
+// the rest of the visit and presented again at checkout.
+export const requestEntryQR = async (licensePlate) => {
+  const normalizedPlate = licensePlate.toUpperCase().replace(/\s/g, '');
+
+  const existing = await ParkingSession.findOne({ licensePlate: normalizedPlate, status: 'active' });
+  if (existing) {
+    throw new AppError(`Vehicle ${normalizedPlate} already has an active parking session`, 400);
+  }
+
+  const qrToken = signWalkInTicket(normalizedPlate);
+  const qrImage = await QRCode.toDataURL(qrToken, { errorCorrectionLevel: 'M', width: 300, margin: 2 });
+  return { qrToken, qrImage, licensePlate: normalizedPlate };
+};
 
 const SESSION_POPULATE = [
   {
@@ -22,11 +56,16 @@ const SESSION_POPULATE = [
     select: 'rowCode capacity occupiedCount floorId',
     populate: { path: 'floorId', select: 'floorNumber buildingId' },
   },
+  {
+    path: 'floorId',
+    select: 'floorNumber section floorType vehicleType buildingId',
+    populate: { path: 'buildingId', select: 'name' },
+  },
   { path: 'staffId', select: 'fullName email' },
   { path: 'userId',  select: 'fullName phone email' },
 ];
 
-export const checkIn = async ({ slotId, rowId, licensePlate, vehicleType, staffId, note }) => {
+export const checkIn = async ({ slotId, rowId, licensePlate, vehicleType, staffId, note, qrToken }) => {
   const normalizedPlate = licensePlate.toUpperCase().replace(/\s/g, '');
 
   const existing = await ParkingSession.findOne({ licensePlate: normalizedPlate, status: 'active' });
@@ -34,106 +73,192 @@ export const checkIn = async ({ slotId, rowId, licensePlate, vehicleType, staffI
     throw new AppError(`Vehicle ${normalizedPlate} already has an active parking session`, 400);
   }
 
-  const activeSub = await Subscription.findOne({ licensePlate: normalizedPlate, status: 'active' });
+  const activeSub = await Subscription.findOne({ licensePlate: normalizedPlate, status: 'active' }).select('+qrToken');
   if (activeSub && activeSub.vehicleType !== vehicleType) {
     throw new AppError(
       `License plate ${normalizedPlate} has a ${activeSub.vehicleType} subscription, cannot check in as ${vehicleType}`,
       400
     );
   }
+
+  // Every check-in — resident or walk-in — must present a QR whose encoded
+  // plate matches the camera-read plate. Residents use their permanent
+  // subscription QR; walk-ins use the ticket from requestEntryQR (minted
+  // moments ago at the gate camera).
+  if (!qrToken) {
+    throw new AppError('Cần quét mã QR (gói đăng ký hoặc vé vào cổng) khớp camera để check-in.', 400);
+  }
+  const { valid, payload, reason } = verifyQRToken(qrToken);
+  if (!valid) throw new AppError(`QR không hợp lệ: ${reason}`, 400);
+
+  if (activeSub) {
+    if (payload.type !== 'subscription_entry') {
+      throw new AppError('QR không đúng loại (không phải QR gói đăng ký).', 400);
+    }
+    if (payload.subId !== activeSub._id.toString()) {
+      throw new AppError('QR không thuộc gói đăng ký của biển số này.', 400);
+    }
+    if (payload.plate !== normalizedPlate) {
+      throw new AppError(
+        `Biển số trên QR (${payload.plate}) không khớp biển số camera (${normalizedPlate}).`,
+        400
+      );
+    }
+  } else {
+    if (payload.type !== 'walkin_ticket') {
+      throw new AppError('QR không đúng loại (không phải vé vào cổng cho khách vãng lai).', 400);
+    }
+    if (payload.plate !== normalizedPlate) {
+      throw new AppError(
+        `Biển số trên vé (${payload.plate}) không khớp biển số camera (${normalizedPlate}).`,
+        400
+      );
+    }
+    if (Date.now() - payload.iat > WALKIN_TICKET_TTL_MS) {
+      throw new AppError('Vé vào cổng đã hết hạn, vui lòng quét lại biển số để lấy vé mới.', 400);
+    }
+  }
+
   const userId = activeSub ? activeSub.userId : null;
 
   if (vehicleType === 'car') {
     const isResident = !!activeSub;
-    const paidBooking = !isResident ? await bookingService.findPaidBookingForCheckIn(normalizedPlate) : null;
 
-    let resolvedSlotId = isResident ? activeSub.slotId?.toString() : slotId;
-
-    if (isResident && !resolvedSlotId) {
-      throw new AppError('Resident subscription has no slot assigned. Contact admin.', 500);
-    }
-    if (isResident && slotId && slotId !== resolvedSlotId) {
-      throw new AppError(
-        `This plate is bound to slot ${activeSub.slotId} via subscription. slotId in body does not match.`,
-        400
-      );
-    }
-
-    if (!isResident && !slotId) {
-      const visitorFloors = await Floor.find({
-        vehicleType: 'car',
-        floorType: 'visitor',
-        isActive: true,
-      }).select('_id');
-      const floorIds = visitorFloors.map((f) => f._id);
-      const autoSlot = await ParkingSlot.findOne({
-        floorId: { $in: floorIds },
-        vehicleType: 'car',
-        status: 'empty',
-      }).sort({ slotCode: 1 });
-      if (!autoSlot) {
-        throw new AppError('No empty visitor car slot available. Parking lot is full.', 409);
+    // ---- Resident car: fixed reserved slot (the product they paid for) ----
+    if (isResident) {
+      const resolvedSlotId = activeSub.slotId?.toString();
+      if (!resolvedSlotId) {
+        throw new AppError('Resident subscription has no slot assigned. Contact admin.', 500);
       }
-      resolvedSlotId = autoSlot._id.toString();
-    }
+      if (slotId && slotId !== resolvedSlotId) {
+        throw new AppError(
+          `This plate is bound to slot ${activeSub.slotId} via subscription. slotId in body does not match.`,
+          400
+        );
+      }
 
-    const slot = await ParkingSlot.findById(resolvedSlotId).populate({
-      path: 'floorId',
-      select: 'isActive vehicleType floorType buildingId',
-      populate: { path: 'buildingId', select: 'isActive' },
-    });
-    if (!slot) throw new AppError('Parking slot not found', 404);
-    if (!slot.floorId.isActive) throw new AppError('Floor is inactive', 400);
-    if (!slot.floorId.buildingId?.isActive) throw new AppError('Building is inactive', 400);
-    if (slot.floorId.vehicleType !== 'car') throw new AppError('This slot only accepts car', 400);
-    if (slot.floorId.floorType === 'resident' && !isResident)
-      throw new AppError('This floor is for residents only. License plate has no active subscription.', 403);
-    if (slot.floorId.floorType === 'visitor' && isResident)
-      throw new AppError('This floor is for visitors only. Residents must park on their reserved slot.', 403);
-
-    const expectedSlotStatus = isResident ? 'reserved' : 'empty';
-    const locked = await ParkingSlot.findOneAndUpdate(
-      { _id: resolvedSlotId, status: expectedSlotStatus },
-      { status: 'occupied' },
-      { new: true }
-    );
-    if (!locked)
-      throw new AppError(
-        `Slot is not available for check-in (expected status: ${expectedSlotStatus}, current: ${slot.status})`,
-        409
-      );
-
-    try {
-      const session = await ParkingSession.create({
-        slotId: resolvedSlotId,
-        rowId: null,
-        licensePlate: normalizedPlate,
-        vehicleType,
-        customerType: isResident ? 'resident' : 'walk_in',
-        subscriptionId: activeSub?._id || null,
-        bookingId: paidBooking?._id || null,
-        prepaidAmount: paidBooking?.amount || 0,
-        prepaidHours: paidBooking?.durationHours || 0,
-        entryTime: new Date(),
-        staffId,
-        userId: userId || paidBooking?.userId || null,
-        status: 'active',
-        paymentStatus: isResident || paidBooking ? 'paid' : 'unpaid',
-        note,
+      const slot = await ParkingSlot.findById(resolvedSlotId).populate({
+        path: 'floorId',
+        select: 'isActive vehicleType floorType buildingId',
+        populate: { path: 'buildingId', select: 'isActive' },
       });
+      if (!slot) throw new AppError('Parking slot not found', 404);
+      if (!slot.floorId.isActive) throw new AppError('Floor is inactive', 400);
+      if (!slot.floorId.buildingId?.isActive) throw new AppError('Building is inactive', 400);
+      if (slot.floorId.vehicleType !== 'car') throw new AppError('This slot only accepts car', 400);
+      if (slot.floorId.floorType !== 'resident')
+        throw new AppError('Resident reserved slot must be on a resident floor.', 400);
 
-      if (paidBooking) {
-        await bookingService.markUsed(paidBooking._id, session._id);
+      const locked = await ParkingSlot.findOneAndUpdate(
+        { _id: resolvedSlotId, status: 'reserved' },
+        { status: 'occupied' },
+        { new: true }
+      );
+      if (!locked)
+        throw new AppError(
+          `Reserved slot is not available for check-in (expected status: reserved, current: ${slot.status})`,
+          409
+        );
+
+      try {
+        const session = await ParkingSession.create({
+          slotId: resolvedSlotId,
+          rowId: null,
+          floorId: null,
+          licensePlate: normalizedPlate,
+          vehicleType,
+          customerType: 'resident',
+          subscriptionId: activeSub._id,
+          entryTime: new Date(),
+          staffId,
+          userId,
+          status: 'active',
+          paymentStatus: 'paid',
+          note,
+        });
+        return attachQR(session, activeSub, qrToken);
+      } catch (err) {
+        await ParkingSlot.findByIdAndUpdate(resolvedSlotId, { status: 'reserved' });
+        throw err;
       }
-
-      return session.populate(SESSION_POPULATE);
-    } catch (err) {
-      await ParkingSlot.findByIdAndUpdate(resolvedSlotId, { status: expectedSlotStatus });
-      throw err;
     }
+
+    // ---- Walk-in car: counter-based on a visitor floor, no fixed slot. ----
+    // Capacity = floor.totalSlots; "used" = active car sessions on that floor.
+    // Gate check-ins are sequential per staff, so the count-then-create window
+    // is acceptable (no IoT/atomic slot to reserve).
+    const paidBooking = await bookingService.findPaidBookingForCheckIn(normalizedPlate);
+
+    const visitorFloors = await Floor.find({
+      vehicleType: 'car',
+      floorType: 'visitor',
+      isActive: true,
+    })
+      .populate({ path: 'buildingId', select: 'isActive' })
+      .sort({ floorNumber: 1 });
+    if (!visitorFloors.length) throw new AppError('No visitor car floor configured', 500);
+
+    let chosenFloor = null;
+    for (const floor of visitorFloors) {
+      if (!floor.buildingId?.isActive) continue;
+      const used = await ParkingSession.countDocuments({
+        floorId: floor._id,
+        vehicleType: 'car',
+        status: 'active',
+      });
+      if (used < floor.totalSlots) {
+        chosenFloor = floor;
+        break;
+      }
+    }
+    if (!chosenFloor)
+      throw new AppError('No visitor car capacity available. Parking lot is full.', 409);
+
+    const session = await ParkingSession.create({
+      slotId: null,
+      rowId: null,
+      floorId: chosenFloor._id,
+      licensePlate: normalizedPlate,
+      vehicleType,
+      customerType: 'walk_in',
+      bookingId: paidBooking?._id || null,
+      prepaidAmount: paidBooking?.amount || 0,
+      prepaidHours: paidBooking?.durationHours || 0,
+      entryTime: new Date(),
+      staffId,
+      userId: paidBooking?.userId || null,
+      status: 'active',
+      paymentStatus: paidBooking ? 'paid' : 'unpaid',
+      note,
+    });
+
+    if (paidBooking) {
+      await bookingService.markUsed(paidBooking._id, session._id);
+    }
+
+    return attachQR(session, activeSub, qrToken);
   }
 
-  const row = await ParkingRow.findById(rowId).populate({
+  // Motorcycle: counter-based row. Auto-pick the first row with capacity if
+  // staff did not specify one (walk-in -> visitor floor, resident -> resident floor).
+  let resolvedRowId = rowId;
+  if (!resolvedRowId) {
+    const floorType = activeSub ? 'resident' : 'visitor';
+    const motoFloors = await Floor.find({
+      vehicleType: 'motorcycle',
+      floorType,
+      isActive: true,
+    }).select('_id');
+    const autoRow = await ParkingRow.findOne({
+      floorId: { $in: motoFloors.map((f) => f._id) },
+      status: { $ne: 'maintenance' },
+      $expr: { $lt: ['$occupiedCount', '$capacity'] },
+    }).sort({ rowCode: 1 });
+    if (!autoRow) throw new AppError('No motorcycle capacity available. Parking area is full.', 409);
+    resolvedRowId = autoRow._id.toString();
+  }
+
+  const row = await ParkingRow.findById(resolvedRowId).populate({
     path: 'floorId',
     select: 'isActive vehicleType floorType buildingId',
     populate: { path: 'buildingId', select: 'isActive' },
@@ -150,7 +275,7 @@ export const checkIn = async ({ slotId, rowId, licensePlate, vehicleType, staffI
   const newOccupied = row.occupiedCount + 1;
 
   const locked = await ParkingRow.findOneAndUpdate(
-    { _id: rowId, status: { $ne: 'maintenance' }, occupiedCount: { $lt: row.capacity } },
+    { _id: resolvedRowId, status: { $ne: 'maintenance' }, occupiedCount: { $lt: row.capacity } },
     {
       $inc: { occupiedCount: 1 },
       $set: { status: newOccupied >= row.capacity ? 'full' : 'available' },
@@ -162,7 +287,7 @@ export const checkIn = async ({ slotId, rowId, licensePlate, vehicleType, staffI
   try {
     const session = await ParkingSession.create({
       slotId: null,
-      rowId,
+      rowId: resolvedRowId,
       licensePlate: normalizedPlate,
       vehicleType,
       customerType: activeSub ? 'resident' : 'walk_in',
@@ -174,9 +299,9 @@ export const checkIn = async ({ slotId, rowId, licensePlate, vehicleType, staffI
       paymentStatus: activeSub ? 'paid' : 'unpaid',
       note,
     });
-    return session.populate(SESSION_POPULATE);
+    return attachQR(session, activeSub, qrToken);
   } catch (err) {
-    await ParkingRow.findByIdAndUpdate(rowId, {
+    await ParkingRow.findByIdAndUpdate(resolvedRowId, {
       $inc: { occupiedCount: -1 },
       $set: { status: row.status },
     });
@@ -184,11 +309,12 @@ export const checkIn = async ({ slotId, rowId, licensePlate, vehicleType, staffI
   }
 };
 
-export const getActiveSessions = async ({ page = 1, limit = 20, vehicleType, licensePlate, floorId, buildingId } = {}) => {
+export const getActiveSessions = async ({ page = 1, limit = 20, vehicleType, licensePlate, floorId, buildingId, status } = {}) => {
   const pageNum = Math.max(1, parseInt(page));
   const limitNum = Math.min(100, Math.max(1, parseInt(limit)));
 
-  const filter = { status: 'active' };
+  const VALID_STATUSES = ['active', 'completed', 'cancelled'];
+  const filter = { status: VALID_STATUSES.includes(status) ? status : 'active' };
   if (vehicleType) filter.vehicleType = vehicleType;
   if (licensePlate) filter.licensePlate = new RegExp(licensePlate.toUpperCase(), 'i');
 
@@ -205,6 +331,7 @@ export const getActiveSessions = async ({ page = 1, limit = 20, vehicleType, lic
     filter.$or = [
       { slotId: { $in: slots.map((s) => s._id) } },
       { rowId:  { $in: rows.map((r) => r._id) } },
+      { floorId: { $in: floorIds } }, // walk-in cars are linked by floorId directly
     ];
   }
 
@@ -229,7 +356,7 @@ export const getById = async (id) => {
 export const lookup = async (licensePlate) => {
   const normalizedPlate = licensePlate.toUpperCase().replace(/\s/g, '');
 
-  const [activeSession, activeSub, lastSession, availableCar, motoAgg] = await Promise.all([
+  const [activeSession, activeSub, lastSession, availableCar, motoAgg, paidBooking] = await Promise.all([
     ParkingSession.findOne({ licensePlate: normalizedPlate, status: 'active' }).populate(SESSION_POPULATE),
     Subscription.findOne({ licensePlate: normalizedPlate, status: 'active' })
       .populate('planId', 'code name vehicleType durationDays price')
@@ -238,11 +365,25 @@ export const lookup = async (licensePlate) => {
       .sort({ exitTime: -1 })
       .populate('userId', 'fullName phone email')
       .select('userId entryTime exitTime vehicleType fee'),
-    ParkingSlot.countDocuments({ vehicleType: 'car', status: 'empty' }),
+    (async () => {
+      const visitorFloors = await Floor.find({
+        vehicleType: 'car',
+        floorType: 'visitor',
+        isActive: true,
+      }).select('totalSlots');
+      const capacity = visitorFloors.reduce((s, f) => s + f.totalSlots, 0);
+      const used = await ParkingSession.countDocuments({
+        status: 'active',
+        vehicleType: 'car',
+        floorId: { $in: visitorFloors.map((f) => f._id) },
+      });
+      return Math.max(0, capacity - used);
+    })(),
     ParkingRow.aggregate([
       { $match: { status: 'available' } },
       { $group: { _id: null, available: { $sum: { $subtract: ['$capacity', '$occupiedCount'] } } } },
     ]),
+    bookingService.findPaidBookingForCheckIn(normalizedPlate),
   ]);
 
   const availableMotorcycle = motoAgg[0]?.available || 0;
@@ -276,6 +417,16 @@ export const lookup = async (licensePlate) => {
       motorcycle: availableMotorcycle,
       car: availableCar,
     },
+    booking: paidBooking
+      ? {
+          _id: paidBooking._id,
+          expectedArrivalTime: paidBooking.expectedArrivalTime,
+          expectedExitTime: paidBooking.expectedExitTime,
+          durationHours: paidBooking.durationHours,
+          amount: paidBooking.amount,
+          status: paidBooking.status,
+        }
+      : null,
   };
 };
 
@@ -294,11 +445,42 @@ const releaseSpot = async (session) => {
 };
 
 const loadActiveSession = async (id) => {
-  const session = await ParkingSession.findById(id);
+  const session = await ParkingSession.findById(id).select('+qrToken');
   if (!session) throw new AppError('Session not found', 404);
   if (session.status !== 'active')
     throw new AppError(`Session is already ${session.status}`, 400);
   return session;
+};
+
+// Applies to every checkout, resident or walk-in: the QR presented must be
+// byte-identical to the one we recorded as authoritative for this exact
+// visit — residents' permanent subscription QR, or walk-ins' ticket from
+// requestEntryQR — and its encoded plate must match what the gate camera
+// just read.
+const assertExitQRMatches = async (session, qrToken, scannedPlate) => {
+  const { valid, payload, reason } = verifyQRToken(qrToken);
+  if (!valid) throw new AppError(`QR không hợp lệ: ${reason}`, 400);
+
+  if (payload.type === 'subscription_entry') {
+    const sub = session.subscriptionId && await Subscription.findById(session.subscriptionId).select('+qrToken');
+    if (!sub || sub.qrToken !== qrToken) {
+      throw new AppError('QR gói đăng ký không khớp phiên đỗ xe đang check-out.', 400);
+    }
+  } else if (payload.type === 'walkin_ticket') {
+    if (session.qrToken !== qrToken) {
+      throw new AppError('QR không khớp phiên đỗ xe đang check-out.', 400);
+    }
+  } else {
+    throw new AppError('QR không đúng loại để check-out.', 400);
+  }
+
+  const normalizedScanned = scannedPlate.toUpperCase().replace(/\s/g, '');
+  if (payload.plate !== normalizedScanned) {
+    throw new AppError(
+      `Biển số camera (${normalizedScanned}) không khớp biển số QR (${payload.plate}).`,
+      400
+    );
+  }
 };
 
 const HOUR_MS = 60 * 60 * 1000;
@@ -319,49 +501,38 @@ const computeCheckoutFee = async (session, exitTime) => {
   }
 
   if (session.bookingId && session.prepaidHours > 0) {
+    // Recompute the full actual stay with current pricing, then collect only
+    // the difference beyond what was prepaid at booking time (no refund if early).
+    const calc = await pricingService.calculateFee({
+      vehicleType: session.vehicleType,
+      entryTime: session.entryTime,
+      exitTime,
+    });
+    const overtimeFee = Math.max(0, calc.total - session.prepaidAmount);
+    const total = session.prepaidAmount + overtimeFee;
+
     const actualHours = Math.max(
       1,
       Math.ceil((exitTime.getTime() - new Date(session.entryTime).getTime()) / HOUR_MS)
     );
     const overtimeHours = Math.max(0, actualHours - session.prepaidHours);
-    let overtimeFee = 0;
-    let breakdown = {
-      durationMs: exitTime.getTime() - new Date(session.entryTime).getTime(),
-      hours: actualHours,
-      nights: 0,
-      baseFee: session.prepaidAmount,
-      overnightFee: 0,
-      cappedAt: null,
-      turns: 0,
-    };
-
-    if (overtimeHours > 0) {
-      const calc = await pricingService.calculateFee({
-        vehicleType: session.vehicleType,
-        entryTime: new Date(exitTime.getTime() - overtimeHours * HOUR_MS),
-        exitTime,
-      });
-      overtimeFee = calc.total;
-      breakdown = {
-        ...breakdown,
-        baseFee: session.prepaidAmount + calc.breakdown.baseFee,
-        overnightFee: calc.breakdown.overnightFee,
-        cappedAt: calc.breakdown.cappedAt,
-      };
-    }
 
     return {
-      total: session.prepaidAmount + overtimeFee,
+      total,
       toCollect: overtimeFee,
       prepaidAmount: session.prepaidAmount,
       prepaidHours: session.prepaidHours,
       overtimeHours,
       overtimeFee,
-      breakdown,
-      pricing: null,
-      note: overtimeHours > 0
-        ? `Booking prepaid ${session.prepaidHours}h, overtime ${overtimeHours}h. Collect ${overtimeFee}đ.`
-        : `Booking prepaid covers full stay. Free check-out.`,
+      breakdown: {
+        ...calc.breakdown,
+        prepaidAmount: session.prepaidAmount,
+        fullStayFee: calc.total,
+      },
+      pricing: calc.pricing,
+      note: overtimeFee > 0
+        ? `Booking prepaid ${session.prepaidAmount}đ, full stay ${calc.total}đ. Collect overtime ${overtimeFee}đ.`
+        : 'Booking prepaid covers full stay. Free check-out.',
     };
   }
 
@@ -428,8 +599,9 @@ const closeSessionPaid = async (session, { method, exitTime, fee, breakdown, pai
   return updated.populate(SESSION_POPULATE);
 };
 
-export const checkOutCash = async (id, staffId) => {
+export const checkOutCash = async (id, staffId, { qrToken, scannedPlate }) => {
   const session = await loadActiveSession(id);
+  await assertExitQRMatches(session, qrToken, scannedPlate);
   const exitTime = new Date();
   const calc = await computeCheckoutFee(session, exitTime);
 
@@ -443,8 +615,9 @@ export const checkOutCash = async (id, staffId) => {
   });
 };
 
-export const checkOutTransfer = async (id, staffId) => {
+export const checkOutTransfer = async (id, staffId, { qrToken, scannedPlate }) => {
   const session = await loadActiveSession(id);
+  await assertExitQRMatches(session, qrToken, scannedPlate);
   const exitTime = new Date();
   const calc = await computeCheckoutFee(session, exitTime);
 
@@ -546,13 +719,68 @@ export const checkOutTransfer = async (id, staffId) => {
   };
 };
 
+export const getSessionQR = async (id) => {
+  const session = await ParkingSession.findById(id).select('+qrToken');
+  if (!session) throw new AppError('Session not found', 404);
+  if (session.status !== 'active') throw new AppError('QR only available for active sessions', 400);
+
+  let qrToken;
+  if (session.subscriptionId) {
+    const sub = await Subscription.findById(session.subscriptionId).select('+qrToken');
+    qrToken = sub?.qrToken;
+  } else {
+    qrToken = session.qrToken;
+  }
+  if (!qrToken) throw new AppError('QR not found for this session. Contact admin.', 500);
+
+  const qrImage = await QRCode.toDataURL(qrToken, { errorCorrectionLevel: 'M', width: 300, margin: 2 });
+  return { qrToken, qrImage, licensePlate: session.licensePlate, sessionId: session._id };
+};
+
+export const verifyQR = async ({ qrToken, scannedPlate }) => {
+  const plate = scannedPlate.toUpperCase().replace(/\s/g, '');
+
+  const { valid, payload, reason } = verifyQRToken(qrToken);
+  if (!valid) throw new AppError(`QR không hợp lệ: ${reason}`, 400);
+
+  let session;
+  if (payload.type === 'walkin_ticket') {
+    // The walk-in ticket is stored verbatim on the session at check-in —
+    // look the session up by that exact token rather than decoding an id.
+    session = await ParkingSession.findOne({ qrToken, status: 'active' }).populate(SESSION_POPULATE);
+    if (!session) throw new AppError('Không tìm thấy phiên đỗ xe đang active cho vé này', 404);
+  } else if (payload.type === 'subscription_entry') {
+    // Residents reuse their permanent QR — find the active session it
+    // currently belongs to instead of decoding a session id from the token.
+    session = await ParkingSession.findOne({
+      subscriptionId: payload.subId,
+      status: 'active',
+    }).populate(SESSION_POPULATE);
+    if (!session) throw new AppError('Không tìm thấy phiên đỗ xe đang active cho QR gói đăng ký này', 404);
+  } else {
+    throw new AppError('QR không đúng loại để check-out.', 400);
+  }
+
+  const plateMatch = payload.plate === plate;
+
+  const preview = await previewCheckout(session._id);
+  return {
+    session,
+    preview,
+    plateMatch,
+    plateQR: payload.plate,
+    plateCamera: plate,
+    warning: plateMatch ? null : `Biển số camera (${plate}) khác biển số QR (${payload.plate}). Staff cần xác nhận thủ công.`,
+  };
+};
+
 export const activateSessionFromWebhook = async (paymentId) => {
   const payment = await Payment.findById(paymentId);
   if (!payment || payment.targetType !== 'session') return null;
 
   const session = await ParkingSession.findById(payment.sessionId);
   if (!session) {
-    logger.error('Session missing for paid payment', { paymentId });
+    console.error('Session missing for paid payment', { paymentId });
     return null;
   }
   if (session.status !== 'active') {
@@ -568,4 +796,20 @@ export const activateSessionFromWebhook = async (paymentId) => {
     collectorId: session.checkOutStaffId,
   });
   return { closed: true, sessionId: closed._id };
+};
+
+// Active confirmation for a transfer checkout: query PayOS directly so the
+// session closes near-instantly instead of waiting for the webhook.
+export const confirmCheckout = async (id) => {
+  const session = await ParkingSession.findById(id);
+  if (!session) throw new AppError('Session not found', 404);
+
+  if (session.status === 'active' && session.paymentStatus === 'pending') {
+    const payment = await Payment.findOne({ sessionId: id }).sort({ createdAt: -1 });
+    if (!payment) throw new AppError('No payment found for this session', 404);
+    const { confirmPaymentByOrderCode } = await import('./subscription.service.js');
+    await confirmPaymentByOrderCode(payment.orderCode);
+  }
+
+  return ParkingSession.findById(id).populate(SESSION_POPULATE);
 };

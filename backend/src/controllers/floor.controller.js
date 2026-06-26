@@ -1,6 +1,16 @@
 import * as floorService from '../services/floor.service.js';
 import { success } from '../utils/response.js';
 
+export const getOccupancy = async (req, res, next) => {
+  try {
+    const { buildingId, floorNumber } = req.query;
+    const result = await floorService.getOccupancyByFloorNumber(buildingId, floorNumber);
+    success(res, result, 'Floor occupancy retrieved');
+  } catch (err) {
+    next(err);
+  }
+};
+
 export const getAll = async (req, res, next) => {
   try {
     const result = await floorService.getAll(req.query);

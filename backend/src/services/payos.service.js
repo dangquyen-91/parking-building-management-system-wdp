@@ -1,7 +1,6 @@
-import { randomInt } from 'crypto';
+﻿import { randomInt } from 'crypto';
 import payOS from '../config/payos.js';
 import AppError from '../utils/appError.js';
-import logger from '../utils/logger.js';
 
 const PAYMENT_LINK_TTL_SECONDS = 60 * 60;
 
@@ -28,7 +27,7 @@ export const createPaymentLink = async ({ orderCode, amount, description, items,
     });
     return result;
   } catch (err) {
-    logger.error('PayOS createPaymentLink failed', { error: err.message, orderCode });
+    console.error('PayOS createPaymentLink failed', { error: err.message, orderCode });
     throw new AppError(`Cannot create payment link: ${err.message}`, 502);
   }
 };
@@ -37,7 +36,7 @@ export const getPaymentInfo = async (orderCode) => {
   try {
     return await payOS.paymentRequests.get(orderCode);
   } catch (err) {
-    logger.error('PayOS getPaymentInfo failed', { error: err.message, orderCode });
+    console.error('PayOS getPaymentInfo failed', { error: err.message, orderCode });
     throw new AppError(`Cannot fetch payment info: ${err.message}`, 502);
   }
 };
@@ -46,7 +45,7 @@ export const cancelPaymentLink = async (orderCode, reason = 'User cancelled') =>
   try {
     return await payOS.paymentRequests.cancel(orderCode, reason);
   } catch (err) {
-    logger.error('PayOS cancelPaymentLink failed', { error: err.message, orderCode });
+    console.error('PayOS cancelPaymentLink failed', { error: err.message, orderCode });
     throw new AppError(`Cannot cancel payment link: ${err.message}`, 502);
   }
 };
@@ -55,7 +54,7 @@ export const verifyWebhook = async (webhookBody) => {
   try {
     return await payOS.webhooks.verify(webhookBody);
   } catch (err) {
-    logger.error('PayOS webhook verification failed', { error: err.message });
+    console.error('PayOS webhook verification failed', { error: err.message });
     throw new AppError('Invalid webhook signature', 400);
   }
 };
