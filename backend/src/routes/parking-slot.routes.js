@@ -28,7 +28,7 @@ router.get('/:id', authorize('admin', 'manager', 'staff'), getOne);
 router.post('/', authorize('admin', 'manager'), validate(createSlotSchema), create);
 router.post('/bulk', authorize('admin', 'manager'), validate(bulkCreateSchema), bulkCreate);
 
-router.patch('/:id', authorize('admin', 'manager', 'staff'), validate(updateSlotSchema), update);
+router.patch('/:id', authorize('admin', 'manager'), validate(updateSlotSchema), update);
 router.delete('/:id', authorize('admin', 'manager'), remove);
 
 export default router;
