@@ -70,7 +70,7 @@ export function SubscriptionPurchaseFormCard({
           <TextInput
             autoCapitalize="characters"
             onChangeText={onChangeLicensePlate}
-            placeholder="59-AB24872"
+            placeholder="59-A24872"
             placeholderTextColor={placeholder}
             value={licensePlate}
             className="rounded-[14px] border border-border-theme bg-input px-4 py-3.5 font-sans text-base text-fg"
@@ -159,7 +159,7 @@ export function SubscriptionPurchaseFormCard({
                     </Text>
                     {selectedCarSlot ? (
                       <Text className="font-sans text-sm text-subtle">
-                        {`Tầng B${selectedCarSlot.floor.floorNumber} - ${
+                        {`Tầng ${selectedCarSlot.floor.floorNumber} - ${
                           selectedCarSlot.floor.building?.name ??
                           selectedCarSlot.floor.building?.address ??
                           "Khu cư dân"
@@ -209,7 +209,6 @@ export function SubscriptionPurchaseFormCard({
             {motorcycleAvailability ? (
               <Text className="font-sans text-sm leading-5 text-subtle">
                 Đã bán {motorcycleAvailability.soldCount}/{motorcycleAvailability.totalCapacity}.
-                {motorcycleAvailability.note ? ` ${motorcycleAvailability.note}` : ""}
               </Text>
             ) : null}
           </GlassCard>

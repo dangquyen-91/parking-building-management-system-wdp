@@ -4,16 +4,12 @@ import { formatMoney, formatSubscriptionStatus } from "@/utils/format";
 import { Pressable, Text, View } from "@/tw";
 
 type SubscriptionPaymentCardProps = {
-  confirmPending: boolean;
   onOpenPayment: (url: string) => void;
-  onSyncStatus: () => void;
   purchaseResult: PurchaseSubscriptionResult;
 };
 
 export function SubscriptionPaymentCard({
-  confirmPending,
   onOpenPayment,
-  onSyncStatus,
   purchaseResult,
 }: SubscriptionPaymentCardProps) {
   return (

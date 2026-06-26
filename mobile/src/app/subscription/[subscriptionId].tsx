@@ -187,7 +187,7 @@ export default function SubscriptionDetailsScreen() {
                 </View>
                 <Text className="font-sans text-sm text-subtle">
                   {selectedSubscription.slotId?.floorId?.floorNumber
-                    ? `Tầng B${selectedSubscription.slotId.floorId.floorNumber}`
+                    ? `Tầng ${selectedSubscription.slotId.floorId.floorNumber}`
                     : "Gói này hiện chưa bao gồm chỗ đỗ cố định."}
                 </Text>
               </GlassCard>
