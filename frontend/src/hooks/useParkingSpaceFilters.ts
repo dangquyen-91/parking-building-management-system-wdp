@@ -38,8 +38,13 @@ function compareRowCodes(a: ParkingRow, b: ParkingRow) {
 }
 
 function compareFloors(a: Floor, b: Floor) {
-  return (a.floorNumber ?? 0) - (b.floorNumber ?? 0)
-    || getFloorSection(a.section).localeCompare(getFloorSection(b.section), undefined, { numeric: true, sensitivity: 'base' })
+  return (
+    (a.floorNumber ?? 0) - (b.floorNumber ?? 0) ||
+    getFloorSection(a.section).localeCompare(getFloorSection(b.section), undefined, {
+      numeric: true,
+      sensitivity: 'base',
+    })
+  )
 }
 
 function groupSlotsByFloor(slots: ParkingSlot[]) {
@@ -84,66 +89,71 @@ export function useParkingSpaceFilters({
   buildings: Building[]
 }) {
   const [buildingFilter, setBuildingFilter] = useState('all')
-  const [floorFilter, setFloorFilter] = useState('all')
+  const [floorNumberFilter, setFloorNumberFilter] = useState('all')
+  const [sectionFilter, setSectionFilter] = useState('all')
 
-  const floorMap = useMemo(() => new Map(floors.map((floor) => [floor._id, floor])), [floors])
   const buildingMap = useMemo(() => new Map(buildings.map((building) => [building._id, building])), [buildings])
+
+  const filteredFloorOptions = useMemo(() => {
+    return floors
+      .filter((floor) => {
+        const buildingId = getFloorBuildingId(floor)
+        if (buildingFilter !== 'all' && buildingId !== buildingFilter) return false
+        return true
+      })
+      .sort(compareFloors)
+  }, [floors, buildingFilter])
+
+  const floorNumberOptions = useMemo(() => {
+    return Array.from(new Set(filteredFloorOptions.map((floor) => floor.floorNumber)))
+      .filter((floorNumber): floorNumber is number => typeof floorNumber === 'number')
+      .sort((a, b) => a - b)
+  }, [filteredFloorOptions])
+
+  const sectionOptions = useMemo(() => {
+    return filteredFloorOptions
+      .filter((floor) => floorNumberFilter === 'all' || String(floor.floorNumber) === floorNumberFilter)
+      .sort(compareFloors)
+  }, [filteredFloorOptions, floorNumberFilter])
+
+  const selectedFloorIds = useMemo(() => {
+    return new Set(
+      filteredFloorOptions
+        .filter((floor) => {
+          if (floorNumberFilter !== 'all' && String(floor.floorNumber) !== floorNumberFilter) return false
+          if (sectionFilter !== 'all' && floor._id !== sectionFilter) return false
+          return true
+        })
+        .map((floor) => floor._id),
+    )
+  }, [filteredFloorOptions, floorNumberFilter, sectionFilter])
 
   const filteredSlots = useMemo(() => {
     return slots.filter((slot) => {
       const floorId = getSlotFloorId(slot)
-      const buildingId = getFloorBuildingId(floorId ? floorMap.get(floorId) : undefined)
-
-      if (buildingFilter !== 'all' && buildingId !== buildingFilter) return false
-      if (floorFilter !== 'all' && floorId !== floorFilter) return false
-
-      return true
+      if (!floorId) return false
+      return selectedFloorIds.has(floorId)
     })
-  }, [slots, floorMap, buildingFilter, floorFilter])
+  }, [slots, selectedFloorIds])
 
   const filteredRows = useMemo(() => {
     return rows.filter((row) => {
       const floorId = getRowFloorId(row)
-      const buildingId = getFloorBuildingId(floorId ? floorMap.get(floorId) : undefined)
-
-      if (buildingFilter !== 'all' && buildingId !== buildingFilter) return false
-      if (floorFilter !== 'all' && floorId !== floorFilter) return false
-
-      return true
+      if (!floorId) return false
+      return selectedFloorIds.has(floorId)
     })
-  }, [rows, floorMap, buildingFilter, floorFilter])
+  }, [rows, selectedFloorIds])
 
   const slotsByFloor = useMemo(() => groupSlotsByFloor(filteredSlots), [filteredSlots])
   const rowsByFloor = useMemo(() => groupRowsByFloor(filteredRows), [filteredRows])
 
   const visibleSlotFloors = useMemo(() => {
-    return floors
-      .filter((floor) => {
-        const buildingId = getFloorBuildingId(floor)
-        if (buildingFilter !== 'all' && buildingId !== buildingFilter) return false
-        if (floorFilter !== 'all' && floor._id !== floorFilter) return false
-        return slotsByFloor.has(floor._id)
-      })
-      .sort(compareFloors)
-  }, [floors, buildingFilter, floorFilter, slotsByFloor])
+    return filteredFloorOptions.filter((floor) => selectedFloorIds.has(floor._id) && slotsByFloor.has(floor._id)).sort(compareFloors)
+  }, [filteredFloorOptions, selectedFloorIds, slotsByFloor])
 
   const visibleRowFloors = useMemo(() => {
-    return floors
-      .filter((floor) => {
-        const buildingId = getFloorBuildingId(floor)
-        if (buildingFilter !== 'all' && buildingId !== buildingFilter) return false
-        if (floorFilter !== 'all' && floor._id !== floorFilter) return false
-        return rowsByFloor.has(floor._id)
-      })
-      .sort(compareFloors)
-  }, [floors, buildingFilter, floorFilter, rowsByFloor])
-
-  const filteredFloorOptions = useMemo(() => {
-    return floors.filter((floor) => {
-      if (buildingFilter === 'all') return true
-      return getFloorBuildingId(floor) === buildingFilter
-    })
-  }, [floors, buildingFilter])
+    return filteredFloorOptions.filter((floor) => selectedFloorIds.has(floor._id) && rowsByFloor.has(floor._id)).sort(compareFloors)
+  }, [filteredFloorOptions, selectedFloorIds, rowsByFloor])
 
   const stats = useMemo<ParkingSpaceStats>(() => {
     return {
@@ -158,14 +168,24 @@ export function useParkingSpaceFilters({
 
   function handleBuildingFilterChange(value: string) {
     setBuildingFilter(value)
-    setFloorFilter('all')
+    setFloorNumberFilter('all')
+    setSectionFilter('all')
+  }
+
+  function handleFloorNumberFilterChange(value: string) {
+    setFloorNumberFilter(value)
+    setSectionFilter('all')
   }
 
   return {
     buildingFilter,
-    floorFilter,
-    setFloorFilter,
+    floorFilter: sectionFilter,
+    floorNumberFilter,
+    sectionFilter,
     setBuildingFilter: handleBuildingFilterChange,
+    setFloorFilter: setSectionFilter,
+    setFloorNumberFilter: handleFloorNumberFilterChange,
+    setSectionFilter,
     filteredSlots,
     filteredRows,
     slotsByFloor,
@@ -173,6 +193,8 @@ export function useParkingSpaceFilters({
     visibleSlotFloors,
     visibleRowFloors,
     filteredFloorOptions,
+    floorNumberOptions,
+    sectionOptions,
     buildingMap,
     stats,
   }
