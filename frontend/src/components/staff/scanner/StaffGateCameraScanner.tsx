@@ -7,8 +7,9 @@ type StaffGateCameraScannerProps = {
   onUsePlate: (plate: string) => void
 }
 
-const PLATE_CROP_WIDTH_RATIO = 0.62
-const PLATE_CROP_HEIGHT_RATIO = 0.38
+const PLATE_CROP_WIDTH_RATIO = 0.82
+const PLATE_CROP_HEIGHT_RATIO = 0.46
+const PLATE_CROP_OFFSETS = [-0.12, 0, 0.12]
 
 type OcrCandidate = {
   plate: string
@@ -63,6 +64,21 @@ function formatRecognizedPlate(value: string) {
   return plate
 }
 
+function getPlateCandidateValues(value: string) {
+  const compact = value.toUpperCase().replace(/[^A-Z0-9]/g, '')
+  const candidates = new Set<string>()
+
+  if (compact) candidates.add(compact)
+
+  for (let length = 9; length >= 6; length -= 1) {
+    for (let index = 0; index + length <= compact.length; index += 1) {
+      candidates.add(compact.slice(index, index + length))
+    }
+  }
+
+  return [...candidates]
+}
+
 function scoreCandidate(value: string, confidence: number): OcrCandidate {
   const plate = correctPlateCharacters(value)
   const isCarPlate = /^\d{2}[A-Z]\d{5}$/.test(plate)
@@ -84,11 +100,13 @@ function scoreCandidate(value: string, confidence: number): OcrCandidate {
 function createPlateCrops(video: HTMLVideoElement) {
   const sourceWidth = video.videoWidth * PLATE_CROP_WIDTH_RATIO
   const sourceHeight = video.videoHeight * PLATE_CROP_HEIGHT_RATIO
-  const sourceX = (video.videoWidth - sourceWidth) / 2
   const sourceY = (video.videoHeight - sourceHeight) / 2
   const scale = Math.max(1, 1200 / sourceWidth)
 
-  function createCrop(mode: 'color' | 'grey' | 'binary') {
+  function createCrop(mode: 'color' | 'grey' | 'binary', offsetRatio: number) {
+    const centeredX = (video.videoWidth - sourceWidth) / 2
+    const shiftedX = centeredX + video.videoWidth * offsetRatio
+    const sourceX = Math.max(0, Math.min(video.videoWidth - sourceWidth, shiftedX))
     const canvas = document.createElement('canvas')
     canvas.width = Math.round(sourceWidth * scale)
     canvas.height = Math.round(sourceHeight * scale)
@@ -131,7 +149,11 @@ function createPlateCrops(video: HTMLVideoElement) {
     return canvas
   }
 
-  return [createCrop('color'), createCrop('grey'), createCrop('binary')]
+  return PLATE_CROP_OFFSETS.flatMap((offsetRatio) => [
+    createCrop('color', offsetRatio),
+    createCrop('grey', offsetRatio),
+    createCrop('binary', offsetRatio),
+  ])
 }
 
 export function StaffGateCameraScanner({ gate, onUsePlate }: StaffGateCameraScannerProps) {
@@ -232,7 +254,9 @@ export function StaffGateCameraScanner({ gate, onUsePlate }: StaffGateCameraScan
 
       for (const plateCrop of plateCrops) {
         const { data } = await worker.recognize(plateCrop)
-        candidates.push(scoreCandidate(data.text, data.confidence))
+        for (const candidateValue of getPlateCandidateValues(data.text)) {
+          candidates.push(scoreCandidate(candidateValue, data.confidence))
+        }
       }
 
       const bestCandidate = candidates.sort((first, second) => second.score - first.score)[0]
@@ -272,70 +296,59 @@ export function StaffGateCameraScanner({ gate, onUsePlate }: StaffGateCameraScan
         </span>
       </div>
 
-      <div className="grid lg:grid-cols-[minmax(0,1fr)_18rem]">
-        <div className="relative flex min-h-64 items-center justify-center overflow-hidden bg-gradient-to-br from-zinc-800 via-zinc-950 to-black">
-          <video ref={videoRef} muted playsInline className={`absolute inset-0 h-full w-full object-cover ${cameraActive ? 'block' : 'hidden'}`} />
-          {snapshotUrl && !cameraActive && <img src={snapshotUrl} alt="Ảnh phương tiện vừa chụp" className="absolute inset-0 h-full w-full object-cover" />}
-          {!cameraActive && !snapshotUrl && <p className="text-xs font-semibold uppercase tracking-[0.14em] text-white/40">Mở camera để chụp biển số</p>}
+      <div className="relative flex min-h-64 items-center justify-center overflow-hidden bg-gradient-to-br from-zinc-800 via-zinc-950 to-black">
+        <video ref={videoRef} muted playsInline className={`absolute inset-0 h-full w-full object-cover ${cameraActive ? 'block' : 'hidden'}`} />
+        {snapshotUrl && !cameraActive && <img src={snapshotUrl} alt="Ảnh phương tiện vừa chụp" className="absolute inset-0 h-full w-full object-cover" />}
+        {!cameraActive && !snapshotUrl && <p className="text-xs font-semibold uppercase tracking-[0.14em] text-white/40">Mở camera để chụp biển số</p>}
 
-          {(cameraActive || snapshotUrl) && (
-            <div className="pointer-events-none absolute left-1/2 top-1/2 h-[38%] w-[62%] -translate-x-1/2 -translate-y-1/2 rounded-lg border-2 border-dashed border-sky-300/80">
-              <span className="absolute -left-0.5 -top-0.5 size-5 border-l-2 border-t-2 border-sky-300" />
-              <span className="absolute -right-0.5 -top-0.5 size-5 border-r-2 border-t-2 border-sky-300" />
-              <span className="absolute -bottom-0.5 -left-0.5 size-5 border-b-2 border-l-2 border-sky-300" />
-              <span className="absolute -bottom-0.5 -right-0.5 size-5 border-b-2 border-r-2 border-sky-300" />
+        {(cameraActive || snapshotUrl) && (
+          <div className="pointer-events-none absolute left-1/2 top-1/2 h-[46%] w-[82%] -translate-x-1/2 -translate-y-1/2 rounded-lg border-2 border-dashed border-sky-300/80">
+            <span className="absolute -left-0.5 -top-0.5 size-5 border-l-2 border-t-2 border-sky-300" />
+            <span className="absolute -right-0.5 -top-0.5 size-5 border-r-2 border-t-2 border-sky-300" />
+            <span className="absolute -bottom-0.5 -left-0.5 size-5 border-b-2 border-l-2 border-sky-300" />
+            <span className="absolute -bottom-0.5 -right-0.5 size-5 border-b-2 border-r-2 border-sky-300" />
+          </div>
+        )}
+      </div>
+
+      <div className="grid gap-3 border-t border-white/10 bg-white/5 p-4 md:grid-cols-[minmax(0,1fr)_auto_auto] md:items-center">
+        <div>
+          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/40">Biển số camera đọc được</p>
+          <p className={`mt-1 text-lg font-black uppercase tracking-[0.08em] ${plateInput ? 'text-white' : 'text-white/30'}`}>
+            {plateInput || 'Chưa có biển số'}
+          </p>
+          {isRecognizing ? (
+            <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-white/10">
+              <div className="h-full rounded-full bg-sky-400 transition-all" style={{ width: `${ocrProgress}%` }} />
             </div>
+          ) : ocrConfidence !== undefined ? (
+            <p className={`mt-1 text-[10px] ${ocrConfidence >= 70 ? 'text-emerald-300' : 'text-amber-300'}`}>
+              Độ tin cậy OCR: {ocrConfidence}%. Nếu sai, sửa ở ô tra cứu bên dưới.
+            </p>
+          ) : (
+            <p className="mt-1 text-[10px] text-white/45">Kết quả sẽ được đưa vào ô tra cứu chính, không check-in/out trực tiếp.</p>
           )}
+          {error && <p className="mt-2 text-xs text-rose-300">{error}</p>}
         </div>
 
-        <div className="flex flex-col justify-between border-t border-white/10 bg-white/5 p-4 lg:border-l lg:border-t-0">
-          <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/40">Xác nhận biển số</p>
-            <input
-              value={plateInput}
-              onChange={(event) => setPlateInput(event.target.value)}
-              placeholder="VD: 59A-482.16"
-              className="mt-3 h-12 w-full rounded-xl border border-white/15 bg-white/10 px-3 text-sm font-black uppercase tracking-[0.08em] text-white outline-none placeholder:text-white/25"
-            />
-            {isRecognizing ? (
-              <div className="mt-3">
-                <div className="h-1.5 overflow-hidden rounded-full bg-white/10">
-                  <div className="h-full rounded-full bg-sky-400 transition-all" style={{ width: `${ocrProgress}%` }} />
-                </div>
-                <p className="mt-2 text-[10px] text-sky-200">Đang đọc vùng biển số, vui lòng chờ...</p>
-              </div>
-            ) : ocrConfidence !== undefined ? (
-              <p className={`mt-2 text-[10px] ${ocrConfidence >= 70 ? 'text-emerald-300' : 'text-amber-300'}`}>
-                Độ tin cậy OCR: {ocrConfidence}%. Staff cần kiểm tra lại trước khi xác nhận.
-              </p>
-            ) : (
-              <p className="mt-2 text-[10px] leading-relaxed text-white/40">
-                Đặt biển số nằm gọn trong khung nét đứt. Kết quả OCR có thể chỉnh sửa thủ công.
-              </p>
-            )}
-            {error && <p className="mt-3 text-xs text-rose-300">{error}</p>}
-          </div>
+        {!cameraActive ? (
+          <button type="button" onClick={() => void startCamera()} disabled={isRecognizing} className="h-11 rounded-xl border border-white/15 bg-white/10 px-5 text-xs font-bold text-white hover:bg-white/15 disabled:cursor-not-allowed disabled:opacity-40">
+            {snapshotUrl ? 'Chụp lại ảnh' : 'Mở camera'}
+          </button>
+        ) : (
+          <button type="button" onClick={() => void captureAndRecognize()} className="h-11 rounded-xl border border-white/15 bg-white/10 px-5 text-xs font-bold text-white hover:bg-white/15">
+            Chụp và nhận diện
+          </button>
+        )}
 
-          <div className="mt-5 grid gap-2">
-            {!cameraActive ? (
-              <button type="button" onClick={() => void startCamera()} disabled={isRecognizing} className="h-10 rounded-xl border border-white/15 bg-white/10 px-3 text-xs font-bold text-white hover:bg-white/15 disabled:cursor-not-allowed disabled:opacity-40">
-                {snapshotUrl ? 'Chụp lại ảnh' : 'Mở camera'}
-              </button>
-            ) : (
-              <button type="button" onClick={() => void captureAndRecognize()} className="h-10 rounded-xl border border-white/15 bg-white/10 px-3 text-xs font-bold text-white hover:bg-white/15">
-                Chụp và nhận diện biển số
-              </button>
-            )}
-            <button
-              type="button"
-              onClick={handleUsePlate}
-              disabled={normalizedPlate.length < 4 || isRecognizing}
-              className={`h-10 rounded-xl px-3 text-xs font-bold text-white disabled:cursor-not-allowed disabled:opacity-40 ${isEntry ? 'bg-emerald-600 hover:bg-emerald-500' : 'bg-amber-600 hover:bg-amber-500'}`}
-            >
-              Dùng biển số đã xác nhận →
-            </button>
-          </div>
-        </div>
+        <button
+          type="button"
+          onClick={handleUsePlate}
+          disabled={normalizedPlate.length < 4 || isRecognizing}
+          className={`h-11 rounded-xl px-5 text-xs font-bold text-white disabled:cursor-not-allowed disabled:opacity-40 ${isEntry ? 'bg-emerald-600 hover:bg-emerald-500' : 'bg-amber-600 hover:bg-amber-500'}`}
+        >
+          Đưa vào ô tra cứu →
+        </button>
       </div>
     </section>
   )

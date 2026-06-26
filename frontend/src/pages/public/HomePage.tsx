@@ -19,7 +19,7 @@ export function HomePage() {
   }
 
   if (authUser?.role === 'staff') {
-    return <Navigate to="/staff" replace />
+    return <Navigate to="/staff/check-in" replace />
   }
 
   if (authUser?.role === 'admin') {

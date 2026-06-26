@@ -26,7 +26,8 @@ import { ManagerSlotsPage } from '../pages/manager/ManagerSlotsPage'
 import { ManagerStaffPage } from '../pages/manager/ManagerStaffPage'
 import { ManagerSubscriptionsPage } from '../pages/manager/ManagerSubscriptionsPage'
 import { HomePage } from '../pages/public/HomePage'
-import { StaffGatePage } from '../pages/staff/StaffGatePage'
+import { StaffCheckInPage } from '../pages/staff/StaffCheckInPage'
+import { StaffCheckOutPage } from '../pages/staff/StaffCheckOutPage'
 import { StaffIncidentsPage } from '../pages/staff/StaffIncidentsPage'
 import { StaffLostTicketPage } from '../pages/staff/StaffLostTicketPage'
 import { StaffShiftPage } from '../pages/staff/StaffShiftPage'
@@ -74,14 +75,16 @@ export const AppRoutes = () => {
       <Route path="/user-management" element={<Navigate to="/admin/users" replace />} />
       <Route element={<ProtectedRoute allowedRoles={['staff']} />}>
         <Route element={<StaffLayout />}>
-          <Route path="/staff" element={<StaffGatePage />} />
+          <Route path="/staff" element={<Navigate to="/staff/check-in" replace />} />
+          <Route path="/staff/check-in" element={<StaffCheckInPage />} />
+          <Route path="/staff/check-out" element={<StaffCheckOutPage />} />
           <Route path="/staff/vehicles" element={<StaffVehiclesPage />} />
           <Route path="/staff/lost-ticket" element={<StaffLostTicketPage />} />
           <Route path="/staff/incidents" element={<StaffIncidentsPage />} />
           <Route path="/staff/shift" element={<StaffShiftPage />} />
         </Route>
       </Route>
-      <Route path="/staff-gate" element={<Navigate to="/staff" replace />} />
+      <Route path="/staff-gate" element={<Navigate to="/staff/check-in" replace />} />
       <Route element={<ProtectedRoute allowedRoles={['manager']} />}>
         <Route element={<ManagerLayout />}>
           <Route path="/manager" element={<ManagerDashboardPage />} />
