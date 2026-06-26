@@ -10,10 +10,15 @@ import {
 } from '../services/userSubscriptionApi'
 import { normalizePlate } from '../utils/subscriptionUi'
 
-export function useResidentSubscription() {
-  const [vehicleType, setVehicleType] = useState<VehicleType>('motorcycle')
+type UseResidentSubscriptionOptions = {
+  initialVehicleType?: VehicleType
+  initialPlanId?: string
+}
+
+export function useResidentSubscription(options: UseResidentSubscriptionOptions = {}) {
+  const [vehicleType, setVehicleType] = useState<VehicleType>(options.initialVehicleType ?? 'motorcycle')
   const [plans, setPlans] = useState<Plan[]>([])
-  const [selectedPlanId, setSelectedPlanId] = useState('')
+  const [selectedPlanId, setSelectedPlanId] = useState(options.initialPlanId ?? '')
   const [licensePlate, setLicensePlate] = useState('')
   const [selectedSlotId, setSelectedSlotId] = useState('')
   const [availableData, setAvailableData] = useState<AvailableCarSubscriptions | AvailableMotorcycleSubscriptions | null>(null)
