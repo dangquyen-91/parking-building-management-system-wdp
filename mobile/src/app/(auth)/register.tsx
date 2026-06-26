@@ -7,11 +7,20 @@ import { KeyboardAvoidingView, Platform } from "react-native";
 import { useRegisterMutation } from "@/hooks/useAuth";
 import { registerPayloadSchema } from "@/schema";
 import { getFieldErrors } from "@/utils/validation";
-import { Link, Pressable, ScrollView, Text, TextInput, View } from "../../tw";
+import {
+  Link,
+  Pressable,
+  ScrollView,
+  Text,
+  TextInput,
+  View,
+  useThemeColors,
+} from "../../tw";
 
 type RegisterField = "fullName" | "email" | "phone" | "password";
 
 export default function Register() {
+  const { iconMuted, iconPrimary, placeholder } = useThemeColors();
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -67,7 +76,7 @@ export default function Register() {
           <View className="flex-row items-center justify-between">
             <Link href="/(tabs)/home" asChild>
               <Pressable className="h-11 w-11 items-center justify-center rounded-full border border-border-theme bg-badge">
-                <Ionicons name="chevron-back" color="#ffffff" size={22} />
+                <Ionicons name="chevron-back" color={iconPrimary} size={22} />
               </Pressable>
             </Link>
 
@@ -104,7 +113,7 @@ export default function Register() {
                   setErrors((current) => ({ ...current, fullName: undefined }));
                 }}
                 placeholder="Lam Hoang"
-                placeholderTextColor="#6b7280"
+                placeholderTextColor={placeholder}
                 value={fullName}
                 className="rounded-[16px] border border-border-theme bg-input py-4 pl-5 pr-4 font-sans text-base text-fg"
               />
@@ -127,7 +136,7 @@ export default function Register() {
                   setErrors((current) => ({ ...current, email: undefined }));
                 }}
                 placeholder="customer@example.com"
-                placeholderTextColor="#6b7280"
+                placeholderTextColor={placeholder}
                 value={email}
                 className="rounded-[16px] border border-border-theme bg-input py-4 pl-5 pr-4 font-sans text-base text-fg"
               />
@@ -149,7 +158,7 @@ export default function Register() {
                   setErrors((current) => ({ ...current, phone: undefined }));
                 }}
                 placeholder="090 000 0000"
-                placeholderTextColor="#6b7280"
+                placeholderTextColor={placeholder}
                 value={phone}
                 className="rounded-[16px] border border-border-theme bg-input py-4 pl-5 pr-4 font-sans text-base text-fg"
               />
@@ -171,7 +180,7 @@ export default function Register() {
                     setErrors((current) => ({ ...current, password: undefined }));
                   }}
                   placeholder="Create password"
-                  placeholderTextColor="#6b7280"
+                  placeholderTextColor={placeholder}
                   secureTextEntry={!showPassword}
                   value={password}
                   className="min-h-[56px] flex-1 py-4 pl-5 pr-2 font-sans text-base text-fg"
@@ -182,7 +191,7 @@ export default function Register() {
                 >
                   <Ionicons
                     name={showPassword ? "eye-off-outline" : "eye-outline"}
-                    color="#d1d5db"
+                    color={iconMuted}
                     size={21}
                   />
                 </Pressable>

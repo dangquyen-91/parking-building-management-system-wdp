@@ -1,10 +1,13 @@
 import Ionicons from "react-native-vector-icons/Ionicons";
+import { useRouter } from "expo-router";
 import { toast } from "sonner-native";
 
 import { GlassCard, Label, Page } from "../../components/parking-ui";
+import { ThemeToggle } from "../../components/theme-toggle";
 import { useCurrentUserQuery, useLogoutMutation } from "../../hooks/useAuth";
+import { useMySubscriptionsQuery } from "../../hooks/useSubscriptions";
 import { formatRole } from "@/utils/format";
-import { Link, Pressable, ScrollView, Text, View } from "../../tw";
+import { Link, Pressable, ScrollView, Text, View, useThemeColors } from "../../tw";
 
 const getInitials = (name?: string) => {
   if (!name?.trim()) {
@@ -21,13 +24,14 @@ const getInitials = (name?: string) => {
 };
 
 export default function Profile() {
+  const router = useRouter();
+  const { iconPrimary } = useThemeColors();
   const {
     data: currentUser,
     error,
-    isFetching,
     isLoading,
-    refetch,
   } = useCurrentUserQuery();
+  const mySubscriptionsQuery = useMySubscriptionsQuery(Boolean(currentUser));
   const logoutMutation = useLogoutMutation();
 
   const profileItems = currentUser
@@ -53,12 +57,23 @@ export default function Profile() {
     }
   };
 
-  const handleRefresh = async () => {
-    const result = await refetch();
+  const handleOpenMySubscription = () => {
+    const subscriptions = mySubscriptionsQuery.data?.subscriptions ?? [];
+    const selectedSubscription =
+      subscriptions.find((subscription) => subscription.status === "active") ??
+      subscriptions[0];
 
-    if (result.isSuccess) {
-      toast.success("Profile refreshed");
+    if (!selectedSubscription) {
+      router.push("/(tabs)/subscription");
+      return;
     }
+
+    router.push({
+      pathname: "/subscription/[subscriptionId]",
+      params: {
+        subscriptionId: selectedSubscription._id,
+      },
+    });
   };
 
   return (
@@ -74,7 +89,7 @@ export default function Profile() {
         {isLoading ? (
           <GlassCard className="items-center gap-3">
             <View className="h-[72px] w-[72px] items-center justify-center rounded-full bg-badge">
-              <Ionicons name="person" color="#ffffff" size={30} />
+              <Ionicons name="person" color={iconPrimary} size={30} />
             </View>
             <Text className="font-sans text-base font-extrabold text-fg">
               Loading profile...
@@ -116,6 +131,21 @@ export default function Profile() {
               ))}
             </GlassCard>
 
+            <Pressable
+              className="flex-row items-center justify-between rounded-[28px] border border-border-strong bg-badge px-5 py-4"
+              onPress={handleOpenMySubscription}
+            >
+              <View className="gap-1">
+                <Label>Subscriptions</Label>
+                <Text className="font-sans text-base font-extrabold text-fg">
+                  View my subscriptions
+                </Text>
+              </View>
+              <Ionicons name="chevron-forward" color={iconPrimary} size={20} />
+            </Pressable>
+
+            <ThemeToggle />
+
             <View className="gap-3">
               <Pressable
                 className="items-center rounded-full bg-btn-primary py-4"
@@ -131,7 +161,7 @@ export default function Profile() {
         ) : (
           <GlassCard className="gap-4">
             <View className="h-12 w-12 items-center justify-center rounded-full bg-badge">
-              <Ionicons name="lock-closed" color="#ffffff" size={22} />
+              <Ionicons name="lock-closed" color={iconPrimary} size={22} />
             </View>
             <View className="gap-1">
               <Text className="font-sans text-xl font-extrabold text-fg">
@@ -148,12 +178,12 @@ export default function Profile() {
                 </Text>
               </Pressable>
             </Link>
+            <ThemeToggle />
           </GlassCard>
         )}
 
         {error ? (
           <GlassCard className="gap-2 border border-border-strong">
-            <Label>Sync issue</Label>
             <Text className="font-sans text-sm leading-5 text-subtle">
               {error instanceof Error ? error.message : "Cannot load profile."}
             </Text>

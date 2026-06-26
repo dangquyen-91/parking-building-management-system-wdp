@@ -2,23 +2,23 @@ import {
   RefreshControl as NativeRefreshControl,
   type RefreshControlProps,
 } from "react-native";
-
-const DEFAULT_INDICATOR_COLOR = "#ffffff";
-const DEFAULT_TRACK_COLOR = "rgba(255, 255, 255, 0.08)";
+import { useThemeColors } from "@/tw";
 
 export type AppRefreshControlProps = RefreshControlProps;
 
 export function AppRefreshControl({
-  colors = [DEFAULT_INDICATOR_COLOR],
-  progressBackgroundColor = DEFAULT_TRACK_COLOR,
-  tintColor = DEFAULT_INDICATOR_COLOR,
+  colors,
+  progressBackgroundColor,
+  tintColor,
   ...props
 }: AppRefreshControlProps) {
+  const { fg } = useThemeColors();
+
   return (
     <NativeRefreshControl
-      colors={colors}
-      progressBackgroundColor={progressBackgroundColor}
-      tintColor={tintColor}
+      colors={colors ?? [fg]}
+      progressBackgroundColor={progressBackgroundColor ?? "rgba(31, 107, 98, 0.12)"}
+      tintColor={tintColor ?? fg}
       {...props}
     />
   );

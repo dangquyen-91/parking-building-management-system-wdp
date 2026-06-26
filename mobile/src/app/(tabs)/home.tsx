@@ -7,7 +7,7 @@ import { useMyBookingsQuery } from "../../hooks/useBookings";
 import { useCurrentUserQuery, useLogoutMutation } from "../../hooks/useAuth";
 import type { Booking, StoredGuestBooking } from "../../types/bookings";
 import { formatDateTime, formatMoney } from "@/utils/format";
-import { Link, Pressable, ScrollView, Text, View } from "../../tw";
+import { Link, Pressable, ScrollView, Text, View, useThemeColors } from "../../tw";
 
 const features = [
   {
@@ -48,6 +48,7 @@ const getStoredPaymentUrl = (booking: Booking | StoredGuestBooking) =>
   (booking as StoredGuestBooking).payment?.checkoutUrl;
 
 export default function Home() {
+  const { btnPrimaryFg, iconPrimary } = useThemeColors();
   const { data: currentUser } = useCurrentUserQuery();
   const myBookingsQuery = useMyBookingsQuery(Boolean(currentUser));
   const logoutMutation = useLogoutMutation();
@@ -87,7 +88,7 @@ export default function Home() {
           <View className="gap-3">
             <View className="flex-row items-center justify-between gap-3">
               <View className="h-12 w-12 items-center justify-center rounded-2xl bg-btn-primary">
-                <Ionicons name="business" color="#000000" size={24} />
+                <Ionicons name="business" color={btnPrimaryFg} size={24} />
               </View>
 
               {currentUser ? (
@@ -105,7 +106,7 @@ export default function Home() {
                     disabled={logoutMutation.isPending}
                     onPress={handleLogout}
                   >
-                    <Ionicons name="log-out-outline" color="#ffffff" size={20} />
+                    <Ionicons name="log-out-outline" color={iconPrimary} size={20} />
                   </Pressable>
                 </View>
               ) : (
@@ -226,7 +227,7 @@ export default function Home() {
           {!isBookingsLoading && homeBookings.length === 0 ? (
             <GlassCard className="gap-3">
               <View className="h-11 w-11 items-center justify-center rounded-[14px] bg-badge">
-                <Ionicons name="calendar-outline" color="#ffffff" size={22} />
+                <Ionicons name="calendar-outline" color={iconPrimary} size={22} />
               </View>
               <View className="gap-1">
                 <Text className="font-sans text-base font-extrabold text-fg">
@@ -258,7 +259,7 @@ export default function Home() {
           {features.map((feature) => (
             <GlassCard key={feature.title} className="flex-row gap-4">
               <View className="h-11 w-11 items-center justify-center rounded-[14px] bg-btn-primary">
-                <Ionicons name={feature.icon} color="#000000" size={22} />
+                <Ionicons name={feature.icon} color={btnPrimaryFg} size={22} />
               </View>
               <View className="flex-1 gap-1">
                 <Text className="font-sans text-base font-extrabold text-fg">

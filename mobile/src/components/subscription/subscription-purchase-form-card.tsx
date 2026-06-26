@@ -5,7 +5,7 @@ import type {
   Plan,
 } from "@/types/subscriptions";
 import { formatMoney, formatVehicleType } from "@/utils/format";
-import { Pressable, ScrollView, Text, TextInput, View } from "@/tw";
+import { Pressable, Text, TextInput, View, useThemeColors } from "@/tw";
 import Ionicons from "react-native-vector-icons/Ionicons";
 
 type AvailableCarSlot = {
@@ -19,8 +19,8 @@ type SubscriptionPurchaseFormCardProps = {
   licensePlate: string;
   motorcycleAvailability?: MotorcycleSubscriptionAvailabilityResult;
   onChangeLicensePlate: (value: string) => void;
+  onOpenSlotPicker: () => void;
   onSelectPlan: (planId: string) => void;
-  onSelectSlot: (slotId: string) => void;
   plans: Plan[];
   plansLoading: boolean;
   selectedPlan: Plan | null;
@@ -28,25 +28,33 @@ type SubscriptionPurchaseFormCardProps = {
   selectedSlotId: string | null;
 };
 
+const findSelectedCarSlot = (
+  availableCarSlots: AvailableCarSlot[],
+  selectedSlotId: string | null,
+) => availableCarSlots.find(({ slot }) => slot._id === selectedSlotId) ?? null;
+
 export function SubscriptionPurchaseFormCard({
   availableCarSlots,
   availabilityLoading,
   licensePlate,
   motorcycleAvailability,
   onChangeLicensePlate,
+  onOpenSlotPicker,
   onSelectPlan,
-  onSelectSlot,
   plans,
   plansLoading,
   selectedPlan,
   selectedPlanId,
   selectedSlotId,
 }: SubscriptionPurchaseFormCardProps) {
+  const { btnPrimaryFg, placeholder } = useThemeColors();
+  const selectedCarSlot = findSelectedCarSlot(availableCarSlots, selectedSlotId);
+
   return (
     <GlassCard className="gap-4">
       <View className="flex-row items-center gap-3">
         <View className="h-11 w-11 items-center justify-center rounded-[14px] bg-btn-primary">
-          <Ionicons name="card" color="#000000" size={22} />
+          <Ionicons name="card" color={btnPrimaryFg} size={22} />
         </View>
         <View className="flex-1 gap-1">
           <Text className="font-sans text-lg font-extrabold text-fg">
@@ -66,7 +74,7 @@ export function SubscriptionPurchaseFormCard({
             autoCapitalize="characters"
             onChangeText={onChangeLicensePlate}
             placeholder="59-AB24872"
-            placeholderTextColor="#6b7280"
+            placeholderTextColor={placeholder}
             value={licensePlate}
             className="rounded-[14px] border border-border-theme bg-input px-4 py-3.5 font-sans text-base text-fg"
           />
@@ -146,51 +154,42 @@ export function SubscriptionPurchaseFormCard({
             </View>
 
             {availableCarSlots.length > 0 ? (
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerClassName="gap-2 pr-1"
-              >
-                {availableCarSlots.map(({ floor, slot }) => {
-                  const isSelected = slot._id === selectedSlotId;
-                  const buildingName =
-                    floor.building?.name ?? floor.building?.address ?? "Resident building";
+              <GlassCard className="gap-3">
+                <View className="flex-row items-start justify-between gap-3">
+                  <View className="flex-1 gap-1">
+                    <Text className="font-sans text-base font-extrabold text-fg">
+                      {selectedCarSlot?.slot.slotCode ?? "Choose your resident slot"}
+                    </Text>
+                    {selectedCarSlot ? (
+                      <Text className="font-sans text-sm text-subtle">
+                        {`Floor B${selectedCarSlot.floor.floorNumber} - ${
+                          selectedCarSlot.floor.building?.name ??
+                          selectedCarSlot.floor.building?.address ??
+                          "Resident building"
+                        }`}
+                      </Text>
+                    ) : (
+                      <Text className="font-sans text-sm leading-5 text-subtle">
+                        Open the resident slot map and pick a space like choosing a cinema seat.
+                      </Text>
+                    )}
+                  </View>
+                  <View className="rounded-full bg-badge px-3 py-1.5">
+                    <Text className="font-sans text-xs font-bold uppercase text-fg">
+                      {availableCarSlots.length} open
+                    </Text>
+                  </View>
+                </View>
 
-                  return (
-                    <Pressable
-                      key={slot._id}
-                      className={`min-w-[170px] rounded-[18px] border px-4 py-4 ${
-                        isSelected
-                          ? "border-btn-primary bg-btn-primary"
-                          : "border-border-theme bg-glass-card"
-                      }`}
-                      onPress={() => onSelectSlot(slot._id)}
-                    >
-                      <Text
-                        className={`font-sans text-base font-extrabold ${
-                          isSelected ? "text-btn-primary-fg" : "text-fg"
-                        }`}
-                      >
-                        {slot.slotCode}
-                      </Text>
-                      <Text
-                        className={`font-sans text-sm ${
-                          isSelected ? "text-btn-primary-fg" : "text-subtle"
-                        }`}
-                      >
-                        Floor B{floor.floorNumber}
-                      </Text>
-                      <Text
-                        className={`font-sans text-xs leading-5 ${
-                          isSelected ? "text-btn-primary-fg" : "text-subtle"
-                        }`}
-                      >
-                        {buildingName}
-                      </Text>
-                    </Pressable>
-                  );
-                })}
-              </ScrollView>
+                <Pressable
+                  className="items-center rounded-full bg-btn-primary py-3.5"
+                  onPress={onOpenSlotPicker}
+                >
+                  <Text className="font-sans text-base font-extrabold text-btn-primary-fg">
+                    {selectedCarSlot ? "Change slot in map" : "Open slot map"}
+                  </Text>
+                </Pressable>
+              </GlassCard>
             ) : (
               <GlassCard className="gap-1">
                 <Text className="font-sans text-base font-extrabold text-fg">

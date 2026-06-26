@@ -1,4 +1,4 @@
-import { Pressable, Text, View } from "@/tw";
+import { Pressable, Text, View, useThemeColors } from "@/tw";
 import { Linking, Modal } from "react-native";
 import { WebView } from "react-native-webview";
 import type { WebViewNavigation } from "react-native-webview/lib/WebViewTypes";
@@ -15,6 +15,8 @@ export function SubscriptionPaymentModal({
   onNavigationStateChange,
   paymentUrl,
 }: SubscriptionPaymentModalProps) {
+  const { iconPrimary } = useThemeColors();
+
   return (
     <Modal
       animationType="slide"
@@ -28,7 +30,7 @@ export function SubscriptionPaymentModal({
             className="h-10 w-10 items-center justify-center rounded-full bg-badge"
             onPress={onClose}
           >
-            <Ionicons name="close" color="#ffffff" size={22} />
+            <Ionicons name="close" color={iconPrimary} size={22} />
           </Pressable>
 
           <Text className="font-sans text-base font-extrabold text-fg">
@@ -43,7 +45,7 @@ export function SubscriptionPaymentModal({
               }
             }}
           >
-            <Ionicons name="open-outline" color="#ffffff" size={20} />
+            <Ionicons name="open-outline" color={iconPrimary} size={20} />
           </Pressable>
         </View>
 

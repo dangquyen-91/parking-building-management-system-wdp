@@ -13,6 +13,7 @@ import {
   BookingPaymentModal,
   BookingPickerModal,
 } from "@/components/booking";
+import { AppRefreshControl } from "@/components/common/refresh-control";
 import { GlassCard, Page } from "@/components/parking-ui";
 import { useCurrentUserQuery } from "../../hooks/useAuth";
 import {
@@ -32,7 +33,7 @@ import {
 import type { DateTimePickerChangeEvent } from "@react-native-community/datetimepicker";
 import { createBookingPayloadSchema } from "@/schema";
 import { getFieldErrors } from "@/utils/validation";
-import { Pressable, ScrollView, Text, View } from "../../tw";
+import { Pressable, ScrollView, Text, View, useThemeColors } from "../../tw";
 
 const HOUR_MS = 60 * 60 * 1000;
 const BOOKING_BLOCK_HOURS = 4;
@@ -65,6 +66,7 @@ const withTimePart = (source: Date, nextTime: Date) => {
 };
 
 export default function BookingScreen() {
+  const { btnPrimaryFg } = useThemeColors();
   const now = useMemo(() => new Date(), []);
   const [guestEmail, setGuestEmail] = useState("");
   const [licensePlate, setLicensePlate] = useState("");
@@ -75,6 +77,7 @@ export default function BookingScreen() {
   const [pickerField, setPickerField] = useState<PickerField>(null);
   const [durationModalVisible, setDurationModalVisible] = useState(false);
   const [errors, setErrors] = useState<Partial<Record<BookingField, string>>>({});
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const { data: currentUser } = useCurrentUserQuery();
   const createBookingMutation = useCreateBookingMutation();
@@ -298,6 +301,22 @@ export default function BookingScreen() {
     setPaymentUrl(url);
   };
 
+  const handleRefreshBookings = async () => {
+    setIsRefreshing(true);
+
+    try {
+      const result = currentUser
+        ? await myBookingsQuery.refetch()
+        : await guestBookingsQuery.refetch();
+
+      if (result.isSuccess) {
+        toast.success("Bookings refreshed");
+      }
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
   return (
     <Page
       eyebrow="Reservation"
@@ -307,11 +326,17 @@ export default function BookingScreen() {
       <ScrollView
         contentInsetAdjustmentBehavior="automatic"
         contentContainerClassName="gap-4 px-5 pb-[120px]"
+        refreshControl={
+          <AppRefreshControl
+            onRefresh={handleRefreshBookings}
+            refreshing={isRefreshing}
+          />
+        }
       >
         <GlassCard className="gap-4">
           <View className="flex-row items-center gap-3">
             <View className="h-11 w-11 items-center justify-center rounded-[14px] bg-btn-primary">
-              <Ionicons name="car-sport" color="#000000" size={22} />
+              <Ionicons name="car-sport" color={btnPrimaryFg} size={22} />
             </View>
             <View className="flex-1 gap-1">
               <Text className="font-sans text-lg font-extrabold text-fg">
