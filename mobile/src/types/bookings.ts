@@ -2,7 +2,7 @@ export type BookingStatus = "pending" | "paid" | "used" | "expired" | "cancelled
 
 export type Booking = {
   _id: string;
-  phoneNumber: string;
+  email: string;
   licensePlate: string;
   vehicleType: "car";
   expectedArrivalTime: string;
@@ -10,6 +10,10 @@ export type Booking = {
   durationHours: number;
   amount: number;
   status: BookingStatus;
+  paymentId?: string | null;
+  userId?: string | null;
+  sessionId?: string | null;
+  usedAt?: string | null;
   createdAt: string;
   updatedAt: string;
 };
@@ -26,7 +30,7 @@ export type BookingPayment = {
 };
 
 export type CreateBookingPayload = {
-  phoneNumber: string;
+  email: string;
   licensePlate: string;
   expectedArrivalTime: string;
   expectedExitTime: string;
@@ -38,6 +42,10 @@ export type CreateBookingResult = {
 };
 
 export type MyBookingsResult = {
+  bookings: Booking[];
+};
+
+export type BookingLookupResult = {
   bookings: Booking[];
 };
 

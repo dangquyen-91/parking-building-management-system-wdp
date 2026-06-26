@@ -32,6 +32,7 @@ export const useLogoutMutation = () => {
     onSettled: () => {
       queryClient.setQueryData(authKeys.currentUser, null);
       queryClient.removeQueries({ queryKey: ["bookings"] });
+      queryClient.removeQueries({ queryKey: ["subscriptions"] });
     },
   });
 };

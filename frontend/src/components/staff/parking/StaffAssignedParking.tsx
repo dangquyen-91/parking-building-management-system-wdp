@@ -1,5 +1,7 @@
 import type { GateCustomerType, GateVehicleType } from '../../../services/staffGateApi'
 import type { StaffGateFloorOption } from '../../../utils/staffGateAllocation'
+import { StaffGateField } from '../common/StaffGateField'
+import { getBuildingName } from '../data/staffGateUtils'
 
 type StaffAssignedParkingProps = {
   vehicleType: GateVehicleType
@@ -12,6 +14,9 @@ type StaffAssignedParkingProps = {
 export function StaffAssignedParking({
   vehicleType,
   customerType,
+  floorOptions,
+  selectedFloorId,
+  onFloorChange,
 }: StaffAssignedParkingProps) {
   if (!customerType) {
     return (
@@ -57,23 +62,27 @@ export function StaffAssignedParking({
   }
 
   return (
-    <div className="rounded-xl border border-sky-500/30 bg-sky-500/10 p-4">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <p className="text-sm font-bold text-fg">
-            {customerType === 'resident' ? 'Xe máy cư dân tính sức chứa theo hàng' : 'Xe máy vãng lai tính sức chứa theo hàng'}
-          </p>
-          <p className="mt-1 max-w-2xl text-xs leading-relaxed text-muted">
-            Không cần chọn tầng hay slot. Hệ thống tự chọn hàng còn chỗ và ghi nhận xe theo bộ đếm của hàng.
-          </p>
-        </div>
-        <span className="rounded-full border border-sky-500/30 bg-sky-500/10 px-3 py-1 text-[10px] font-bold text-sky-700 dark:text-sky-200">
-          Tự động phân bổ
-        </span>
-      </div>
-      <p className="mt-3 border-t border-sky-500/20 pt-3 text-[11px] text-muted">
-        Nếu tất cả hàng xe máy đã đầy, hệ thống sẽ từ chối check-in và báo bãi đầy.
+    <StaffGateField label="Tầng gửi xe (không bắt buộc)">
+      <select
+        value={selectedFloorId}
+        onChange={(event) => onFloorChange(event.target.value)}
+        className="auth-input h-12 rounded-xl border px-3 text-sm text-fg"
+      >
+        <option value="">Để hệ thống tự chọn hàng còn chỗ</option>
+        {floorOptions.map(({ floor, available }) => {
+          const buildingName = getBuildingName(floor)
+          return (
+            <option key={floor._id} value={floor._id}>
+              {buildingName ? `${buildingName} - ` : ''}Tầng {floor.floorNumber} - còn {available}/
+              {floor.totalSlots} vị trí
+            </option>
+          )
+        })}
+      </select>
+      <p className="mt-2 text-xs text-muted">
+        {customerType === 'resident' ? 'Xe máy cư dân' : 'Xe máy vãng lai'} được tính sức chứa theo hàng.
+        Nhân viên có thể chọn tầng mong muốn hoặc để hệ thống tự chọn hàng còn chỗ.
       </p>
-    </div>
+    </StaffGateField>
   )
 }

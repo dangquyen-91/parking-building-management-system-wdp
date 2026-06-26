@@ -29,7 +29,6 @@ type StaffGateCheckInFormProps = {
   isSubmitting: boolean
   canCheckIn: boolean
   entryQrValue: string
-  entryQrError?: string
   issuedWalkInQrValue: string
   onPlateChange: (value: string) => void
   onVehicleTypeChange: (value: GateVehicleType) => void
@@ -54,7 +53,6 @@ export function StaffGateCheckInForm({
   isSubmitting,
   canCheckIn,
   entryQrValue,
-  entryQrError,
   issuedWalkInQrValue,
   onPlateChange,
   onVehicleTypeChange,
@@ -204,11 +202,6 @@ export function StaffGateCheckInForm({
               disabled={isWalkIn && !issuedWalkInQrValue}
               onScan={onEntryQrScanned}
             />
-            {entryQrError && (
-              <p className="rounded-xl border border-rose-500/25 bg-rose-500/10 p-3 text-xs text-rose-700 dark:text-rose-200">
-                {entryQrError}
-              </p>
-            )}
           </div>
         )}
 

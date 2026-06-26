@@ -64,9 +64,7 @@ export function getStaffGateAllocation({
     .filter((option) => option.available > 0)
     .sort((a, b) => a.floor.floorNumber - b.floor.floorNumber)
 
-  const autoAssignedRow = selectedFloorId
-    ? rowOptions.find((row) => getFloorId(row) === selectedFloorId)
-    : rowOptions[0]
+  const autoAssignedRow = rowOptions.find((row) => getFloorId(row) === selectedFloorId)
   const autoAssignedSlot = slotOptions.find((slot) => getFloorId(slot) === selectedFloorId)
   const availableCount =
     rowOptions.reduce((total, row) => total + Math.max(0, row.capacity - row.occupiedCount), 0) +

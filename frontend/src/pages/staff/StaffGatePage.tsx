@@ -54,7 +54,6 @@ export function StaffGatePage() {
   const [actionMessage, setActionMessage] = useState<string | null>(null)
   const [toastMessage, setToastMessage] = useState<string | null>(null)
   const [entryQrValue, setEntryQrValue] = useState('')
-  const [entryQrError, setEntryQrError] = useState<string | undefined>()
   const [issuedWalkInQrValue, setIssuedWalkInQrValue] = useState('')
 
   const [checkoutQuery, setCheckoutQuery] = useState(checkoutPlate)
@@ -246,7 +245,6 @@ export function StaffGatePage() {
       setLookupResult(result)
       setSelectedFloorId('')
       setEntryQrValue('')
-      setEntryQrError(undefined)
       setIssuedWalkInQrValue('')
 
       if (result.subscription?.vehicleType) {
@@ -359,7 +357,6 @@ export function StaffGatePage() {
     setNote('')
     setLookupResult(null)
     setEntryQrValue('')
-    setEntryQrError(undefined)
     setIssuedWalkInQrValue('')
   }
 
@@ -368,7 +365,6 @@ export function StaffGatePage() {
     setLookupResult(null)
     setSelectedFloorId('')
     setEntryQrValue('')
-    setEntryQrError(undefined)
     setIssuedWalkInQrValue('')
   }
 
@@ -384,25 +380,19 @@ export function StaffGatePage() {
       const ticket = await staffGateApi.requestEntryQr(normalizedPlate)
       setIssuedWalkInQrValue(ticket.qrToken)
       setEntryQrValue('')
-      setEntryQrError(undefined)
       setActionMessage(`Đã cấp vé QR vãng lai cho ${normalizedPlate}. Hãy quét lại vé này trong 5 phút để xác nhận xe vào.`)
     } catch (err) {
       setIssuedWalkInQrValue('')
       setEntryQrValue('')
-      setEntryQrError(err instanceof Error ? err.message : 'Không thể cấp vé QR vãng lai.')
       setActionMessage(err instanceof Error ? err.message : 'Không thể cấp vé QR vãng lai.')
     }
   }
 
   function handleEntryQrScanned(qrValue: string) {
-    if (!lookupResult) {
-      setEntryQrError('Vui lòng tra cứu biển số trước khi quét QR.')
-      return
-    }
+    if (!lookupResult) return
 
     if (lookupResult.customerType === 'walk_in' && issuedWalkInQrValue && qrValue !== issuedWalkInQrValue) {
       setEntryQrValue('')
-      setEntryQrError('QR vừa quét không khớp vé vãng lai vừa cấp cho biển số này.')
       setActionMessage('QR vừa quét không khớp vé vãng lai vừa cấp cho biển số này.')
       return
     }
@@ -415,13 +405,11 @@ export function StaffGatePage() {
 
     if (message) {
       setEntryQrValue('')
-      setEntryQrError(message)
       setActionMessage(message)
       return
     }
 
     setEntryQrValue(qrValue)
-    setEntryQrError(undefined)
     setActionMessage('QR cổng vào đã khớp biển số camera. Có thể xác nhận cho xe vào.')
   }
 
@@ -489,7 +477,6 @@ export function StaffGatePage() {
                 isSubmitting={isSubmitting}
                 canCheckIn={canCheckIn}
                 entryQrValue={entryQrValue}
-                entryQrError={entryQrError}
                 issuedWalkInQrValue={issuedWalkInQrValue}
                 onPlateChange={handlePlateChange}
                 onVehicleTypeChange={handleVehicleTypeChange}

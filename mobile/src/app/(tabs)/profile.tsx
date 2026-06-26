@@ -1,9 +1,13 @@
 import Ionicons from "react-native-vector-icons/Ionicons";
+import { useRouter } from "expo-router";
 import { toast } from "sonner-native";
 
 import { GlassCard, Label, Page } from "../../components/parking-ui";
+import { ThemeToggle } from "../../components/theme-toggle";
 import { useCurrentUserQuery, useLogoutMutation } from "../../hooks/useAuth";
-import { Link, Pressable, ScrollView, Text, View } from "../../tw";
+import { useMySubscriptionsQuery } from "../../hooks/useSubscriptions";
+import { formatRole } from "@/utils/format";
+import { Link, Pressable, ScrollView, Text, View, useThemeColors } from "../../tw";
 
 const getInitials = (name?: string) => {
   if (!name?.trim()) {
@@ -19,55 +23,64 @@ const getInitials = (name?: string) => {
     .toUpperCase();
 };
 
-const formatRole = (role?: string) =>
-  role ? role.replace(/_/g, " ").replace(/\b\w/g, (char) => char.toUpperCase()) : "User";
-
 export default function Profile() {
+  const router = useRouter();
+  const { iconPrimary } = useThemeColors();
   const {
     data: currentUser,
     error,
-    isFetching,
     isLoading,
-    refetch,
   } = useCurrentUserQuery();
+  const mySubscriptionsQuery = useMySubscriptionsQuery(Boolean(currentUser));
   const logoutMutation = useLogoutMutation();
 
   const profileItems = currentUser
     ? [
-        ["Full name", currentUser.fullName],
+        ["Họ và tên", currentUser.fullName],
         ["Email", currentUser.email],
-        ["Phone", currentUser.phone || "Not updated"],
-        ["Role", formatRole(currentUser.role)],
-        ["Status", currentUser.isActive ? "Active" : "Inactive"],
+        ["Số điện thoại", currentUser.phone || "Chưa cập nhật"],
+        ["Vai trò", formatRole(currentUser.role)],
+        ["Trạng thái", currentUser.isActive ? "Đang hoạt động" : "Ngừng hoạt động"],
       ]
     : [];
 
   const handleLogout = async () => {
     try {
       await logoutMutation.mutateAsync();
-      toast.success("Logged out", {
-        description: "Your session has been cleared.",
+      toast.success("Đăng xuất thành công", {
+        description: "Phiên đăng nhập của bạn đã được xóa.",
       });
     } catch {
-      toast.info("Logged out", {
-        description: "Your local session has been cleared.",
+      toast.info("Đăng xuất thất bại", {
+        description: "Đã xảy ra lỗi khi đăng xuất.",
       });
     }
   };
 
-  const handleRefresh = async () => {
-    const result = await refetch();
+  const handleOpenMySubscription = () => {
+    const subscriptions = mySubscriptionsQuery.data?.subscriptions ?? [];
+    const selectedSubscription =
+      subscriptions.find((subscription) => subscription.status === "active") ??
+      subscriptions[0];
 
-    if (result.isSuccess) {
-      toast.success("Profile refreshed");
+    if (!selectedSubscription) {
+      router.push("/(tabs)/subscription");
+      return;
     }
+
+    router.push({
+      pathname: "/subscription/[subscriptionId]",
+      params: {
+        subscriptionId: selectedSubscription._id,
+      },
+    });
   };
 
   return (
     <Page
-      eyebrow="Account"
-      title={currentUser?.fullName ?? "Profile"}
-      subtitle="Your parking account details from the building management system."
+      eyebrow="Tài khoản"
+      title={currentUser?.fullName ?? "Hồ sơ"}
+      subtitle="Thông tin tài khoản gửi xe của bạn trong hệ thống quản lý tòa nhà."
     >
       <ScrollView
         contentInsetAdjustmentBehavior="automatic"
@@ -76,10 +89,10 @@ export default function Profile() {
         {isLoading ? (
           <GlassCard className="items-center gap-3">
             <View className="h-[72px] w-[72px] items-center justify-center rounded-full bg-badge">
-              <Ionicons name="person" color="#ffffff" size={30} />
+              <Ionicons name="person" color={iconPrimary} size={30} />
             </View>
             <Text className="font-sans text-base font-extrabold text-fg">
-              Loading profile...
+              Đang tải hồ sơ...
             </Text>
           </GlassCard>
         ) : currentUser ? (
@@ -118,23 +131,29 @@ export default function Profile() {
               ))}
             </GlassCard>
 
-            <View className="gap-3">
-              <Pressable
-                className="items-center rounded-full border border-border-strong bg-badge py-4"
-                disabled={isFetching}
-                onPress={handleRefresh}
-              >
+            <Pressable
+              className="flex-row items-center justify-between rounded-[28px] border border-border-strong bg-badge px-5 py-4"
+              onPress={handleOpenMySubscription}
+            >
+              <View className="gap-1">
+                <Label>Gói gửi xe</Label>
                 <Text className="font-sans text-base font-extrabold text-fg">
-                  {isFetching ? "Refreshing..." : "Refresh profile"}
+                  Xem các gói của tôi
                 </Text>
-              </Pressable>
+              </View>
+              <Ionicons name="chevron-forward" color={iconPrimary} size={20} />
+            </Pressable>
+
+            <ThemeToggle />
+
+            <View className="gap-3">
               <Pressable
                 className="items-center rounded-full bg-btn-primary py-4"
                 disabled={logoutMutation.isPending}
                 onPress={handleLogout}
               >
                 <Text className="font-sans text-base font-extrabold text-btn-primary-fg">
-                  {logoutMutation.isPending ? "Signing out..." : "Sign out"}
+                  {logoutMutation.isPending ? "Đang đăng xuất..." : "Đăng xuất"}
                 </Text>
               </Pressable>
             </View>
@@ -142,31 +161,31 @@ export default function Profile() {
         ) : (
           <GlassCard className="gap-4">
             <View className="h-12 w-12 items-center justify-center rounded-full bg-badge">
-              <Ionicons name="lock-closed" color="#ffffff" size={22} />
+              <Ionicons name="lock-closed" color={iconPrimary} size={22} />
             </View>
             <View className="gap-1">
               <Text className="font-sans text-xl font-extrabold text-fg">
-                Sign in required
+                Cần đăng nhập
               </Text>
               <Text className="font-sans text-sm leading-5 text-subtle">
-                Sign in to view your account profile from the parking API.
+                Đăng nhập để xem hồ sơ tài khoản của bạn.
               </Text>
             </View>
             <Link href="/(auth)/login" asChild>
               <Pressable className="items-center rounded-full bg-btn-primary py-4">
                 <Text className="font-sans text-base font-extrabold text-btn-primary-fg">
-                  Sign in
+                  Đăng nhập
                 </Text>
               </Pressable>
             </Link>
+            <ThemeToggle />
           </GlassCard>
         )}
 
         {error ? (
           <GlassCard className="gap-2 border border-border-strong">
-            <Label>Sync issue</Label>
             <Text className="font-sans text-sm leading-5 text-subtle">
-              {error instanceof Error ? error.message : "Cannot load profile."}
+              {error instanceof Error ? error.message : "Không thể tải hồ sơ."}
             </Text>
           </GlassCard>
         ) : null}

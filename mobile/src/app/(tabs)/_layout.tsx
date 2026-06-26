@@ -1,21 +1,20 @@
 import { Tabs } from "expo-router";
 import Ionicons from "react-native-vector-icons/Ionicons";
 
-import { useCSSVariable } from "../../tw";
+import { useThemeColors } from "../../tw";
 
 const TabsLayout = () => {
-  const fg = useCSSVariable("--color-fg");
-  const border = useCSSVariable("--color-border-strong");
+  const { borderStrong, fg, tabBar, tabInactive } = useThemeColors();
 
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
         tabBarActiveTintColor: fg,
-        tabBarInactiveTintColor: "#d1d5db",
+        tabBarInactiveTintColor: tabInactive,
         tabBarStyle: {
-          backgroundColor: "#2b2b2b",
-          borderColor: border,
+          backgroundColor: tabBar,
+          borderColor: borderStrong,
           borderWidth: 1,
           borderRadius: 18,
           bottom: 15,
@@ -45,8 +44,8 @@ const TabsLayout = () => {
           tabBarIcon: ({ color, focused }) => (
             <Ionicons name={focused ? "home" : "home"} color={color} size={24} />
           ),
-          tabBarLabel: "Home",
-          title: "Home",
+          tabBarLabel: "Trang chủ",
+          title: "Trang chủ",
         }}
       />
       <Tabs.Screen
@@ -55,8 +54,18 @@ const TabsLayout = () => {
           tabBarIcon: ({ color, focused }) => (
             <Ionicons name={focused ? "calendar" : "calendar"} color={color} size={24} />
           ),
-          tabBarLabel: "Booking",
-          title: "Booking",
+          tabBarLabel: "Đặt chỗ",
+          title: "Đặt chỗ",
+        }}
+      />
+      <Tabs.Screen
+        name="subscription"
+        options={{
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons name={focused ? "card" : "card-outline"} color={color} size={24} />
+          ),
+          tabBarLabel: "Gói tháng",
+          title: "Gói tháng",
         }}
       />
       <Tabs.Screen
@@ -65,8 +74,8 @@ const TabsLayout = () => {
           tabBarIcon: ({ color, focused }) => (
             <Ionicons name={focused ? "person" : "person"} color={color} size={24} />
           ),
-          tabBarLabel: "Profile",
-          title: "Profile",
+          tabBarLabel: "Hồ sơ",
+          title: "Hồ sơ",
         }}
       />
     </Tabs>
