@@ -1,8 +1,8 @@
 import { useState } from 'react'
+import { Navigate, useSearchParams } from 'react-router-dom'
 import {
   ResidentSubscriptionForm,
   ResidentSubscriptionPaymentStep,
-  ResidentSubscriptionPlanSection,
   ResidentSubscriptionSlotSection,
   ResidentSubscriptionTopNav,
   SubscriptionStepHeader,
@@ -10,15 +10,25 @@ import {
   type SubscriptionStep,
 } from '../../components/subscription'
 import { useResidentSubscription } from '../../hooks/useResidentSubscription'
+import type { VehicleType } from '../../services/userSubscriptionApi'
 import { normalizePlate } from '../../utils/subscriptionUi'
 
-export function ResidentSubscriptionPage() {
+function getVehicleTypeFromParam(value: string | null): VehicleType | undefined {
+  return value === 'motorcycle' || value === 'car' ? value : undefined
+}
+
+type ResidentSubscriptionPurchaseFlowProps = {
+  initialPlanId: string
+  initialVehicleType: VehicleType
+}
+
+function ResidentSubscriptionPurchaseFlow({
+  initialPlanId,
+  initialVehicleType,
+}: ResidentSubscriptionPurchaseFlowProps) {
   const [step, setStep] = useState<SubscriptionStep>(1)
   const {
     vehicleType,
-    plans,
-    selectedPlanId,
-    setSelectedPlanId,
     licensePlate,
     setLicensePlate,
     selectedSlotId,
@@ -35,11 +45,16 @@ export function ResidentSubscriptionPage() {
     canSubmit,
     handleVehicleTypeChange,
     handlePurchase,
-  } = useResidentSubscription()
+  } = useResidentSubscription({
+    initialPlanId,
+    initialVehicleType,
+  })
 
   const canGoStep2 = normalizePlate(licensePlate).length >= 4
-  const canGoStep3 = Boolean(selectedPlanId)
+  const canGoStep3 = Boolean(selectedPlan)
   const canGoStep4 = vehicleType === 'motorcycle' || Boolean(selectedSlotId)
+  const slotStepNumber = 2
+  const paymentStepNumber = vehicleType === 'motorcycle' ? 2 : 3
 
   function handleVehicleChange(value: typeof vehicleType) {
     handleVehicleTypeChange(value)
@@ -48,6 +63,20 @@ export function ResidentSubscriptionPage() {
 
   async function handleCreatePayment() {
     await handlePurchase()
+  }
+
+  function getNextStepAfterVehicleInfo() {
+    return vehicleType === 'motorcycle' ? 4 : 3
+  }
+
+  function handleStepChange(nextStep: SubscriptionStep) {
+    if (nextStep === 2) {
+      setStep(getNextStepAfterVehicleInfo())
+      return
+    }
+
+    if (nextStep === 3 && vehicleType === 'motorcycle') return
+    setStep(nextStep)
   }
 
   return (
@@ -59,7 +88,9 @@ export function ResidentSubscriptionPage() {
           canGoStep2={canGoStep2}
           canGoStep3={canGoStep3}
           canGoStep4={canGoStep4}
-          onStepChange={setStep}
+          onStepChange={handleStepChange}
+          hidePlanStep
+          hideSlotStep={vehicleType === 'motorcycle'}
         />
 
         {message && <div className="mb-5 rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-4 text-sm text-fg">{message}</div>}
@@ -82,36 +113,19 @@ export function ResidentSubscriptionPage() {
                   licensePlate={licensePlate}
                   onVehicleTypeChange={handleVehicleChange}
                   onLicensePlateChange={setLicensePlate}
+                  lockedVehicleType
+                  selectedPlanName={selectedPlan?.name}
                 />
 
                 <SubscriptionWizardActions
-                  nextLabel="Tiếp tục chọn gói"
+                  nextLabel={vehicleType === 'motorcycle' ? 'Tiếp tục thanh toán' : 'Tiếp tục chọn vị trí'}
                   canNext={canGoStep2}
-                  onNext={() => setStep(2)}
+                  onNext={() => setStep(getNextStepAfterVehicleInfo())}
                 />
               </>
             )}
 
-            {step === 2 && (
-              <>
-                <ResidentSubscriptionPlanSection
-                  vehicleType={vehicleType}
-                  plans={plans}
-                  selectedPlanId={selectedPlanId}
-                  onPlanChange={setSelectedPlanId}
-                />
-
-                <SubscriptionWizardActions
-                  previousLabel="Quay lại thông tin xe"
-                  nextLabel="Tiếp tục chọn vị trí"
-                  canNext={canGoStep3}
-                  onPrevious={() => setStep(1)}
-                  onNext={() => setStep(3)}
-                />
-              </>
-            )}
-
-            {step === 3 && (
+            {step === 3 && vehicleType === 'car' && (
               <>
                 <ResidentSubscriptionSlotSection
                   vehicleType={vehicleType}
@@ -119,13 +133,14 @@ export function ResidentSubscriptionPage() {
                   motorcycleAvailability={motorcycleAvailability}
                   selectedSlotId={selectedSlotId}
                   onSlotChange={setSelectedSlotId}
+                  stepNumber={slotStepNumber}
                 />
 
                 <SubscriptionWizardActions
-                  previousLabel="Quay lại chọn gói"
+                  previousLabel="Quay lại nhập biển số"
                   nextLabel="Tiếp tục thanh toán"
                   canNext={canGoStep4}
-                  onPrevious={() => setStep(2)}
+                  onPrevious={() => setStep(1)}
                   onNext={() => setStep(4)}
                 />
               </>
@@ -144,12 +159,31 @@ export function ResidentSubscriptionPage() {
                 canSubmit={canSubmit}
                 isSubmitting={isSubmitting}
                 onCreatePayment={handleCreatePayment}
-                onPrevious={() => setStep(3)}
+                onPrevious={() => setStep(vehicleType === 'motorcycle' ? 1 : 3)}
+                stepNumber={paymentStepNumber}
+                previousLabel={vehicleType === 'motorcycle' ? 'Quay lại nhập biển số' : 'Quay lại chọn vị trí'}
               />
             )}
           </div>
         )}
       </main>
     </div>
+  )
+}
+
+export function ResidentSubscriptionPage() {
+  const [searchParams] = useSearchParams()
+  const initialPlanId = searchParams.get('planId')
+  const initialVehicleType = getVehicleTypeFromParam(searchParams.get('vehicleType'))
+
+  if (!initialPlanId || !initialVehicleType) {
+    return <Navigate to="/#resident-plans" replace />
+  }
+
+  return (
+    <ResidentSubscriptionPurchaseFlow
+      initialPlanId={initialPlanId}
+      initialVehicleType={initialVehicleType}
+    />
   )
 }

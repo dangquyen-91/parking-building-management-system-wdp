@@ -16,7 +16,7 @@ export function ProtectedRoute({ allowedRoles }: ProtectedRouteProps) {
   const token = localStorage.getItem(AUTH_STORAGE_KEYS.accessToken)
 
   if (!token || !user) {
-    return <Navigate to="/login" replace state={{ from: location.pathname }} />
+    return <Navigate to="/login" replace state={{ from: `${location.pathname}${location.search}` }} />
   }
 
   if (!allowedRoles.includes(user.role)) {

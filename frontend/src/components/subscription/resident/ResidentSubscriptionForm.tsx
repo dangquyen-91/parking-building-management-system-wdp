@@ -6,6 +6,8 @@ type ResidentSubscriptionFormProps = {
   licensePlate: string
   onVehicleTypeChange: (value: VehicleType) => void
   onLicensePlateChange: (value: string) => void
+  lockedVehicleType?: boolean
+  selectedPlanName?: string
 }
 
 export function ResidentSubscriptionForm({
@@ -13,6 +15,8 @@ export function ResidentSubscriptionForm({
   licensePlate,
   onVehicleTypeChange,
   onLicensePlateChange,
+  lockedVehicleType = false,
+  selectedPlanName,
 }: ResidentSubscriptionFormProps) {
   return (
     <section className="liquid-glass-card overflow-hidden rounded-2xl">
@@ -23,36 +27,47 @@ export function ResidentSubscriptionForm({
           </span>
           <div>
             <p className="text-[10px] uppercase tracking-[0.18em] text-subtle">Thông tin xe</p>
-            <h2 className="mt-1 text-xl font-bold text-fg">Chọn phương tiện đăng ký</h2>
+            <h2 className="mt-1 text-xl font-bold text-fg">
+              {lockedVehicleType ? 'Nhập biển số xe' : 'Chọn phương tiện đăng ký'}
+            </h2>
           </div>
         </div>
         <p className="mt-2 text-sm text-muted">
-          Chọn loại phương tiện và nhập biển số để xem các gói cư dân phù hợp.
+          {lockedVehicleType
+            ? 'Gói và loại xe đã được chọn sẵn. Bạn chỉ cần nhập biển số để tiếp tục.'
+            : 'Chọn loại phương tiện và nhập biển số để xem các gói cư dân phù hợp.'}
         </p>
-
       </div>
 
       <div className="grid gap-6 p-5 md:p-6">
-        <div className="grid gap-3 sm:grid-cols-2">
-          {(['motorcycle', 'car'] as const).map((type) => (
-            <button
-              key={type}
-              type="button"
-              className={[
-                'min-h-24 rounded-xl border p-4 text-left text-sm transition-all',
-                vehicleType === type
-                  ? 'border-theme-strong bg-btn-primary text-btn-primary-fg shadow-lg'
-                  : 'border-theme bg-badge text-muted hover:-translate-y-0.5 hover:bg-ghost hover:text-fg',
-              ].join(' ')}
-              onClick={() => onVehicleTypeChange(type)}
-            >
-              <span className="block text-base font-bold">{VEHICLE_LABELS[type]}</span>
-              <span className="mt-1 block text-xs opacity-75">
-                {type === 'car' ? 'Giữ ô đỗ cố định' : 'Dùng sức chứa chung'}
-              </span>
-            </button>
-          ))}
-        </div>
+        {lockedVehicleType ? (
+          <div className="rounded-xl border border-theme bg-badge p-4 text-sm text-muted">
+            <span className="block text-xs font-semibold uppercase tracking-[0.14em] text-subtle">Gói đã chọn</span>
+            <span className="mt-2 block text-base font-bold text-fg">{selectedPlanName || 'Gói cư dân'}</span>
+            <span className="mt-1 block text-xs">Loại xe: {VEHICLE_LABELS[vehicleType]}</span>
+          </div>
+        ) : (
+          <div className="grid gap-3 sm:grid-cols-2">
+            {(['motorcycle', 'car'] as const).map((type) => (
+              <button
+                key={type}
+                type="button"
+                className={[
+                  'min-h-24 rounded-xl border p-4 text-left text-sm transition-all',
+                  vehicleType === type
+                    ? 'border-theme-strong bg-btn-primary text-btn-primary-fg shadow-lg'
+                    : 'border-theme bg-badge text-muted hover:-translate-y-0.5 hover:bg-ghost hover:text-fg',
+                ].join(' ')}
+                onClick={() => onVehicleTypeChange(type)}
+              >
+                <span className="block text-base font-bold">{VEHICLE_LABELS[type]}</span>
+                <span className="mt-1 block text-xs opacity-75">
+                  {type === 'car' ? 'Giữ ô đỗ cố định' : 'Dùng sức chứa chung'}
+                </span>
+              </button>
+            ))}
+          </div>
+        )}
 
         <label className="grid gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-subtle">
           Biển số xe

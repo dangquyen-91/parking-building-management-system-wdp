@@ -23,6 +23,8 @@ type ResidentSubscriptionPaymentStepProps = {
   isSubmitting: boolean
   onCreatePayment: () => void
   onPrevious: () => void
+  stepNumber?: number
+  previousLabel?: string
 }
 
 export function ResidentSubscriptionPaymentStep({
@@ -38,6 +40,8 @@ export function ResidentSubscriptionPaymentStep({
   isSubmitting,
   onCreatePayment,
   onPrevious,
+  stepNumber = 4,
+  previousLabel = 'Quay lại chọn vị trí',
 }: ResidentSubscriptionPaymentStepProps) {
   const selectedParkingSpot = carFloors
     .flatMap((floor) => floor.slots.map((slot) => ({ floor, slot })))
@@ -48,7 +52,7 @@ export function ResidentSubscriptionPaymentStep({
     <section className="liquid-glass-card overflow-hidden rounded-2xl">
       <div className="flex items-center gap-3 border-b border-theme bg-gradient-to-r from-emerald-500/15 via-transparent to-transparent p-5 md:p-6">
         <span className="flex size-11 items-center justify-center rounded-xl bg-emerald-500 text-sm font-black text-white shadow-lg shadow-emerald-500/20">
-          4
+          {stepNumber}
         </span>
         <div>
           <p className="text-[10px] uppercase tracking-[0.18em] text-subtle">Thanh toán</p>
@@ -115,7 +119,7 @@ export function ResidentSubscriptionPaymentStep({
       </div>
 
       <div className="border-t border-theme p-4 md:p-5">
-        <SubscriptionWizardActions previousLabel="Quay lại chọn vị trí" onPrevious={onPrevious} />
+        <SubscriptionWizardActions previousLabel={previousLabel} onPrevious={onPrevious} />
       </div>
     </section>
   )
