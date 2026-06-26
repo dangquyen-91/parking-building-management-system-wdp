@@ -19,7 +19,7 @@ const userSchema = new mongoose.Schema(
       default: 'user',
     },
     phone: { type: String, trim: true },
-    cccd: { type: String, trim: true, sparse: true },
+    cccd: { type: String, trim: true },
     dateOfBirth: { type: Date },
     gender: { type: String, enum: ['male', 'female', 'other'] },
     address: { type: String, trim: true, maxlength: 255 },
