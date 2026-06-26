@@ -154,7 +154,7 @@ export default function ResidentSlotPickerScreen() {
               <GlassCard key={entry.floor._id} className="gap-4">
                 <View className="flex-row items-start justify-between gap-3">
                   <View className="flex-1 gap-1">
-                    <Label>Tầng B{entry.floor.floorNumber}</Label>
+                    <Label>Tầng {entry.floor.floorNumber}</Label>
                     <Text className="font-sans text-xl font-extrabold text-fg">
                       {entry.floor.building?.name ?? "Khu gửi xe cư dân"}
                     </Text>
