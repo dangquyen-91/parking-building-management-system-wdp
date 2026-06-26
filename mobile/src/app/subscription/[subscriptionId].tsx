@@ -96,7 +96,7 @@ export default function SubscriptionDetailsScreen() {
     <>
       <Stack.Screen
         options={{
-          headerShown: true,
+          headerShown: false,
           headerBackTitle: "Back",
           headerTitle: "Subscription details",
         }}

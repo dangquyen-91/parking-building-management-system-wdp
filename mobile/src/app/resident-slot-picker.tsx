@@ -76,7 +76,7 @@ export default function ResidentSlotPickerScreen() {
     <>
       <Stack.Screen
         options={{
-          headerShown: true,
+          headerShown: false,
           headerBackTitle: "Subscription",
           headerTitle: "Choose resident slot",
         }}

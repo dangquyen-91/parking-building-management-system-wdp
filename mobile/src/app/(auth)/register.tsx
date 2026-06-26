@@ -4,6 +4,7 @@ import { router } from "expo-router";
 import { toast } from "sonner-native";
 import { KeyboardAvoidingView, Platform } from "react-native";
 
+import { AppRefreshControl } from "@/components/common/refresh-control";
 import { useRegisterMutation } from "@/hooks/useAuth";
 import { registerPayloadSchema } from "@/schema";
 import { getFieldErrors } from "@/utils/validation";
@@ -28,6 +29,16 @@ export default function Register() {
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState<Partial<Record<RegisterField, string>>>({});
   const registerMutation = useRegisterMutation();
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const resetFormState = () => {
+    setFullName("");
+    setEmail("");
+    setPhone("");
+    setPassword("");
+    setShowPassword(false);
+    setErrors({});
+  };
 
   const handleRegister = async () => {
     const validation = registerPayloadSchema.safeParse({
@@ -60,6 +71,15 @@ export default function Register() {
     }
   };
 
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      resetFormState();
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
   return (
     <KeyboardAvoidingView
       style={{ flex: 1 }}
@@ -72,6 +92,12 @@ export default function Register() {
           keyboardDismissMode="on-drag"
           keyboardShouldPersistTaps="handled"
           contentContainerClassName="gap-8 px-5 pb-10 pt-16"
+          refreshControl={
+            <AppRefreshControl
+              onRefresh={handleRefresh}
+              refreshing={isRefreshing}
+            />
+          }
         >
           <View className="flex-row items-center justify-between">
             <Link href="/(tabs)/home" asChild>
@@ -83,7 +109,7 @@ export default function Register() {
             <Link href="/(auth)/login" asChild>
               <Pressable className="min-w-[80px] items-center rounded-full border border-border-strong bg-badge px-4 py-2.5">
                 <Text className="font-sans text-sm font-bold text-fg">
-                  Sign in
+                  Đăng ký
                 </Text>
               </Pressable>
             </Link>

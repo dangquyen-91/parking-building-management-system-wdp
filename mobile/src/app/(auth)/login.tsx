@@ -2,7 +2,7 @@ import { useState } from "react";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import { router } from "expo-router";
 import { toast } from "sonner-native";
-
+import { AppRefreshControl } from "@/components/common/refresh-control";
 import { useLoginMutation } from "@/hooks/useAuth";
 import { loginPayloadSchema } from "@/schema";
 import { getFieldErrors } from "@/utils/validation";
@@ -25,6 +25,14 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState<Partial<Record<LoginField, string>>>({});
   const loginMutation = useLoginMutation();
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const resetFormState = () => {
+    setEmail("");
+    setPassword("");
+    setShowPassword(false);
+    setErrors({});
+  };
 
   const handleLogin = async () => {
     const validation = loginPayloadSchema.safeParse({ email, password });
@@ -39,13 +47,22 @@ export default function Login() {
     try {
       await loginMutation.mutateAsync(validation.data);
       toast.success("Signed in", {
-        description: "Welcome back.",
+        description: "Chào mừng trở lại.",
       });
       router.replace("/(tabs)/home");
     } catch (error) {
       toast.error("Sign in failed", {
-        description: error instanceof Error ? error.message : "Please try again.",
+        description: error instanceof Error ? error.message : "Vui lòng thử lại.",
       });
+    }
+  };
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      resetFormState();
+    } finally {
+      setIsRefreshing(false);
     }
   };
 
@@ -54,6 +71,12 @@ export default function Login() {
       <ScrollView
         contentInsetAdjustmentBehavior="automatic"
         contentContainerClassName="min-h-full justify-between gap-8 px-5 pb-10 pt-16"
+        refreshControl={
+          <AppRefreshControl
+            onRefresh={handleRefresh}
+            refreshing={isRefreshing}
+          />
+        }
       >
         <View className="gap-8">
           <View className="flex-row items-center justify-between">
@@ -66,7 +89,7 @@ export default function Login() {
             <Link href="/(auth)/register" asChild>
               <Pressable className="min-w-[84px] items-center rounded-full bg-btn-primary px-4 py-2.5">
                 <Text className="font-sans text-sm font-bold text-btn-primary-fg">
-                  Register
+                  Đăng nhập
                 </Text>
               </Pressable>
             </Link>
@@ -74,10 +97,10 @@ export default function Login() {
 
           <View className="gap-3">
             <Text className="font-sans text-xs font-bold uppercase text-faint">
-              Parking account
+              Tài khoản
             </Text>
             <Text className="font-sans text-[36px] font-black leading-[41px] text-fg">
-              Sign in to your account
+              Đăng nhập vào tài khoản của bạn
             </Text>
             <Text className="font-sans text-base leading-6 text-subtle">
               Access your parking profile, reservations, vehicles, and building
@@ -88,7 +111,7 @@ export default function Login() {
           <View className="gap-4 rounded-[22px] border border-border-theme bg-glass-card p-4">
             <View className="gap-2">
               <Text className="font-sans text-sm font-bold text-muted">
-                Email or phone number
+                Email
               </Text>
               <TextInput
                 autoCapitalize="none"
@@ -111,7 +134,7 @@ export default function Login() {
 
             <View className="gap-2">
               <Text className="font-sans text-sm font-bold text-muted">
-                Password
+                Mật khẩu
               </Text>
               <View className="flex-row items-center rounded-[16px] border border-border-theme bg-input">
                 <TextInput
@@ -144,9 +167,8 @@ export default function Login() {
             </View>
 
             <View className="flex-row items-center justify-between">
-              <Text className="font-sans text-sm text-subtle">Remember me</Text>
               <Text className="font-sans text-sm font-bold text-fg">
-                Forgot password?
+                Quên mật khẩu
               </Text>
             </View>
 
@@ -164,12 +186,12 @@ export default function Login() {
 
         <View className="items-center gap-2">
           <Text className="font-sans text-sm text-subtle">
-            Do not have an account?
+            Chưa có tài khoản?
           </Text>
           <Link href="/(auth)/register" asChild>
             <Pressable>
               <Text className="font-sans text-sm font-extrabold text-fg">
-                Create a customer account
+                Tạo tài khoản
               </Text>
             </Pressable>
           </Link>
