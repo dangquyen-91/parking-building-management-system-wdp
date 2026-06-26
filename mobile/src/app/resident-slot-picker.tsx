@@ -8,6 +8,7 @@ import {
   isCarSubscriptionAvailabilityResult,
   type CarSubscriptionAvailabilityResult,
 } from "@/types/subscriptions";
+import { formatSlotStatus } from "@/utils/format";
 import { Pressable, ScrollView, Text, View, useThemeColors } from "@/tw";
 
 type SlotPickerParams = {
@@ -16,12 +17,9 @@ type SlotPickerParams = {
   selectedSlotId?: string | string[];
 };
 
-const getSingleParam = (value?: string | string[]) =>
-  typeof value === "string" ? value : null;
+const getSingleParam = (value?: string | string[]) => (typeof value === "string" ? value : null);
 
-const buildSeatRows = (
-  slots: CarSubscriptionAvailabilityResult["floors"][number]["slots"],
-) => {
+const buildSeatRows = (slots: CarSubscriptionAvailabilityResult["floors"][number]["slots"]) => {
   const midpoint = Math.ceil(slots.length / 2);
   const left = slots.slice(0, midpoint);
   const right = slots.slice(midpoint);
@@ -77,8 +75,8 @@ export default function ResidentSlotPickerScreen() {
       <Stack.Screen
         options={{
           headerShown: false,
-          headerBackTitle: "Subscription",
-          headerTitle: "Choose resident slot",
+          headerBackTitle: "Gói gửi xe",
+          headerTitle: "Chọn vị trí cư dân",
         }}
       />
 
@@ -94,11 +92,10 @@ export default function ResidentSlotPickerScreen() {
               </View>
               <View className="flex-1 gap-1">
                 <Text className="font-sans text-lg font-extrabold text-fg">
-                  Resident slot map
+                  Sơ đồ chỗ đỗ cư dân
                 </Text>
                 <Text className="font-sans text-sm leading-5 text-subtle">
-                  Pick one available slot. The layout is grouped like a cinema seat map so the
-                  aisle stays easy to scan.
+                  Chọn một vị trí còn trống. Bố cục được nhóm như sơ đồ ghế để dễ quan sát lối đi.
                 </Text>
               </View>
             </View>
@@ -106,21 +103,21 @@ export default function ResidentSlotPickerScreen() {
             <View className="flex-row flex-wrap gap-2">
               <View className="flex-row items-center gap-2 rounded-full bg-badge px-3 py-2">
                 <View className="h-3 w-3 rounded-full bg-btn-primary" />
-                <Text className="font-sans text-xs font-bold text-fg">Selected</Text>
+                <Text className="font-sans text-xs font-bold text-fg">Đã chọn</Text>
               </View>
               <View className="flex-row items-center gap-2 rounded-full bg-badge px-3 py-2">
                 <View className="h-3 w-3 rounded-full border border-border-strong bg-glass-card" />
-                <Text className="font-sans text-xs font-bold text-fg">Available</Text>
+                <Text className="font-sans text-xs font-bold text-fg">Còn trống</Text>
               </View>
               <View className="flex-row items-center gap-2 rounded-full bg-badge px-3 py-2">
                 <View className="h-3 w-3 rounded-full bg-page opacity-60" />
-                <Text className="font-sans text-xs font-bold text-fg">Taken</Text>
+                <Text className="font-sans text-xs font-bold text-fg">Đã có xe</Text>
               </View>
             </View>
 
             {licensePlate ? (
               <View className="rounded-[18px] border border-border-theme bg-badge px-4 py-3">
-                <Label>Vehicle</Label>
+                <Label>Phương tiện</Label>
                 <Text selectable className="mt-1 font-sans text-base font-extrabold text-fg">
                   {licensePlate.toUpperCase()}
                 </Text>
@@ -131,10 +128,10 @@ export default function ResidentSlotPickerScreen() {
           {availabilityQuery.isLoading ? (
             <GlassCard className="gap-1">
               <Text className="font-sans text-base font-extrabold text-fg">
-                Loading slot map...
+                Đang tải sơ đồ chỗ đỗ...
               </Text>
               <Text className="font-sans text-sm text-subtle">
-                Pulling the latest resident slot availability.
+                Đang lấy dữ liệu chỗ cư dân mới nhất.
               </Text>
             </GlassCard>
           ) : null}
@@ -142,10 +139,10 @@ export default function ResidentSlotPickerScreen() {
           {!availabilityQuery.isLoading && !availability?.floors.length ? (
             <GlassCard className="gap-1">
               <Text className="font-sans text-base font-extrabold text-fg">
-                No resident car slots available
+                Hiện không còn chỗ ô tô cư dân
               </Text>
               <Text className="font-sans text-sm leading-5 text-subtle">
-                All fixed resident slots are occupied right now. Please try again later.
+                Tất cả chỗ đỗ cố định của cư dân đều đã kín. Vui lòng thử lại sau.
               </Text>
             </GlassCard>
           ) : null}
@@ -157,24 +154,24 @@ export default function ResidentSlotPickerScreen() {
               <GlassCard key={entry.floor._id} className="gap-4">
                 <View className="flex-row items-start justify-between gap-3">
                   <View className="flex-1 gap-1">
-                    <Label>Floor B{entry.floor.floorNumber}</Label>
+                    <Label>Tầng B{entry.floor.floorNumber}</Label>
                     <Text className="font-sans text-xl font-extrabold text-fg">
-                      {entry.floor.building?.name ?? "Resident parking"}
+                      {entry.floor.building?.name ?? "Khu gửi xe cư dân"}
                     </Text>
                     <Text className="font-sans text-sm text-subtle">
-                      {entry.availableCount}/{entry.floor.totalSlots} slots available
+                      {entry.availableCount}/{entry.floor.totalSlots} chỗ còn trống
                     </Text>
                   </View>
                   <View className="rounded-full bg-badge px-3 py-1.5">
                     <Text className="font-sans text-xs font-bold uppercase text-fg">
-                      Screen side
+                      Hướng màn hình
                     </Text>
                   </View>
                 </View>
 
                 <View className="items-center rounded-full border border-dashed border-border-strong py-2">
                   <Text className="font-sans text-xs font-bold uppercase tracking-[2px] text-faint">
-                    Entry lane
+                    Lối vào
                   </Text>
                 </View>
 
@@ -228,7 +225,7 @@ export default function ResidentSlotPickerScreen() {
                                       : "text-faint"
                                 }`}
                               >
-                                {isAvailable ? "Open" : slot.status}
+                                {isAvailable ? "Còn trống" : formatSlotStatus(slot.status)}
                               </Text>
                             </View>
                           </Pressable>
@@ -246,14 +243,14 @@ export default function ResidentSlotPickerScreen() {
           <GlassCard className="gap-3">
             <View className="flex-row items-center justify-between gap-3">
               <View className="flex-1 gap-1">
-                <Label>Selected slot</Label>
+                <Label>Chỗ đã chọn</Label>
                 <Text className="font-sans text-lg font-extrabold text-fg">
-                  {selectedSlot ? selectedSlot.slot.slotCode : "No slot selected"}
+                  {selectedSlot ? selectedSlot.slot.slotCode : "Chưa chọn chỗ"}
                 </Text>
                 <Text className="font-sans text-sm text-subtle">
                   {selectedSlot
-                    ? `Floor B${selectedSlot.floor.floorNumber}`
-                    : "Tap an open slot to bind it to this resident plan."}
+                    ? `Tầng B${selectedSlot.floor.floorNumber}`
+                    : "Hãy chạm vào một chỗ trống để liên kết với gói cư dân này."}
                 </Text>
               </View>
               <View className="h-11 w-11 items-center justify-center rounded-full bg-badge">
@@ -273,7 +270,7 @@ export default function ResidentSlotPickerScreen() {
                   selectedSlot ? "text-btn-primary-fg" : "text-faint"
                 }`}
               >
-                Use this resident slot
+                Dùng chỗ đỗ này
               </Text>
             </Pressable>
           </GlassCard>

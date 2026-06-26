@@ -36,23 +36,23 @@ export default function Profile() {
 
   const profileItems = currentUser
     ? [
-        ["Full name", currentUser.fullName],
+        ["Họ và tên", currentUser.fullName],
         ["Email", currentUser.email],
-        ["Phone", currentUser.phone || "Not updated"],
-        ["Role", formatRole(currentUser.role)],
-        ["Status", currentUser.isActive ? "Active" : "Inactive"],
+        ["Số điện thoại", currentUser.phone || "Chưa cập nhật"],
+        ["Vai trò", formatRole(currentUser.role)],
+        ["Trạng thái", currentUser.isActive ? "Đang hoạt động" : "Ngừng hoạt động"],
       ]
     : [];
 
   const handleLogout = async () => {
     try {
       await logoutMutation.mutateAsync();
-      toast.success("Logged out", {
-        description: "Your session has been cleared.",
+      toast.success("Đăng xuất thành công", {
+        description: "Phiên đăng nhập của bạn đã được xóa.",
       });
     } catch {
-      toast.info("Logged out", {
-        description: "Your local session has been cleared.",
+      toast.info("Đăng xuất thất bại", {
+        description: "Đã xảy ra lỗi khi đăng xuất.",
       });
     }
   };
@@ -78,9 +78,9 @@ export default function Profile() {
 
   return (
     <Page
-      eyebrow="Account"
-      title={currentUser?.fullName ?? "Profile"}
-      subtitle="Your parking account details from the building management system."
+      eyebrow="Tài khoản"
+      title={currentUser?.fullName ?? "Hồ sơ"}
+      subtitle="Thông tin tài khoản gửi xe của bạn trong hệ thống quản lý tòa nhà."
     >
       <ScrollView
         contentInsetAdjustmentBehavior="automatic"
@@ -92,7 +92,7 @@ export default function Profile() {
               <Ionicons name="person" color={iconPrimary} size={30} />
             </View>
             <Text className="font-sans text-base font-extrabold text-fg">
-              Loading profile...
+              Đang tải hồ sơ...
             </Text>
           </GlassCard>
         ) : currentUser ? (
@@ -136,9 +136,9 @@ export default function Profile() {
               onPress={handleOpenMySubscription}
             >
               <View className="gap-1">
-                <Label>Subscriptions</Label>
+                <Label>Gói gửi xe</Label>
                 <Text className="font-sans text-base font-extrabold text-fg">
-                  View my subscriptions
+                  Xem các gói của tôi
                 </Text>
               </View>
               <Ionicons name="chevron-forward" color={iconPrimary} size={20} />
@@ -153,7 +153,7 @@ export default function Profile() {
                 onPress={handleLogout}
               >
                 <Text className="font-sans text-base font-extrabold text-btn-primary-fg">
-                  {logoutMutation.isPending ? "Signing out..." : "Sign out"}
+                  {logoutMutation.isPending ? "Đang đăng xuất..." : "Đăng xuất"}
                 </Text>
               </Pressable>
             </View>
@@ -165,16 +165,16 @@ export default function Profile() {
             </View>
             <View className="gap-1">
               <Text className="font-sans text-xl font-extrabold text-fg">
-                Sign in required
+                Cần đăng nhập
               </Text>
               <Text className="font-sans text-sm leading-5 text-subtle">
-                Sign in to view your account profile.
+                Đăng nhập để xem hồ sơ tài khoản của bạn.
               </Text>
             </View>
             <Link href="/(auth)/login" asChild>
               <Pressable className="items-center rounded-full bg-btn-primary py-4">
                 <Text className="font-sans text-base font-extrabold text-btn-primary-fg">
-                  Sign in
+                  Đăng nhập
                 </Text>
               </Pressable>
             </Link>
@@ -185,7 +185,7 @@ export default function Profile() {
         {error ? (
           <GlassCard className="gap-2 border border-border-strong">
             <Text className="font-sans text-sm leading-5 text-subtle">
-              {error instanceof Error ? error.message : "Cannot load profile."}
+              {error instanceof Error ? error.message : "Không thể tải hồ sơ."}
             </Text>
           </GlassCard>
         ) : null}

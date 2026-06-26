@@ -48,12 +48,7 @@ export const subscriptionSlotSchema = z.object({
   available: z.boolean().optional(),
 });
 
-export const subscriptionStatusSchema = z.enum([
-  "pending",
-  "active",
-  "expired",
-  "cancelled",
-]);
+export const subscriptionStatusSchema = z.enum(["pending", "active", "expired", "cancelled"]);
 
 export const subscriptionSchema = z.object({
   _id: z.string().min(1),
@@ -82,8 +77,8 @@ export const subscriptionPaymentSchema = z.object({
 });
 
 export const purchaseSubscriptionPayloadSchema = z.object({
-  planId: z.string().min(1, "Plan is required."),
-  licensePlate: z.string().trim().min(1, "License plate is required."),
+  planId: z.string().min(1, "Gói gửi xe là bắt buộc."),
+  licensePlate: z.string().trim().min(1, "Biển số xe là bắt buộc."),
   slotId: z.string().min(1).optional(),
 });
 

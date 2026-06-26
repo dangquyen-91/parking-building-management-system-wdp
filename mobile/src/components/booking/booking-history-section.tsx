@@ -1,6 +1,6 @@
 import type { Booking, StoredGuestBooking } from "@/types/bookings";
 import { GlassCard, Label } from "@/components/parking-ui";
-import { formatDateTime, formatMoney } from "@/utils/format";
+import { formatBookingStatus, formatDateTime, formatMoney } from "@/utils/format";
 import { Text, View } from "@/tw";
 
 const getStatusTone = (status: Booking["status"]) => {
@@ -40,12 +40,11 @@ function BookingHistoryCard({
             booking.status,
           )}`}
         >
-          {booking.status}
+          {formatBookingStatus(booking.status)}
         </Text>
       </View>
       <Text className="font-sans text-sm text-subtle">
-        {formatDateTime(booking.expectedArrivalTime)} -{" "}
-        {formatDateTime(booking.expectedExitTime)}
+        {formatDateTime(booking.expectedArrivalTime)} - {formatDateTime(booking.expectedExitTime)}
       </Text>
       <Text className="font-sans text-sm font-bold text-muted">
         {formatMoney(booking.amount)}
@@ -76,16 +75,12 @@ export function BookingHistorySection({
       <View className="flex-row items-center justify-between">
         <Label>{label}</Label>
         {isFetching ? (
-          <Text className="font-sans text-xs font-bold text-subtle">Loading</Text>
+          <Text className="font-sans text-xs font-bold text-subtle">Đang tải</Text>
         ) : null}
       </View>
 
       {bookings.slice(0, 3).map((booking) => (
-        <BookingHistoryCard
-          key={booking._id}
-          booking={booking}
-          showEmail={showEmail}
-        />
+        <BookingHistoryCard key={booking._id} booking={booking} showEmail={showEmail} />
       ))}
 
       {!isFetching && bookings.length === 0 ? (

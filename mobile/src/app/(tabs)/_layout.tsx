@@ -44,8 +44,8 @@ const TabsLayout = () => {
           tabBarIcon: ({ color, focused }) => (
             <Ionicons name={focused ? "home" : "home"} color={color} size={24} />
           ),
-          tabBarLabel: "Home",
-          title: "Home",
+          tabBarLabel: "Trang chủ",
+          title: "Trang chủ",
         }}
       />
       <Tabs.Screen
@@ -54,8 +54,8 @@ const TabsLayout = () => {
           tabBarIcon: ({ color, focused }) => (
             <Ionicons name={focused ? "calendar" : "calendar"} color={color} size={24} />
           ),
-          tabBarLabel: "Booking",
-          title: "Booking",
+          tabBarLabel: "Đặt chỗ",
+          title: "Đặt chỗ",
         }}
       />
       <Tabs.Screen
@@ -64,8 +64,8 @@ const TabsLayout = () => {
           tabBarIcon: ({ color, focused }) => (
             <Ionicons name={focused ? "card" : "card-outline"} color={color} size={24} />
           ),
-          tabBarLabel: "Subscription",
-          title: "Subscription",
+          tabBarLabel: "Gói tháng",
+          title: "Gói tháng",
         }}
       />
       <Tabs.Screen
@@ -74,8 +74,8 @@ const TabsLayout = () => {
           tabBarIcon: ({ color, focused }) => (
             <Ionicons name={focused ? "person" : "person"} color={color} size={24} />
           ),
-          tabBarLabel: "Profile",
-          title: "Profile",
+          tabBarLabel: "Hồ sơ",
+          title: "Hồ sơ",
         }}
       />
     </Tabs>

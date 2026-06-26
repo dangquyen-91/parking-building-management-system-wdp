@@ -2,9 +2,9 @@ import { useAppTheme } from "../providers/theme-provider";
 import { Pressable, Text, View } from "../tw";
 
 const OPTIONS = [
-  { label: "System", value: "system" },
-  { label: "Light", value: "light" },
-  { label: "Dark", value: "dark" },
+  { label: "Theo máy", value: "system" },
+  { label: "Sáng", value: "light" },
+  { label: "Tối", value: "dark" },
 ] as const;
 
 export function ThemeToggle() {
@@ -13,7 +13,7 @@ export function ThemeToggle() {
   return (
     <View className="gap-3 rounded-[18px] border border-border-theme bg-glass-card p-4">
       <Text className="font-sans text-xs font-bold uppercase text-faint">
-        Appearance
+        Giao diện
       </Text>
       <View className="flex-row rounded-full border border-border-theme bg-badge p-1">
         {OPTIONS.map((option) => {
@@ -39,7 +39,7 @@ export function ThemeToggle() {
         })}
       </View>
       <Text className="font-sans text-sm leading-5 text-subtle">
-        Choose a fixed theme or follow your device appearance automatically.
+        Chọn giao diện cố định hoặc tự động theo thiết bị của bạn.
       </Text>
     </View>
   );

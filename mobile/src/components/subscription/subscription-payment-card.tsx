@@ -1,19 +1,7 @@
 import { GlassCard, Label } from "@/components/parking-ui";
 import type { PurchaseSubscriptionResult } from "@/types/subscriptions";
-import { formatMoney } from "@/utils/format";
+import { formatMoney, formatSubscriptionStatus } from "@/utils/format";
 import { Pressable, Text, View } from "@/tw";
-
-const getSubscriptionTone = (status: PurchaseSubscriptionResult["subscription"]["status"]) => {
-  if (status === "active") {
-    return "text-btn-primary";
-  }
-
-  if (status === "expired" || status === "cancelled") {
-    return "text-faint";
-  }
-
-  return "text-fg";
-};
 
 type SubscriptionPaymentCardProps = {
   confirmPending: boolean;
@@ -32,20 +20,16 @@ export function SubscriptionPaymentCard({
     <GlassCard className="gap-4">
       <View className="flex-row items-start justify-between gap-3">
         <View className="flex-1 gap-1">
-          <Label>Payment pending</Label>
+          <Label>Đang chờ thanh toán</Label>
           <Text className="font-sans text-xl font-extrabold text-fg">
             {formatMoney(purchaseResult.payment.amount)}
           </Text>
           <Text className="font-sans text-sm text-subtle">
-            Order #{purchaseResult.payment.orderCode}
+            Đơn hàng #{purchaseResult.payment.orderCode}
           </Text>
         </View>
-        <Text
-          className={`rounded-full bg-badge px-3 py-1 font-sans text-xs font-bold uppercase ${getSubscriptionTone(
-            purchaseResult.subscription.status,
-          )}`}
-        >
-          {purchaseResult.subscription.status}
+        <Text className="rounded-full bg-badge px-3 py-1 font-sans text-xs font-bold uppercase text-fg">
+          {formatSubscriptionStatus(purchaseResult.subscription.status)}
         </Text>
       </View>
 
@@ -64,7 +48,7 @@ export function SubscriptionPaymentCard({
           onPress={() => onOpenPayment(purchaseResult.payment.checkoutUrl)}
         >
           <Text className="font-sans text-base font-extrabold text-btn-primary-fg">
-            Open payment
+            Mở trang thanh toán
           </Text>
         </Pressable>
       </View>

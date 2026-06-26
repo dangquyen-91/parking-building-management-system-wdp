@@ -15,21 +15,21 @@ export function BookingEstimateCard({
     <GlassCard className="gap-3">
       <View className="flex-row items-center justify-between">
         <View className="gap-1">
-          <Label>Estimate</Label>
+          <Label>Chi phí dự kiến</Label>
           <Text className="font-sans text-xl font-extrabold text-fg">
-            {estimatedAmount ? formatMoney(estimatedAmount) : "Check time range"}
+            {estimatedAmount ? formatMoney(estimatedAmount) : "Chọn khung thời gian"}
           </Text>
         </View>
         <View className="items-end gap-1">
-          <Label>Duration</Label>
+          <Label>Thời lượng</Label>
           <Text className="font-sans text-base font-bold text-muted">
-            {selectedDurationHours ? `${selectedDurationHours}h` : "--"}
+            {selectedDurationHours ? `${selectedDurationHours} giờ` : "--"}
           </Text>
         </View>
       </View>
       <Text className="font-sans text-sm leading-5 text-subtle">
-        Car parking is charged at 35,000 VND per 4-hour block, rounded up. For
-        example, 5-8 hours is 70,000 VND and 9-12 hours is 105,000 VND.
+        Ô tô được tính 35.000 VND cho mỗi block 4 giờ và sẽ làm tròn lên. Ví dụ 5-8 giờ là 70.000
+        VND, còn 9-12 giờ là 105.000 VND.
       </Text>
     </GlassCard>
   );

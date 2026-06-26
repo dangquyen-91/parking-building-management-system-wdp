@@ -12,17 +12,16 @@ import {
   formatDate,
   formatDateTimeWithYear,
   formatMoney,
+  formatSubscriptionStatus,
   formatVehicleType,
 } from "@/utils/format";
 import { Pressable, ScrollView, Text, View } from "@/tw";
 
-const getSingleParam = (value?: string | string[]) =>
-  typeof value === "string" ? value : null;
+const getSingleParam = (value?: string | string[]) => (typeof value === "string" ? value : null);
 
 const sortSubscriptions = (subscriptions: Subscription[]) =>
   [...subscriptions].sort(
-    (left, right) =>
-      new Date(right.updatedAt).getTime() - new Date(left.updatedAt).getTime(),
+    (left, right) => new Date(right.updatedAt).getTime() - new Date(left.updatedAt).getTime(),
   );
 
 export default function SubscriptionDetailsScreen() {
@@ -84,10 +83,10 @@ export default function SubscriptionDetailsScreen() {
 
     try {
       await subscriptionQrMutation.mutateAsync(selectedSubscription._id);
-      toast.success("QR refreshed");
+      toast.success("Đã làm mới mã QR");
     } catch (error) {
-      toast.error("Cannot load QR", {
-        description: error instanceof Error ? error.message : "Please try again later.",
+      toast.error("Không thể tải mã QR", {
+        description: error instanceof Error ? error.message : "Vui lòng thử lại sau.",
       });
     }
   };
@@ -97,15 +96,15 @@ export default function SubscriptionDetailsScreen() {
       <Stack.Screen
         options={{
           headerShown: false,
-          headerBackTitle: "Back",
-          headerTitle: "Subscription details",
+          headerBackTitle: "Quay lại",
+          headerTitle: "Chi tiết gói gửi xe",
         }}
       />
 
       <Page
-        eyebrow="Resident access"
-        title="Subscription details"
-        subtitle="Review your resident parking plan, assigned slot, and entry QR in one place."
+        eyebrow="Ra vào cư dân"
+        title="Chi tiết gói gửi xe"
+        subtitle="Xem gói gửi xe cư dân, chỗ đỗ được cấp và mã QR ra vào tại một nơi."
       >
         <ScrollView
           contentInsetAdjustmentBehavior="automatic"
@@ -120,28 +119,28 @@ export default function SubscriptionDetailsScreen() {
           {!currentUser ? (
             <GlassCard className="gap-2">
               <Text className="font-sans text-base font-extrabold text-fg">
-                Sign in required
+                Cần đăng nhập
               </Text>
               <Text className="font-sans text-sm text-subtle">
-                Sign in to view your resident subscription details and QR code.
+                Đăng nhập để xem chi tiết gói cư dân và mã QR của bạn.
               </Text>
             </GlassCard>
           ) : mySubscriptionsQuery.isLoading ? (
             <GlassCard className="gap-2">
               <Text className="font-sans text-base font-extrabold text-fg">
-                Loading subscription...
+                Đang tải gói gửi xe...
               </Text>
               <Text className="font-sans text-sm text-subtle">
-                Pulling your latest resident subscription data.
+                Đang lấy dữ liệu gói cư dân mới nhất của bạn.
               </Text>
             </GlassCard>
           ) : !selectedSubscription ? (
             <GlassCard className="gap-2">
               <Text className="font-sans text-base font-extrabold text-fg">
-                Subscription not found
+                Không tìm thấy gói gửi xe
               </Text>
               <Text className="font-sans text-sm text-subtle">
-                This subscription may no longer exist or does not belong to your account.
+                Gói này có thể không còn tồn tại hoặc không thuộc tài khoản của bạn.
               </Text>
             </GlassCard>
           ) : (
@@ -149,7 +148,7 @@ export default function SubscriptionDetailsScreen() {
               <GlassCard className="gap-4">
                 <View className="flex-row items-start justify-between gap-3">
                   <View className="flex-1 gap-1">
-                    <Label>Resident plan</Label>
+                    <Label>Gói cư dân</Label>
                     <Text className="font-sans text-2xl font-black text-fg">
                       {selectedSubscription.planId.name}
                     </Text>
@@ -160,7 +159,7 @@ export default function SubscriptionDetailsScreen() {
                   </View>
                   <View className="rounded-full bg-badge px-3 py-1.5">
                     <Text className="font-sans text-xs font-bold uppercase text-fg">
-                      {selectedSubscription.status}
+                      {formatSubscriptionStatus(selectedSubscription.status)}
                     </Text>
                   </View>
                 </View>
@@ -170,10 +169,10 @@ export default function SubscriptionDetailsScreen() {
                     {selectedSubscription.licensePlate}
                   </Text>
                   <Text className="font-sans text-sm text-subtle">
-                    Created: {formatDateTimeWithYear(selectedSubscription.createdAt)}
+                    Tạo lúc: {formatDateTimeWithYear(selectedSubscription.createdAt)}
                   </Text>
                   <Text className="font-sans text-sm text-subtle">
-                    Valid: {formatDate(selectedSubscription.startDate)} -{" "}
+                    Hiệu lực: {formatDate(selectedSubscription.startDate)} -{" "}
                     {formatDate(selectedSubscription.endDate)}
                   </Text>
                 </View>
@@ -181,43 +180,43 @@ export default function SubscriptionDetailsScreen() {
 
               <GlassCard className="gap-3">
                 <View className="gap-1">
-                  <Label>Assigned slot</Label>
+                  <Label>Chỗ đỗ được cấp</Label>
                   <Text className="font-sans text-xl font-extrabold text-fg">
-                    {selectedSubscription.slotId?.slotCode ?? "No fixed slot"}
+                    {selectedSubscription.slotId?.slotCode ?? "Chưa có chỗ cố định"}
                   </Text>
                 </View>
                 <Text className="font-sans text-sm text-subtle">
                   {selectedSubscription.slotId?.floorId?.floorNumber
-                    ? `Floor B${selectedSubscription.slotId.floorId.floorNumber}`
-                    : "This plan does not currently include a dedicated slot."}
+                    ? `Tầng B${selectedSubscription.slotId.floorId.floorNumber}`
+                    : "Gói này hiện chưa bao gồm chỗ đỗ cố định."}
                 </Text>
               </GlassCard>
 
               <GlassCard className="items-center gap-4">
                 <View className="items-center gap-1">
-                  <Label>Entry QR</Label>
+                  <Label>Mã QR ra vào</Label>
                   <Text className="font-sans text-xl font-extrabold text-fg">
-                    Resident access code
+                    Mã ra vào cư dân
                   </Text>
                 </View>
 
                 {selectedSubscription.status !== "active" ? (
                   <View className="items-center gap-2">
                     <Text className="font-sans text-sm font-bold text-fg">
-                      QR will appear after activation
+                      QR sẽ xuất hiện sau khi kích hoạt
                     </Text>
                     <Text className="text-center font-sans text-sm leading-5 text-subtle">
-                      Complete payment and confirm the subscription before using resident entry.
+                      Hãy hoàn tất thanh toán và xác nhận gói trước khi dùng cổng ra vào cư dân.
                     </Text>
                   </View>
                 ) : subscriptionQrMutation.isPending &&
                   qrData?.subscriptionId !== selectedSubscription._id ? (
                   <View className="items-center gap-2 py-10">
                     <Text className="font-sans text-base font-extrabold text-fg">
-                      Loading QR...
+                      Đang tải mã QR...
                     </Text>
                     <Text className="text-center font-sans text-sm text-subtle">
-                      Fetching your latest resident access code.
+                      Đang lấy mã ra vào cư dân mới nhất của bạn.
                     </Text>
                   </View>
                 ) : qrData?.subscriptionId === selectedSubscription._id ? (
@@ -239,7 +238,7 @@ export default function SubscriptionDetailsScreen() {
                       onPress={handleReloadQr}
                     >
                       <Text className="font-sans text-base font-extrabold text-btn-primary-fg">
-                        Refresh QR
+                        Làm mới mã QR
                       </Text>
                     </Pressable>
                   </>
@@ -250,7 +249,7 @@ export default function SubscriptionDetailsScreen() {
                     onPress={handleReloadQr}
                   >
                     <Text className="font-sans text-base font-extrabold text-btn-primary-fg">
-                      Load QR code
+                      Tải mã QR
                     </Text>
                   </Pressable>
                 )}

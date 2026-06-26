@@ -28,8 +28,7 @@ import type {
 } from "../../types/subscriptions";
 import { Pressable, ScrollView, Text } from "../../tw";
 
-const normalizeLicensePlate = (value: string) =>
-  value.toUpperCase().replace(/\s+/g, "");
+const normalizeLicensePlate = (value: string) => value.toUpperCase().replace(/\s+/g, "");
 
 const flattenAvailableCarSlots = (data?: CarSubscriptionAvailabilityResult) =>
   (data?.floors ?? []).flatMap((entry) =>
@@ -55,9 +54,7 @@ export default function SubscriptionScreen() {
   const routeLicensePlate =
     typeof params.licensePlate === "string" ? params.licensePlate : null;
   const [licensePlate, setLicensePlate] = useState(() => routeLicensePlate ?? "");
-  const [selectedPlanId, setSelectedPlanId] = useState<string | null>(
-    () => routeSelectedPlanId,
-  );
+  const [selectedPlanId, setSelectedPlanId] = useState<string | null>(() => routeSelectedPlanId);
   const selectedSlotId = routeSelectedSlotId;
   const [purchaseResult, setPurchaseResult] = useState<PurchaseSubscriptionResult | null>(null);
   const [paymentUrl, setPaymentUrl] = useState<string | null>(null);
@@ -91,17 +88,13 @@ export default function SubscriptionScreen() {
   const availableCarSlots = useMemo(
     () =>
       flattenAvailableCarSlots(
-        availabilityQuery.data?.vehicleType === "car"
-          ? availabilityQuery.data
-          : undefined,
+        availabilityQuery.data?.vehicleType === "car" ? availabilityQuery.data : undefined,
       ),
     [availabilityQuery.data],
   );
 
   const activeSubscription = useMemo(
-    () =>
-      mySubscriptionsQuery.data?.subscriptions.find((item) => item.status === "active") ??
-      null,
+    () => mySubscriptionsQuery.data?.subscriptions.find((item) => item.status === "active") ?? null,
     [mySubscriptionsQuery.data?.subscriptions],
   );
   const resolvedSelectedSlotId = useMemo(() => {
@@ -119,23 +112,23 @@ export default function SubscriptionScreen() {
 
   const handlePurchase = async () => {
     if (!selectedPlan) {
-      toast.error("Plan missing", {
-        description: "Choose a subscription plan first.",
+      toast.error("Thiếu gói đăng ký", {
+        description: "Hãy chọn một gói gửi xe trước.",
       });
       return;
     }
 
     const normalizedPlate = normalizeLicensePlate(licensePlate);
     if (!normalizedPlate) {
-      toast.error("License plate required", {
-        description: "Enter the vehicle plate to bind this subscription.",
+      toast.error("Thiếu biển số xe", {
+        description: "Nhập biển số xe để liên kết với gói này.",
       });
       return;
     }
 
     if (selectedPlan.vehicleType === "car" && !resolvedSelectedSlotId) {
-      toast.error("Slot required", {
-        description: "Choose an available resident slot for the car subscription.",
+      toast.error("Thiếu vị trí đỗ", {
+        description: "Hãy chọn một chỗ cư dân còn trống cho gói ô tô.",
       });
       return;
     }
@@ -150,12 +143,12 @@ export default function SubscriptionScreen() {
 
       setPurchaseResult(result);
       setPaymentUrl(result.payment.checkoutUrl);
-      toast.success("Subscription created", {
-        description: "Complete payment to activate your resident subscription.",
+      toast.success("Tạo gói thành công", {
+        description: "Hãy hoàn tất thanh toán để kích hoạt gói gửi xe cư dân.",
       });
     } catch (error) {
-      toast.error("Purchase failed", {
-        description: error instanceof Error ? error.message : "Please try again.",
+      toast.error("Mua gói thất bại", {
+        description: error instanceof Error ? error.message : "Vui lòng thử lại.",
       });
     }
   };
@@ -174,15 +167,12 @@ export default function SubscriptionScreen() {
       setPaymentUrl(null);
       setPurchaseResult(null);
 
-      toast.success(
-        action === "confirm" ? "Subscription synced" : "Subscription cancelled",
-        {
-          description:
-            action === "confirm"
-              ? "The payment status has been refreshed from the server."
-              : "The pending subscription has been cancelled.",
-        },
-      );
+      toast.success(action === "confirm" ? "Đã đồng bộ gói gửi xe" : "Đã hủy gói gửi xe", {
+        description:
+          action === "confirm"
+            ? "Trạng thái thanh toán đã được cập nhật từ hệ thống."
+            : "Gói đang chờ thanh toán đã được hủy.",
+      });
 
       if (action === "confirm") {
         router.push({
@@ -193,8 +183,8 @@ export default function SubscriptionScreen() {
         });
       }
     } catch (error) {
-      toast.error("Unable to sync subscription", {
-        description: error instanceof Error ? error.message : "Please refresh later.",
+      toast.error("Không thể đồng bộ gói gửi xe", {
+        description: error instanceof Error ? error.message : "Vui lòng làm mới lại sau.",
       });
     }
   };
@@ -223,7 +213,7 @@ export default function SubscriptionScreen() {
       ]);
 
       if (results.every((result) => result.isSuccess)) {
-        toast.success("Subscriptions refreshed");
+        toast.success("Đã làm mới danh sách gói");
       }
     } finally {
       setIsRefreshing(false);
@@ -260,9 +250,9 @@ export default function SubscriptionScreen() {
   if (!currentUser) {
     return (
       <Page
-        eyebrow="Resident plans"
-        title="Subscriptions"
-        subtitle="Sign in to buy monthly or quarterly resident parking plans."
+        eyebrow="Gói cư dân"
+        title="Gói gửi xe"
+        subtitle="Đăng nhập để mua gói gửi xe cư dân theo tháng hoặc theo quý."
       >
         <ScrollView
           contentInsetAdjustmentBehavior="automatic"
@@ -282,9 +272,9 @@ export default function SubscriptionScreen() {
 
   return (
     <Page
-      eyebrow="Resident plans"
-      title="Subscriptions"
-      subtitle="Choose a monthly plan, complete payment, then use your active QR for resident entry."
+      eyebrow="Gói cư dân"
+      title="Gói gửi xe"
+      subtitle="Chọn gói phù hợp, hoàn tất thanh toán rồi dùng QR đang hoạt động để ra vào."
     >
       <ScrollView
         contentInsetAdjustmentBehavior="automatic"
@@ -321,9 +311,7 @@ export default function SubscriptionScreen() {
           onPress={handlePurchase}
         >
           <Text className="font-sans text-base font-extrabold text-btn-primary-fg">
-            {purchaseSubscriptionMutation.isPending
-              ? "Creating subscription..."
-              : "Buy subscription"}
+            {purchaseSubscriptionMutation.isPending ? "Đang tạo gói..." : "Mua gói gửi xe"}
           </Text>
         </Pressable>
 
@@ -351,12 +339,11 @@ export default function SubscriptionScreen() {
             cancelSubscriptionMutation
               .mutateAsync(subscriptionId)
               .then(() => {
-                toast.success("Subscription cancelled");
+                toast.success("Đã hủy gói gửi xe");
               })
               .catch((error: unknown) => {
-                toast.error("Cancel failed", {
-                  description:
-                    error instanceof Error ? error.message : "Please try again later.",
+                toast.error("Hủy gói thất bại", {
+                  description: error instanceof Error ? error.message : "Vui lòng thử lại sau.",
                 });
               });
           }}
@@ -364,13 +351,12 @@ export default function SubscriptionScreen() {
             confirmSubscriptionMutation
               .mutateAsync(subscriptionId)
               .then((result) => {
-                toast.success("Subscription synced");
+                toast.success("Đã đồng bộ gói gửi xe");
                 handleOpenSubscriptionDetails(result.subscription._id);
               })
               .catch((error: unknown) => {
-                toast.error("Sync failed", {
-                  description:
-                    error instanceof Error ? error.message : "Please try again later.",
+                toast.error("Đồng bộ thất bại", {
+                  description: error instanceof Error ? error.message : "Vui lòng thử lại sau.",
                 });
               });
           }}

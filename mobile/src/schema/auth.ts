@@ -13,20 +13,20 @@ export const loginPayloadSchema = z.object({
   email: z
     .string()
     .trim()
-    .min(1, "Email is required.")
-    .email("Please enter a valid email address."),
-  password: z.string().min(1, "Password is required."),
+    .min(1, "Email là bắt buộc.")
+    .email("Vui lòng nhập địa chỉ email hợp lệ."),
+  password: z.string().min(1, "Mật khẩu là bắt buộc."),
 });
 
 export const registerPayloadSchema = z.object({
-  fullName: z.string().trim().min(1, "Full name is required."),
+  fullName: z.string().trim().min(1, "Họ và tên là bắt buộc."),
   email: z
     .string()
     .trim()
-    .min(1, "Email is required.")
-    .email("Please enter a valid email address."),
+    .min(1, "Email là bắt buộc.")
+    .email("Vui lòng nhập địa chỉ email hợp lệ."),
   phone: z.string().trim().optional(),
-  password: z.string().min(1, "Password is required."),
+  password: z.string().min(1, "Mật khẩu là bắt buộc."),
 });
 
 export const authSessionSchema = z.object({

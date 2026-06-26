@@ -41,9 +41,9 @@ export const createBookingPayloadSchema = z.object({
   email: z
     .string()
     .trim()
-    .min(1, "Email is required.")
-    .email("Please enter a valid email address."),
-  licensePlate: z.string().trim().min(1, "License plate is required."),
+    .min(1, "Email là bắt buộc.")
+    .email("Vui lòng nhập địa chỉ email hợp lệ."),
+  licensePlate: z.string().trim().min(1, "Biển số xe là bắt buộc."),
   expectedArrivalTime: z.string().min(1),
   expectedExitTime: z.string().min(1),
 });

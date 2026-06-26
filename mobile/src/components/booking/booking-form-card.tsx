@@ -17,7 +17,6 @@ const inputStyle = {
 
 type BookingFormCardProps = {
   arrivalTime: Date | null;
-  currentUserEmail?: string;
   email: string;
   errors: Partial<Record<BookingField, string>>;
   exitTime: Date | null;
@@ -31,7 +30,6 @@ type BookingFormCardProps = {
 
 export function BookingFormCard({
   arrivalTime,
-  currentUserEmail,
   email,
   errors,
   exitTime,
@@ -50,10 +48,9 @@ export function BookingFormCard({
         <Label>Email</Label>
         <TextInput
           autoCapitalize="none"
-          editable={!currentUserEmail}
           keyboardType="email-address"
           onChangeText={onChangeEmail}
-          placeholder="guest@example.com"
+          placeholder="nhapemail@example.com"
           placeholderTextColor={placeholder}
           style={inputStyle}
           value={email}
@@ -65,7 +62,7 @@ export function BookingFormCard({
       </View>
 
       <View className="gap-2">
-        <Label>License plate</Label>
+        <Label>Biển số xe</Label>
         <TextInput
           autoCapitalize="characters"
           onChangeText={onChangeLicensePlate}
@@ -84,7 +81,7 @@ export function BookingFormCard({
 
       <View className="gap-3">
         <View className="gap-2">
-          <Label>Arrival</Label>
+          <Label>Thời gian đến</Label>
           <View className="flex-row gap-3">
             <Pressable
               className="flex-1 rounded-[14px] border border-border-theme bg-input px-4 py-3.5"
@@ -92,7 +89,7 @@ export function BookingFormCard({
               style={inputStyle}
             >
               <Text className="font-sans text-[13px] text-fg">
-                {arrivalTime ? formatPickerDate(arrivalTime) : "Select date"}
+                {arrivalTime ? formatPickerDate(arrivalTime) : "Chọn ngày"}
               </Text>
             </Pressable>
             <Pressable
@@ -101,7 +98,7 @@ export function BookingFormCard({
               style={inputStyle}
             >
               <Text className="font-sans text-[13px] text-fg">
-                {arrivalTime ? formatPickerTime(arrivalTime) : "Select time"}
+                {arrivalTime ? formatPickerTime(arrivalTime) : "Chọn giờ"}
               </Text>
             </Pressable>
           </View>
@@ -113,7 +110,7 @@ export function BookingFormCard({
         </View>
 
         <View className="gap-2">
-          <Label>Exit</Label>
+          <Label>Thời gian rời đi</Label>
           <View className="flex-row gap-3">
             <Pressable
               className="flex-1 rounded-[14px] border border-border-theme bg-input px-4 py-3.5"
@@ -123,7 +120,7 @@ export function BookingFormCard({
               <Text className="font-sans text-[13px] text-fg">
                 {selectedDurationHours
                   ? formatDurationHours(selectedDurationHours)
-                  : "Select duration"}
+                  : "Chọn giờ gửi xe"}
               </Text>
             </Pressable>
             <View
@@ -131,9 +128,7 @@ export function BookingFormCard({
               style={inputStyle}
             >
               <Text className="font-sans text-[13px] text-fg">
-                {exitTime
-                  ? `${formatPickerDate(exitTime)} ${formatPickerTime(exitTime)}`
-                  : ""}
+                {exitTime ? `${formatPickerDate(exitTime)} ${formatPickerTime(exitTime)}` : ""}
               </Text>
             </View>
           </View>

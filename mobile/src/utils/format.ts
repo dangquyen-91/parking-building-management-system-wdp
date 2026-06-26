@@ -12,7 +12,7 @@ export const formatDate = (value?: string | null) =>
         month: "2-digit",
         year: "numeric",
       })
-    : "Not started";
+    : "Chưa bắt đầu";
 
 export const formatDateTime = (value?: string | null) =>
   value
@@ -22,7 +22,7 @@ export const formatDateTime = (value?: string | null) =>
         minute: "2-digit",
         month: "2-digit",
       })
-    : "Not available";
+    : "Chưa có";
 
 export const formatDateTimeWithYear = (value?: string | null) =>
   value
@@ -33,7 +33,7 @@ export const formatDateTimeWithYear = (value?: string | null) =>
         month: "2-digit",
         year: "numeric",
       })
-    : "Not available";
+    : "Chưa có";
 
 export const formatPickerDate = (value: Date) =>
   value.toLocaleDateString(VIETNAMESE_LOCALE, {
@@ -48,13 +48,67 @@ export const formatPickerTime = (value: Date) =>
     minute: "2-digit",
   });
 
-export const formatDurationHours = (value: number) =>
-  `${value} hour${value > 1 ? "s" : ""}`;
+export const formatDurationHours = (value: number) => `${value} tiếng`;
 
 export const formatVehicleType = (value: Plan["vehicleType"]) =>
-  value === "car" ? "Car" : "Motorcycle";
+  value === "car" ? "Ô tô" : "Xe máy";
+
+export const formatSubscriptionStatus = (value?: string | null) => {
+  switch (value) {
+    case "pending":
+      return "Chờ thanh toán";
+    case "active":
+      return "Đang hoạt động";
+    case "expired":
+      return "Hết hạn";
+    case "cancelled":
+      return "Đã hủy";
+    default:
+      return "Không xác định";
+  }
+};
+
+export const formatBookingStatus = (value?: string | null) => {
+  switch (value) {
+    case "pending":
+      return "Chờ thanh toán";
+    case "paid":
+      return "Đã thanh toán";
+    case "used":
+      return "Đã sử dụng";
+    case "expired":
+      return "Hết hạn";
+    case "cancelled":
+      return "Đã hủy";
+    default:
+      return "Không xác định";
+  }
+};
+
+export const formatSlotStatus = (value?: string | null) => {
+  switch (value) {
+    case "empty":
+      return "Trống";
+    case "occupied":
+      return "Đã có xe";
+    case "reserved":
+      return "Đã giữ chỗ";
+    case "maintenance":
+      return "Bảo trì";
+    default:
+      return "Không xác định";
+  }
+};
 
 export const formatRole = (role?: string) =>
   role
-    ? role.replace(/_/g, " ").replace(/\b\w/g, (char) => char.toUpperCase())
-    : "User";
+    ? ({
+        admin: "Quản trị viên",
+        resident: "Cư dân",
+        customer: "Khách hàng",
+        guest: "Khách vãng lai",
+        staff: "Nhân viên",
+        security: "Bảo vệ",
+      }[role.toLowerCase()] ??
+      role.replace(/_/g, " ").replace(/\b\w/g, (char) => char.toUpperCase()))
+    : "Người dùng";

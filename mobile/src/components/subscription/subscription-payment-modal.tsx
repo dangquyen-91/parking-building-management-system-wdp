@@ -34,7 +34,7 @@ export function SubscriptionPaymentModal({
           </Pressable>
 
           <Text className="font-sans text-base font-extrabold text-fg">
-            PayOS payment
+            Thanh toán PayOS
           </Text>
 
           <Pressable

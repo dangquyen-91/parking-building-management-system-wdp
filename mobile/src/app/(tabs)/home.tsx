@@ -1,81 +1,49 @@
-import { Linking } from "react-native";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import { toast } from "sonner-native";
 
 import { GlassCard, Label } from "../../components/parking-ui";
-import { useMyBookingsQuery } from "../../hooks/useBookings";
 import { useCurrentUserQuery, useLogoutMutation } from "../../hooks/useAuth";
-import type { Booking, StoredGuestBooking } from "../../types/bookings";
-import { formatDateTime, formatMoney } from "@/utils/format";
 import { Link, Pressable, ScrollView, Text, View, useThemeColors } from "../../tw";
 
 const features = [
   {
     icon: "car-sport",
-    title: "Space monitoring",
-    body: "Track available spaces by zone in real time before customers arrive.",
+    title: "Theo dõi chỗ trống",
+    body: "Cập nhật thời gian thực về tình trạng bãi xe, giúp khách hàng và cư dân dễ dàng tìm chỗ trống.",
   },
   {
     icon: "calendar",
-    title: "Fast reservations",
-    body: "Reserve parking for residents, employees, visitors, and monthly tenants.",
+    title: "Đặt chỗ nhanh",
+    body: "Đặt chỗ gửi xe cho cư dân, nhân viên, khách và người gửi theo tháng.",
   },
   {
     icon: "card",
-    title: "Tickets and payments",
-    body: "Manage monthly passes, parking sessions, payment methods, and receipts.",
+    title: "QR và thanh toán",
+    body: "Quản lý gói gửi tháng, lượt gửi xe, phương thức thanh toán và biên lai.",
   },
   {
     icon: "shield-checkmark",
-    title: "Access control",
-    body: "Connect license plates, resident cards, and access permissions in one place.",
+    title: "Kiểm soát ra vào",
+    body: "Liên kết biển số, thẻ cư dân và quyền truy cập trong cùng một nơi.",
   },
 ];
-
-const getStatusTone = (status: Booking["status"]) => {
-  if (status === "paid" || status === "used") {
-    return "text-btn-primary";
-  }
-
-  if (status === "cancelled" || status === "expired") {
-    return "text-faint";
-  }
-
-  return "text-fg";
-};
-
-const getStoredPaymentUrl = (booking: Booking | StoredGuestBooking) =>
-  (booking as StoredGuestBooking).payment?.checkoutUrl;
 
 export default function Home() {
   const { btnPrimaryFg, iconPrimary } = useThemeColors();
   const { data: currentUser } = useCurrentUserQuery();
-  const myBookingsQuery = useMyBookingsQuery(Boolean(currentUser));
   const logoutMutation = useLogoutMutation();
-  const homeBookings = currentUser ? (myBookingsQuery.data?.bookings ?? []) : [];
-  const isBookingsLoading = Boolean(currentUser) && myBookingsQuery.isFetching;
 
   const handleLogout = async () => {
     try {
       await logoutMutation.mutateAsync();
-      toast.success("Logged out", {
-        description: "Your session has been cleared.",
+      toast.success("Đăng xuất thành công", {
+        description: "Hẹn gặp lại bạn.",
       });
     } catch {
-      toast.info("Logged out", {
-        description: "Your local session has been cleared.",
+      toast.info("Đăng xuất thất bại", {
+        description: "Đã xảy ra lỗi khi đăng xuất.",
       });
     }
-  };
-
-  const openGuestPayment = async (booking: Booking | StoredGuestBooking) => {
-    const checkoutUrl = getStoredPaymentUrl(booking);
-
-    if (!checkoutUrl) {
-      return;
-    }
-
-    await Linking.openURL(checkoutUrl);
   };
 
   return (
@@ -98,7 +66,7 @@ export default function Home() {
                       numberOfLines={1}
                       className="font-sans text-sm font-extrabold text-fg"
                     >
-                      Hello, {currentUser.fullName}
+                      Xin chào, {currentUser.fullName}
                     </Text>
                   </View>
                   <Pressable
@@ -114,14 +82,14 @@ export default function Home() {
                   <Link href="/(auth)/login" asChild>
                     <Pressable className="min-w-[80px] items-center rounded-full border border-border-strong bg-badge px-4 py-2.5">
                       <Text className="font-sans text-sm font-bold text-fg">
-                        Sign in
+                        Đăng nhập
                       </Text>
                     </Pressable>
                   </Link>
                   <Link href="/(auth)/register" asChild>
                     <Pressable className="min-w-[84px] items-center rounded-full bg-btn-primary px-4 py-2.5">
                       <Text className="font-sans text-sm font-bold text-btn-primary-fg">
-                        Register
+                        Đăng ký
                       </Text>
                     </Pressable>
                   </Link>
@@ -131,14 +99,14 @@ export default function Home() {
 
             <View className="gap-2">
               <Text className="font-sans text-xs font-bold uppercase text-faint">
-                Parking building management
+                Quản lý bãi xe thông minh
               </Text>
               <Text className="font-sans text-[38px] font-black leading-[43px] text-fg">
-                Welcome to your parking system
+                Chào mừng đến với hệ thống bãi xe
               </Text>
               <Text className="font-sans text-base leading-6 text-subtle">
-                A mobile experience for customers to reserve spaces, check
-                parking status, and manage vehicle access with less friction.
+                Ứng dụng di động giúp khách hàng đặt chỗ, kiểm tra tình trạng bãi xe và quản lý
+                phương tiện thuận tiện hơn.
               </Text>
             </View>
           </View>
@@ -147,7 +115,7 @@ export default function Home() {
             <Link href="/(tabs)/booking" asChild>
               <Pressable className="items-center rounded-full bg-btn-primary py-4">
                 <Text className="font-sans text-base font-extrabold text-btn-primary-fg">
-                  Book a space
+                  Đặt chỗ gửi xe
                 </Text>
               </Pressable>
             </Link>
@@ -155,7 +123,7 @@ export default function Home() {
             <Link href="/(tabs)/subscription" asChild>
               <Pressable className="items-center rounded-full border border-border-strong bg-badge py-4">
                 <Text className="font-sans text-base font-extrabold text-fg">
-                  Resident subscriptions
+                  Gói gửi xe cư dân
                 </Text>
               </Pressable>
             </Link>
@@ -163,7 +131,7 @@ export default function Home() {
             <Link href="/(tabs)/profile" asChild>
               <Pressable className="items-center rounded-full border border-border-strong bg-badge py-4">
                 <Text className="font-sans text-base font-extrabold text-fg">
-                  View parking profile
+                  Xem hồ sơ gửi xe
                 </Text>
               </Pressable>
             </Link>
@@ -171,88 +139,10 @@ export default function Home() {
         </View>
 
         <View className="gap-3">
-          <View className="flex-row items-center justify-between">
-            <View className="gap-1">
-              <Label>My bookings</Label>
-              <Text className="font-sans text-2xl font-black text-fg">
-                Recent reservations
-              </Text>
-            </View>
-            {isBookingsLoading ? (
-              <Text className="font-sans text-xs font-bold text-subtle">
-                Loading
-              </Text>
-            ) : null}
-          </View>
-
-          {homeBookings.slice(0, 3).map((booking) => (
-            <GlassCard key={booking._id} className="gap-3">
-              <View className="flex-row items-center justify-between gap-3">
-                <View className="flex-1 gap-1">
-                  <Text selectable className="font-sans text-lg font-extrabold text-fg">
-                    {booking.licensePlate}
-                  </Text>
-                  <Text className="font-sans text-sm text-subtle">
-                    {formatDateTime(booking.expectedArrivalTime)} -{" "}
-                    {formatDateTime(booking.expectedExitTime)}
-                  </Text>
-                </View>
-                <Text
-                  className={`font-sans text-xs font-extrabold uppercase ${getStatusTone(
-                    booking.status,
-                  )}`}
-                >
-                  {booking.status}
-                </Text>
-              </View>
-
-              <View className="flex-row items-center justify-between gap-3">
-                <Text className="font-sans text-sm font-bold text-muted">
-                  {formatMoney(booking.amount)}
-                </Text>
-                {getStoredPaymentUrl(booking) ? (
-                  <Pressable
-                    className="rounded-full bg-btn-primary px-4 py-2"
-                    onPress={() => openGuestPayment(booking)}
-                  >
-                    <Text className="font-sans text-sm font-extrabold text-btn-primary-fg">
-                      Pay
-                    </Text>
-                  </Pressable>
-                ) : null}
-              </View>
-            </GlassCard>
-          ))}
-
-          {!isBookingsLoading && homeBookings.length === 0 ? (
-            <GlassCard className="gap-3">
-              <View className="h-11 w-11 items-center justify-center rounded-[14px] bg-badge">
-                <Ionicons name="calendar-outline" color={iconPrimary} size={22} />
-              </View>
-              <View className="gap-1">
-                <Text className="font-sans text-base font-extrabold text-fg">
-                  No subscription yet
-                </Text>
-                <Text className="font-sans text-sm leading-5 text-subtle">
-                  Sign in to view and manage your recent reservations here.
-                </Text>
-              </View>
-              <Link href="/(tabs)/booking" asChild>
-                <Pressable className="items-center rounded-full bg-btn-primary py-3.5">
-                  <Text className="font-sans text-base font-extrabold text-btn-primary-fg">
-                    Get subscription
-                  </Text>
-                </Pressable>
-              </Link>
-            </GlassCard>
-          ) : null}
-        </View>
-
-        <View className="gap-3">
           <View className="gap-1">
-            <Label>Core features</Label>
+            <Label>Tính năng chính</Label>
             <Text className="font-sans text-2xl font-black text-fg">
-              Built for parking customers
+              Dành cho khách và cư dân
             </Text>
           </View>
 

@@ -28,10 +28,8 @@ type SubscriptionPurchaseFormCardProps = {
   selectedSlotId: string | null;
 };
 
-const findSelectedCarSlot = (
-  availableCarSlots: AvailableCarSlot[],
-  selectedSlotId: string | null,
-) => availableCarSlots.find(({ slot }) => slot._id === selectedSlotId) ?? null;
+const findSelectedCarSlot = (availableCarSlots: AvailableCarSlot[], selectedSlotId: string | null) =>
+  availableCarSlots.find(({ slot }) => slot._id === selectedSlotId) ?? null;
 
 export function SubscriptionPurchaseFormCard({
   availableCarSlots,
@@ -58,18 +56,17 @@ export function SubscriptionPurchaseFormCard({
         </View>
         <View className="flex-1 gap-1">
           <Text className="font-sans text-lg font-extrabold text-fg">
-            Buy a resident plan
+            Mua gói gửi xe cư dân
           </Text>
           <Text className="font-sans text-sm leading-5 text-subtle">
-            Car plans reserve a fixed resident slot. Motorcycle plans share resident
-            capacity.
+            Gói ô tô sẽ giữ một chỗ cố định. Gói xe máy dùng chung sức chứa cư dân.
           </Text>
         </View>
       </View>
 
       <View className="gap-3">
         <View className="gap-2">
-          <Label>License plate</Label>
+          <Label>Biển số xe</Label>
           <TextInput
             autoCapitalize="characters"
             onChangeText={onChangeLicensePlate}
@@ -81,11 +78,11 @@ export function SubscriptionPurchaseFormCard({
         </View>
 
         <View className="gap-2">
-          <Label>Choose plan</Label>
+          <Label>Chọn gói</Label>
           {plansLoading ? (
             <GlassCard className="gap-1">
               <Text className="font-sans text-base font-extrabold text-fg">
-                Loading plans...
+                Đang tải danh sách gói...
               </Text>
             </GlassCard>
           ) : (
@@ -117,7 +114,7 @@ export function SubscriptionPurchaseFormCard({
                             isSelected ? "text-btn-primary-fg" : "text-subtle"
                           }`}
                         >
-                          {formatVehicleType(plan.vehicleType)} - {plan.durationDays} days
+                          {formatVehicleType(plan.vehicleType)} - {plan.durationDays} ngày
                         </Text>
                         {plan.description ? (
                           <Text
@@ -147,9 +144,9 @@ export function SubscriptionPurchaseFormCard({
         {selectedPlan?.vehicleType === "car" ? (
           <View className="gap-2">
             <View className="flex-row items-center justify-between gap-3">
-              <Label>Resident car slot</Label>
+              <Label>Chỗ ô tô cư dân</Label>
               {availabilityLoading ? (
-                <Text className="font-sans text-xs font-bold text-subtle">Loading</Text>
+                <Text className="font-sans text-xs font-bold text-subtle">Đang tải</Text>
               ) : null}
             </View>
 
@@ -158,25 +155,25 @@ export function SubscriptionPurchaseFormCard({
                 <View className="flex-row items-start justify-between gap-3">
                   <View className="flex-1 gap-1">
                     <Text className="font-sans text-base font-extrabold text-fg">
-                      {selectedCarSlot?.slot.slotCode ?? "Choose your resident slot"}
+                      {selectedCarSlot?.slot.slotCode ?? "Chọn chỗ đỗ cư dân"}
                     </Text>
                     {selectedCarSlot ? (
                       <Text className="font-sans text-sm text-subtle">
-                        {`Floor B${selectedCarSlot.floor.floorNumber} - ${
+                        {`Tầng B${selectedCarSlot.floor.floorNumber} - ${
                           selectedCarSlot.floor.building?.name ??
                           selectedCarSlot.floor.building?.address ??
-                          "Resident building"
+                          "Khu cư dân"
                         }`}
                       </Text>
                     ) : (
                       <Text className="font-sans text-sm leading-5 text-subtle">
-                        Open the resident slot map and pick a space like choosing a cinema seat.
+                        Mở sơ đồ chỗ đỗ cư dân và chọn vị trí giống như chọn ghế trong rạp.
                       </Text>
                     )}
                   </View>
                   <View className="rounded-full bg-badge px-3 py-1.5">
                     <Text className="font-sans text-xs font-bold uppercase text-fg">
-                      {availableCarSlots.length} open
+                      {availableCarSlots.length} chỗ trống
                     </Text>
                   </View>
                 </View>
@@ -186,32 +183,32 @@ export function SubscriptionPurchaseFormCard({
                   onPress={onOpenSlotPicker}
                 >
                   <Text className="font-sans text-base font-extrabold text-btn-primary-fg">
-                    {selectedCarSlot ? "Change slot in map" : "Open slot map"}
+                    {selectedCarSlot ? "Đổi chỗ trên sơ đồ" : "Mở sơ đồ chỗ đỗ"}
                   </Text>
                 </Pressable>
               </GlassCard>
             ) : (
               <GlassCard className="gap-1">
                 <Text className="font-sans text-base font-extrabold text-fg">
-                  No resident car slots available
+                  Hiện không còn chỗ ô tô cư dân
                 </Text>
                 <Text className="font-sans text-sm leading-5 text-subtle">
-                  Try again later or choose another plan after a slot becomes free.
+                  Hãy thử lại sau hoặc chọn gói khác khi có chỗ trống.
                 </Text>
               </GlassCard>
             )}
           </View>
         ) : selectedPlan?.vehicleType === "motorcycle" ? (
           <GlassCard className="gap-2">
-            <Label>Resident motorcycle capacity</Label>
+            <Label>Sức chứa xe máy cư dân</Label>
             <Text className="font-sans text-xl font-extrabold text-fg">
               {motorcycleAvailability
-                ? `${motorcycleAvailability.availableCount} spots left`
-                : "Checking capacity..."}
+                ? `${motorcycleAvailability.availableCount} chỗ còn lại`
+                : "Đang kiểm tra sức chứa..."}
             </Text>
             {motorcycleAvailability ? (
               <Text className="font-sans text-sm leading-5 text-subtle">
-                {motorcycleAvailability.soldCount}/{motorcycleAvailability.totalCapacity} sold.
+                Đã bán {motorcycleAvailability.soldCount}/{motorcycleAvailability.totalCapacity}.
                 {motorcycleAvailability.note ? ` ${motorcycleAvailability.note}` : ""}
               </Text>
             ) : null}

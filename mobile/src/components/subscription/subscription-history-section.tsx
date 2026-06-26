@@ -4,6 +4,7 @@ import {
   formatDate,
   formatDateTimeWithYear,
   formatMoney,
+  formatSubscriptionStatus,
   formatVehicleType,
 } from "@/utils/format";
 import { Pressable, Text, View } from "@/tw";
@@ -43,14 +44,14 @@ export function SubscriptionHistorySection({
     <View className="gap-3">
       <View className="gap-1">
         <View className="gap-1">
-          <Label>My subscriptions</Label>
+          <Label>Gói của tôi</Label>
           <Text className="font-sans text-2xl font-black text-fg">
-            Purchase history
+            Lịch sử mua gói
           </Text>
         </View>
         {isFetching ? (
           <Text className="font-sans text-xs font-bold text-subtle">
-            Refreshing...
+            Đang làm mới...
           </Text>
         ) : null}
       </View>
@@ -71,24 +72,23 @@ export function SubscriptionHistorySection({
                 subscription.status,
               )}`}
             >
-              {subscription.status}
+              {formatSubscriptionStatus(subscription.status)}
             </Text>
           </View>
 
           <View className="gap-1">
             <Text className="font-sans text-sm text-subtle">
-              {formatVehicleType(subscription.vehicleType)} -{" "}
-              {formatMoney(subscription.planId.price)}
+              {formatVehicleType(subscription.vehicleType)} - {formatMoney(subscription.planId.price)}
             </Text>
             <Text className="font-sans text-sm text-subtle">
-              Created: {formatDateTimeWithYear(subscription.createdAt)}
+              Tạo lúc: {formatDateTimeWithYear(subscription.createdAt)}
             </Text>
             <Text className="font-sans text-sm text-subtle">
-              Valid: {formatDate(subscription.startDate)} - {formatDate(subscription.endDate)}
+              Hiệu lực: {formatDate(subscription.startDate)} - {formatDate(subscription.endDate)}
             </Text>
             {subscription.slotId?.slotCode ? (
               <Text className="font-sans text-sm text-subtle">
-                Slot: {subscription.slotId.slotCode}
+                Chỗ đỗ: {subscription.slotId.slotCode}
               </Text>
             ) : null}
           </View>
@@ -101,7 +101,7 @@ export function SubscriptionHistorySection({
                 onPress={() => onConfirm(subscription._id)}
               >
                 <Text className="font-sans text-sm font-extrabold text-btn-primary-fg">
-                  Confirm payment
+                  Xác nhận thanh toán
                 </Text>
               </Pressable>
               <Pressable
@@ -110,7 +110,7 @@ export function SubscriptionHistorySection({
                 onPress={() => onCancel(subscription._id)}
               >
                 <Text className="font-sans text-sm font-extrabold text-fg">
-                  Cancel
+                  Hủy
                 </Text>
               </Pressable>
             </View>
@@ -120,7 +120,7 @@ export function SubscriptionHistorySection({
               onPress={() => onViewDetails(subscription._id)}
             >
               <Text className="font-sans text-sm font-extrabold text-fg">
-                View details
+                Xem chi tiết
               </Text>
             </Pressable>
           ) : null}
@@ -130,10 +130,10 @@ export function SubscriptionHistorySection({
       {!isFetching && subscriptions.length === 0 ? (
         <GlassCard className="gap-1">
           <Text className="font-sans text-base font-extrabold text-fg">
-            No subscriptions yet
+            Chưa có gói gửi xe nào
           </Text>
           <Text className="font-sans text-sm text-subtle">
-            Buy a resident plan above and it will appear here after creation.
+            Hãy mua một gói cư dân ở phía trên, gói sẽ xuất hiện tại đây sau khi được tạo.
           </Text>
         </GlassCard>
       ) : null}

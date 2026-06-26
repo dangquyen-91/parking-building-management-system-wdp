@@ -60,13 +60,13 @@ export default function Register() {
         ...validation.data,
         phone: validation.data.phone || undefined,
       });
-      toast.success("Account created", {
-        description: "Please sign in with your new account.",
+      toast.success("Tạo tài khoản thành công", {
+        description: "Vui lòng đăng nhập bằng tài khoản mới.",
       });
       router.replace("/(auth)/login");
     } catch (error) {
-      toast.error("Registration failed", {
-        description: error instanceof Error ? error.message : "Please try again.",
+      toast.error("Đăng ký thất bại", {
+        description: error instanceof Error ? error.message : "Vui lòng thử lại.",
       });
     }
   };
@@ -109,7 +109,7 @@ export default function Register() {
             <Link href="/(auth)/login" asChild>
               <Pressable className="min-w-[80px] items-center rounded-full border border-border-strong bg-badge px-4 py-2.5">
                 <Text className="font-sans text-sm font-bold text-fg">
-                  Đăng ký
+                  Đăng nhập
                 </Text>
               </Pressable>
             </Link>
@@ -117,28 +117,27 @@ export default function Register() {
 
           <View className="gap-3">
             <Text className="font-sans text-xs font-bold uppercase text-faint">
-              New parking member
+              Thành viên bãi xe mới
             </Text>
             <Text className="font-sans text-[36px] font-black leading-[41px] text-fg">
-              Create a parking account
+              Tạo tài khoản gửi xe
             </Text>
             <Text className="font-sans text-base leading-6 text-subtle">
-              Register to reserve spaces faster, save vehicles, and track parking
-              passes.
+              Đăng ký để đặt chỗ nhanh hơn, lưu phương tiện và theo dõi các gói gửi xe.
             </Text>
           </View>
 
           <View className="gap-4 rounded-[22px] border border-border-theme bg-glass-card p-4">
             <View className="gap-2">
               <Text className="font-sans text-sm font-bold text-muted">
-                Full name
+                Họ và tên
               </Text>
               <TextInput
                 onChangeText={(value) => {
                   setFullName(value);
                   setErrors((current) => ({ ...current, fullName: undefined }));
                 }}
-                placeholder="Lam Hoang"
+                placeholder="Lâm Hoàng"
                 placeholderTextColor={placeholder}
                 value={fullName}
                 className="rounded-[16px] border border-border-theme bg-input py-4 pl-5 pr-4 font-sans text-base text-fg"
@@ -175,7 +174,7 @@ export default function Register() {
 
             <View className="gap-2">
               <Text className="font-sans text-sm font-bold text-muted">
-                Phone number
+                Số điện thoại
               </Text>
               <TextInput
                 keyboardType="phone-pad"
@@ -197,7 +196,7 @@ export default function Register() {
 
             <View className="gap-2">
               <Text className="font-sans text-sm font-bold text-muted">
-                Password
+                Mật khẩu
               </Text>
               <View className="flex-row items-center rounded-[16px] border border-border-theme bg-input">
                 <TextInput
@@ -205,7 +204,7 @@ export default function Register() {
                     setPassword(value);
                     setErrors((current) => ({ ...current, password: undefined }));
                   }}
-                  placeholder="Create password"
+                  placeholder="Tạo mật khẩu"
                   placeholderTextColor={placeholder}
                   secureTextEntry={!showPassword}
                   value={password}
@@ -235,15 +234,15 @@ export default function Register() {
               onPress={handleRegister}
             >
               <Text className="font-sans text-base font-extrabold text-btn-primary-fg">
-                {registerMutation.isPending ? "Creating account..." : "Create account"}
+                {registerMutation.isPending ? "Đang tạo tài khoản..." : "Tạo tài khoản"}
               </Text>
             </Pressable>
           </View>
 
           <View className="rounded-[18px] bg-badge p-4">
             <Text className="font-sans text-sm leading-5 text-subtle">
-              By registering, you agree to connect your vehicle and access details
-              with the building parking management system.
+              Khi đăng ký, bạn đồng ý liên kết phương tiện và thông tin truy cập với hệ thống quản
+              lý bãi xe của tòa nhà.
             </Text>
           </View>
         </ScrollView>

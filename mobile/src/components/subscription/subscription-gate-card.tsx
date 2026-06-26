@@ -12,16 +12,16 @@ export function SubscriptionGateCard() {
       </View>
       <View className="gap-1">
         <Text className="font-sans text-xl font-extrabold text-fg">
-          Sign in required
+          Cần đăng nhập
         </Text>
         <Text className="font-sans text-sm leading-5 text-subtle">
-          Resident subscriptions are attached to your account and vehicle plate.
+          Gói gửi xe cư dân được gắn với tài khoản và biển số xe của bạn.
         </Text>
       </View>
       <Link href="/(auth)/login" asChild>
         <Pressable className="items-center rounded-full bg-btn-primary py-4">
           <Text className="font-sans text-base font-extrabold text-btn-primary-fg">
-            Sign in
+            Đăng nhập
           </Text>
         </Pressable>
       </Link>

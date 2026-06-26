@@ -8,7 +8,6 @@ import {
   BookingDurationModal,
   BookingEstimateCard,
   BookingFormCard,
-  BookingHistorySection,
   BookingPaymentCard,
   BookingPaymentModal,
   BookingPickerModal,
@@ -23,7 +22,6 @@ import {
   useGuestBookingsQuery,
   useUpsertGuestBookingMutation,
   useSaveGuestBookingMutation,
-  useMyBookingsQuery,
 } from "../../hooks/useBookings";
 import {
   type Booking as BookingRecord,
@@ -42,16 +40,9 @@ const BOOKING_BLOCK_FEE = 35000;
 const calculateBookingEstimate = (durationHours: number) =>
   Math.max(1, Math.ceil(durationHours / BOOKING_BLOCK_HOURS)) * BOOKING_BLOCK_FEE;
 
-type PickerField =
-  | "arrivalDate"
-  | "arrivalTime"
-  | null;
+type PickerField = "arrivalDate" | "arrivalTime" | null;
 
-type BookingField =
-  | "email"
-  | "licensePlate"
-  | "expectedArrivalTime"
-  | "expectedExitTime";
+type BookingField = "email" | "licensePlate" | "expectedArrivalTime" | "expectedExitTime";
 
 const withDatePart = (source: Date, nextDate: Date) => {
   const updated = new Date(source);
@@ -85,10 +76,9 @@ export default function BookingScreen() {
   const upsertGuestBookingMutation = useUpsertGuestBookingMutation();
   const confirmBookingMutation = useConfirmBookingMutation();
   const cancelBookingMutation = useCancelBookingMutation();
-  const myBookingsQuery = useMyBookingsQuery(Boolean(currentUser));
   const guestBookingsQuery = useGuestBookingsQuery(!currentUser);
 
-  const email = currentUser?.email ?? guestEmail;
+  const email = guestEmail;
   const exitTime = useMemo(
     () =>
       arrivalTime && selectedDurationHours
@@ -101,18 +91,18 @@ export default function BookingScreen() {
     ? calculateBookingEstimate(selectedDurationHours)
     : null;
 
-  const bookingList = currentUser
-    ? (myBookingsQuery.data?.bookings ?? [])
-    : (guestBookingsQuery.data ?? []);
+  const bookingList = guestBookingsQuery.data ?? [];
 
   const syncGuestBooking = async (booking: BookingRecord) => {
     if (currentUser) {
       return;
     }
 
-    const currentPayment = createdBooking?.booking._id === booking._id
-      ? createdBooking?.payment
-      : (bookingList.find((item) => item._id === booking._id) as StoredGuestBooking | undefined)?.payment;
+    const currentPayment =
+      createdBooking?.booking._id === booking._id
+        ? createdBooking?.payment
+        : (bookingList.find((item) => item._id === booking._id) as StoredGuestBooking | undefined)
+            ?.payment;
 
     await upsertGuestBookingMutation.mutateAsync({
       ...booking,
@@ -129,11 +119,11 @@ export default function BookingScreen() {
     const nextErrors: Partial<Record<BookingField, string>> = {};
 
     if (!arrival) {
-      nextErrors.expectedArrivalTime = "Please select an arrival time.";
+      nextErrors.expectedArrivalTime = "Vui lòng chọn thời gian đến.";
     }
 
     if (!hours || !exit) {
-      nextErrors.expectedExitTime = "Please select a parking duration.";
+      nextErrors.expectedExitTime = "Vui lòng chọn thời gian gửi xe.";
     }
 
     if (Object.keys(nextErrors).length > 0) {
@@ -141,7 +131,7 @@ export default function BookingScreen() {
       return;
     }
 
-    if(!arrival || !exit || !hours){
+    if (!arrival || !exit || !hours) {
       setErrors(nextErrors);
       return;
     }
@@ -161,19 +151,19 @@ export default function BookingScreen() {
     const rangeErrors: Partial<Record<BookingField, string>> = {};
 
     if (arrival <= new Date()) {
-      rangeErrors.expectedArrivalTime = "Arrival time must be in the future.";
+      rangeErrors.expectedArrivalTime = "Thời gian đến phải lớn hơn thời điểm hiện tại.";
     }
 
     if (exit <= arrival) {
-      rangeErrors.expectedExitTime = "Exit time must be after arrival time.";
+      rangeErrors.expectedExitTime = "Thời gian rời đi phải sau thời gian đến.";
     }
 
     if (hours < 1 || hours > 24) {
-      rangeErrors.expectedExitTime = "Booking duration must be from 1 to 24 hours.";
+      rangeErrors.expectedExitTime = "Thời gian đặt chỗ phải từ 1 đến 24 giờ.";
     }
 
     if (arrival.getTime() - Date.now() > 24 * 60 * 60 * 1000) {
-      rangeErrors.expectedArrivalTime = "Bookings can only be made up to 24 hours ahead.";
+      rangeErrors.expectedArrivalTime = "Chỉ được đặt chỗ trước tối đa 24 giờ.";
     }
 
     if (Object.keys(rangeErrors).length > 0) {
@@ -192,12 +182,12 @@ export default function BookingScreen() {
       if (!currentUser) {
         await saveGuestBookingMutation.mutateAsync(result);
       }
-      toast.success("Booking created", {
-        description: "Complete payment to activate your booking.",
+      toast.success("Đặt chỗ thành công", {
+        description: "Hãy hoàn tất thanh toán để kích hoạt lượt đặt chỗ.",
       });
     } catch (error) {
-      toast.error("Booking failed", {
-        description: error instanceof Error ? error.message : "Please try again.",
+      toast.error("Đặt chỗ thất bại", {
+        description: error instanceof Error ? error.message : "Vui lòng thử lại.",
       });
     }
   };
@@ -255,9 +245,10 @@ export default function BookingScreen() {
         email: currentUser ? undefined : createdBooking.booking.email,
         licensePlate: currentUser ? undefined : createdBooking.booking.licensePlate,
       };
-      const result = nextAction === "confirm"
-        ? await confirmBookingMutation.mutateAsync(payload)
-        : await cancelBookingMutation.mutateAsync(payload);
+      const result =
+        nextAction === "confirm"
+          ? await confirmBookingMutation.mutateAsync(payload)
+          : await cancelBookingMutation.mutateAsync(payload);
 
       const nextBooking = result.booking;
       setCreatedBooking((current) => (current ? { ...current, booking: nextBooking } : current));
@@ -265,17 +256,17 @@ export default function BookingScreen() {
       setPaymentUrl(null);
 
       toast.success(
-        nextAction === "confirm" ? "Payment synced" : "Booking updated",
+        nextAction === "confirm" ? "Đã đồng bộ thanh toán" : "Đã cập nhật đặt chỗ",
         {
           description:
             nextAction === "confirm"
-              ? "Booking status has been refreshed from the server."
-              : "Pending booking has been cancelled.",
+              ? "Trạng thái đặt chỗ đã được cập nhật từ hệ thống."
+              : "Đặt chỗ đang chờ đã được hủy.",
         },
       );
     } catch (error) {
-      toast.error("Unable to sync booking", {
-        description: error instanceof Error ? error.message : "Please refresh later.",
+      toast.error("Không thể đồng bộ đặt chỗ", {
+        description: error instanceof Error ? error.message : "Vui lòng thử lại sau.",
       });
     }
   };
@@ -301,17 +292,23 @@ export default function BookingScreen() {
     setPaymentUrl(url);
   };
 
-  const handleRefreshBookings = async () => {
+  const resetFormState = () => {
+    setGuestEmail("");
+    setLicensePlate("");
+    setArrivalTime(null);
+    setSelectedDurationHours(null);
+    setCreatedBooking(null);
+    setPaymentUrl(null);
+    setPickerField(null);
+    setDurationModalVisible(false);
+    setErrors({});
+  };
+
+  const handleRefreshForm = async () => {
     setIsRefreshing(true);
 
     try {
-      const result = currentUser
-        ? await myBookingsQuery.refetch()
-        : await guestBookingsQuery.refetch();
-
-      if (result.isSuccess) {
-        toast.success("Bookings refreshed");
-      }
+      resetFormState();
     } finally {
       setIsRefreshing(false);
     }
@@ -319,16 +316,16 @@ export default function BookingScreen() {
 
   return (
     <Page
-      eyebrow="Reservation"
-      title="Book visitor parking"
-      subtitle="Hold a slot for the next 24 hours, then complete payment to activate it."
+      eyebrow="Đặt chỗ"
+      title="Đặt chỗ bãi xe khách"
+      subtitle="Giữ chỗ trong 24 giờ tới, sau đó thanh toán để kích hoạt."
     >
       <ScrollView
         contentInsetAdjustmentBehavior="automatic"
         contentContainerClassName="gap-4 px-5 pb-[120px]"
         refreshControl={
           <AppRefreshControl
-            onRefresh={handleRefreshBookings}
+            onRefresh={handleRefreshForm}
             refreshing={isRefreshing}
           />
         }
@@ -340,17 +337,16 @@ export default function BookingScreen() {
             </View>
             <View className="flex-1 gap-1">
               <Text className="font-sans text-lg font-extrabold text-fg">
-                Visitor booking
+                Đặt chỗ dành cho khách vãng lai
               </Text>
               <Text className="font-sans text-sm leading-5 text-subtle">
-                Pay before arrival. Pending bookings expire if payment is not completed.
+                Thanh toán trước khi đến.
               </Text>
             </View>
           </View>
 
           <BookingFormCard
             arrivalTime={arrivalTime}
-            currentUserEmail={currentUser?.email}
             email={email}
             errors={errors}
             exitTime={exitTime}
@@ -380,7 +376,7 @@ export default function BookingScreen() {
           onPress={handleCreateBooking}
         >
           <Text className="font-sans text-base font-extrabold text-btn-primary-fg">
-            {createBookingMutation.isPending ? "Creating booking..." : "Create booking"}
+            {createBookingMutation.isPending ? "Đang tạo đặt chỗ..." : "Tạo đặt chỗ"}
           </Text>
         </Pressable>
 
@@ -390,25 +386,6 @@ export default function BookingScreen() {
             onOpenPayment={openPayment}
           />
         ) : null}
-
-        {currentUser ? (
-          <BookingHistorySection
-            bookings={myBookingsQuery.data?.bookings ?? []}
-            emptyDescription="Your latest visitor parking bookings will appear here."
-            emptyTitle="No bookings yet"
-            isFetching={myBookingsQuery.isFetching}
-            label="My bookings"
-          />
-        ) : (
-          <BookingHistorySection
-            bookings={bookingList}
-            emptyDescription="Bookings created without signing in will stay visible during this app session."
-            emptyTitle="No guest bookings yet"
-            isFetching={guestBookingsQuery.isFetching}
-            label="Guest bookings on this device"
-            showEmail
-          />
-        )}
       </ScrollView>
 
       <BookingPickerModal

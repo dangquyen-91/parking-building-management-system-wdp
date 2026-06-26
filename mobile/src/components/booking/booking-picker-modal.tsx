@@ -35,11 +35,11 @@ export function BookingPickerModal({
         <View className="gap-4 rounded-t-[28px] bg-page px-5 pb-8 pt-5">
           <View className="flex-row items-center justify-between">
             <Text className="font-sans text-lg font-extrabold text-fg">
-              {pickerField === "arrivalDate" && "Select arrival date"}
-              {pickerField === "arrivalTime" && "Select arrival time"}
+              {pickerField === "arrivalDate" && "Chọn ngày đến"}
+              {pickerField === "arrivalTime" && "Chọn giờ đến"}
             </Text>
             <Pressable className="rounded-full bg-badge px-4 py-2" onPress={onDismiss}>
-              <Text className="font-sans text-sm font-bold text-fg">Done</Text>
+              <Text className="font-sans text-sm font-bold text-fg">Đóng</Text>
             </Pressable>
           </View>
 

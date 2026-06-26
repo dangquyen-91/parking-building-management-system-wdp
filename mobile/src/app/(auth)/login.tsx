@@ -46,12 +46,12 @@ export default function Login() {
 
     try {
       await loginMutation.mutateAsync(validation.data);
-      toast.success("Signed in", {
-        description: "Chào mừng trở lại.",
+      toast.success("Đăng nhập thành công", {
+        description: "Chào mừng bạn quay trở lại.",
       });
       router.replace("/(tabs)/home");
     } catch (error) {
-      toast.error("Sign in failed", {
+      toast.error("Đăng nhập thất bại", {
         description: error instanceof Error ? error.message : "Vui lòng thử lại.",
       });
     }
@@ -89,7 +89,7 @@ export default function Login() {
             <Link href="/(auth)/register" asChild>
               <Pressable className="min-w-[84px] items-center rounded-full bg-btn-primary px-4 py-2.5">
                 <Text className="font-sans text-sm font-bold text-btn-primary-fg">
-                  Đăng nhập
+                  Đăng ký
                 </Text>
               </Pressable>
             </Link>
@@ -103,8 +103,7 @@ export default function Login() {
               Đăng nhập vào tài khoản của bạn
             </Text>
             <Text className="font-sans text-base leading-6 text-subtle">
-              Access your parking profile, reservations, vehicles, and building
-              credentials.
+              Truy cập hồ sơ gửi xe, lịch đặt chỗ, phương tiện và quyền ra vào tòa nhà.
             </Text>
           </View>
 
@@ -142,7 +141,7 @@ export default function Login() {
                     setPassword(value);
                     setErrors((current) => ({ ...current, password: undefined }));
                   }}
-                  placeholder="Enter password"
+                  placeholder="Nhập mật khẩu"
                   placeholderTextColor={placeholder}
                   secureTextEntry={!showPassword}
                   value={password}
@@ -178,7 +177,7 @@ export default function Login() {
               onPress={handleLogin}
             >
               <Text className="font-sans text-base font-extrabold text-btn-primary-fg">
-                {loginMutation.isPending ? "Signing in..." : "Sign in"}
+                {loginMutation.isPending ? "Đang đăng nhập..." : "Đăng nhập"}
               </Text>
             </Pressable>
           </View>

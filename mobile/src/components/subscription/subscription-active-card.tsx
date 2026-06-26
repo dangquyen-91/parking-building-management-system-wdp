@@ -1,6 +1,6 @@
 import { GlassCard, Label } from "@/components/parking-ui";
 import type { Subscription } from "@/types/subscriptions";
-import { formatDate } from "@/utils/format";
+import { formatDate, formatSubscriptionStatus } from "@/utils/format";
 import { Pressable, Text, View } from "@/tw";
 
 type SubscriptionActiveCardProps = {
@@ -16,13 +16,13 @@ export function SubscriptionActiveCard({
     <GlassCard className="gap-4">
       <View className="flex-row items-center justify-between gap-3">
         <View className="gap-1">
-          <Label>Active subscription</Label>
+          <Label>Gói đang hoạt động</Label>
           <Text className="font-sans text-xl font-extrabold text-fg">
             {subscription.planId.name}
           </Text>
         </View>
         <Text className="font-sans text-xs font-extrabold uppercase text-btn-primary">
-          {subscription.status}
+          {formatSubscriptionStatus(subscription.status)}
         </Text>
       </View>
 
@@ -31,11 +31,11 @@ export function SubscriptionActiveCard({
           {subscription.licensePlate}
         </Text>
         <Text className="font-sans text-sm text-subtle">
-          Valid until {formatDate(subscription.endDate)}
+          Có hiệu lực đến {formatDate(subscription.endDate)}
         </Text>
         {subscription.slotId?.slotCode ? (
           <Text className="font-sans text-sm text-subtle">
-            Reserved slot: {subscription.slotId.slotCode}
+            Chỗ đã giữ: {subscription.slotId.slotCode}
           </Text>
         ) : null}
       </View>
@@ -45,7 +45,7 @@ export function SubscriptionActiveCard({
         onPress={() => onViewDetails(subscription._id)}
       >
         <Text className="font-sans text-base font-extrabold text-btn-primary-fg">
-          View subscription details
+          Xem chi tiết gói gửi xe
         </Text>
       </Pressable>
     </GlassCard>
