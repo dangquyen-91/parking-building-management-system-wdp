@@ -45,6 +45,7 @@ export function AdminBuildingsPage() {
       else if (floorId) {
         const updatePayload: FloorUpdatePayload = {
           floorNumber: payload.floorNumber,
+          section: payload.section,
           vehicleType: payload.vehicleType,
           floorType: payload.floorType,
           totalSlots: payload.totalSlots,
@@ -68,7 +69,7 @@ export function AdminBuildingsPage() {
       {error && <div className="mb-4 rounded-2xl border border-rose-500/25 bg-rose-500/10 p-4 text-sm text-rose-700 dark:text-rose-300">{error}</div>}
       {isLoading ? <div className="liquid-glass-card rounded-2xl border border-theme p-6 text-center text-sm text-muted">Đang tải dữ liệu tòa nhà...</div> : <section className="grid gap-4">{filtered.map((building) => <AdminBuildingCard key={building.id} building={building} onEdit={(item) => { setBuildingMode('edit'); setActiveBuilding(item); setSubmitError(null); setBuildingModal(true) }} onEditFloor={(floor) => { setFloorMode('edit'); setActiveFloor(floor); setSubmitError(null); setFloorModal(true) }} />)}{!filtered.length && <div className="liquid-glass-card rounded-2xl border border-dashed border-theme p-8 text-center text-sm text-muted">Không có tòa nhà phù hợp.</div>}</section>}
       <AdminBuildingFormModal open={buildingModal} mode={buildingMode} initialValues={activeBuilding ? { name: activeBuilding.name, address: activeBuilding.address, description: activeBuilding.description } : undefined} isSubmitting={submitting} error={submitError} onClose={() => setBuildingModal(false)} onSubmit={saveBuilding} />
-      <AdminFloorFormModal open={floorModal} mode={floorMode} buildings={summaries} floorId={activeFloor?.id} initialValues={activeFloor ? { buildingId: activeFloor.buildingId, floorNumber: activeFloor.floorNumber, vehicleType: activeFloor.vehicleType, floorType: activeFloor.floorType, totalSlots: activeFloor.totalSlots, description: activeFloor.description } : undefined} isSubmitting={submitting} error={submitError} onClose={() => setFloorModal(false)} onSubmit={saveFloor} />
+      <AdminFloorFormModal open={floorModal} mode={floorMode} buildings={summaries} floorId={activeFloor?.id} initialValues={activeFloor ? { buildingId: activeFloor.buildingId, floorNumber: activeFloor.floorNumber, section: activeFloor.section, vehicleType: activeFloor.vehicleType, floorType: activeFloor.floorType, totalSlots: activeFloor.totalSlots, description: activeFloor.description } : undefined} isSubmitting={submitting} error={submitError} onClose={() => setFloorModal(false)} onSubmit={saveFloor} />
     </AdminPageShell>
   )
 }

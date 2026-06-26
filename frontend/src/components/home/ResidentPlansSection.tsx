@@ -2,6 +2,7 @@ import { motion, useInView, useReducedMotion } from 'framer-motion'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { scaleIn, staggerContainer } from '../../assets/motion/variants'
+import { AUTH_STORAGE_KEYS } from '../../services/authApi'
 import { userSubscriptionApi, type Plan } from '../../services/userSubscriptionApi'
 import { formatSubscriptionCurrency, VEHICLE_LABELS } from '../../utils/subscriptionUi'
 import { SectionShell } from './SectionShell'
@@ -46,6 +47,7 @@ export function ResidentPlansSection() {
   const [plans, setPlans] = useState<Plan[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
+  const isAuthenticated = Boolean(localStorage.getItem(AUTH_STORAGE_KEYS.accessToken))
 
   useEffect(() => {
     let mounted = true
@@ -88,7 +90,7 @@ export function ResidentPlansSection() {
       id="resident-plans"
       eyebrow="Cư dân // Gói tháng"
       title="Tất cả gói cư dân đang mở bán"
-      description="Xem nhanh các gói xe máy và ô tô hiện có trước khi đăng ký, nhập biển số và thanh toán trực tuyến."
+      description="Xem nhanh các gói xe máy và ô tô hiện có trước khi đăng ký. Khi bấm mua, hệ thống sẽ yêu cầu đăng nhập để tiếp tục."
       tone="alt"
     >
       {isLoading && (
@@ -119,6 +121,7 @@ export function ResidentPlansSection() {
         >
           {plans.map((plan, index) => {
             const style = PLAN_STYLES[index % PLAN_STYLES.length]
+            const purchasePath = `/subscriptions?vehicleType=${plan.vehicleType}&planId=${plan._id}`
 
             return (
               <motion.article
@@ -147,10 +150,11 @@ export function ResidentPlansSection() {
                   <span className="rounded-full bg-badge px-3 py-1">Đang mở bán</span>
                 </div>
                 <Link
-                  to={`/subscriptions?vehicleType=${plan.vehicleType}&planId=${plan._id}`}
+                  to={isAuthenticated ? purchasePath : '/login'}
+                  state={isAuthenticated ? undefined : { from: purchasePath }}
                   className="mt-6 inline-flex w-full justify-center rounded-full bg-gradient-to-r from-violet-500 to-sky-500 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-violet-500/20 transition-transform hover:-translate-y-0.5"
                 >
-                  Mua gói này
+                  {isAuthenticated ? 'Mua gói này' : 'Đăng nhập để mua'}
                 </Link>
               </motion.article>
             )
@@ -160,7 +164,8 @@ export function ResidentPlansSection() {
 
       <div className="mt-8 flex flex-wrap items-center gap-3">
         <Link
-          to="/my-subscriptions"
+          to={isAuthenticated ? '/my-subscriptions' : '/login'}
+          state={isAuthenticated ? undefined : { from: '/my-subscriptions' }}
           className="inline-flex rounded-full border border-theme-strong px-6 py-3 text-sm font-medium text-fg transition-opacity hover:opacity-80"
         >
           Xem gói của tôi

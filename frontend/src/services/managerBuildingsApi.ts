@@ -27,6 +27,7 @@ export type Floor = {
     address?: string
   } | string
   floorNumber: number
+  section?: string
   vehicleType: 'motorcycle' | 'car'
   floorType: 'resident' | 'visitor'
   totalSlots: number
@@ -43,6 +44,7 @@ export type BuildingPayload = {
 export type FloorPayload = {
   buildingId: string
   floorNumber: number
+  section?: string
   vehicleType: 'motorcycle' | 'car'
   floorType: 'resident' | 'visitor'
   totalSlots: number

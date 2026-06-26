@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import type { Building, Floor } from '../services/managerBuildingsApi'
 import type { ParkingRow } from '../services/managerParkingRowApi'
 import type { ParkingSlot } from '../services/managerParkingSlotApi'
+import { getFloorSection } from '../utils/floorLabel'
 
 type ParkingSpaceStats = {
   totalSlots: number
@@ -34,6 +35,11 @@ function compareSlotCodes(a: ParkingSlot, b: ParkingSlot) {
 
 function compareRowCodes(a: ParkingRow, b: ParkingRow) {
   return a.rowCode.localeCompare(b.rowCode, undefined, { numeric: true, sensitivity: 'base' })
+}
+
+function compareFloors(a: Floor, b: Floor) {
+  return (a.floorNumber ?? 0) - (b.floorNumber ?? 0)
+    || getFloorSection(a.section).localeCompare(getFloorSection(b.section), undefined, { numeric: true, sensitivity: 'base' })
 }
 
 function groupSlotsByFloor(slots: ParkingSlot[]) {
@@ -118,7 +124,7 @@ export function useParkingSpaceFilters({
         if (floorFilter !== 'all' && floor._id !== floorFilter) return false
         return slotsByFloor.has(floor._id)
       })
-      .sort((a, b) => (a.floorNumber ?? 0) - (b.floorNumber ?? 0))
+      .sort(compareFloors)
   }, [floors, buildingFilter, floorFilter, slotsByFloor])
 
   const visibleRowFloors = useMemo(() => {
@@ -129,7 +135,7 @@ export function useParkingSpaceFilters({
         if (floorFilter !== 'all' && floor._id !== floorFilter) return false
         return rowsByFloor.has(floor._id)
       })
-      .sort((a, b) => (a.floorNumber ?? 0) - (b.floorNumber ?? 0))
+      .sort(compareFloors)
   }, [floors, buildingFilter, floorFilter, rowsByFloor])
 
   const filteredFloorOptions = useMemo(() => {
