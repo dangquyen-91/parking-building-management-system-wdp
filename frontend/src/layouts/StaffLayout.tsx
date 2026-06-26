@@ -5,7 +5,8 @@ import { StaffSidebar } from '../components/staff'
 import { useOverlayPanel } from '../hooks/useOverlayPanel'
 
 const STAFF_PAGE_TITLES: Record<string, string> = {
-  '/staff': 'Cổng xe vào/ra',
+  '/staff/check-in': 'Xe vào',
+  '/staff/check-out': 'Xe ra',
   '/staff/vehicles': 'Xe đang gửi',
   '/staff/lost-ticket': 'Mất vé',
   '/staff/incidents': 'Sự cố',

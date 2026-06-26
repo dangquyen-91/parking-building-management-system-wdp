@@ -106,7 +106,7 @@ export function setStoredAuthUser(user: AuthUser) {
 export function getDefaultRouteForRole(role?: AuthRole) {
   if (role === 'admin') return '/dashboard'
   if (role === 'manager') return '/manager'
-  if (role === 'staff') return '/staff'
+  if (role === 'staff') return '/staff/check-in'
 
   return '/'
 }

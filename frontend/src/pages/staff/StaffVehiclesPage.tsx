@@ -26,7 +26,7 @@ export function StaffVehiclesPage() {
   } = useStaffVehicles()
 
   function handleCheckout(session: GateSession) {
-    navigate(`/staff?checkout=${encodeURIComponent(session.licensePlate)}`)
+    navigate(`/staff/check-out?checkout=${encodeURIComponent(session.licensePlate)}`)
   }
 
   return (

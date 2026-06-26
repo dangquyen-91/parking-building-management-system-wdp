@@ -5,7 +5,8 @@ import { LogoIcon } from '../../common/icons'
 import { LogoutButton } from '../../common/LogoutButton'
 
 const STAFF_NAV_ITEMS = [
-  { to: '/staff', label: 'Cổng xe vào/ra', detail: 'Check-in, checkout', icon: 'gate' },
+  { to: '/staff/check-in', label: 'Xe vào', detail: 'Camera, tra cứu, QR', icon: 'gate' },
+  { to: '/staff/check-out', label: 'Xe ra', detail: 'Tính phí, thanh toán', icon: 'checkout' },
   { to: '/staff/vehicles', label: 'Xe đang gửi', detail: 'Theo dõi trong bãi', icon: 'vehicles' },
   { to: '/staff/lost-ticket', label: 'Mất vé', detail: 'Xử lý ngoại lệ', icon: 'ticket' },
   { to: '/staff/incidents', label: 'Sự cố', detail: 'Ghi nhận nhanh', icon: 'incident' },
@@ -13,6 +14,15 @@ const STAFF_NAV_ITEMS = [
 ] as const
 
 function StaffIcon({ name }: { name: (typeof STAFF_NAV_ITEMS)[number]['icon'] }) {
+  if (name === 'checkout') {
+    return (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M4 18V8.5A2.5 2.5 0 0 1 6.5 6h11A2.5 2.5 0 0 1 20 8.5V18" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+        <path d="M7 18v-6h10v6M3 18h18M15 10l3 2-3 2M18 12H9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    )
+  }
+
   if (name === 'vehicles') {
     return (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -92,21 +102,21 @@ export const StaffSidebar = forwardRef<HTMLElement, StaffSidebarProps>(function 
     >
       <div className="border-b border-theme p-5">
         <div className="flex items-center justify-between gap-3">
-        <NavLink
-          to="/staff"
-          className="flex min-w-0 items-center gap-3 text-fg"
-          aria-label="Khu làm việc nhân viên bãi xe"
-          onClick={onNavigate}
-        >
-          <span className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-badge shadow-sm">
-            <LogoIcon size={22} />
-          </span>
-          <span className="min-w-0 leading-tight">
-            <span className="block truncate text-base font-black">Nhân viên cổng</span>
-            <span className="mt-0.5 block truncate text-[11px] font-medium text-subtle">Điều phối bãi xe</span>
-          </span>
-        </NavLink>
-        <ThemeToggle className="shrink-0 border border-theme bg-badge shadow-sm" />
+          <NavLink
+            to="/staff/check-in"
+            className="flex min-w-0 items-center gap-3 text-fg"
+            aria-label="Khu làm việc nhân viên bãi xe"
+            onClick={onNavigate}
+          >
+            <span className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-badge shadow-sm">
+              <LogoIcon size={22} />
+            </span>
+            <span className="min-w-0 leading-tight">
+              <span className="block truncate text-base font-black">Nhân viên cổng</span>
+              <span className="mt-0.5 block truncate text-[11px] font-medium text-subtle">Điều phối bãi xe</span>
+            </span>
+          </NavLink>
+          <ThemeToggle className="shrink-0 border border-theme bg-badge shadow-sm" />
         </div>
 
         <div className="mt-5 rounded-2xl border border-emerald-500/25 bg-emerald-500/10 p-3">
@@ -114,7 +124,7 @@ export const StaffSidebar = forwardRef<HTMLElement, StaffSidebarProps>(function 
             <span className="size-2 rounded-full bg-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.9)]" />
             Ca trực đang hoạt động
           </div>
-          <p className="mt-1 text-[11px] text-muted">Sẵn sàng xử lý xe vào / ra</p>
+          <p className="mt-1 text-[11px] text-muted">Sẵn sàng xử lý xe vào và xe ra</p>
         </div>
       </div>
 

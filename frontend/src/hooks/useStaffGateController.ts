@@ -1,18 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
-import {
-  StaffGateCheckInForm,
-  StaffGateCheckInTicket,
-  StaffGateCheckoutPanel,
-  StaffGateModeTabs,
-  StaffGateSessionActivity,
-  StaffGateSummary,
-  StaffGateToast,
-  StaffPageHeader,
-  type StaffGateMode,
-} from '../../components/staff'
-import { normalizePlate } from '../../components/staff/data/staffGateUtils'
-import { managerBuildingsApi, type Floor } from '../../services/managerBuildingsApi'
+import { useNavigate, useSearchParams } from 'react-router-dom'
+import { normalizePlate } from '../components/staff/data/staffGateUtils'
+import { managerBuildingsApi, type Floor } from '../services/managerBuildingsApi'
 import {
   staffGateApi,
   type GateCheckoutPreview,
@@ -21,21 +10,21 @@ import {
   type GateSession,
   type GateSlot,
   type GateVehicleType,
-} from '../../services/staffGateApi'
-import { userSubscriptionApi } from '../../services/userSubscriptionApi'
-import { getStaffGateAllocation } from '../../utils/staffGateAllocation'
+} from '../services/staffGateApi'
+import { userSubscriptionApi } from '../services/userSubscriptionApi'
+import { getStaffGateAllocation } from '../utils/staffGateAllocation'
 import {
   forgetTicketForSession,
   parseGateQr,
   rememberTicketForSession,
   validateEntryQr,
-} from '../../utils/staffGateQr'
-import { rememberStaffGatePaymentReturn } from '../../utils/staffGatePaymentReturn'
+} from '../utils/staffGateQr'
+import { rememberStaffGatePaymentReturn } from '../utils/staffGatePaymentReturn'
 
-export function StaffGatePage() {
+export function useStaffGateController() {
+  const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const checkoutPlate = searchParams.get('checkout') ?? ''
-  const [mode, setMode] = useState<StaffGateMode>(checkoutPlate ? 'checkout' : 'checkin')
   const [activeSessions, setActiveSessions] = useState<GateSession[]>([])
   const [completedSessions, setCompletedSessions] = useState<GateSession[]>([])
   const [rows, setRows] = useState<GateRow[]>([])
@@ -54,6 +43,7 @@ export function StaffGatePage() {
   const [actionMessage, setActionMessage] = useState<string | null>(null)
   const [toastMessage, setToastMessage] = useState<string | null>(null)
   const [entryQrValue, setEntryQrValue] = useState('')
+  const [entryQrError, setEntryQrError] = useState<string | undefined>()
   const [issuedWalkInQrValue, setIssuedWalkInQrValue] = useState('')
 
   const [checkoutQuery, setCheckoutQuery] = useState(checkoutPlate)
@@ -245,6 +235,7 @@ export function StaffGatePage() {
       setLookupResult(result)
       setSelectedFloorId('')
       setEntryQrValue('')
+      setEntryQrError(undefined)
       setIssuedWalkInQrValue('')
 
       if (result.subscription?.vehicleType) {
@@ -255,7 +246,7 @@ export function StaffGatePage() {
 
       if (result.status === 'already_active' && result.activeSession) {
         setCheckoutQuery(result.activeSession.licensePlate)
-        setMode('checkout')
+        navigate(`/staff/check-out?checkout=${encodeURIComponent(result.activeSession.licensePlate)}`)
       }
     } catch (err) {
       setLookupResult(null)
@@ -357,6 +348,7 @@ export function StaffGatePage() {
     setNote('')
     setLookupResult(null)
     setEntryQrValue('')
+    setEntryQrError(undefined)
     setIssuedWalkInQrValue('')
   }
 
@@ -365,6 +357,7 @@ export function StaffGatePage() {
     setLookupResult(null)
     setSelectedFloorId('')
     setEntryQrValue('')
+    setEntryQrError(undefined)
     setIssuedWalkInQrValue('')
   }
 
@@ -380,19 +373,25 @@ export function StaffGatePage() {
       const ticket = await staffGateApi.requestEntryQr(normalizedPlate)
       setIssuedWalkInQrValue(ticket.qrToken)
       setEntryQrValue('')
+      setEntryQrError(undefined)
       setActionMessage(`Đã cấp vé QR vãng lai cho ${normalizedPlate}. Hãy quét lại vé này trong 5 phút để xác nhận xe vào.`)
     } catch (err) {
       setIssuedWalkInQrValue('')
       setEntryQrValue('')
+      setEntryQrError(err instanceof Error ? err.message : 'Không thể cấp vé QR vãng lai.')
       setActionMessage(err instanceof Error ? err.message : 'Không thể cấp vé QR vãng lai.')
     }
   }
 
   function handleEntryQrScanned(qrValue: string) {
-    if (!lookupResult) return
+    if (!lookupResult) {
+      setEntryQrError('Vui lòng tra cứu biển số trước khi quét QR.')
+      return
+    }
 
     if (lookupResult.customerType === 'walk_in' && issuedWalkInQrValue && qrValue !== issuedWalkInQrValue) {
       setEntryQrValue('')
+      setEntryQrError('QR vừa quét không khớp vé vãng lai vừa cấp cho biển số này.')
       setActionMessage('QR vừa quét không khớp vé vãng lai vừa cấp cho biển số này.')
       return
     }
@@ -405,116 +404,56 @@ export function StaffGatePage() {
 
     if (message) {
       setEntryQrValue('')
+      setEntryQrError(message)
       setActionMessage(message)
       return
     }
 
     setEntryQrValue(qrValue)
+    setEntryQrError(undefined)
     setActionMessage('QR cổng vào đã khớp biển số camera. Có thể xác nhận cho xe vào.')
   }
 
-  return (
-    <div className="mx-auto max-w-[1500px] p-4 md:p-8 lg:p-10">
-      <StaffPageHeader
-        eyebrow="Cổng đang hoạt động"
-        title="Điều phối xe vào / ra"
-        description="Tra cứu biển số, xác minh QR, phân bổ vị trí và hoàn tất thanh toán ngay tại cổng."
-        actions={
-          <StaffGateSummary
-            activeCount={activeSessions.length}
-            completedCount={completedSessions.length}
-            availableCount={Math.max(0, availableCount)}
-          />
-        }
-      />
-
-      <div className="hidden">
-        <div>
-          <div className="mb-3 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-subtle">
-            <span className="size-2 rounded-full bg-emerald-500 shadow-[0_0_12px_rgba(34,197,94,0.8)]" />
-            Cổng đang hoạt động
-          </div>
-          <h1 className="text-3xl font-black tracking-tight text-fg md:text-4xl">Điều phối xe vào / ra</h1>
-          <p className="mt-2 max-w-2xl text-sm text-muted">
-            Tra cứu nhanh, phân bổ vị trí và hoàn tất thanh toán ngay tại cổng.
-          </p>
-        </div>
-
-        <StaffGateSummary
-          activeCount={activeSessions.length}
-          completedCount={completedSessions.length}
-          availableCount={Math.max(0, availableCount)}
-        />
-      </div>
-
-      <StaffGateModeTabs mode={mode} onModeChange={setMode} />
-
-      {actionMessage && (
-        <div className="mb-5 flex items-start gap-3 rounded-xl border border-sky-500/30 bg-sky-500/10 p-4 text-sm text-fg">
-          <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-sky-500 text-xs font-bold text-white">i</span>
-          {actionMessage}
-        </div>
-      )}
-
-      {error && <div className="mb-5 rounded-xl border border-rose-500/30 bg-rose-500/10 p-4 text-sm text-rose-700 dark:text-rose-200">{error}</div>}
-
-      {isLoading ? (
-        <div className="rounded-lg border border-theme bg-badge p-5 text-sm text-muted">Đang tải dữ liệu cổng...</div>
-      ) : (
-        <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_24rem]">
-          <div>
-            {mode === 'checkin' ? (
-              <StaffGateCheckInForm
-                plate={plate}
-                vehicleType={vehicleType}
-                note={note}
-                lookupResult={lookupResult}
-                lookupMatchesPlate={lookupMatchesPlate}
-                checkInCustomerType={checkInCustomerType}
-                floorOptions={floorOptions}
-                selectedFloorId={selectedFloorId}
-                isLookupLoading={isLookupLoading}
-                isSubmitting={isSubmitting}
-                canCheckIn={canCheckIn}
-                entryQrValue={entryQrValue}
-                issuedWalkInQrValue={issuedWalkInQrValue}
-                onPlateChange={handlePlateChange}
-                onVehicleTypeChange={handleVehicleTypeChange}
-                onFloorChange={setSelectedFloorId}
-                onNoteChange={setNote}
-                onLookup={handleLookup}
-                onIssueWalkInQr={handleIssueWalkInQr}
-                onEntryQrScanned={handleEntryQrScanned}
-                onCheckIn={handleCheckIn}
-              />
-            ) : (
-              <StaffGateCheckoutPanel
-                query={checkoutQuery}
-                session={selectedCheckoutSession}
-                preview={checkoutPreview}
-                isPreviewLoading={isPreviewLoading}
-                isSubmitting={isSubmitting}
-                floorMap={floorMap}
-                onQueryChange={setCheckoutQuery}
-                onCheckoutCash={handleCheckoutCash}
-                onCheckoutTransfer={handleCheckoutTransfer}
-              />
-            )}
-          </div>
-
-          <aside className="xl:sticky xl:top-6">
-            <StaffGateSessionActivity sessions={[...activeSessions, ...completedSessions]} />
-          </aside>
-        </div>
-      )}
-
-      {issuedTicket && (
-        <StaffGateCheckInTicket session={issuedTicket.session} qrValue={issuedTicket.qrValue} onClose={() => setIssuedTicket(null)} />
-      )}
-
-      {toastMessage && (
-        <StaffGateToast message={toastMessage} onClose={() => setToastMessage(null)} />
-      )}
-    </div>
-  )
+  return {
+    activeSessions,
+    completedSessions,
+    availableCount,
+    isLoading,
+    error,
+    actionMessage,
+    toastMessage,
+    setToastMessage,
+    issuedTicket,
+    setIssuedTicket,
+    plate,
+    vehicleType,
+    note,
+    lookupResult,
+    lookupMatchesPlate,
+    checkInCustomerType,
+    floorOptions,
+    selectedFloorId,
+    isLookupLoading,
+    isSubmitting,
+    canCheckIn,
+    entryQrValue,
+    entryQrError,
+    issuedWalkInQrValue,
+    handlePlateChange,
+    handleVehicleTypeChange,
+    setSelectedFloorId,
+    setNote,
+    handleLookup,
+    handleIssueWalkInQr,
+    handleEntryQrScanned,
+    handleCheckIn,
+    checkoutQuery,
+    selectedCheckoutSession,
+    checkoutPreview,
+    isPreviewLoading,
+    floorMap,
+    setCheckoutQuery,
+    handleCheckoutCash,
+    handleCheckoutTransfer,
+  }
 }

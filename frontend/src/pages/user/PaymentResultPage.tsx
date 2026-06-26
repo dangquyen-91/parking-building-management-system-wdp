@@ -67,7 +67,7 @@ const subscriptionResultCopy = {
 } satisfies Record<PaymentResultPageProps['status'], Record<string, string>>
 
 function getStaffResultCopy(status: PaymentResultPageProps['status'], licensePlate: string) {
-  const checkoutPath = `/staff?checkout=${encodeURIComponent(licensePlate)}`
+  const checkoutPath = `/staff/check-out?checkout=${encodeURIComponent(licensePlate)}`
 
   return status === 'success'
     ? {
