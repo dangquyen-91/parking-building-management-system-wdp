@@ -1,0 +1,28 @@
+import type { AdminSubscription } from '../../../services/adminApi'
+import { isSubscriptionExpiringSoon } from '../../../utils/managerSubscriptionUi'
+import { AdminStatCard } from '../common/AdminStatCard'
+import { AdminStatusBadge } from '../common/AdminStatusBadge'
+import { formatOperationDate, OperationEmpty, OperationInfoCell, OperationListShell } from '../operations/AdminOperationPrimitives'
+
+export type AdminSubscriptionStatusFilter = AdminSubscription['status'] | 'all' | 'expiring'
+export type AdminSubscriptionVehicleFilter = AdminSubscription['vehicleType'] | 'all'
+
+export function AdminSubscriptionFilters({ query, status, vehicleType, onQueryChange, onStatusChange, onVehicleTypeChange }: { query: string; status: AdminSubscriptionStatusFilter; vehicleType: AdminSubscriptionVehicleFilter; onQueryChange: (value: string) => void; onStatusChange: (value: AdminSubscriptionStatusFilter) => void; onVehicleTypeChange: (value: AdminSubscriptionVehicleFilter) => void }) {
+  return <div className="grid gap-3 sm:grid-cols-3"><input className="h-11 min-w-0 rounded-xl border border-theme bg-page px-3 text-sm text-fg outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/15" type="search" value={query} onChange={(event) => onQueryChange(event.target.value)} placeholder="Tên, email, SĐT hoặc biển số" /><select className="h-11 min-w-0 rounded-xl border border-theme bg-page px-3 text-sm text-fg" value={status} onChange={(event) => onStatusChange(event.target.value as AdminSubscriptionStatusFilter)}><option value="all">Tất cả trạng thái</option><option value="active">Đang hoạt động</option><option value="expiring">Sắp hết hạn</option><option value="pending">Chờ thanh toán</option><option value="expired">Đã hết hạn</option><option value="cancelled">Đã hủy</option></select><select className="h-11 min-w-0 rounded-xl border border-theme bg-page px-3 text-sm text-fg" value={vehicleType} onChange={(event) => onVehicleTypeChange(event.target.value as AdminSubscriptionVehicleFilter)}><option value="all">Tất cả loại xe</option><option value="motorcycle">Xe máy</option><option value="car">Ô tô</option></select></div>
+}
+
+export function AdminSubscriptionStats({ subscriptions, activePlates, snapshotTime }: { subscriptions: AdminSubscription[]; activePlates: Set<string>; snapshotTime: number }) {
+  return <div className="mb-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4"><AdminStatCard label="Tổng đăng ký" value={subscriptions.length} detail={`${subscriptions.filter((item) => item.status === 'pending').length} chờ thanh toán`} tone="violet" /><AdminStatCard label="Gói hoạt động" value={subscriptions.filter((item) => item.status === 'active').length} detail={`${subscriptions.filter((item) => item.status === 'expired').length} đã hết hạn`} tone="emerald" /><AdminStatCard label="Sắp hết hạn" value={subscriptions.filter((item) => isSubscriptionExpiringSoon(item, snapshotTime)).length} detail="Còn tối đa 7 ngày" tone="amber" /><AdminStatCard label="Xe gói trong bãi" value={subscriptions.filter((item) => activePlates.has(item.licensePlate)).length} detail="Có phiên đang hoạt động" tone="sky" /></div>
+}
+
+export function AdminSubscriptionList({ subscriptions, activePlates, snapshotTime, loading }: { subscriptions: AdminSubscription[]; activePlates: Set<string>; snapshotTime: number; loading: boolean }) {
+  if (loading) return <OperationEmpty text="Đang tải người dùng gói..." />
+  if (!subscriptions.length) return <OperationEmpty text="Không tìm thấy người dùng gói phù hợp." />
+  return <OperationListShell eyebrow="Danh sách" title="Người đã đăng ký gói" count={`${subscriptions.length} gói`} tone="gate">{subscriptions.map((item) => {
+    const owner = item.userId && typeof item.userId !== 'string' ? item.userId : null
+    const plan = item.planId && typeof item.planId !== 'string' ? item.planId : null
+    const slot = item.slotId && typeof item.slotId !== 'string' ? item.slotId : null
+    const remaining = item.status === 'active' && item.endDate ? Math.max(0, Math.ceil((new Date(item.endDate).getTime() - snapshotTime) / 86_400_000)) : null
+    return <article key={item._id} className="group relative overflow-hidden rounded-2xl border border-theme bg-badge p-4 transition-all hover:-translate-y-0.5 hover:border-emerald-500/25 hover:bg-emerald-500/5 hover:shadow-lg"><span className={`absolute inset-y-0 left-0 w-1 ${item.status === 'active' ? 'bg-emerald-500' : item.status === 'pending' ? 'bg-amber-500' : 'bg-slate-400'}`} /><div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-[1.15fr_1fr_1fr_1fr_auto] xl:items-center"><div className="rounded-xl bg-page/45 p-3"><p className="text-lg font-black tracking-[0.06em] text-fg">{item.licensePlate}</p><p className="mt-1 text-xs text-muted">{item.vehicleType === 'car' ? 'Ô tô' : 'Xe máy'}{slot?.slotCode ? ` · ${slot.slotCode}` : ''}</p></div><OperationInfoCell label="Người mua" value={owner?.fullName ?? 'Không xác định'} detail={owner?.email ?? owner?.phone ?? '-'} /><OperationInfoCell label="Gói đăng ký" value={plan?.name ?? plan?.code ?? 'Không xác định'} detail={`${plan?.durationDays ?? 0} ngày sử dụng`} /><OperationInfoCell label="Thời hạn" value={`${formatOperationDate(item.startDate)} - ${formatOperationDate(item.endDate)}`} detail={remaining === null ? 'Chưa bắt đầu' : `Còn ${remaining} ngày`} /><div className="flex min-h-20 flex-wrap content-center gap-2 rounded-xl bg-page/45 p-3"><AdminStatusBadge status={item.status} />{activePlates.has(item.licensePlate) && <AdminStatusBadge status="active" label="Trong bãi" />}</div></div></article>
+  })}</OperationListShell>
+}

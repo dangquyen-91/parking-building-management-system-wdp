@@ -5,7 +5,7 @@ import { fadeUp, staggerContainer } from '../../assets/motion/variants'
 import { ThemeToggle } from '../common/ThemeToggle'
 import { AuthBrand } from './AuthBrand'
 
-const DEFAULT_PANEL_IMAGE = '/hello.png'
+const DEFAULT_PANEL_IMAGE = '/auth-building-campus.png'
 
 type AuthLayoutProps = {
   title: string

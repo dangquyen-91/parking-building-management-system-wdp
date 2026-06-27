@@ -19,11 +19,23 @@ const userSchema = new mongoose.Schema(
       default: 'user',
     },
     phone: { type: String, trim: true },
+    cccd: { type: String, trim: true },
+    dateOfBirth: { type: Date },
+    gender: { type: String, enum: ['male', 'female', 'other'] },
+    address: { type: String, trim: true, maxlength: 255 },
+    vehicles: [
+      {
+        licensePlate: { type: String, required: true, uppercase: true, trim: true },
+        vehicleType: { type: String, enum: ['motorcycle', 'car'], required: true },
+      },
+    ],
     isActive: { type: Boolean, default: true },
     refreshToken: { type: String, select: false },
   },
   { timestamps: true }
 );
+
+userSchema.index({ cccd: 1 }, { unique: true, sparse: true });
 
 userSchema.pre('save', async function () {
   if (!this.isModified('password')) return;

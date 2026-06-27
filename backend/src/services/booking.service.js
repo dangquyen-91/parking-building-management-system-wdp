@@ -1,4 +1,4 @@
-import Booking from '../models/booking.model.js';
+﻿import Booking from '../models/booking.model.js';
 import Payment from '../models/payment.model.js';
 import ParkingSession from '../models/parking-session.model.js';
 import Floor from '../models/floor.model.js';
@@ -6,7 +6,6 @@ import * as payosService from './payos.service.js';
 import * as emailService from './email.service.js';
 import * as pricingService from './pricing.service.js';
 import AppError from '../utils/appError.js';
-import logger from '../utils/logger.js';
 
 const HOUR_MS = 60 * 60 * 1000;
 const MAX_FUTURE_MS = 24 * HOUR_MS;
@@ -264,7 +263,7 @@ export const cancel = async ({ id, userId, email, licensePlate }) => {
     try {
       await payosService.cancelPaymentLink(payment.orderCode, 'User cancelled booking');
     } catch (err) {
-      logger.warn('Failed to cancel PayOS payment link', { error: err.message });
+      console.warn('Failed to cancel PayOS payment link', { error: err.message });
     }
     payment.status = 'cancelled';
     await payment.save();
@@ -273,6 +272,36 @@ export const cancel = async ({ id, userId, email, licensePlate }) => {
   booking.status = 'cancelled';
   await booking.save();
   return booking.populate(BOOKING_POPULATE);
+};
+
+// Active confirmation from the return-url flow: query PayOS directly so a paid
+// booking flips pending -> paid near-instantly instead of waiting for the webhook.
+export const confirm = async ({ id, userId, email, licensePlate }) => {
+  const booking = await Booking.findById(id);
+  if (!booking) throw new AppError('Booking not found', 404);
+
+  if (booking.userId) {
+    if (!userId || booking.userId.toString() !== userId.toString()) {
+      throw new AppError('Only the booking owner can confirm this booking', 403);
+    }
+  } else {
+    if (!email || !licensePlate) {
+      throw new AppError('Anonymous booking requires email + licensePlate to confirm', 400);
+    }
+    const normalizedPlate = licensePlate.toUpperCase().replace(/\s/g, '');
+    if (booking.email !== email.trim().toLowerCase() || booking.licensePlate !== normalizedPlate) {
+      throw new AppError('email or licensePlate does not match', 403);
+    }
+  }
+
+  if (booking.status === 'pending') {
+    const payment = await Payment.findOne({ bookingId: id }).sort({ createdAt: -1 });
+    if (!payment) throw new AppError('No payment found for this booking', 404);
+    const { confirmPaymentByOrderCode } = await import('./subscription.service.js');
+    await confirmPaymentByOrderCode(payment.orderCode);
+  }
+
+  return Booking.findById(id).populate(BOOKING_POPULATE);
 };
 
 export const findPaidBookingForCheckIn = async (licensePlate) => {
@@ -302,7 +331,7 @@ export const activateBookingFromWebhook = async (paymentId) => {
     { new: true }
   );
   if (!booking) {
-    logger.warn('Booking not found or not pending when activating', { paymentId });
+    console.warn('Booking not found or not pending when activating', { paymentId });
     return { alreadyProcessed: true };
   }
 
@@ -322,9 +351,9 @@ export const cancelBookingFromWebhook = async (paymentId) => {
     { new: true }
   );
   if (!booking) {
-    logger.warn('Booking not found or not pending when cancelling', { paymentId });
+    console.warn('Booking not found or not pending when cancelling', { paymentId });
     return { alreadyProcessed: true };
   }
-  logger.info('Booking cancelled due to failed/cancelled payment', { bookingId: booking._id });
+  console.log('Booking cancelled due to failed/cancelled payment', { bookingId: booking._id });
   return { cancelled: true, bookingId: booking._id };
 };

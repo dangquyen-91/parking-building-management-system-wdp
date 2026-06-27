@@ -128,9 +128,28 @@ export type GateCheckoutPreview = {
   overtimeFee: number
   note?: string
   breakdown?: {
+    durationMs?: number
+    blocks?: number
+    blockHours?: number
+    blockFee?: number
+    detail?: string
     hours?: number
     turns?: number
     nights?: number
+    prepaidAmount?: number
+    fullStayFee?: number
+  } | null
+  pricing?: {
+    vehicleType: GateVehicleType
+    mode: 'time_block' | 'fixed_block'
+    blockHours?: number | null
+    blockFee?: number | null
+    timeBlocks?: Array<{
+      startHour: number
+      endHour: number
+      fee: number
+      label?: string
+    }>
   } | null
 }
 
@@ -156,6 +175,13 @@ type SlotsResponse = {
   page: number
   limit: number
   totalPages?: number
+}
+
+export type GateEntryQr = {
+  qrToken: string
+  qrImage?: string
+  licensePlate: string
+  expiresInSeconds?: number
 }
 
 const staffHttp = axios.create({
@@ -204,6 +230,7 @@ export const staffGateApi = {
   async getActiveSessions(params?: {
     vehicleType?: GateVehicleType
     licensePlate?: string
+    status?: GateSessionStatus
     page?: number
     limit?: number
     refreshAt?: number
@@ -222,9 +249,21 @@ export const staffGateApi = {
     slotId?: string
     rowId?: string
     note?: string
+    qrToken?: string
   }) {
     try {
       const response = await staffHttp.post<ApiEnvelope<{ session: GateSession }>>('/sessions/check-in', payload)
+      return response.data.data
+    } catch (error) {
+      throw getApiError(error)
+    }
+  },
+
+  async requestEntryQr(licensePlate: string) {
+    try {
+      const response = await staffHttp.post<ApiEnvelope<GateEntryQr>>('/sessions/entry-qr', {
+        licensePlate,
+      })
       return response.data.data
     } catch (error) {
       throw getApiError(error)
@@ -242,10 +281,11 @@ export const staffGateApi = {
     }
   },
 
-  async checkoutCash(sessionId: string) {
+  async checkoutCash(sessionId: string, payload?: { qrToken: string; scannedPlate: string }) {
     try {
       const response = await staffHttp.post<ApiEnvelope<{ session: GateSession }>>(
         `/sessions/${sessionId}/checkout/cash`,
+        payload,
       )
       return response.data.data
     } catch (error) {
@@ -253,12 +293,13 @@ export const staffGateApi = {
     }
   },
 
-  async checkoutTransfer(sessionId: string) {
+  async checkoutTransfer(sessionId: string, payload?: { qrToken: string; scannedPlate: string }) {
     try {
       const response = await staffHttp.post<
         ApiEnvelope<{
           session: GateSession
           payment: {
+            orderCode?: number
             amount: number
             checkoutUrl?: string
             qrCode?: string
@@ -266,7 +307,7 @@ export const staffGateApi = {
           note?: string
           fee?: number
         }>
-      >(`/sessions/${sessionId}/checkout/transfer`)
+      >(`/sessions/${sessionId}/checkout/transfer`, payload)
       return response.data.data
     } catch (error) {
       throw getApiError(error)

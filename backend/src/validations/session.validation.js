@@ -20,8 +20,31 @@ export const checkInSchema = Joi.object({
   }),
 
   note: Joi.string().trim().max(300).allow('', null),
+
+  // Required for everyone: residents present their subscription QR, walk-ins
+  // present the ticket from /session/entry-qr. Both must encode the same
+  // plate the gate camera just read.
+  qrToken: Joi.string().required(),
+});
+
+export const requestEntryQRSchema = Joi.object({
+  licensePlate: Joi.string().trim().min(4).max(20).required(),
+});
+
+export const checkoutSchema = Joi.object({
+  qrToken: Joi.string().required(),
+  scannedPlate: Joi.string().trim().min(4).max(20).required(),
 });
 
 export const lookupSchema = Joi.object({
   licensePlate: Joi.string().trim().min(4).max(20).required(),
+});
+
+export const scanPlateSchema = Joi.object({
+  image: Joi.string().required(),
+});
+
+export const verifyQRSchema = Joi.object({
+  qrToken: Joi.string().required(),
+  scannedPlate: Joi.string().trim().min(4).max(20).required(),
 });

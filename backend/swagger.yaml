@@ -62,6 +62,32 @@ components:
         phone:
           type: string
           example: '0901234567'
+        cccd:
+          type: string
+          example: '012345678901'
+        dateOfBirth:
+          type: string
+          format: date
+          example: '2000-01-15'
+        gender:
+          type: string
+          enum: [male, female, other]
+          example: male
+        address:
+          type: string
+          example: '123 Nguyen Trai, Q1, TP.HCM'
+        vehicles:
+          type: array
+          items:
+            type: object
+            properties:
+              licensePlate:
+                type: string
+                example: '51A-12345'
+              vehicleType:
+                type: string
+                enum: [motorcycle, car]
+                example: motorcycle
         role:
           type: string
           enum: [admin, manager, staff, user]
@@ -126,6 +152,26 @@ components:
         phone:
           type: string
           example: '0901234567'
+        email:
+          type: string
+          format: email
+          example: nguyenvanb@gmail.com
+        cccd:
+          type: string
+          pattern: '^\d{12}$'
+          example: '012345678901'
+        dateOfBirth:
+          type: string
+          format: date
+          example: '2000-01-15'
+        gender:
+          type: string
+          enum: [male, female, other]
+          example: male
+        address:
+          type: string
+          maxLength: 255
+          example: '123 Nguyen Trai, Q1, TP.HCM'
 
     UpdateUserRequest:
       type: object
@@ -411,60 +457,6 @@ components:
           type: string
           format: date-time
 
-  responses:
-    Unauthorized:
-      description: Missing or invalid token
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              status:
-                type: string
-                example: fail
-              message:
-                type: string
-                example: No token provided
-    Forbidden:
-      description: Insufficient permissions
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              status:
-                type: string
-                example: fail
-              message:
-                type: string
-                example: You do not have permission to perform this action
-    NotFound:
-      description: Resource not found
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              status:
-                type: string
-                example: fail
-              message:
-                type: string
-                example: User not found
-    ValidationError:
-      description: Invalid request body
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              status:
-                type: string
-                example: fail
-              message:
-                type: string
-                example: '"role" must be one of [admin, manager, staff, user]'
-
     Plan:
       type: object
       properties:
@@ -744,6 +736,60 @@ components:
             bin:
               type: string
 
+  responses:
+    Unauthorized:
+      description: Missing or invalid token
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+                example: fail
+              message:
+                type: string
+                example: No token provided
+    Forbidden:
+      description: Insufficient permissions
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+                example: fail
+              message:
+                type: string
+                example: You do not have permission to perform this action
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+                example: fail
+              message:
+                type: string
+                example: User not found
+    ValidationError:
+      description: Invalid request body
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+                example: fail
+              message:
+                type: string
+                example: '"role" must be one of [admin, manager, staff, user]'
+
 paths:
 
   /auth/register:
@@ -879,7 +925,7 @@ paths:
 
     patch:
       tags: [Users]
-      summary: Update current user profile (fullName, phone only)
+      summary: Update current user profile
       security:
         - BearerAuth: []
       requestBody:
@@ -908,6 +954,112 @@ paths:
           $ref: '#/components/responses/ValidationError'
         '401':
           $ref: '#/components/responses/Unauthorized'
+
+  /users/me/password:
+    patch:
+      tags: [Users]
+      summary: Change current user password
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [currentPassword, newPassword]
+              properties:
+                currentPassword:
+                  type: string
+                  example: oldPassword123
+                newPassword:
+                  type: string
+                  minLength: 8
+                  maxLength: 128
+                  example: newPassword456
+      responses:
+        '200':
+          description: Password changed successfully
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /users/me/vehicles:
+    post:
+      tags: [Users]
+      summary: Add a vehicle to current user profile
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [licensePlate, vehicleType]
+              properties:
+                licensePlate:
+                  type: string
+                  example: '51A-12345'
+                vehicleType:
+                  type: string
+                  enum: [motorcycle, car]
+                  example: motorcycle
+      responses:
+        '200':
+          description: Vehicle added
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    type: object
+                    properties:
+                      user:
+                        $ref: '#/components/schemas/User'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /users/me/vehicles/{vehicleId}:
+    delete:
+      tags: [Users]
+      summary: Remove a vehicle from current user profile
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: vehicleId
+          required: true
+          schema:
+            type: string
+          description: ID của xe trong mảng vehicles
+      responses:
+        '200':
+          description: Vehicle removed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    type: object
+                    properties:
+                      user:
+                        $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
 
   /users:
     get:
@@ -1466,6 +1618,76 @@ paths:
         '403':
           $ref: '#/components/responses/Forbidden'
 
+  /floors/occupancy:
+    get:
+      tags: [Floors]
+      summary: Get vehicle counts by floor number (admin, manager, staff)
+      description: >
+        Trả về số xe máy và ô tô đang có mặt thực tế (đã check-in, chưa check-out)
+        trong một tầng, gộp chung tất cả các khu (section) cùng floorNumber.
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: query
+          name: buildingId
+          required: true
+          schema:
+            type: string
+          description: ID của tòa nhà
+        - in: query
+          name: floorNumber
+          required: true
+          schema:
+            type: integer
+          description: Số tầng cần xem (ví dụ 1, 2, -1)
+      responses:
+        '200':
+          description: Floor occupancy retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    type: object
+                    properties:
+                      floorNumber:
+                        type: integer
+                        example: 1
+                      motorcycle:
+                        type: object
+                        properties:
+                          current:
+                            type: integer
+                            description: Số xe máy đang đỗ
+                            example: 45
+                          total:
+                            type: integer
+                            description: Tổng sức chứa xe máy
+                            example: 100
+                      car:
+                        type: object
+                        properties:
+                          current:
+                            type: integer
+                            description: Số ô tô đang đỗ (vãng lai + thuê bao)
+                            example: 8
+                          total:
+                            type: integer
+                            description: Tổng sức chứa ô tô
+                            example: 20
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
   /floors/{id}:
     get:
       tags: [Floors]
@@ -1990,16 +2212,84 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
+  /sessions/entry-qr:
+    post:
+      tags: [Sessions]
+      summary: Cấp vé QR tạm cho khách vãng lai tại cổng vào (admin, staff)
+      description: |
+        Bước 1 của check-in vãng lai: camera ANPR đọc biển số → hệ thống sinh 1 mã QR
+        (`type: walkin_ticket`) mã hoá biển số đó.
+
+        - Vé chỉ có hiệu lực **5 phút** để dùng ở bước `POST /sessions/check-in` tiếp theo.
+        - Vé này KHÔNG bị thay thế bởi QR khác sau khi check-in — chính xác cái QR này sẽ
+          được lưu lại trên session và phải dùng lại nguyên vẹn lúc checkout.
+        - Resident (có subscription active) KHÔNG dùng endpoint này — họ dùng QR cố định
+          của gói, lấy qua `GET /subscriptions/{id}/qr`.
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [licensePlate]
+              properties:
+                licensePlate:
+                  type: string
+                  example: 51A-12345
+      responses:
+        '200':
+          description: Vé QR tạm đã được cấp
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  message:
+                    type: string
+                    example: Entry ticket QR generated
+                  data:
+                    type: object
+                    properties:
+                      qrToken:
+                        type: string
+                        example: eyJ0eXBlIjoid2Fsa2luX3RpY2tldCIsInBsYXRlIjoiNTFBMTIzNDUiLCJpYXQiOjE2OTAwMDAwMDB9.abc123
+                      qrImage:
+                        type: string
+                        description: Base64 PNG của QR code — dùng trực tiếp trong thẻ img
+                        example: data:image/png;base64,iVBORw0KGgoAAAANSUh...
+                      licensePlate:
+                        type: string
+                        example: 51A12345
+        '400':
+          description: Vehicle already has an active session
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
   /sessions/check-in:
     post:
       tags: [Sessions]
-      summary: Check in a vehicle (admin, manager, staff)
+      summary: Check in a vehicle (admin, staff)
       description: |
         Staff enters the license plate. The system auto-detects whether the plate has an active Subscription:
         - Has active Subscription → `customerType: resident`, `userId` filled from subscription owner, must use resident floor.
           For CAR resident, slot is auto-resolved from `subscription.slotId` — staff does NOT pass slotId.
         - No subscription → `customerType: walk_in`, must use visitor floor; fee charged at exit time.
           For CAR walk-in, slotId is REQUIRED.
+
+        **`qrToken` is now REQUIRED for everyone**, and must encode the same plate the gate
+        camera just read:
+        - Resident → QR cố định của gói, lấy qua `GET /subscriptions/{id}/qr`.
+        - Walk-in → vé tạm lấy qua `POST /sessions/entry-qr` (phải dùng trong vòng 5 phút).
+
+        Nếu hợp lệ, QR này được lưu lại làm "vé chính thức" của session — dùng nguyên vẹn
+        ở bước checkout, không sinh QR mới.
       security:
         - BearerAuth: []
       requestBody:
@@ -2010,7 +2300,7 @@ paths:
               oneOf:
                 - title: Car check-in
                   type: object
-                  required: [vehicleType, licensePlate]
+                  required: [vehicleType, licensePlate, qrToken]
                   properties:
                     vehicleType:
                       type: string
@@ -2018,6 +2308,10 @@ paths:
                     licensePlate:
                       type: string
                       example: 51A-12345
+                    qrToken:
+                      type: string
+                      description: QR gói (resident) hoặc vé tạm từ /sessions/entry-qr (walk-in)
+                      example: eyJ0eXBlIjoic3Vic2NyaXB0aW9uX2VudHJ5Iiwic3VibCI6IjY2NGEx...
                     slotId:
                       type: string
                       example: 664a1f2e8b2c3d4e5f6a7b8c
@@ -2026,7 +2320,7 @@ paths:
                       type: string
                 - title: Motorcycle check-in
                   type: object
-                  required: [vehicleType, licensePlate, rowId]
+                  required: [vehicleType, licensePlate, rowId, qrToken]
                   properties:
                     vehicleType:
                       type: string
@@ -2034,6 +2328,9 @@ paths:
                     licensePlate:
                       type: string
                       example: 59X1-23456
+                    qrToken:
+                      type: string
+                      description: QR gói (resident) hoặc vé tạm từ /sessions/entry-qr (walk-in)
                     rowId:
                       type: string
                       example: 664a1f2e8b2c3d4e5f6a7b8c
@@ -2041,7 +2338,7 @@ paths:
                       type: string
       responses:
         '201':
-          description: Vehicle checked in â€” slot assigned, session created
+          description: Vehicle checked in — slot assigned, session created, QR attached
           content:
             application/json:
               schema:
@@ -2058,8 +2355,20 @@ paths:
                     properties:
                       session:
                         $ref: '#/components/schemas/ParkingSession'
+                      qrToken:
+                        type: string
+                        description: >
+                          Chính là qrToken đã gửi lên (QR gói cho resident, vé entry-qr cho
+                          walk-in) — không phải QR mới sinh ra.
+                        example: eyJ0eXBlIjoid2Fsa2luX3RpY2tldCIsInBsYXRlIjoiNTFBMTIzNDUiLCJpYXQiOjE2OTAwMDAwMDB9.abc123
+                      qrImage:
+                        type: string
+                        description: Base64 PNG của QR code — dùng trực tiếp trong thẻ img
+                        example: data:image/png;base64,iVBORw0KGgoAAAANSUh...
         '400':
-          description: Vehicle already has an active session
+          description: >
+            Vehicle already has an active session, OR qrToken thiếu/sai loại/biển số không
+            khớp camera/vé walk-in đã hết hạn 5 phút.
         '404':
           description: No available slots for the vehicle type
         '401':
@@ -2160,13 +2469,188 @@ paths:
         '403':
           $ref: '#/components/responses/Forbidden'
 
+  /sessions/scan-plate:
+    post:
+      tags: [Sessions]
+      summary: Quét biển số xe qua camera (admin, manager, staff)
+      description: |
+        Nhận ảnh chụp từ camera (base64), gọi Plate Recognizer ANPR API và trả về biển số gợi ý.
+        Frontend dùng kết quả này để prefill ô nhập biển số trước khi staff xác nhận check-in.
+        - `confidence >= 0.8` → tự động điền
+        - `confidence < 0.8` → highlight vàng, yêu cầu staff xác nhận thủ công
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [image]
+              properties:
+                image:
+                  type: string
+                  description: Ảnh biển số dạng base64 (có thể kèm data URL prefix)
+                  example: data:image/jpeg;base64,/9j/4AAQSkZJRgAB...
+      responses:
+        '200':
+          description: Kết quả nhận dạng biển số
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  message:
+                    type: string
+                    example: License plate detected
+                  data:
+                    type: object
+                    properties:
+                      result:
+                        nullable: true
+                        type: object
+                        properties:
+                          plate:
+                            type: string
+                            example: 51A12345
+                          confidence:
+                            type: number
+                            format: float
+                            minimum: 0
+                            maximum: 1
+                            example: 0.92
+                          region:
+                            type: string
+                            nullable: true
+                            example: vn
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '502':
+          description: ANPR service không phản hồi
+        '503':
+          description: ANPR service chưa được cấu hình (thiếu PLATE_RECOGNIZER_TOKEN)
+
+  /sessions/verify-qr:
+    post:
+      tags: [Sessions]
+      summary: Xác thực QR tại cổng ra (admin, manager, staff)
+      description: |
+        Bước xác thực TUỲ CHỌN trước khi checkout (chỉ để staff xem trước cảnh báo —
+        không bắt buộc, vì checkout/cash|transfer tự verify lại từ đầu).
+        - Verify chữ ký HMAC của token
+        - Nhận diện loại QR: `subscription_entry` (resident, tìm session active theo
+          subscriptionId) hoặc `walkin_ticket` (walk-in, tìm session active có
+          `qrToken` khớp chính xác chuỗi này)
+        - So khớp biển số trong token với `scannedPlate`
+        - Trả về thông tin session + preview phí để staff xử lý checkout
+
+        Sau khi verify thành công, gọi tiếp `POST /sessions/{id}/checkout/cash` hoặc `/transfer` để hoàn tất
+        (truyền lại đúng `qrToken` + `scannedPlate` này).
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [qrToken, scannedPlate]
+              properties:
+                qrToken:
+                  type: string
+                  description: Token lấy từ QR code khách xuất trình
+                  example: eyJzaWQiOiI2NjRhMWYyZSIsInBsYXRlIjoiNTFBMTIzNDUiLCJpYXQiOjE2OTAwMDAwMDB9.abc123
+                scannedPlate:
+                  type: string
+                  description: Biển số camera quét được tại cổng ra
+                  example: 51A12345
+      responses:
+        '200':
+          description: QR hợp lệ — biển số khớp, có thể tiến hành checkout
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  message:
+                    type: string
+                    example: QR verified — proceed to checkout
+                  data:
+                    type: object
+                    properties:
+                      session:
+                        $ref: '#/components/schemas/ParkingSession'
+                      plateMatch:
+                        type: boolean
+                        description: true = biển số khớp hoàn toàn, false = có sai lệch cần staff xác nhận
+                        example: false
+                      plateQR:
+                        type: string
+                        description: Biển số lưu trong QR (từ lúc check-in)
+                        example: 9H7060
+                      plateCamera:
+                        type: string
+                        description: Biển số camera quét tại cổng ra
+                        example: 99H77060
+                      warning:
+                        type: string
+                        nullable: true
+                        description: Khác null khi biển số không khớp — FE hiện cảnh báo cho staff xác nhận
+                        example: "Biển số camera (99H77060) khác biển số QR (9H7060). Staff cần xác nhận thủ công."
+                      preview:
+                        type: object
+                        description: Thông tin phí checkout
+                        properties:
+                          sessionId:
+                            type: string
+                          customerType:
+                            type: string
+                            enum: [resident, walk_in]
+                          entryTime:
+                            type: string
+                            format: date-time
+                          exitTime:
+                            type: string
+                            format: date-time
+                          fee:
+                            type: integer
+                            example: 25000
+                          toCollect:
+                            type: integer
+                            example: 25000
+                          note:
+                            type: string
+        '400':
+          description: QR token không hợp lệ (chữ ký sai, session không active)
+        '404':
+          description: Session không tồn tại
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
   /sessions:
     get:
       tags: [Sessions]
-      summary: Get active sessions (admin, manager, staff)
+      summary: Get sessions (admin, manager, staff)
       security:
         - BearerAuth: []
       parameters:
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum: [active, completed, cancelled]
+            default: active
+          description: Lọc theo trạng thái phiên. Mặc định là active (xe đang trong bãi)
         - in: query
           name: vehicleType
           schema:
@@ -2199,7 +2683,7 @@ paths:
             default: 20
       responses:
         '200':
-          description: Active sessions retrieved
+          description: Sessions retrieved
           content:
             application/json:
               schema:
@@ -2227,6 +2711,58 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '403':
           $ref: '#/components/responses/Forbidden'
+
+  /sessions/{id}/qr:
+    get:
+      tags: [Sessions]
+      summary: Lấy lại QR code của session (admin, manager, staff)
+      description: |
+        Trả về QR token và ảnh QR base64 đang gắn với session active.
+        Dùng khi khách mất QR hoặc staff cần in lại — KHÔNG sinh QR mới.
+        - Resident → trả về QR cố định của subscription liên kết.
+        - Walk-in → trả về đúng vé `walkin_ticket` đã lưu lúc check-in.
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: Session ID
+      responses:
+        '200':
+          description: QR code trả về thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    type: object
+                    properties:
+                      sessionId:
+                        type: string
+                      licensePlate:
+                        type: string
+                        example: 51A12345
+                      qrToken:
+                        type: string
+                      qrImage:
+                        type: string
+                        description: Base64 PNG — dùng trực tiếp trong thẻ img
+                        example: data:image/png;base64,iVBORw0KGgoAAAANSUh...
+        '400':
+          description: Session không còn active
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
 
   /sessions/{id}:
     get:
@@ -2342,6 +2878,12 @@ paths:
       description: |
         Staff confirms they have collected cash from the driver.
         Calculates final fee, marks session as completed + paid, releases slot/row immediately.
+
+        **Bắt buộc QR khớp camera** — áp dụng cho cả resident và walk-in:
+        - `qrToken` phải byte-for-byte đúng QR đang gắn với session này (QR gói của
+          subscription cho resident, hoặc vé `walkin_ticket` đã lưu lúc check-in cho walk-in).
+        - Biển số mã hoá trong `qrToken` phải khớp `scannedPlate` (camera đọc tại cổng ra).
+        - Sai bất kỳ điểm nào → 400, KHÔNG đóng session.
       security:
         - BearerAuth: []
       parameters:
@@ -2350,6 +2892,22 @@ paths:
           required: true
           schema:
             type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [qrToken, scannedPlate]
+              properties:
+                qrToken:
+                  type: string
+                  description: QR đã nhận lúc check-in (QR gói hoặc vé walk-in) — dùng lại nguyên vẹn
+                  example: eyJ0eXBlIjoid2Fsa2luX3RpY2tldCIsInBsYXRlIjoiNTFBMTIzNDUiLCJpYXQiOjE2OTAwMDAwMDB9.abc123
+                scannedPlate:
+                  type: string
+                  description: Biển số camera quét được tại cổng ra
+                  example: 51A12345
       responses:
         '200':
           description: Session closed; slot/row released
@@ -2364,7 +2922,9 @@ paths:
                       session:
                         $ref: '#/components/schemas/ParkingSession'
         '400':
-          description: Session is not active
+          description: >
+            Session is not active, OR qrToken không hợp lệ/không khớp session/biển số
+            camera không khớp QR.
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
@@ -2382,6 +2942,8 @@ paths:
         On webhook success the session is auto-closed + slot/row released.
         Resident sessions skip PayOS — they are closed immediately with fee=0.
         If a pending payment already exists, the same link is reused.
+
+        **Bắt buộc QR khớp camera** (giống `/checkout/cash`) — xem mô tả bên đó.
       security:
         - BearerAuth: []
       parameters:
@@ -2390,6 +2952,22 @@ paths:
           required: true
           schema:
             type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [qrToken, scannedPlate]
+              properties:
+                qrToken:
+                  type: string
+                  description: QR đã nhận lúc check-in (QR gói hoặc vé walk-in) — dùng lại nguyên vẹn
+                  example: eyJ0eXBlIjoid2Fsa2luX3RpY2tldCIsInBsYXRlIjoiNTFBMTIzNDUiLCJpYXQiOjE2OTAwMDAwMDB9.abc123
+                scannedPlate:
+                  type: string
+                  description: Biển số camera quét được tại cổng ra
+                  example: 51A12345
       responses:
         '200':
           description: PayOS link created (or reused) — driver scans QR to pay
@@ -2429,13 +3007,56 @@ paths:
                       breakdown:
                         type: object
         '400':
-          description: Session is not active
+          description: >
+            Session is not active, OR qrToken không hợp lệ/không khớp session/biển số
+            camera không khớp QR.
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
           $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
+        '502':
+          description: PayOS API error
+
+  /sessions/{id}/checkout/confirm:
+    post:
+      tags: [Sessions]
+      summary: Confirm a transfer checkout now — close session without waiting for the webhook (admin, staff)
+      description: |
+        After a TRANSFER checkout link is paid, actively queries PayOS instead of waiting for
+        the (5-15s delayed) webhook. If PayOS reports PAID, the session is closed immediately
+        (status=completed, slot/row released). Idempotent and safe vs. the webhook racing in
+        parallel. Intended for the return-url flow on the staff checkout screen.
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: |
+            Returns the (possibly now-completed) session. If PayOS has not registered the
+            payment yet, the session stays `active` with `paymentStatus: pending` — retry shortly.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      session:
+                        $ref: '#/components/schemas/ParkingSession'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          description: Session or its payment not found
         '502':
           description: PayOS API error
 
@@ -2948,6 +3569,62 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
+  /subscriptions/{id}/qr:
+    get:
+      tags: [Subscriptions]
+      summary: Lấy QR cố định của gói (chủ gói, hoặc admin/manager/staff)
+      description: |
+        Trả về QR token + ảnh QR base64 gắn với subscription này — sinh **một lần duy nhất**
+        khi subscription chuyển `active` (lúc webhook PayOS báo thanh toán thành công), và
+        KHÔNG đổi cho tới khi gói hết hạn/bị hủy.
+
+        Resident dùng đúng QR này để check-in VÀ check-out trong suốt thời hạn gói — không
+        có QR nào khác được sinh thêm.
+        - User thường (`role: user`) chỉ xem được QR của gói thuộc về chính họ.
+        - admin/manager/staff xem được QR của bất kỳ gói nào.
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: QR code trả về thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    type: object
+                    properties:
+                      qrToken:
+                        type: string
+                        example: eyJ0eXBlIjoic3Vic2NyaXB0aW9uX2VudHJ5Iiwic3ViSWQiOiI2NjRhMWYyZSIsInBsYXRlIjoiNTlBMTIzNDUiLCJpYXQiOjE2OTAwMDAwMDB9.abc123
+                      qrImage:
+                        type: string
+                        description: Base64 PNG — dùng trực tiếp trong thẻ img
+                        example: data:image/png;base64,iVBORw0KGgoAAAANSUh...
+                      licensePlate:
+                        type: string
+                        example: 59A12345
+                      subscriptionId:
+                        type: string
+        '400':
+          description: Subscription chưa active (chưa thanh toán xong) nên chưa có QR
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: You can only view your own subscription QR
+        '404':
+          $ref: '#/components/responses/NotFound'
+
   /subscriptions/{id}/cancel:
     patch:
       tags: [Subscriptions]
@@ -2972,6 +3649,48 @@ paths:
           description: You can only cancel your own subscription
         '404':
           $ref: '#/components/responses/NotFound'
+
+  /subscriptions/{id}/confirm:
+    post:
+      tags: [Subscriptions]
+      summary: Confirm payment now — activate without waiting for the webhook (owner only)
+      description: |
+        Actively queries PayOS for the latest payment status instead of waiting for the
+        (5-15s delayed) webhook. If PayOS reports PAID, the subscription is activated
+        immediately (status=active, startDate/endDate set, qrToken minted — for both car
+        and motorcycle plans). Fully idempotent: safe to call repeatedly and safe vs. the
+        webhook arriving in parallel. Intended for the PayOS return-url flow.
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: |
+            Returns the (possibly now-active) subscription. If PayOS has not registered the
+            payment yet, the subscription stays `pending` — retry shortly.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      subscription:
+                        $ref: '#/components/schemas/Subscription'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: You can only confirm your own subscription
+        '404':
+          description: Subscription or its payment not found
+        '502':
+          description: PayOS API error
 
   /webhooks/payos:
     servers:
@@ -3163,12 +3882,55 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
+  /bookings/{id}/confirm:
+    post:
+      tags: [Bookings]
+      summary: Confirm payment now — flip pending → paid without waiting for the webhook
+      description: |
+        Actively queries PayOS instead of waiting for the (5-15s delayed) webhook. If PayOS
+        reports PAID, the booking is marked paid immediately and a confirmation email is sent.
+        Idempotent and safe vs. the webhook racing in parallel. Intended for the return-url flow.
+        - Logged-in user: confirms their own booking.
+        - Anonymous (guest): must provide email + licensePlate in body for verification.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                  description: Required for anonymous (guest) booking
+                licensePlate:
+                  type: string
+                  description: Required for anonymous (guest) booking
+      responses:
+        '200':
+          description: |
+            Returns the (possibly now-paid) booking. If PayOS has not registered the payment
+            yet, the booking stays `pending` — retry shortly.
+        '403':
+          description: Not the owner / wrong verification info
+        '404':
+          description: Booking or its payment not found
+        '502':
+          description: PayOS API error
+
   /reports/dashboard:
     get:
       tags: [Reports]
       summary: Overview dashboard (admin, manager)
       description: |
-        Quick overview for today: revenue split by source, activity counts, occupancy %.
+        Snapshot for today: revenue by source + breakdown by vehicle type (motorcycle/car),
+        activity counts (active sessions, subscriptions, pending bookings, today check-ins/outs),
+        and overall occupancy utilization %.
       security:
         - BearerAuth: []
       responses:
@@ -3186,11 +3948,30 @@ paths:
                       revenueToday:
                         type: object
                         properties:
-                          subscription: { type: integer }
-                          booking: { type: integer }
-                          sessionTransfer: { type: integer }
-                          sessionCash: { type: integer }
-                          total: { type: integer }
+                          subscription: { type: integer, example: 2000000 }
+                          booking: { type: integer, example: 500000 }
+                          sessionTransfer: { type: integer, example: 300000 }
+                          sessionCash: { type: integer, example: 150000 }
+                          total: { type: integer, example: 2950000 }
+                          byVehicleType:
+                            type: object
+                            properties:
+                              motorcycle:
+                                type: object
+                                properties:
+                                  subscription: { type: integer }
+                                  booking: { type: integer }
+                                  sessionTransfer: { type: integer }
+                                  sessionCash: { type: integer }
+                                  total: { type: integer }
+                              car:
+                                type: object
+                                properties:
+                                  subscription: { type: integer }
+                                  booking: { type: integer }
+                                  sessionTransfer: { type: integer }
+                                  sessionCash: { type: integer }
+                                  total: { type: integer }
                       activity:
                         type: object
                         properties:
@@ -3211,36 +3992,196 @@ paths:
   /reports/revenue:
     get:
       tags: [Reports]
-      summary: Revenue breakdown by date range (admin, manager)
+      summary: Revenue breakdown by period (admin, manager)
       description: |
-        Daily revenue grouped by source. Defaults to last 30 days.
-        Revenue sources:
-        - subscription: resident plan purchases
-        - booking: pre-paid walk-in car bookings
-        - sessionTransfer: PayOS payment at exit (walk-in/overtime)
-        - sessionCash: cash collected at exit
+        Revenue grouped by source and aggregated by day / week / month.
+        Defaults to last 30 days grouped by day.
+
+        **Revenue sources:**
+        - `subscription` – resident plan purchases (via PayOS)
+        - `booking` – pre-paid walk-in car bookings (via PayOS)
+        - `sessionTransfer` – PayOS payment at exit
+        - `sessionCash` – cash collected at exit
       security:
         - BearerAuth: []
       parameters:
         - in: query
           name: from
-          schema: { type: string, format: date }
-          example: '2026-05-01'
+          schema: { type: string, format: date, example: '2026-05-01' }
         - in: query
           name: to
-          schema: { type: string, format: date }
-          example: '2026-05-31'
+          schema: { type: string, format: date, example: '2026-05-31' }
+        - in: query
+          name: groupBy
+          schema: { type: string, enum: [day, week, month], default: day }
+          description: Aggregate periods by day (YYYY-MM-DD), week (YYYY-Www), or month (YYYY-MM)
       responses:
         '200':
           description: Revenue report
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      from: { type: string, format: date-time }
+                      to: { type: string, format: date-time }
+                      groupBy: { type: string, enum: [day, week, month] }
+                      totals:
+                        type: object
+                        properties:
+                          subscription: { type: integer }
+                          booking: { type: integer }
+                          sessionTransfer: { type: integer }
+                          sessionCash: { type: integer }
+                          total: { type: integer }
+                          transactions: { type: integer }
+                      periods:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            period: { type: string, example: '2026-05-01' }
+                            subscription: { type: integer }
+                            booking: { type: integer }
+                            sessionTransfer: { type: integer }
+                            sessionCash: { type: integer }
+                            total: { type: integer }
+                            transactions: { type: integer }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /reports/revenue/by-vehicle:
+    get:
+      tags: [Reports]
+      summary: Revenue split by vehicle type (admin, manager)
+      description: |
+        Revenue broken down by **motorcycle** vs **car**, each showing subscription/booking/
+        sessionTransfer/sessionCash sub-totals. Supports groupBy day/week/month.
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: query
+          name: from
+          schema: { type: string, format: date, example: '2026-05-01' }
+        - in: query
+          name: to
+          schema: { type: string, format: date, example: '2026-05-31' }
+        - in: query
+          name: groupBy
+          schema: { type: string, enum: [day, week, month], default: day }
+      responses:
+        '200':
+          description: Revenue by vehicle type
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      from: { type: string, format: date-time }
+                      to: { type: string, format: date-time }
+                      groupBy: { type: string }
+                      totals:
+                        type: object
+                        properties:
+                          motorcycle:
+                            type: object
+                            properties:
+                              subscription: { type: integer }
+                              booking: { type: integer }
+                              sessionTransfer: { type: integer }
+                              sessionCash: { type: integer }
+                              total: { type: integer }
+                              transactions: { type: integer }
+                          car:
+                            type: object
+                            properties:
+                              subscription: { type: integer }
+                              booking: { type: integer }
+                              sessionTransfer: { type: integer }
+                              sessionCash: { type: integer }
+                              total: { type: integer }
+                              transactions: { type: integer }
+                      periods:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            period: { type: string, example: '2026-05-01' }
+                            motorcycle: { type: object }
+                            car: { type: object }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /reports/revenue/comparison:
+    get:
+      tags: [Reports]
+      summary: Revenue comparison current vs previous period (admin, manager)
+      description: |
+        Compares total revenue between the **current** period and the **previous** same-length period.
+        Returns absolute values, change percentage, and trend direction.
+
+        | period | Current | Previous |
+        |--------|---------|----------|
+        | `week` | Mon–today | previous Mon–Sun |
+        | `month` | 1st–today | entire previous month |
+        | `year` | Jan 1–today | entire previous year |
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: query
+          name: period
+          schema: { type: string, enum: [week, month, year], default: month }
+      responses:
+        '200':
+          description: Revenue comparison
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      period: { type: string, enum: [week, month, year] }
+                      current:
+                        type: object
+                        properties:
+                          from: { type: string, format: date-time }
+                          to: { type: string, format: date-time }
+                          subscription: { type: integer }
+                          booking: { type: integer }
+                          sessionTransfer: { type: integer }
+                          sessionCash: { type: integer }
+                          total: { type: integer }
+                          transactions: { type: integer }
+                      previous:
+                        type: object
+                        properties:
+                          from: { type: string, format: date-time }
+                          to: { type: string, format: date-time }
+                          total: { type: integer }
+                          transactions: { type: integer }
+                      changePercent: { type: number, example: 19.5, nullable: true }
+                      trend: { type: string, enum: [up, down, flat, no_data] }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
 
   /reports/sessions:
     get:
       tags: [Reports]
-      summary: Session count stats by date range (admin, manager)
-      description: Total check-ins by vehicle type, customer type, and daily breakdown. Default last 7 days.
+      summary: Session statistics (admin, manager)
+      description: |
+        Parking session stats for a date range (default last 7 days). Includes:
+        - Count by vehicle type, customer type, status
+        - Average / min / max parking duration and fee per vehicle type (completed sessions only)
+        - Duration distribution in time buckets (0–1h, 1–2h, 2–4h, 4–8h, 8–24h, over 24h)
+        - Daily breakdown with motorcycle / car split
       security:
         - BearerAuth: []
       parameters:
@@ -3253,19 +4194,328 @@ paths:
       responses:
         '200':
           description: Session stats
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      from: { type: string, format: date-time }
+                      to: { type: string, format: date-time }
+                      totalSessions: { type: integer }
+                      byVehicleType:
+                        type: object
+                        properties:
+                          motorcycle: { type: integer }
+                          car: { type: integer }
+                      byCustomerType:
+                        type: object
+                        properties:
+                          resident: { type: integer }
+                          walk_in: { type: integer }
+                      byStatus:
+                        type: object
+                        properties:
+                          active: { type: integer }
+                          completed: { type: integer }
+                          cancelled: { type: integer }
+                      durationStats:
+                        type: object
+                        description: Keyed by vehicleType, completed sessions only
+                        additionalProperties:
+                          type: object
+                          properties:
+                            count: { type: integer }
+                            avgDurationMinutes: { type: integer, example: 95 }
+                            minDurationMinutes: { type: integer }
+                            maxDurationMinutes: { type: integer }
+                            avgFee: { type: integer, example: 15000 }
+                            totalFee: { type: integer }
+                      durationDistribution:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            range: { type: string, example: '1-2h' }
+                            count: { type: integer }
+                      daily:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            date: { type: string, format: date }
+                            total: { type: integer }
+                            motorcycle: { type: integer }
+                            car: { type: integer }
+                            completed: { type: integer }
+                            totalFee: { type: integer }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /reports/subscriptions:
+    get:
+      tags: [Reports]
+      summary: Subscription analytics (admin, manager)
+      description: |
+        Subscription lifecycle report for a date range (default last 30 days):
+        - Currently active subscriptions by plan and vehicle type
+        - Expiring soon alerts: next 7 days and next 30 days
+        - New / cancelled / expired counts in the period
+        - Revenue per plan in the period
+        - Daily new subscription activity
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: query
+          name: from
+          schema: { type: string, format: date }
+        - in: query
+          name: to
+          schema: { type: string, format: date }
+      responses:
+        '200':
+          description: Subscription analytics
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      from: { type: string, format: date-time }
+                      to: { type: string, format: date-time }
+                      active:
+                        type: object
+                        properties:
+                          total: { type: integer }
+                          byVehicleType:
+                            type: object
+                            properties:
+                              motorcycle: { type: integer }
+                              car: { type: integer }
+                          byPlan:
+                            type: array
+                            items:
+                              type: object
+                              properties:
+                                planCode: { type: string, example: MOTO_MONTHLY }
+                                planName: { type: string }
+                                vehicleType: { type: string }
+                                count: { type: integer }
+                      period:
+                        type: object
+                        properties:
+                          newSubscriptions: { type: integer }
+                          cancelledSubscriptions: { type: integer }
+                          expiredSubscriptions: { type: integer }
+                      expiring:
+                        type: object
+                        properties:
+                          in7Days: { type: integer }
+                          in30Days: { type: integer }
+                      revenueByPlan:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            planCode: { type: string }
+                            planName: { type: string }
+                            vehicleType: { type: string }
+                            total: { type: integer }
+                            count: { type: integer }
+                      daily:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            date: { type: string, format: date }
+                            new: { type: integer }
+                            cancelled: { type: integer }
+                            expired: { type: integer }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /reports/bookings:
+    get:
+      tags: [Reports]
+      summary: Booking funnel report (admin, manager)
+      description: |
+        Booking analytics for a date range (default last 30 days):
+        - Count by status (pending / paid / used / expired / cancelled)
+        - **Conversion rate**: % of paid bookings that were actually used
+        - **No-show rate**: % of paid bookings that expired without being used
+        - Average booking duration and amount
+        - Daily breakdown
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: query
+          name: from
+          schema: { type: string, format: date }
+        - in: query
+          name: to
+          schema: { type: string, format: date }
+      responses:
+        '200':
+          description: Booking funnel report
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      from: { type: string, format: date-time }
+                      to: { type: string, format: date-time }
+                      summary:
+                        type: object
+                        properties:
+                          total: { type: integer }
+                          byStatus:
+                            type: object
+                            properties:
+                              pending: { type: integer }
+                              paid: { type: integer }
+                              used: { type: integer }
+                              expired: { type: integer }
+                              cancelled: { type: integer }
+                          revenueByStatus: { type: object }
+                      funnel:
+                        type: object
+                        properties:
+                          created: { type: integer }
+                          paid: { type: integer }
+                          used: { type: integer }
+                          noShow: { type: integer }
+                          cancelled: { type: integer }
+                          conversionRate: { type: integer, example: 78, description: '% of paid bookings that were used' }
+                          noShowRate: { type: integer, example: 12, description: '% of paid bookings that expired' }
+                      durationStats:
+                        type: object
+                        nullable: true
+                        properties:
+                          avgDurationHours: { type: number, example: 3.5 }
+                          minDurationHours: { type: number }
+                          maxDurationHours: { type: number }
+                          avgAmount: { type: integer }
+                          totalAmount: { type: integer }
+                      daily:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            date: { type: string, format: date }
+                            created: { type: integer }
+                            paid: { type: integer }
+                            used: { type: integer }
+                            cancelled: { type: integer }
+                            expired: { type: integer }
+                            revenue: { type: integer }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
 
   /reports/occupancy:
     get:
       tags: [Reports]
-      summary: Current occupancy by floor (admin, manager)
-      description: Real-time occupancy per floor + overall utilization %.
+      summary: Current occupancy snapshot by floor (admin, manager)
+      description: |
+        Real-time occupancy per floor and overall utilization %.
+        - Car resident floors: slot-status based (empty/occupied/reserved/maintenance)
+        - Car visitor floors: active session count vs totalSlots
+        - Motorcycle floors: ParkingRow occupiedCount vs capacity
       security:
         - BearerAuth: []
       responses:
         '200':
-          description: Occupancy report
+          description: Occupancy snapshot
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      overall:
+                        type: object
+                        properties:
+                          totalCapacity: { type: integer }
+                          occupied: { type: integer }
+                          utilizationPercent: { type: integer, example: 65 }
+                      floors:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            floorId: { type: string }
+                            floorNumber: { type: integer }
+                            section: { type: string }
+                            floorType: { type: string, enum: [resident, visitor] }
+                            vehicleType: { type: string, enum: [motorcycle, car] }
+                            building: { type: object }
+                            occupied: { type: integer }
+                            empty: { type: integer }
+                            utilizationPercent: { type: integer }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /reports/occupancy/trend:
+    get:
+      tags: [Reports]
+      summary: Historical occupancy trend (admin, manager)
+      description: |
+        Daily check-in counts vs total capacity over a date range (default last 30 days).
+        Optionally filter to a specific floor with `floorId`.
+        Returns `utilizationEstimate` (daily check-ins / totalCapacity × 100) and the peak day.
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: query
+          name: from
+          schema: { type: string, format: date }
+        - in: query
+          name: to
+          schema: { type: string, format: date }
+        - in: query
+          name: floorId
+          schema: { type: string }
+          description: Filter to a specific floor (MongoDB ObjectId)
+      responses:
+        '200':
+          description: Occupancy trend
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      from: { type: string, format: date-time }
+                      to: { type: string, format: date-time }
+                      totalCapacity: { type: integer }
+                      avgDailyCheckIns: { type: integer }
+                      peakDay:
+                        type: object
+                        nullable: true
+                        properties:
+                          date: { type: string, format: date }
+                          checkIns: { type: integer }
+                      daily:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            date: { type: string, format: date }
+                            motorcycle: { type: integer }
+                            car: { type: integer }
+                            total: { type: integer }
+                            completed: { type: integer }
+                            utilizationEstimate: { type: integer, example: 72 }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
 
@@ -3273,7 +4523,9 @@ paths:
     get:
       tags: [Reports]
       summary: Peak hour analysis (admin, manager)
-      description: Hourly check-in distribution over last N days (default 7). Helps identify rush hours.
+      description: |
+        Hourly check-in distribution over the last N days (default 7).
+        Returns 24 buckets (hour 0–23) with motorcycle/car/total counts and the single busiest hour.
       security:
         - BearerAuth: []
       parameters:
@@ -3283,6 +4535,89 @@ paths:
       responses:
         '200':
           description: Peak hours
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      from: { type: string, format: date-time }
+                      to: { type: string, format: date-time }
+                      days: { type: integer }
+                      peakHour:
+                        type: object
+                        properties:
+                          hour: { type: integer, example: 8 }
+                          count: { type: integer }
+                      hourly:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            hour: { type: integer }
+                            motorcycle: { type: integer }
+                            car: { type: integer }
+                            total: { type: integer }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /reports/staff:
+    get:
+      tags: [Reports]
+      summary: Staff performance report (admin, manager)
+      description: |
+        Per-staff breakdown for a date range (default last 30 days):
+        - Check-ins handled (motorcycle / car split)
+        - Check-outs handled and total revenue processed
+        - Cash transactions and cash amount collected
+        Results sorted by check-ins descending; includes team totals.
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: query
+          name: from
+          schema: { type: string, format: date }
+        - in: query
+          name: to
+          schema: { type: string, format: date }
+      responses:
+        '200':
+          description: Staff performance report
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      from: { type: string, format: date-time }
+                      to: { type: string, format: date-time }
+                      totals:
+                        type: object
+                        properties:
+                          checkIns: { type: integer }
+                          checkOuts: { type: integer }
+                          totalRevenue: { type: integer }
+                          cashAmount: { type: integer }
+                      staff:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            staffId: { type: string }
+                            fullName: { type: string }
+                            email: { type: string }
+                            role: { type: string }
+                            checkIns: { type: integer }
+                            motorcycleCheckIns: { type: integer }
+                            carCheckIns: { type: integer }
+                            checkOuts: { type: integer }
+                            totalRevenue: { type: integer }
+                            cashTransactions: { type: integer }
+                            cashAmount: { type: integer }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
 
