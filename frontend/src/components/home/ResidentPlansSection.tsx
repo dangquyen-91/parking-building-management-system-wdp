@@ -1,5 +1,5 @@
-import { motion, useInView, useReducedMotion } from 'framer-motion'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { motion, useReducedMotion } from 'framer-motion'
+import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { scaleIn, staggerContainer } from '../../assets/motion/variants'
 import { AUTH_STORAGE_KEYS } from '../../services/authApi'
@@ -41,8 +41,6 @@ function sortResidentPlans(plans: Plan[]) {
 }
 
 export function ResidentPlansSection() {
-  const ref = useRef<HTMLDivElement>(null)
-  const inView = useInView(ref, { once: true, margin: '-10% 0px' })
   const reduceMotion = useReducedMotion()
   const [plans, setPlans] = useState<Plan[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -113,11 +111,10 @@ export function ResidentPlansSection() {
 
       {!isLoading && !error && plans.length > 0 && (
         <motion.div
-          ref={ref}
           className={gridClassName}
           variants={reduceMotion ? undefined : staggerContainer}
-          initial="hidden"
-          animate={inView ? 'visible' : 'hidden'}
+          initial={false}
+          animate="visible"
         >
           {plans.map((plan, index) => {
             const style = PLAN_STYLES[index % PLAN_STYLES.length]
