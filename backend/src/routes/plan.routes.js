@@ -6,12 +6,14 @@ import { createPlanSchema, updatePlanSchema } from '../validations/plan.validati
 
 const router = Router();
 
-router.use(authenticate);
-
+// Public: guests can browse plans before deciding to buy (login is only
+// required at purchase time via POST /subscriptions).
 router.get('/', getAll);
 router.get('/:id', getOne);
-router.post('/', authorize('admin', 'manager'), validate(createPlanSchema), create);
-router.patch('/:id', authorize('admin', 'manager'), validate(updatePlanSchema), update);
-router.delete('/:id', authorize('admin', 'manager'), remove);
+
+// Management: login + role required.
+router.post('/', authenticate, authorize('admin', 'manager'), validate(createPlanSchema), create);
+router.patch('/:id', authenticate, authorize('admin', 'manager'), validate(updatePlanSchema), update);
+router.delete('/:id', authenticate, authorize('admin', 'manager'), remove);
 
 export default router;
