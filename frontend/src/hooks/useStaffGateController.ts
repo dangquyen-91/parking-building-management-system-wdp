@@ -88,7 +88,7 @@ export function useStaffGateController() {
     lookupMatchesPlate &&
     lookupResult.status !== 'already_active' &&
     normalizedPlate.length >= 4 &&
-    Boolean(entryQrValue)
+    (lookupResult.customerType === 'walk_in' ? Boolean(issuedWalkInQrValue) : Boolean(entryQrValue))
 
   async function resolveQrTokenForApi(qrValue: string) {
     const payload = parseGateQr(qrValue)
@@ -261,7 +261,8 @@ export function useStaffGateController() {
     setActionMessage(null)
 
     try {
-      const apiQrToken = await resolveQrTokenForApi(entryQrValue)
+      const checkInQrValue = lookupResult?.customerType === 'walk_in' ? issuedWalkInQrValue : entryQrValue
+      const apiQrToken = await resolveQrTokenForApi(checkInQrValue)
       const response = await staffGateApi.checkIn({
         vehicleType,
         licensePlate: normalizedPlate,
@@ -272,9 +273,9 @@ export function useStaffGateController() {
 
       setActiveSessions((current) => [response.session, ...current])
       if (response.session.customerType === 'walk_in') {
-        rememberTicketForSession(response.session, entryQrValue)
+        rememberTicketForSession(response.session, checkInQrValue)
+        setIssuedTicket({ session: response.session, qrValue: checkInQrValue })
       }
-      setIssuedTicket({ session: response.session, qrValue: entryQrValue })
       resetCheckInForm()
       setActionMessage(`Đã ghi nhận xe vào ${response.session.licensePlate}.`)
       await loadGateData()
@@ -374,7 +375,7 @@ export function useStaffGateController() {
       setIssuedWalkInQrValue(ticket.qrToken)
       setEntryQrValue('')
       setEntryQrError(undefined)
-      setActionMessage(`Đã cấp vé QR vãng lai cho ${normalizedPlate}. Hãy quét lại vé này trong 5 phút để xác nhận xe vào.`)
+      setActionMessage(`Đã cấp vé QR vãng lai cho ${normalizedPlate}. Kiểm tra vị trí rồi xác nhận xe vào.`)
     } catch (err) {
       setIssuedWalkInQrValue('')
       setEntryQrValue('')

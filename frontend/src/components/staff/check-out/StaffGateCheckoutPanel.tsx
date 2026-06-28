@@ -17,6 +17,8 @@ type StaffGateCheckoutPanelProps = {
   onQueryChange: (value: string) => void
   onCheckoutCash: (session: GateSession, qrValue: string) => void
   onCheckoutTransfer: (session: GateSession, qrValue: string) => void
+  onQrError?: (message: string) => void
+  onQrSuccess?: (message: string) => void
 }
 
 export function StaffGateCheckoutPanel({
@@ -29,6 +31,8 @@ export function StaffGateCheckoutPanel({
   onQueryChange,
   onCheckoutCash,
   onCheckoutTransfer,
+  onQrError,
+  onQrSuccess,
 }: StaffGateCheckoutPanelProps) {
   const [confirmMethod, setConfirmMethod] = useState<CheckoutMethod | null>(null)
   const [verifiedSessionId, setVerifiedSessionId] = useState('')
@@ -79,6 +83,8 @@ export function StaffGateCheckoutPanel({
                 setVerifiedQrValue(qrValue)
               }
             }}
+            onError={onQrError}
+            onSuccess={onQrSuccess}
           />
 
           <StaffGateCheckoutDetails
