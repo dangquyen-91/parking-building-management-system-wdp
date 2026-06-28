@@ -45,15 +45,12 @@ export const unwrapApiError = (error: unknown) => {
   if (error instanceof AxiosError) {
     const payload = error.response?.data as Partial<ApiEnvelope<unknown>> | undefined;
     return new ApiError(
-      payload?.message ?? error.message ?? "Request failed",
+      payload?.message ?? error.message ?? "Yêu cầu thất bại",
       error.response?.status ?? 0,
     );
   }
 
-  return new ApiError(
-    error instanceof Error ? error.message : "Request failed",
-    0,
-  );
+  return new ApiError(error instanceof Error ? error.message : "Yêu cầu thất bại", 0);
 };
 
 export const apiRequest = async <T>(
@@ -75,11 +72,11 @@ export const apiRequest = async <T>(
     const payload = response.data;
 
     if (payload.status === "error" || payload.status === "fail") {
-      throw new ApiError(payload.message ?? "Request failed", response.status);
+      throw new ApiError(payload.message ?? "Yêu cầu thất bại", response.status);
     }
 
     if (payload.data === undefined) {
-      throw new ApiError("Invalid server response", response.status);
+      throw new ApiError("Phản hồi từ máy chủ không hợp lệ", response.status);
     }
 
     return payload.data;

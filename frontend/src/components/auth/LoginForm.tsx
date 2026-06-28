@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion'
 import { type FormEvent, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useStaggerFormMotion } from '../../hooks/useStaggerFormMotion'
 import { authApi, getDefaultRouteForRole } from '../../services/authApi'
 import { focusFirstFormError } from '../../utils/focusFirstFormError'
@@ -31,6 +31,7 @@ function validate(values: LoginValues): LoginErrors {
 
 export function LoginForm() {
   const navigate = useNavigate()
+  const location = useLocation()
   const { motionForm, fieldVariants } = useStaggerFormMotion()
   const [values, setValues] = useState<LoginValues>({ email: '', password: '' })
   const [errors, setErrors] = useState<LoginErrors>({})
@@ -59,7 +60,8 @@ export function LoginForm() {
         password: values.password,
       })
       setStatus('success')
-      navigate(getDefaultRouteForRole(session.user.role), { replace: true })
+      const from = (location.state as { from?: string } | null)?.from
+      navigate(from || getDefaultRouteForRole(session.user.role), { replace: true })
     } catch (error) {
       setStatus('idle')
       setErrors({

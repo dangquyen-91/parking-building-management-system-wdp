@@ -1,178 +1,286 @@
-import { useEffect, useMemo, useState } from "react";
-import { Linking, Modal } from "react-native";
-import { WebView } from "react-native-webview";
+import { useMemo, useState } from "react";
+import { Platform } from "react-native";
+import type { WebViewNavigation } from "react-native-webview/lib/WebViewTypes";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import { toast } from "sonner-native";
 
-import { GlassCard, Label, Page } from "../../components/parking-ui";
+import {
+  BookingDurationModal,
+  BookingEstimateCard,
+  BookingFormCard,
+  BookingPaymentCard,
+  BookingPaymentModal,
+  BookingPickerModal,
+} from "@/components/booking";
+import { AppRefreshControl } from "@/components/common/refresh-control";
+import { GlassCard, Page } from "@/components/parking-ui";
 import { useCurrentUserQuery } from "../../hooks/useAuth";
 import {
+  useCancelBookingMutation,
+  useConfirmBookingMutation,
   useCreateBookingMutation,
+  useGuestBookingsQuery,
+  useUpsertGuestBookingMutation,
   useSaveGuestBookingMutation,
-  useMyBookingsQuery,
 } from "../../hooks/useBookings";
 import {
-  type Booking,
+  type Booking as BookingRecord,
   type CreateBookingResult,
+  type StoredGuestBooking,
 } from "../../types/bookings";
-import { Pressable, ScrollView, Text, TextInput, View } from "../../tw";
+import type { DateTimePickerChangeEvent } from "@react-native-community/datetimepicker";
+import { createBookingPayloadSchema } from "@/schema";
+import { getFieldErrors } from "@/utils/validation";
+import { Pressable, ScrollView, Text, View, useThemeColors } from "../../tw";
 
-const pad = (value: number) => String(value).padStart(2, "0");
+const HOUR_MS = 60 * 60 * 1000;
+const BOOKING_BLOCK_HOURS = 4;
+const BOOKING_BLOCK_FEE = 35000;
 
-const toLocalInputValue = (date: Date) => {
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(
-    date.getHours(),
-  )}:${pad(date.getMinutes())}`;
+const calculateBookingEstimate = (durationHours: number) =>
+  Math.max(1, Math.ceil(durationHours / BOOKING_BLOCK_HOURS)) * BOOKING_BLOCK_FEE;
+
+type PickerField = "arrivalDate" | "arrivalTime" | null;
+
+type BookingField = "email" | "licensePlate" | "expectedArrivalTime" | "expectedExitTime";
+
+const withDatePart = (source: Date, nextDate: Date) => {
+  const updated = new Date(source);
+  updated.setFullYear(nextDate.getFullYear(), nextDate.getMonth(), nextDate.getDate());
+  return updated;
 };
 
-const parseLocalInputValue = (value: string) => {
-  const match = value.trim().match(/^(\d{4})-(\d{2})-(\d{2})\s+(\d{2}):(\d{2})$/);
-
-  if (!match) {
-    return null;
-  }
-
-  const [, year, month, day, hour, minute] = match;
-  const date = new Date(
-    Number(year),
-    Number(month) - 1,
-    Number(day),
-    Number(hour),
-    Number(minute),
-  );
-
-  return Number.isNaN(date.getTime()) ? null : date;
+const withTimePart = (source: Date, nextTime: Date) => {
+  const updated = new Date(source);
+  updated.setHours(nextTime.getHours(), nextTime.getMinutes(), 0, 0);
+  return updated;
 };
 
-const formatDateTime = (value: string) =>
-  new Date(value).toLocaleString("vi-VN", {
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    month: "2-digit",
-  });
-
-const formatMoney = (value: number) => `${value.toLocaleString("vi-VN")} VND`;
-
-const inputStyle = {
-  paddingHorizontal: 16,
-  paddingVertical: 14,
-};
-
-const getStatusTone = (status: Booking["status"]) => {
-  if (status === "paid" || status === "used") {
-    return "text-btn-primary";
-  }
-
-  if (status === "cancelled" || status === "expired") {
-    return "text-faint";
-  }
-
-  return "text-fg";
-};
-
-export default function Booking() {
+export default function BookingScreen() {
+  const { btnPrimaryFg } = useThemeColors();
   const now = useMemo(() => new Date(), []);
-  const [phoneNumber, setPhoneNumber] = useState("");
+  const [guestEmail, setGuestEmail] = useState("");
   const [licensePlate, setLicensePlate] = useState("");
-  const [arrivalTime, setArrivalTime] = useState(
-    toLocalInputValue(new Date(now.getTime() + 60 * 60 * 1000)),
-  );
-  const [exitTime, setExitTime] = useState(
-    toLocalInputValue(new Date(now.getTime() + 3 * 60 * 60 * 1000)),
-  );
+  const [arrivalTime, setArrivalTime] = useState<Date | null>(null);
+  const [selectedDurationHours, setSelectedDurationHours] = useState<number | null>(null);
   const [createdBooking, setCreatedBooking] = useState<CreateBookingResult | null>(null);
   const [paymentUrl, setPaymentUrl] = useState<string | null>(null);
+  const [pickerField, setPickerField] = useState<PickerField>(null);
+  const [durationModalVisible, setDurationModalVisible] = useState(false);
+  const [errors, setErrors] = useState<Partial<Record<BookingField, string>>>({});
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const { data: currentUser } = useCurrentUserQuery();
   const createBookingMutation = useCreateBookingMutation();
   const saveGuestBookingMutation = useSaveGuestBookingMutation();
-  const myBookingsQuery = useMyBookingsQuery(Boolean(currentUser));
+  const upsertGuestBookingMutation = useUpsertGuestBookingMutation();
+  const confirmBookingMutation = useConfirmBookingMutation();
+  const cancelBookingMutation = useCancelBookingMutation();
+  const guestBookingsQuery = useGuestBookingsQuery(!currentUser);
 
-  useEffect(() => {
-    if (currentUser?.phone && !phoneNumber) {
-      setPhoneNumber(currentUser.phone);
+  const email = guestEmail;
+  const exitTime = useMemo(
+    () =>
+      arrivalTime && selectedDurationHours
+        ? new Date(arrivalTime.getTime() + selectedDurationHours * HOUR_MS)
+        : null,
+    [arrivalTime, selectedDurationHours],
+  );
+
+  const estimatedAmount = selectedDurationHours
+    ? calculateBookingEstimate(selectedDurationHours)
+    : null;
+
+  const bookingList = guestBookingsQuery.data ?? [];
+
+  const syncGuestBooking = async (booking: BookingRecord) => {
+    if (currentUser) {
+      return;
     }
-  }, [currentUser, phoneNumber]);
 
-  const durationHours = useMemo(() => {
-    const arrival = parseLocalInputValue(arrivalTime);
-    const exit = parseLocalInputValue(exitTime);
+    const currentPayment =
+      createdBooking?.booking._id === booking._id
+        ? createdBooking?.payment
+        : (bookingList.find((item) => item._id === booking._id) as StoredGuestBooking | undefined)
+            ?.payment;
 
-    if (!arrival || !exit || exit <= arrival) {
-      return null;
-    }
-
-    return Math.ceil((exit.getTime() - arrival.getTime()) / (60 * 60 * 1000));
-  }, [arrivalTime, exitTime]);
-
-  const estimatedAmount = durationHours ? Math.min(durationHours * 20000, 120000) : null;
+    await upsertGuestBookingMutation.mutateAsync({
+      ...booking,
+      payment: currentPayment,
+      savedAt: new Date().toISOString(),
+    });
+  };
 
   const handleCreateBooking = async () => {
-    const arrival = parseLocalInputValue(arrivalTime);
-    const exit = parseLocalInputValue(exitTime);
+    const arrival = arrivalTime;
+    const exit = exitTime;
+    const hours = selectedDurationHours;
 
-    if (!phoneNumber.trim() || !licensePlate.trim()) {
-      toast.error("Missing information", {
-        description: "Please enter phone number and license plate.",
-      });
+    const nextErrors: Partial<Record<BookingField, string>> = {};
+
+    if (!arrival) {
+      nextErrors.expectedArrivalTime = "Vui lòng chọn thời gian đến.";
+    }
+
+    if (!hours || !exit) {
+      nextErrors.expectedExitTime = "Vui lòng chọn thời gian gửi xe.";
+    }
+
+    if (Object.keys(nextErrors).length > 0) {
+      setErrors(nextErrors);
       return;
     }
 
-    if (!arrival || !exit) {
-      toast.error("Invalid time", {
-        description: "Use the format YYYY-MM-DD HH:mm.",
-      });
+    if (!arrival || !exit || !hours) {
+      setErrors(nextErrors);
       return;
     }
+
+    const validation = createBookingPayloadSchema.safeParse({
+      email,
+      licensePlate,
+      expectedArrivalTime: arrival.toISOString(),
+      expectedExitTime: exit.toISOString(),
+    });
+
+    if (!validation.success) {
+      setErrors(getFieldErrors<BookingField>(validation.error));
+      return;
+    }
+
+    const rangeErrors: Partial<Record<BookingField, string>> = {};
 
     if (arrival <= new Date()) {
-      toast.error("Invalid time", {
-        description: "Arrival time must be in the future.",
-      });
-      return;
+      rangeErrors.expectedArrivalTime = "Thời gian đến phải lớn hơn thời điểm hiện tại.";
     }
 
     if (exit <= arrival) {
-      toast.error("Invalid time", {
-        description: "Exit time must be after arrival time.",
-      });
-      return;
+      rangeErrors.expectedExitTime = "Thời gian rời đi phải sau thời gian đến.";
     }
 
-    const hours = Math.ceil((exit.getTime() - arrival.getTime()) / (60 * 60 * 1000));
     if (hours < 1 || hours > 24) {
-      toast.error("Invalid duration", {
-        description: "Booking duration must be from 1 to 24 hours.",
-      });
-      return;
+      rangeErrors.expectedExitTime = "Thời gian đặt chỗ phải từ 1 đến 24 giờ.";
     }
 
     if (arrival.getTime() - Date.now() > 24 * 60 * 60 * 1000) {
-      toast.error("Invalid arrival", {
-        description: "Bookings can only be made up to 24 hours ahead.",
-      });
+      rangeErrors.expectedArrivalTime = "Chỉ được đặt chỗ trước tối đa 24 giờ.";
+    }
+
+    if (Object.keys(rangeErrors).length > 0) {
+      setErrors(rangeErrors);
       return;
     }
 
+    setErrors({});
+
     try {
       const result = await createBookingMutation.mutateAsync({
-        phoneNumber: phoneNumber.trim(),
-        licensePlate: licensePlate.trim(),
-        expectedArrivalTime: arrival.toISOString(),
-        expectedExitTime: exit.toISOString(),
+        ...validation.data,
+        email: validation.data.email.toLowerCase(),
       });
       setCreatedBooking(result);
       if (!currentUser) {
         await saveGuestBookingMutation.mutateAsync(result);
       }
-      toast.success("Booking created", {
-        description: "Complete payment to activate your booking.",
+      toast.success("Đặt chỗ thành công", {
+        description: "Hãy hoàn tất thanh toán để kích hoạt lượt đặt chỗ.",
       });
     } catch (error) {
-      toast.error("Booking failed", {
-        description: error instanceof Error ? error.message : "Please try again.",
+      toast.error("Đặt chỗ thất bại", {
+        description: error instanceof Error ? error.message : "Vui lòng thử lại.",
       });
+    }
+  };
+
+  const activePickerValue = (() => {
+    switch (pickerField) {
+      case "arrivalDate":
+      case "arrivalTime":
+      default:
+        return arrivalTime ?? new Date(now.getTime() + HOUR_MS);
+    }
+  })();
+
+  const activePickerMode = pickerField === "arrivalTime" ? "time" : "date";
+
+  const activePickerMinimumDate = (() => {
+    switch (pickerField) {
+      case "arrivalDate":
+        return new Date();
+      default:
+        return undefined;
+    }
+  })();
+
+  const handlePickerChange = (_event: DateTimePickerChangeEvent, selectedDate: Date) => {
+    if (pickerField === "arrivalDate") {
+      const baseArrival = arrivalTime ?? new Date(now.getTime() + HOUR_MS);
+      const nextArrival = withDatePart(baseArrival, selectedDate);
+      setArrivalTime(nextArrival);
+      setErrors((current) => ({ ...current, expectedArrivalTime: undefined }));
+    } else if (pickerField === "arrivalTime") {
+      const baseArrival = arrivalTime ?? new Date(now.getTime() + HOUR_MS);
+      const nextArrival = withTimePart(baseArrival, selectedDate);
+      setArrivalTime(nextArrival);
+      setErrors((current) => ({ ...current, expectedArrivalTime: undefined }));
+    }
+
+    if (Platform.OS === "android") {
+      setPickerField(null);
+    }
+  };
+
+  const handlePickerDismiss = () => {
+    setPickerField(null);
+  };
+
+  const handleBookingStateSync = async (nextAction: "confirm" | "cancel") => {
+    if (!createdBooking) {
+      return;
+    }
+
+    try {
+      const payload = {
+        id: createdBooking.booking._id,
+        email: currentUser ? undefined : createdBooking.booking.email,
+        licensePlate: currentUser ? undefined : createdBooking.booking.licensePlate,
+      };
+      const result =
+        nextAction === "confirm"
+          ? await confirmBookingMutation.mutateAsync(payload)
+          : await cancelBookingMutation.mutateAsync(payload);
+
+      const nextBooking = result.booking;
+      setCreatedBooking((current) => (current ? { ...current, booking: nextBooking } : current));
+      await syncGuestBooking(nextBooking);
+      setPaymentUrl(null);
+
+      toast.success(
+        nextAction === "confirm" ? "Đã đồng bộ thanh toán" : "Đã cập nhật đặt chỗ",
+        {
+          description:
+            nextAction === "confirm"
+              ? "Trạng thái đặt chỗ đã được cập nhật từ hệ thống."
+              : "Đặt chỗ đang chờ đã được hủy.",
+        },
+      );
+    } catch (error) {
+      toast.error("Không thể đồng bộ đặt chỗ", {
+        description: error instanceof Error ? error.message : "Vui lòng thử lại sau.",
+      });
+    }
+  };
+
+  const handlePaymentNavigationChange = ({ url }: WebViewNavigation) => {
+    const normalizedUrl = url.toLowerCase();
+
+    if (normalizedUrl.includes("/payment/success")) {
+      void handleBookingStateSync("confirm");
+      return;
+    }
+
+    if (normalizedUrl.includes("/payment/cancel")) {
+      void handleBookingStateSync("cancel");
     }
   };
 
@@ -184,113 +292,83 @@ export default function Booking() {
     setPaymentUrl(url);
   };
 
-  const openPaymentInBrowser = async () => {
-    if (!paymentUrl) {
-      return;
-    }
+  const resetFormState = () => {
+    setGuestEmail("");
+    setLicensePlate("");
+    setArrivalTime(null);
+    setSelectedDurationHours(null);
+    setCreatedBooking(null);
+    setPaymentUrl(null);
+    setPickerField(null);
+    setDurationModalVisible(false);
+    setErrors({});
+  };
 
-    await Linking.openURL(paymentUrl);
+  const handleRefreshForm = async () => {
+    setIsRefreshing(true);
+
+    try {
+      resetFormState();
+    } finally {
+      setIsRefreshing(false);
+    }
   };
 
   return (
     <Page
-      eyebrow="Reservation"
-      title="Book visitor parking"
-      subtitle="Hold a visitor car space for the next 24 hours, then complete payment to activate it."
+      eyebrow="Đặt chỗ"
+      title="Đặt chỗ bãi xe khách"
+      subtitle="Giữ chỗ trong 24 giờ tới, sau đó thanh toán để kích hoạt."
     >
       <ScrollView
         contentInsetAdjustmentBehavior="automatic"
         contentContainerClassName="gap-4 px-5 pb-[120px]"
+        refreshControl={
+          <AppRefreshControl
+            onRefresh={handleRefreshForm}
+            refreshing={isRefreshing}
+          />
+        }
       >
         <GlassCard className="gap-4">
           <View className="flex-row items-center gap-3">
             <View className="h-11 w-11 items-center justify-center rounded-[14px] bg-btn-primary">
-              <Ionicons name="car-sport" color="#000000" size={22} />
+              <Ionicons name="car-sport" color={btnPrimaryFg} size={22} />
             </View>
             <View className="flex-1 gap-1">
               <Text className="font-sans text-lg font-extrabold text-fg">
-                Visitor car booking
+                Đặt chỗ dành cho khách vãng lai
               </Text>
               <Text className="font-sans text-sm leading-5 text-subtle">
-                Pay before arrival. Pending bookings expire if payment is not completed.
+                Thanh toán trước khi đến.
               </Text>
             </View>
           </View>
 
-          <View className="gap-3">
-            <View className="gap-2">
-              <Label>Phone number</Label>
-              <TextInput
-                keyboardType="phone-pad"
-                onChangeText={setPhoneNumber}
-                placeholder="0900000000"
-                placeholderTextColor="#6b7280"
-                style={inputStyle}
-                value={phoneNumber}
-                className="rounded-[14px] border border-border-theme bg-input px-4 py-3.5 font-sans text-base text-fg"
-              />
-            </View>
-
-            <View className="gap-2">
-              <Label>License plate</Label>
-              <TextInput
-                autoCapitalize="characters"
-                onChangeText={setLicensePlate}
-                placeholder="59A24872"
-                placeholderTextColor="#6b7280"
-                style={inputStyle}
-                value={licensePlate}
-                className="rounded-[14px] border border-border-theme bg-input px-4 py-3.5 font-sans text-base text-fg"
-              />
-            </View>
-
-            <View className="flex-row gap-3">
-              <View className="flex-1 gap-2">
-                <Label>Arrival</Label>
-                <TextInput
-                  onChangeText={setArrivalTime}
-                  placeholder="YYYY-MM-DD HH:mm"
-                  placeholderTextColor="#6b7280"
-                  style={inputStyle}
-                  value={arrivalTime}
-                  className="rounded-[14px] border border-border-theme bg-input px-4 py-3.5 font-sans text-[13px] text-fg"
-                />
-              </View>
-              <View className="flex-1 gap-2">
-                <Label>Exit</Label>
-                <TextInput
-                  onChangeText={setExitTime}
-                  placeholder="YYYY-MM-DD HH:mm"
-                  placeholderTextColor="#6b7280"
-                  style={inputStyle}
-                  value={exitTime}
-                  className="rounded-[14px] border border-border-theme bg-input px-4 py-3.5 font-sans text-[13px] text-fg"
-                />
-              </View>
-            </View>
-          </View>
+          <BookingFormCard
+            arrivalTime={arrivalTime}
+            email={email}
+            errors={errors}
+            exitTime={exitTime}
+            licensePlate={licensePlate}
+            onChangeEmail={(value) => {
+              setGuestEmail(value);
+              setErrors((current) => ({ ...current, email: undefined }));
+            }}
+            onChangeLicensePlate={(value) => {
+              setLicensePlate(value);
+              setErrors((current) => ({ ...current, licensePlate: undefined }));
+            }}
+            onOpenDurationPicker={() => setDurationModalVisible(true)}
+            onOpenPicker={setPickerField}
+            selectedDurationHours={selectedDurationHours}
+          />
         </GlassCard>
 
-        <GlassCard className="gap-3">
-          <View className="flex-row items-center justify-between">
-            <View className="gap-1">
-              <Label>Estimate</Label>
-              <Text className="font-sans text-xl font-extrabold text-fg">
-                {estimatedAmount ? formatMoney(estimatedAmount) : "Check time range"}
-              </Text>
-            </View>
-            <View className="items-end gap-1">
-              <Label>Duration</Label>
-              <Text className="font-sans text-base font-bold text-muted">
-                {durationHours ? `${durationHours}h` : "--"}
-              </Text>
-            </View>
-          </View>
-          <Text className="font-sans text-sm leading-5 text-subtle">
-            Car parking is estimated at 20,000 VND per started hour, capped at
-            120,000 VND per day. The server confirms the final amount.
-          </Text>
-        </GlassCard>
+        <BookingEstimateCard
+          estimatedAmount={estimatedAmount}
+          selectedDurationHours={selectedDurationHours}
+        />
 
         <Pressable
           className="items-center rounded-full bg-btn-primary py-4"
@@ -298,131 +376,43 @@ export default function Booking() {
           onPress={handleCreateBooking}
         >
           <Text className="font-sans text-base font-extrabold text-btn-primary-fg">
-            {createBookingMutation.isPending ? "Creating booking..." : "Create booking"}
+            {createBookingMutation.isPending ? "Đang tạo đặt chỗ..." : "Tạo đặt chỗ"}
           </Text>
         </Pressable>
 
         {createdBooking ? (
-          <GlassCard className="gap-4">
-            <View className="flex-row items-start justify-between gap-3">
-              <View className="flex-1 gap-1">
-                <Label>Payment required</Label>
-                <Text className="font-sans text-xl font-extrabold text-fg">
-                  {formatMoney(createdBooking.payment.amount)}
-                </Text>
-                <Text className="font-sans text-sm text-subtle">
-                  Order #{createdBooking.payment.orderCode}
-                </Text>
-              </View>
-              <Text className="rounded-full bg-badge px-3 py-1 font-sans text-xs font-bold uppercase text-fg">
-                {createdBooking.booking.status}
-              </Text>
-            </View>
-
-            <View className="gap-2 rounded-[14px] bg-surface-alt p-3">
-              <Text selectable className="font-sans text-base font-extrabold text-fg">
-                {createdBooking.booking.licensePlate}
-              </Text>
-              <Text className="font-sans text-sm text-subtle">
-                {formatDateTime(createdBooking.booking.expectedArrivalTime)} -{" "}
-                {formatDateTime(createdBooking.booking.expectedExitTime)}
-              </Text>
-            </View>
-
-            <Pressable
-              className="items-center rounded-full bg-btn-primary py-3.5"
-              onPress={() => openPayment(createdBooking.payment.checkoutUrl)}
-            >
-              <Text className="font-sans text-base font-extrabold text-btn-primary-fg">
-                Open payment
-              </Text>
-            </Pressable>
-          </GlassCard>
-        ) : null}
-
-        {currentUser ? (
-          <View className="gap-3">
-            <View className="flex-row items-center justify-between">
-              <Label>My bookings</Label>
-              {myBookingsQuery.isFetching ? (
-                <Text className="font-sans text-xs font-bold text-subtle">Loading</Text>
-              ) : null}
-            </View>
-
-            {(myBookingsQuery.data?.bookings ?? []).slice(0, 3).map((booking) => (
-              <GlassCard key={booking._id} className="gap-2.5">
-                <View className="flex-row items-center justify-between gap-3">
-                  <Text selectable className="font-sans text-base font-extrabold text-fg">
-                    {booking.licensePlate}
-                  </Text>
-                  <Text
-                    className={`font-sans text-xs font-extrabold uppercase ${getStatusTone(
-                      booking.status,
-                    )}`}
-                  >
-                    {booking.status}
-                  </Text>
-                </View>
-                <Text className="font-sans text-sm text-subtle">
-                  {formatDateTime(booking.expectedArrivalTime)} -{" "}
-                  {formatDateTime(booking.expectedExitTime)}
-                </Text>
-                <Text className="font-sans text-sm font-bold text-muted">
-                  {formatMoney(booking.amount)}
-                </Text>
-              </GlassCard>
-            ))}
-
-            {myBookingsQuery.data?.bookings?.length === 0 ? (
-              <GlassCard className="gap-1">
-                <Text className="font-sans text-base font-extrabold text-fg">
-                  No bookings yet
-                </Text>
-                <Text className="font-sans text-sm text-subtle">
-                  Your latest visitor parking bookings will appear here.
-                </Text>
-              </GlassCard>
-            ) : null}
-          </View>
+          <BookingPaymentCard
+            bookingResult={createdBooking}
+            onOpenPayment={openPayment}
+          />
         ) : null}
       </ScrollView>
 
-      <Modal
-        animationType="slide"
-        onRequestClose={() => setPaymentUrl(null)}
-        presentationStyle="fullScreen"
-        visible={Boolean(paymentUrl)}
-      >
-        <View className="flex-1 bg-page">
-          <View className="flex-row items-center justify-between border-b border-border-theme bg-glass-card px-4 pb-3 pt-14">
-            <Pressable
-              className="h-10 w-10 items-center justify-center rounded-full bg-badge"
-              onPress={() => setPaymentUrl(null)}
-            >
-              <Ionicons name="close" color="#ffffff" size={22} />
-            </Pressable>
+      <BookingPickerModal
+        minimumDate={activePickerMinimumDate}
+        mode={activePickerMode}
+        onChange={handlePickerChange}
+        onDismiss={handlePickerDismiss}
+        pickerField={pickerField}
+        value={activePickerValue}
+      />
 
-            <Text className="font-sans text-base font-extrabold text-fg">
-              PayOS payment
-            </Text>
+      <BookingDurationModal
+        onClose={() => setDurationModalVisible(false)}
+        onSelectDuration={(hours) => {
+          setSelectedDurationHours(hours);
+          setDurationModalVisible(false);
+          setErrors((current) => ({ ...current, expectedExitTime: undefined }));
+        }}
+        selectedDurationHours={selectedDurationHours}
+        visible={durationModalVisible}
+      />
 
-            <Pressable
-              className="h-10 w-10 items-center justify-center rounded-full bg-badge"
-              onPress={openPaymentInBrowser}
-            >
-              <Ionicons name="open-outline" color="#ffffff" size={20} />
-            </Pressable>
-          </View>
-
-          {paymentUrl ? (
-            <WebView
-              source={{ uri: paymentUrl }}
-              startInLoadingState
-              className="flex-1"
-            />
-          ) : null}
-        </View>
-      </Modal>
+      <BookingPaymentModal
+        onClose={() => setPaymentUrl(null)}
+        onNavigationStateChange={handlePaymentNavigationChange}
+        paymentUrl={paymentUrl}
+      />
     </Page>
   );
 }

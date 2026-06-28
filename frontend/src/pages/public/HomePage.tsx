@@ -1,4 +1,5 @@
 import { Navigate } from 'react-router-dom'
+import { useEffect } from 'react'
 import { SkipLink } from '../../components/common/SkipLink'
 import { AboutSection } from '../../components/home/AboutSection'
 import { CtaSection } from '../../components/home/CtaSection'
@@ -14,12 +15,18 @@ import { getStoredAuthUser } from '../../services/authApi'
 export function HomePage() {
   const authUser = getStoredAuthUser()
 
+  useEffect(() => {
+    if (!window.location.hash) return
+    const target = document.querySelector(window.location.hash)
+    target?.scrollIntoView({ block: 'start' })
+  }, [])
+
   if (authUser?.role === 'manager') {
     return <Navigate to="/manager" replace />
   }
 
   if (authUser?.role === 'staff') {
-    return <Navigate to="/staff" replace />
+    return <Navigate to="/staff/check-in" replace />
   }
 
   if (authUser?.role === 'admin') {

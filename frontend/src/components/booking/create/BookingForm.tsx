@@ -1,5 +1,6 @@
 import type { FormEvent, ReactNode } from 'react'
 import { MAX_DURATION_HOURS } from '../bookingUtils'
+import { BookingPolicyNotice } from './BookingPolicyNotice'
 
 type BookingFormProps = {
   email: string
@@ -139,6 +140,8 @@ export function BookingForm({
           nên màn hình này không gửi tòa nhà, tầng hoặc mã slot lên hệ thống.
         </p>
       </div>
+
+      <BookingPolicyNotice />
 
       <button
         type="submit"

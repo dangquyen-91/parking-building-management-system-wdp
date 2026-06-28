@@ -39,8 +39,8 @@ router.delete('/me/vehicles/:vehicleId', removeVehicle);
 router.get('/', authorize('admin', 'manager'), getAll);
 router.get('/:id', authorize('admin', 'manager'), getOne);
 
-router.patch('/:id', authorize('admin'), validate(updateUserSchema), update);
+router.patch('/:id', authorize('admin', 'manager'), validate(updateUserSchema), update);
 router.patch('/:id/role', authorize('admin'), validate(changeRoleSchema), changeRole);
-router.patch('/:id/status', authorize('admin'), validate(updateStatusSchema), updateStatus);
+router.patch('/:id/status', authorize('admin', 'manager'), validate(updateStatusSchema), updateStatus);
 
 export default router;

@@ -50,7 +50,7 @@ const subscriptionResultCopy = {
     primaryLabel: 'Xem gói của tôi',
     primaryTo: '/my-subscriptions',
     secondaryLabel: 'Mua gói khác',
-    secondaryTo: '/subscriptions',
+    secondaryTo: '/#resident-plans',
   },
   cancel: {
     eyebrow: 'Gói cư dân // Đã hủy',
@@ -60,14 +60,14 @@ const subscriptionResultCopy = {
     panelClass: 'border-amber-500/40 bg-amber-500/10 text-amber-800 dark:text-amber-100',
     mark: '!',
     primaryLabel: 'Quay lại mua gói',
-    primaryTo: '/subscriptions',
+    primaryTo: '/#resident-plans',
     secondaryLabel: 'Xem gói của tôi',
     secondaryTo: '/my-subscriptions',
   },
 } satisfies Record<PaymentResultPageProps['status'], Record<string, string>>
 
 function getStaffResultCopy(status: PaymentResultPageProps['status'], licensePlate: string) {
-  const checkoutPath = `/staff?checkout=${encodeURIComponent(licensePlate)}`
+  const checkoutPath = `/staff/check-out?checkout=${encodeURIComponent(licensePlate)}`
 
   return status === 'success'
     ? {

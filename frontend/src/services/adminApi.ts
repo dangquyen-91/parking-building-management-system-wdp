@@ -64,6 +64,7 @@ export type AdminSubscription = {
     floorId?: {
       _id: string
       floorNumber?: number
+      section?: string
       floorType?: string
       buildingId?: string
     }
@@ -102,6 +103,7 @@ export type AdminOccupancyReport = {
   floors: Array<{
     floorId: string
     floorNumber: number
+    section?: string
     floorType: 'resident' | 'visitor'
     vehicleType: VehicleType
     description?: string

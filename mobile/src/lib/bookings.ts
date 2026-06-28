@@ -1,15 +1,11 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
-
 import { apiRequest } from "./api";
 import type {
+  Booking,
+  BookingLookupResult,
   CreateBookingPayload,
   CreateBookingResult,
   MyBookingsResult,
-  StoredGuestBooking,
 } from "@/types/bookings";
-
-const GUEST_BOOKINGS_KEY = "parking_guest_bookings";
-const MAX_GUEST_BOOKINGS = 20;
 
 export const bookingKeys = {
   mine: ["bookings", "mine"] as const,
@@ -24,36 +20,44 @@ export const createBooking = (payload: CreateBookingPayload) =>
 
 export const getMyBookings = () => apiRequest<MyBookingsResult>("/bookings/me");
 
-export const getGuestBookings = async (): Promise<StoredGuestBooking[]> => {
-  const rawBookings = await AsyncStorage.getItem(GUEST_BOOKINGS_KEY);
+export const lookupGuestBookings = (email: string, licensePlate: string) =>
+  apiRequest<BookingLookupResult>("/bookings/check", {
+    params: {
+      email,
+      licensePlate,
+    },
+  });
 
-  if (!rawBookings) {
-    return [];
-  }
+export const confirmBooking = ({
+  id,
+  email,
+  licensePlate,
+}: {
+  id: string;
+  email?: string;
+  licensePlate?: string;
+}) =>
+  apiRequest<{ booking: Booking }>(`/bookings/${id}/confirm`, {
+    method: "POST",
+    data: {
+      email,
+      licensePlate,
+    },
+  });
 
-  try {
-    return JSON.parse(rawBookings) as StoredGuestBooking[];
-  } catch {
-    await AsyncStorage.removeItem(GUEST_BOOKINGS_KEY);
-    return [];
-  }
-};
-
-export const saveGuestBooking = async ({
-  booking,
-  payment,
-}: CreateBookingResult) => {
-  const currentBookings = await getGuestBookings();
-  const storedBooking: StoredGuestBooking = {
-    ...booking,
-    payment,
-    savedAt: new Date().toISOString(),
-  };
-  const nextBookings = [
-    storedBooking,
-    ...currentBookings.filter((item) => item._id !== booking._id),
-  ].slice(0, MAX_GUEST_BOOKINGS);
-
-  await AsyncStorage.setItem(GUEST_BOOKINGS_KEY, JSON.stringify(nextBookings));
-  return nextBookings;
-};
+export const cancelBooking = ({
+  id,
+  email,
+  licensePlate,
+}: {
+  id: string;
+  email?: string;
+  licensePlate?: string;
+}) =>
+  apiRequest<{ booking: Booking }>(`/bookings/${id}/cancel`, {
+    method: "PATCH",
+    data: {
+      email,
+      licensePlate,
+    },
+  });

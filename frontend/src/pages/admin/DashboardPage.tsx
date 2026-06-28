@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { AdminPageShell, AdminStatCard, AdminStatusBadge, formatAdminCurrency } from '../../components/admin'
 import { adminApi, type AdminBooking, type AdminDashboardReport, type AdminOccupancyReport } from '../../services/adminApi'
+import { formatFloorLabel } from '../../utils/floorLabel'
 import type { GateSession } from '../../services/staffGateApi'
 
 function formatDateTime(value: string) {
@@ -133,7 +134,7 @@ export function DashboardPage() {
     const result: Array<{ id: string; title: string; detail: string; to: string; tone: 'pending' | 'maintenance' | 'occupied' | 'warning' }> = []
 
     ;(occupancy?.floors ?? []).forEach((floor) => {
-      const location = `${floor.building?.name ?? 'Tòa nhà'} / Tầng ${floor.floorNumber}`
+      const location = `${floor.building?.name ?? 'Tòa nhà'} / ${formatFloorLabel(floor)}`
 
       if (floor.utilizationPercent >= 90) {
         result.push({
@@ -283,7 +284,7 @@ export function DashboardPage() {
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <p className="font-semibold text-fg">
-                        {floor.building?.name ?? 'Chưa xác định'} / Tầng {floor.floorNumber}
+                        {floor.building?.name ?? 'Chưa xác định'} / {formatFloorLabel(floor)}
                       </p>
                       <p className="mt-1 text-xs text-subtle">{vehicleLabel(floor.vehicleType)}</p>
                     </div>

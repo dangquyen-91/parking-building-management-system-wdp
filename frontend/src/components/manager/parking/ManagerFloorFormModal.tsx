@@ -30,6 +30,7 @@ export function ManagerFloorFormModal({
   const defaultBuildingId = useMemo(() => buildings[0]?.id ?? '', [buildings])
   const [buildingId, setBuildingId] = useState(defaultBuildingId)
   const [floorNumber, setFloorNumber] = useState('')
+  const [section, setSection] = useState('A')
   const [vehicleType, setVehicleType] = useState<FloorPayload['vehicleType']>('motorcycle')
   const [floorType, setFloorType] = useState<FloorPayload['floorType']>('resident')
   const [totalSlots, setTotalSlots] = useState('')
@@ -42,6 +43,7 @@ export function ManagerFloorFormModal({
     if (mode === 'edit' && initialValues) {
       setBuildingId(initialValues.buildingId)
       setFloorNumber(String(initialValues.floorNumber))
+      setSection(initialValues.section ?? 'A')
       setVehicleType(initialValues.vehicleType)
       setFloorType(initialValues.floorType)
       setTotalSlots(String(initialValues.totalSlots))
@@ -51,6 +53,7 @@ export function ManagerFloorFormModal({
 
     setBuildingId(defaultBuildingId)
     setFloorNumber('')
+    setSection('A')
     setVehicleType('motorcycle')
     setFloorType('resident')
     setTotalSlots('')
@@ -65,6 +68,7 @@ export function ManagerFloorFormModal({
     buildingId.length > 0 &&
     Number.isInteger(floorNumberValue) &&
     floorNumberValue >= 1 &&
+    section.trim().length > 0 &&
     Number.isInteger(totalSlotsValue) &&
     totalSlotsValue > 0
 
@@ -75,6 +79,7 @@ export function ManagerFloorFormModal({
     onSubmit({
       buildingId,
       floorNumber: floorNumberValue,
+      section: section.trim().toUpperCase(),
       vehicleType,
       floorType,
       totalSlots: totalSlotsValue,
@@ -133,6 +138,18 @@ export function ManagerFloorFormModal({
               onChange={(event) => setFloorNumber(event.target.value)}
               placeholder="1"
               inputMode="numeric"
+              required
+            />
+          </label>
+
+          <label className="grid gap-2 text-xs text-subtle">
+            Khu
+            <input
+              className="h-10 rounded-lg border border-theme bg-page px-3 text-sm uppercase text-fg focus:outline-none focus:ring-2 focus:ring-btn-primary/60"
+              value={section}
+              onChange={(event) => setSection(event.target.value.toUpperCase())}
+              placeholder="A"
+              maxLength={8}
               required
             />
           </label>

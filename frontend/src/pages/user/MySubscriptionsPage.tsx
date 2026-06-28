@@ -76,7 +76,7 @@ export function MySubscriptionsPage() {
               </p>
             </div>
             <Link
-              to="/subscriptions"
+              to="/#resident-plans"
               className="inline-flex h-12 items-center justify-center rounded-xl bg-btn-primary px-6 text-sm font-bold text-btn-primary-fg shadow-lg transition-transform hover:-translate-y-0.5"
             >
               Mua gói mới →
@@ -108,7 +108,7 @@ export function MySubscriptionsPage() {
               Bạn có thể mua gói cư dân để biển số được nhận diện tại cổng.
             </p>
             <Link
-              to="/subscriptions"
+              to="/#resident-plans"
               className="mt-5 inline-flex h-12 items-center justify-center rounded-xl bg-btn-primary px-6 text-sm font-bold text-btn-primary-fg"
             >
               Đăng ký gói đầu tiên →

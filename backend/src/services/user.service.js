@@ -5,10 +5,19 @@ import AppError from '../utils/appError.js';
 const SORTABLE_FIELDS = ['fullName', 'email', 'createdAt', 'role'];
 const MAX_VEHICLES = 5;
 
-export const getAllUsers = async ({ page = 1, limit = 10, role, isActive, sort, order, search }) => {
+// Managers may only manage staff accounts (see permission matrix).
+const assertManageable = (requester, targetUser) => {
+  if (requester?.role === 'manager' && targetUser.role !== 'staff') {
+    throw new AppError('Managers can only manage staff accounts', 403);
+  }
+};
+
+export const getAllUsers = async ({ page = 1, limit = 10, role, isActive, sort, order, search }, requester) => {
   const filter = {};
   if (role) filter.role = role;
   if (isActive !== undefined) filter.isActive = isActive === 'true';
+  // Managers are scoped to staff accounts regardless of any role filter passed.
+  if (requester?.role === 'manager') filter.role = 'staff';
   if (search) {
     const regex = new RegExp(search.trim(), 'i');
     filter.$or = [{ fullName: regex }, { email: regex }];
@@ -25,9 +34,10 @@ export const getAllUsers = async ({ page = 1, limit = 10, role, isActive, sort, 
   return { users, total, page: Number(page), limit: Number(limit) };
 };
 
-export const getUserById = async (id) => {
+export const getUserById = async (id, requester) => {
   const user = await User.findById(id);
   if (!user) throw new AppError('User not found', 404);
+  assertManageable(requester, user);
   return user;
 };
 
@@ -97,7 +107,11 @@ export const removeVehicle = async (id, vehicleId) => {
   return user;
 };
 
-export const updateUser = async (id, data) => {
+export const updateUser = async (id, data, requester) => {
+  const target = await User.findById(id);
+  if (!target) throw new AppError('User not found', 404);
+  assertManageable(requester, target);
+
   const allowed = ['fullName', 'phone', 'email', 'cccd', 'dateOfBirth', 'gender', 'address'];
   const update = {};
   allowed.forEach((field) => {
@@ -127,9 +141,12 @@ export const changeRole = async (id, role, requesterId) => {
   return user;
 };
 
-export const updateStatus = async (id, isActive, requesterId) => {
-  if (id.toString() === requesterId.toString()) throw new AppError('Cannot change your own status', 403);
-  const user = await User.findByIdAndUpdate(id, { isActive }, { new: true });
-  if (!user) throw new AppError('User not found', 404);
-  return user;
+export const updateStatus = async (id, isActive, requester) => {
+  if (id.toString() === requester._id.toString()) throw new AppError('Cannot change your own status', 403);
+  const target = await User.findById(id);
+  if (!target) throw new AppError('User not found', 404);
+  assertManageable(requester, target);
+  target.isActive = isActive;
+  await target.save({ validateBeforeSave: false });
+  return target;
 };
