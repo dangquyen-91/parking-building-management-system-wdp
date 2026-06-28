@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom'
+import type { UserVehicle } from '../../../services/authApi'
 import type { VehicleType } from '../../../services/userSubscriptionApi'
 import { VEHICLE_LABELS } from '../../../utils/subscriptionUi'
 
@@ -6,6 +8,7 @@ type ResidentSubscriptionFormProps = {
   licensePlate: string
   onVehicleTypeChange: (value: VehicleType) => void
   onLicensePlateChange: (value: string) => void
+  registeredVehicles: UserVehicle[]
   lockedVehicleType?: boolean
   selectedPlanName?: string
 }
@@ -15,6 +18,7 @@ export function ResidentSubscriptionForm({
   licensePlate,
   onVehicleTypeChange,
   onLicensePlateChange,
+  registeredVehicles,
   lockedVehicleType = false,
   selectedPlanName,
 }: ResidentSubscriptionFormProps) {
@@ -28,14 +32,14 @@ export function ResidentSubscriptionForm({
           <div>
             <p className="text-[10px] uppercase tracking-[0.18em] text-subtle">Thông tin xe</p>
             <h2 className="mt-1 text-xl font-bold text-fg">
-              {lockedVehicleType ? 'Nhập biển số xe' : 'Chọn phương tiện đăng ký'}
+              {lockedVehicleType ? 'Chọn biển số xe' : 'Chọn phương tiện đăng ký'}
             </h2>
           </div>
         </div>
         <p className="mt-2 text-sm text-muted">
           {lockedVehicleType
-            ? 'Gói và loại xe đã được chọn sẵn. Bạn chỉ cần nhập biển số để tiếp tục.'
-            : 'Chọn loại phương tiện và nhập biển số để xem các gói cư dân phù hợp.'}
+            ? 'Gói và loại xe đã được chọn sẵn. Chọn một biển số đã lưu trong hồ sơ để tiếp tục.'
+            : 'Chọn loại phương tiện và biển số đã lưu để xem các gói cư dân phù hợp.'}
         </p>
       </div>
 
@@ -69,18 +73,40 @@ export function ResidentSubscriptionForm({
           </div>
         )}
 
-        <label className="grid gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-subtle">
-          Biển số xe
-          <input
-            className="auth-input h-14 rounded-xl border px-4 text-lg font-black uppercase tracking-[0.1em] text-fg"
-            value={licensePlate}
-            onChange={(event) => onLicensePlateChange(event.target.value)}
-            placeholder="VD: 59X2-481.22"
-          />
-          <span className="text-[11px] font-normal normal-case tracking-normal text-muted">
-            Biển số này sẽ được dùng để nhận diện xe tại cổng.
-          </span>
-        </label>
+        {registeredVehicles.length > 0 ? (
+          <label className="grid gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-subtle">
+            Biển số xe đã đăng ký
+            <select
+              className="auth-input h-14 rounded-xl border px-4 text-base font-black uppercase tracking-[0.08em] text-fg"
+              value={licensePlate}
+              onChange={(event) => onLicensePlateChange(event.target.value)}
+              required
+            >
+              <option value="">Chọn biển số xe</option>
+              {registeredVehicles.map((vehicle) => (
+                <option key={vehicle._id} value={vehicle.licensePlate}>
+                  {vehicle.licensePlate} — {VEHICLE_LABELS[vehicle.vehicleType]}
+                </option>
+              ))}
+            </select>
+            <span className="text-[11px] font-normal normal-case tracking-normal text-muted">
+              Chỉ hiển thị phương tiện phù hợp với loại gói đang chọn.
+            </span>
+          </label>
+        ) : (
+          <div className="rounded-xl border border-dashed border-amber-500/40 bg-amber-500/10 p-5">
+            <p className="text-sm font-bold text-fg">Chưa có biển số {VEHICLE_LABELS[vehicleType].toLowerCase()}</p>
+            <p className="mt-1 text-xs leading-5 text-muted">
+              Bạn cần thêm biển số phù hợp vào hồ sơ trước khi đăng ký gói này.
+            </p>
+            <Link
+              to="/profile"
+              className="mt-4 inline-flex h-10 items-center justify-center rounded-lg bg-amber-600 px-4 text-sm font-bold text-white transition hover:bg-amber-700"
+            >
+              Thêm biển số tại hồ sơ
+            </Link>
+          </div>
+        )}
       </div>
     </section>
   )

@@ -8,6 +8,8 @@ import {
   type SubscriptionPayment,
   type VehicleType,
 } from '../services/userSubscriptionApi'
+import type { UserVehicle } from '../services/authApi'
+import { userApi } from '../services/userApi'
 import { normalizePlate } from '../utils/subscriptionUi'
 
 type UseResidentSubscriptionOptions = {
@@ -20,6 +22,7 @@ export function useResidentSubscription(options: UseResidentSubscriptionOptions 
   const [plans, setPlans] = useState<Plan[]>([])
   const [selectedPlanId, setSelectedPlanId] = useState(options.initialPlanId ?? '')
   const [licensePlate, setLicensePlate] = useState('')
+  const [registeredVehicles, setRegisteredVehicles] = useState<UserVehicle[]>([])
   const [selectedSlotId, setSelectedSlotId] = useState('')
   const [availableData, setAvailableData] = useState<AvailableCarSubscriptions | AvailableMotorcycleSubscriptions | null>(null)
   const [createdSubscription, setCreatedSubscription] = useState<Subscription | null>(null)
@@ -37,9 +40,10 @@ export function useResidentSubscription(options: UseResidentSubscriptionOptions 
       setError(null)
 
       try {
-        const [plansResponse, availableResponse] = await Promise.all([
+        const [plansResponse, availableResponse, profileResponse] = await Promise.all([
           userSubscriptionApi.getPlans({ vehicleType, isActive: true }),
           userSubscriptionApi.getAvailableForSubscription(vehicleType),
+          userApi.getMe(),
         ])
 
         if (!isMounted) return
@@ -51,6 +55,14 @@ export function useResidentSubscription(options: UseResidentSubscriptionOptions 
           return ''
         })
         setAvailableData(availableResponse)
+        const vehicles = profileResponse.user.vehicles ?? []
+        setRegisteredVehicles(vehicles)
+        setLicensePlate((current) => {
+          const belongsToVehicleType = vehicles.some(
+            (vehicle) => vehicle.vehicleType === vehicleType && normalizePlate(vehicle.licensePlate) === normalizePlate(current),
+          )
+          return belongsToVehicleType ? current : ''
+        })
         setSelectedSlotId('')
       } catch (err) {
         if (!isMounted) return
@@ -75,6 +87,10 @@ export function useResidentSubscription(options: UseResidentSubscriptionOptions 
   }, [availableData])
 
   const motorcycleAvailability = availableData?.vehicleType === 'motorcycle' ? availableData : null
+  const eligibleVehicles = useMemo(
+    () => registeredVehicles.filter((vehicle) => vehicle.vehicleType === vehicleType),
+    [registeredVehicles, vehicleType],
+  )
   const canSubmit =
     Boolean(selectedPlanId) &&
     normalizePlate(licensePlate).length >= 4 &&
@@ -86,6 +102,7 @@ export function useResidentSubscription(options: UseResidentSubscriptionOptions 
     setPayment(null)
     setMessage(null)
     setSelectedSlotId('')
+    setLicensePlate('')
   }
 
   async function handlePurchase() {
@@ -120,6 +137,7 @@ export function useResidentSubscription(options: UseResidentSubscriptionOptions 
     setSelectedPlanId,
     licensePlate,
     setLicensePlate,
+    eligibleVehicles,
     selectedSlotId,
     setSelectedSlotId,
     createdSubscription,

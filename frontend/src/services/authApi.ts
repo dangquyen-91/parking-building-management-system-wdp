@@ -3,12 +3,19 @@ import { API_BASE_URL } from './apiConfig'
 
 export type AuthRole = 'admin' | 'manager' | 'staff' | 'user'
 
+export type UserVehicle = {
+  _id: string
+  licensePlate: string
+  vehicleType: 'motorcycle' | 'car'
+}
+
 export type AuthUser = {
   _id: string
   fullName: string
   email: string
   role: AuthRole
   phone?: string
+  vehicles?: UserVehicle[]
   isActive: boolean
 }
 

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { ResidentSubscriptionTopNav } from '../../components/subscription'
+import { ProfileVehiclesSection } from '../../components/profile/ProfileVehiclesSection'
 import { getStoredAuthUser, type AuthUser } from '../../services/authApi'
 import { userApi } from '../../services/userApi'
 
@@ -243,6 +244,12 @@ export function ProfilePage() {
             </form>
           )}
         </section>
+
+        <ProfileVehiclesSection
+          vehicles={user?.vehicles ?? []}
+          isLoading={isLoading}
+          onUserChange={setUser}
+        />
 
         <section className="liquid-glass-card mt-6 rounded-lg p-5 md:p-7">
           <div className="mb-6 border-l-4 border-violet-500 pl-4">
