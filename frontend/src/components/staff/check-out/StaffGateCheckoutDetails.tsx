@@ -107,5 +107,18 @@ function formatCheckoutNote(note: string) {
     return 'Khách vãng lai - thanh toán khi xe ra.'
   }
 
+  if (normalizedNote === 'booking prepaid covers full stay. free check-out.') {
+    return 'Booking đã trả trước đủ thời gian gửi xe. Không cần thu thêm.'
+  }
+
+  const bookingOvertimeMatch = note.match(
+    /^Booking prepaid (\d+)đ, full stay (\d+)đ\. Collect overtime (\d+)đ\.$/,
+  )
+
+  if (bookingOvertimeMatch) {
+    const [, prepaidAmount, fullStayFee, overtimeFee] = bookingOvertimeMatch
+    return `Booking đã trả trước ${prepaidAmount}đ, phí toàn bộ lượt gửi là ${fullStayFee}đ. Cần thu thêm phí quá giờ ${overtimeFee}đ.`
+  }
+
   return note
 }

@@ -125,8 +125,8 @@ export function StaffGateCheckInForm({
     if (targetStep === 1) return true
     if (targetStep === 2) return lookupMatchesPlate && Boolean(lookupResult)
     if (targetStep === 3) return lookupMatchesPlate && Boolean(lookupResult)
-    if (targetStep === 4) return Boolean(entryQrValue)
-    if (targetStep === 5) return Boolean(entryQrValue)
+    if (targetStep === 4) return isWalkIn ? Boolean(issuedWalkInQrValue) : Boolean(entryQrValue)
+    if (targetStep === 5) return isWalkIn ? Boolean(issuedWalkInQrValue) : Boolean(entryQrValue)
     return false
   }
 
@@ -218,7 +218,7 @@ export function StaffGateCheckInForm({
           <>
             <StepIntro
               title="Bước 3: Xác minh QR"
-              description={isResident ? 'Cư dân đưa QR gói đã mua để đối chiếu với biển số camera.' : 'Cấp vé QR vãng lai, sau đó quét lại đúng vé vừa cấp để xác nhận.'}
+              description={isResident ? 'Cư dân đưa QR gói đã mua để đối chiếu với biển số camera.' : 'Khách vãng lai chỉ cần cấp vé QR, không cần quét lại ngay lúc xe vào.'}
             />
 
             <div className="grid gap-4 rounded-2xl border border-theme bg-badge p-4">
@@ -226,14 +226,22 @@ export function StaffGateCheckInForm({
                 <div>
                   <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-subtle">Xác minh QR cổng vào</p>
                   <h3 className="mt-1 text-base font-bold text-fg">
-                    {isResident ? 'Quét QR gói cư dân' : 'Cấp vé QR vãng lai rồi quét lại'}
+                    {isResident ? 'Quét QR gói cư dân' : 'Cấp vé QR vãng lai'}
                   </h3>
                   <p className="mt-1 text-xs text-muted">
-                    QR phải khớp biển số camera {lookupResult.licensePlate}. Sau khi xác minh mới cho xe vào.
+                    {isResident
+                      ? `QR phải khớp biển số camera ${lookupResult.licensePlate}. Sau khi xác minh mới cho xe vào.`
+                      : `Vé QR được gắn với biển số ${lookupResult.licensePlate} và dùng để đối chiếu khi xe ra.`}
                   </p>
                 </div>
-                <span className={`w-fit rounded-full px-3 py-1 text-[10px] font-bold text-white ${entryQrValue ? 'bg-emerald-500' : 'bg-amber-500'}`}>
-                  {entryQrValue ? 'QR ĐÃ KHỚP' : 'CHỜ QR'}
+                <span className={`w-fit rounded-full px-3 py-1 text-[10px] font-bold text-white ${(isWalkIn ? issuedWalkInQrValue : entryQrValue) ? 'bg-emerald-500' : 'bg-amber-500'}`}>
+                  {isWalkIn
+                    ? issuedWalkInQrValue
+                      ? 'ĐÃ CẤP VÉ'
+                      : 'CHƯA CẤP VÉ'
+                    : entryQrValue
+                      ? 'QR ĐÃ KHỚP'
+                      : 'CHỜ QR'}
                 </span>
               </div>
 
@@ -255,19 +263,20 @@ export function StaffGateCheckInForm({
                       {issuedWalkInQrValue ? 'Cấp lại vé QR' : 'Cấp vé QR vãng lai'}
                     </button>
                     <p className="text-xs text-muted">
-                      Vé QR này chỉ dùng cho biển số đang đọc và phải quét lại trong 5 phút để xác nhận xe vào.
+                      Vé QR này chỉ dùng cho biển số đang đọc. Sau khi xác nhận xe vào, đưa vé này cho khách giữ để quét khi xe ra.
                     </p>
                   </div>
                 </div>
               )}
 
-              <StaffGateQrScanner
-                title={isResident ? 'QR gói cư dân' : 'Quét lại vé QR vừa cấp'}
-                description={isResident ? 'Cư dân đưa QR gói đã mua để đối chiếu với biển số camera.' : 'Quét đúng vé QR vừa cấp để xác nhận check-in.'}
-                verified={Boolean(entryQrValue)}
-                disabled={isWalkIn && !issuedWalkInQrValue}
-                onScan={onEntryQrScanned}
-              />
+              {isResident && (
+                <StaffGateQrScanner
+                  title="QR gói cư dân"
+                  description="Cư dân đưa QR gói đã mua để đối chiếu với biển số camera."
+                  verified={Boolean(entryQrValue)}
+                  onScan={onEntryQrScanned}
+                />
+              )}
               {entryQrError && (
                 <p className="rounded-xl border border-rose-500/25 bg-rose-500/10 p-3 text-xs text-rose-700 dark:text-rose-200">
                   {entryQrError}
@@ -332,7 +341,7 @@ export function StaffGateCheckInForm({
               plate={lookupResult?.licensePlate || normalizePlate(plate)}
               customerType={checkInCustomerType}
               vehicleType={vehicleType}
-              qrVerified={Boolean(entryQrValue)}
+              qrVerified={isWalkIn ? Boolean(issuedWalkInQrValue) : Boolean(entryQrValue)}
               note={note}
             />
           </>
@@ -343,7 +352,7 @@ export function StaffGateCheckInForm({
           canNext={
             (step === 1 && lookupMatchesPlate && Boolean(lookupResult))
             || (step === 2 && lookupMatchesPlate && Boolean(lookupResult))
-            || (step === 3 && Boolean(entryQrValue))
+            || (step === 3 && (isWalkIn ? Boolean(issuedWalkInQrValue) : Boolean(entryQrValue)))
             || step === 4
           }
           canCheckIn={canCheckIn}

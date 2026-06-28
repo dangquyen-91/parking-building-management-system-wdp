@@ -52,6 +52,8 @@ export function StaffCheckOutPage() {
             onQueryChange={gate.setCheckoutQuery}
             onCheckoutCash={gate.handleCheckoutCash}
             onCheckoutTransfer={gate.handleCheckoutTransfer}
+            onQrError={gate.setToastMessage}
+            onQrSuccess={gate.setToastMessage}
           />
 
           <aside className="xl:sticky xl:top-6">

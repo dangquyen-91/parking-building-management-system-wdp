@@ -7,12 +7,16 @@ type StaffGateQrVerifierProps = {
   session?: GateSession
   verified: boolean
   onVerified: (qrValue: string) => void
+  onError?: (message: string) => void
+  onSuccess?: (message: string) => void
 }
 
 export function StaffGateQrVerifier({
   session,
   verified,
   onVerified,
+  onError,
+  onSuccess,
 }: StaffGateQrVerifierProps) {
   const [error, setError] = useState<string>()
 
@@ -22,11 +26,13 @@ export function StaffGateQrVerifier({
     const message = validateExitQr({ qrValue, session })
     if (message) {
       setError(message)
+      onError?.(message)
       return
     }
 
     setError(undefined)
     onVerified(qrValue)
+    onSuccess?.('QR đã khớp. Có thể thanh toán và cho xe ra.')
   }
 
   return (
