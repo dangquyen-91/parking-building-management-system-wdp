@@ -61,6 +61,7 @@ export type ManagerSessionReport = {
 export type ManagerOccupancyFloor = {
   floorId: string
   floorNumber: string | number
+  section?: string
   floorType?: string
   vehicleType: 'car' | 'motorcycle'
   description?: string

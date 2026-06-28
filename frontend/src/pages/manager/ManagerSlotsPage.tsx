@@ -51,6 +51,8 @@ export function ManagerSlotsPage() {
   const [slotSubmitError, setSlotSubmitError] = useState<string | null>(null)
   const [rowSubmitError, setRowSubmitError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [slotPendingDelete, setSlotPendingDelete] = useState<ParkingSlot | null>(null)
+  const [isDeletingSlot, setIsDeletingSlot] = useState(false)
 
   function handleOpenCreateSlot() {
     setSlotModalMode('create')
@@ -125,13 +127,21 @@ export function ManagerSlotsPage() {
   }
 
   async function handleDeleteSlot(slot: ParkingSlot) {
-    if (!window.confirm(`Xóa ô đỗ ${slot.slotCode}?`)) return
+    setSlotPendingDelete(slot)
+  }
 
+  async function handleConfirmDeleteSlot() {
+    if (!slotPendingDelete) return
+
+    setIsDeletingSlot(true)
     try {
-      await parkingSlotApi.deleteSlot(slot._id)
+      await parkingSlotApi.deleteSlot(slotPendingDelete._id)
       await reloadSlots()
+      setSlotPendingDelete(null)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Không thể xóa ô đỗ.')
+    } finally {
+      setIsDeletingSlot(false)
     }
   }
 
@@ -219,6 +229,40 @@ export function ManagerSlotsPage() {
         onClose={() => setRowModalOpen(false)}
         onSubmit={handleRowSubmit}
       />
+
+      {slotPendingDelete && (
+        <div className="fixed inset-0 z-50 grid place-items-center bg-black/45 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-md overflow-hidden rounded-3xl border border-theme bg-page shadow-2xl">
+            <div className="border-b border-theme bg-gradient-to-r from-rose-500/15 via-transparent to-transparent p-6">
+              <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-rose-600 dark:text-rose-300">
+                Xác nhận xóa
+              </p>
+              <h2 className="mt-2 text-2xl font-black text-fg">Xóa ô đỗ {slotPendingDelete.slotCode}?</h2>
+              <p className="mt-2 text-sm leading-6 text-muted">
+                Thao tác này sẽ xóa ô đỗ khỏi danh sách quản lý. Hãy chắc chắn ô không còn được sử dụng trước khi tiếp tục.
+              </p>
+            </div>
+            <div className="flex flex-col-reverse gap-3 p-5 sm:flex-row sm:justify-end">
+              <button
+                type="button"
+                className="h-11 rounded-xl border border-theme px-5 text-sm font-bold text-fg transition-colors hover:bg-ghost disabled:cursor-not-allowed disabled:opacity-60"
+                onClick={() => setSlotPendingDelete(null)}
+                disabled={isDeletingSlot}
+              >
+                Hủy
+              </button>
+              <button
+                type="button"
+                className="h-11 rounded-xl bg-rose-600 px-5 text-sm font-bold text-white shadow-lg shadow-rose-600/20 transition-colors hover:bg-rose-500 disabled:cursor-not-allowed disabled:opacity-60"
+                onClick={handleConfirmDeleteSlot}
+                disabled={isDeletingSlot}
+              >
+                {isDeletingSlot ? 'Đang xóa...' : 'Xóa ô đỗ'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
