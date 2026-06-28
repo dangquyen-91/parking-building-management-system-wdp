@@ -17,6 +17,7 @@ import {
   type AdminRevenueReport,
   type AdminSessionStatsReport,
 } from '../../services/adminApi'
+import { formatFloorLabel } from '../../utils/floorLabel'
 
 function toDateInput(date: Date) {
   const offset = date.getTimezoneOffset()
@@ -173,7 +174,7 @@ export function AdminReportsPage() {
             {busiestFloors.map((floor) => (
               <article key={floor.floorId} className="rounded-2xl border border-theme bg-badge p-4 transition-all hover:-translate-y-0.5 hover:border-amber-500/25 hover:bg-amber-500/5">
                 <p className="text-sm font-black text-fg">
-                  {floor.building?.name ?? 'Tòa nhà'} / Tầng {floor.floorNumber}
+                  {floor.building?.name ?? 'Tòa nhà'} / {formatFloorLabel(floor)}
                 </p>
                 <p className="mt-1 text-xs text-subtle">{floor.vehicleType === 'car' ? 'Ô tô' : 'Xe máy'}</p>
                 <div className="mt-4 h-2.5 overflow-hidden rounded-full bg-page">

@@ -22,6 +22,17 @@ export const useCSSVariable =
     ? useFunctionalVariable
     : (variable: string) => `var(${variable})`;
 
+export const useThemeColors = () => ({
+  fg: useCSSVariable("--color-fg"),
+  btnPrimaryFg: useCSSVariable("--color-btn-primary-fg"),
+  placeholder: useCSSVariable("--color-placeholder"),
+  iconPrimary: useCSSVariable("--color-icon-primary"),
+  iconMuted: useCSSVariable("--color-icon-muted"),
+  tabBar: useCSSVariable("--color-tab-bar"),
+  tabInactive: useCSSVariable("--color-tab-inactive"),
+  borderStrong: useCSSVariable("--color-border-strong"),
+});
+
 type LinkComponent = ((
   props: React.ComponentProps<typeof RouterLink> & { className?: string },
 ) => React.ReactElement) &

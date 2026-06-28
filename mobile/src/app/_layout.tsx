@@ -1,10 +1,24 @@
 import "@/global.css";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useFonts } from "expo-font";
+import { StatusBar } from "expo-status-bar";
 import { Stack } from "expo-router";
 import { useState } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { Toaster } from "sonner-native";
+import { ThemeProvider, useAppTheme } from "../providers/theme-provider";
+
+function AppShell({ queryClient }: { queryClient: QueryClient }) {
+  const { colorScheme } = useAppTheme();
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <StatusBar style={colorScheme === "dark" ? "light" : "dark"} />
+      <Stack screenOptions={{ headerShown: false }} />
+      <Toaster position="top-center" richColors theme={colorScheme} />
+    </QueryClientProvider>
+  );
+}
 
 export default function RootLayout() {
   const [queryClient] = useState(
@@ -31,10 +45,9 @@ export default function RootLayout() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <QueryClientProvider client={queryClient}>
-        <Stack screenOptions={{ headerShown: false }} />
-        <Toaster position="top-center" richColors theme="dark" />
-      </QueryClientProvider>
+      <ThemeProvider>
+        <AppShell queryClient={queryClient} />
+      </ThemeProvider>
     </GestureHandlerRootView>
   );
 }

@@ -68,12 +68,15 @@ export function ManagerParkingSpaceList({
             key={floor._id}
             buildingName={building?.name}
             floorNumber={floor.floorNumber}
+            section={floor.section}
+            floorType={floor.floorType}
             slots={groupedSlots}
             onEdit={onEditSlot}
             onDelete={onDeleteSlot}
           />
         )
       })}
+
       {visibleRowFloors.map((floor) => {
         const buildingId = getFloorBuildingId(floor)
         const building = buildingId ? buildingMap.get(buildingId) : undefined
@@ -84,6 +87,8 @@ export function ManagerParkingSpaceList({
             key={floor._id}
             buildingName={building?.name}
             floorNumber={floor.floorNumber}
+            section={floor.section}
+            floorType={floor.floorType}
             rows={groupedRows}
             onEdit={onEditRow}
           />

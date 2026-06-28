@@ -25,16 +25,19 @@ export function ManagerSlotsPage() {
   } = useManagerParkingSpaces()
   const {
     buildingFilter,
-    floorFilter,
+    floorNumberFilter,
+    sectionFilter,
     setBuildingFilter,
-    setFloorFilter,
+    setFloorNumberFilter,
+    setSectionFilter,
     filteredSlots,
     filteredRows,
     slotsByFloor,
     rowsByFloor,
     visibleSlotFloors,
     visibleRowFloors,
-    filteredFloorOptions,
+    floorNumberOptions,
+    sectionOptions,
     buildingMap,
     stats,
   } = useParkingSpaceFilters({ slots, rows, floors, buildings })
@@ -136,11 +139,14 @@ export function ManagerSlotsPage() {
     <div className="relative mx-auto max-w-[118rem] p-4 md:p-8 lg:p-10">
       <ManagerParkingSpaceHeader
         buildings={buildings}
-        floors={filteredFloorOptions}
+        floorNumbers={floorNumberOptions}
+        sections={sectionOptions}
         buildingFilter={buildingFilter}
-        floorFilter={floorFilter}
+        floorNumberFilter={floorNumberFilter}
+        sectionFilter={sectionFilter}
         onBuildingFilterChange={setBuildingFilter}
-        onFloorFilterChange={setFloorFilter}
+        onFloorNumberFilterChange={setFloorNumberFilter}
+        onSectionFilterChange={setSectionFilter}
         onCreateSlot={handleOpenCreateSlot}
         onCreateRow={handleOpenCreateRow}
       />

@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { managerBuildingsApi, type Building, type Floor } from '../services/managerBuildingsApi'
+import { getFloorSection } from '../utils/floorLabel'
 
 export type ManagerFloorSummary = {
   id: string
   buildingId: string
   floorNumber: number
+  section: string
   vehicleType: Floor['vehicleType']
   floorType: Floor['floorType']
   totalSlots: number
@@ -44,14 +46,16 @@ function buildSummaries(buildings: Building[], floors: Floor[]): ManagerBuilding
         id: floor._id,
         buildingId: getFloorBuildingId(floor) ?? '',
         floorNumber: floor.floorNumber,
+        section: getFloorSection(floor.section),
         vehicleType: floor.vehicleType,
         floorType: floor.floorType,
         totalSlots: floor.totalSlots ?? 0,
         isActive: floor.isActive ?? true,
         description: floor.description,
       }))
-      .sort((a, b) => a.floorNumber - b.floorNumber)
+      .sort((a, b) => a.floorNumber - b.floorNumber || a.section.localeCompare(b.section))
 
+    const uniqueFloorCount = new Set(buildingFloors.map((floor) => floor.floorNumber)).size
     const totalSlots = buildingFloors.reduce((sum, floor) => sum + floor.totalSlots, 0)
     const activeFloors = buildingFloors.filter((floor) => floor.isActive).length
 
@@ -62,7 +66,7 @@ function buildSummaries(buildings: Building[], floors: Floor[]): ManagerBuilding
       description: building.description,
       isActive: building.isActive ?? true,
       floors: buildingFloors,
-      floorCount: buildingFloors.length,
+      floorCount: uniqueFloorCount,
       activeFloors,
       totalSlots,
     }

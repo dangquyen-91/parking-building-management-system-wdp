@@ -72,21 +72,32 @@ export const create = async (data) => {
   if (!building) throw new AppError('Building not found', 404);
   if (!building.isActive) throw new AppError('Building is inactive', 400);
 
-  const existing = await Floor.findOne({ buildingId: data.buildingId, floorNumber: data.floorNumber });
-  if (existing) throw new AppError(`Floor ${data.floorNumber} already exists in this building`, 409);
+  // A "khu" (zone) is a Floor record; one floorNumber may hold several sections.
+  const section = (data.section || 'A').toUpperCase().replace(/\s/g, '');
+  const existing = await Floor.findOne({
+    buildingId: data.buildingId,
+    floorNumber: data.floorNumber,
+    section,
+  });
+  if (existing) {
+    throw new AppError(`Khu ${section} của tầng ${data.floorNumber} đã tồn tại trong tòa nhà này`, 409);
+  }
 
-  return Floor.create(data);
+  return Floor.create({ ...data, section });
 };
 
 export const update = async (id, data) => {
   const floor = await Floor.findById(id);
   if (!floor) throw new AppError('Floor not found', 404);
 
-  if (data.floorNumber !== undefined) {
-    const conflict = await Floor.findOne({ buildingId: floor.buildingId, floorNumber: data.floorNumber });
+  if (data.floorNumber !== undefined || data.section !== undefined) {
+    const floorNumber = data.floorNumber ?? floor.floorNumber;
+    const section = (data.section ?? floor.section ?? 'A').toUpperCase().replace(/\s/g, '');
+    const conflict = await Floor.findOne({ buildingId: floor.buildingId, floorNumber, section });
     if (conflict && conflict._id.toString() !== id) {
-      throw new AppError(`Floor ${data.floorNumber} already exists in this building`, 409);
+      throw new AppError(`Khu ${section} của tầng ${floorNumber} đã tồn tại trong tòa nhà này`, 409);
     }
+    if (data.section !== undefined) data.section = section;
   }
 
   Object.assign(floor, data);

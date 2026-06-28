@@ -2,6 +2,7 @@ export { BookingErrorBanner } from './common/BookingErrorBanner'
 
 export { BookingForm } from './create/BookingForm'
 export { BookingHero } from './create/BookingHero'
+export { BookingPolicyNotice } from './create/BookingPolicyNotice'
 export { BookingSummary } from './create/BookingSummary'
 
 export { BookingEmptyState } from './history/BookingEmptyState'
