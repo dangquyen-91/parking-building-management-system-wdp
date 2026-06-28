@@ -31,6 +31,7 @@ function ResidentSubscriptionPurchaseFlow({
     vehicleType,
     licensePlate,
     setLicensePlate,
+    eligibleVehicles,
     selectedSlotId,
     setSelectedSlotId,
     createdSubscription,
@@ -113,6 +114,7 @@ function ResidentSubscriptionPurchaseFlow({
                   licensePlate={licensePlate}
                   onVehicleTypeChange={handleVehicleChange}
                   onLicensePlateChange={setLicensePlate}
+                  registeredVehicles={eligibleVehicles}
                   lockedVehicleType
                   selectedPlanName={selectedPlan?.name}
                 />
@@ -137,7 +139,7 @@ function ResidentSubscriptionPurchaseFlow({
                 />
 
                 <SubscriptionWizardActions
-                  previousLabel="Quay lại nhập biển số"
+                  previousLabel="Quay lại chọn biển số"
                   nextLabel="Tiếp tục thanh toán"
                   canNext={canGoStep4}
                   onPrevious={() => setStep(1)}
@@ -161,7 +163,7 @@ function ResidentSubscriptionPurchaseFlow({
                 onCreatePayment={handleCreatePayment}
                 onPrevious={() => setStep(vehicleType === 'motorcycle' ? 1 : 3)}
                 stepNumber={paymentStepNumber}
-                previousLabel={vehicleType === 'motorcycle' ? 'Quay lại nhập biển số' : 'Quay lại chọn vị trí'}
+                previousLabel={vehicleType === 'motorcycle' ? 'Quay lại chọn biển số' : 'Quay lại chọn vị trí'}
               />
             )}
           </div>

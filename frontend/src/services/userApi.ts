@@ -18,6 +18,11 @@ export type ChangePasswordPayload = {
   newPassword: string
 }
 
+export type AddVehiclePayload = {
+  licensePlate: string
+  vehicleType: 'motorcycle' | 'car'
+}
+
 const userHttp = axios.create({
   baseURL: API_BASE_URL,
   headers: {
@@ -75,6 +80,28 @@ export const userApi = {
   async changePassword(payload: ChangePasswordPayload) {
     try {
       const response = await userHttp.patch<ApiEnvelope<{ user: AuthUser }>>('/users/me/password', payload)
+
+      return response.data.data
+    } catch (error) {
+      throw getApiError(error)
+    }
+  },
+
+  async addVehicle(payload: AddVehiclePayload) {
+    try {
+      const response = await userHttp.post<ApiEnvelope<{ user: AuthUser }>>('/users/me/vehicles', payload)
+      setStoredAuthUser(response.data.data.user)
+
+      return response.data.data
+    } catch (error) {
+      throw getApiError(error)
+    }
+  },
+
+  async removeVehicle(vehicleId: string) {
+    try {
+      const response = await userHttp.delete<ApiEnvelope<{ user: AuthUser }>>(`/users/me/vehicles/${vehicleId}`)
+      setStoredAuthUser(response.data.data.user)
 
       return response.data.data
     } catch (error) {

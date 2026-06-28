@@ -133,14 +133,6 @@ export function BookingForm({
         </div>
       </div>
 
-      <div className="mt-6 flex gap-3 rounded-2xl border border-sky-200 bg-sky-50 p-4 text-sm leading-6 text-sky-900 dark:border-sky-700/40 dark:bg-sky-500/10 dark:text-sky-100">
-        <span className="mt-0.5 text-lg">✦</span>
-        <p>
-          Đơn này dùng sức chứa chung của khu ô tô vãng lai. Slot cụ thể sẽ được xử lý sau ở luồng cổng/phiên gửi xe,
-          nên màn hình này không gửi tòa nhà, tầng hoặc mã slot lên hệ thống.
-        </p>
-      </div>
-
       <BookingPolicyNotice />
 
       <button
