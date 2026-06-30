@@ -796,6 +796,7 @@ paths:
     post:
       tags: [Auth]
       summary: Register a new user
+      description: Tạo tài khoản mới và gửi mã OTP 6 chữ số tới email. Tài khoản chỉ có thể đăng nhập sau khi xác thực email qua `/auth/verify-email`.
       requestBody:
         required: true
         content:
@@ -804,7 +805,7 @@ paths:
               $ref: '#/components/schemas/RegisterRequest'
       responses:
         '201':
-          description: User registered successfully
+          description: Đăng ký thành công — OTP đã gửi tới email
           content:
             application/json:
               schema:
@@ -815,14 +816,100 @@ paths:
                     example: success
                   message:
                     type: string
-                    example: Registration successful
+                    example: Đăng ký thành công. Vui lòng kiểm tra email để lấy mã OTP.
                   data:
                     type: object
-                    properties:
-                      user:
-                        $ref: '#/components/schemas/User'
+                    nullable: true
+                    example: null
         '400':
-          description: Email already in use or validation error
+          description: Email đã được xác thực và đang sử dụng
+
+  /auth/verify-email:
+    post:
+      tags: [Auth]
+      summary: Xác thực email bằng OTP
+      description: Nhập mã OTP 6 chữ số đã được gửi tới email sau khi đăng ký. OTP có hiệu lực trong 10 phút.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, otp]
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: nguyenvana@gmail.com
+                otp:
+                  type: string
+                  minLength: 6
+                  maxLength: 6
+                  example: '483921'
+      responses:
+        '200':
+          description: Xác thực thành công — có thể đăng nhập
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  message:
+                    type: string
+                    example: Xác thực email thành công. Bạn có thể đăng nhập.
+                  data:
+                    type: object
+                    nullable: true
+                    example: null
+        '400':
+          description: OTP không đúng, đã hết hạn, hoặc email đã được xác thực
+        '404':
+          description: Email không tồn tại
+
+  /auth/resend-verification:
+    post:
+      tags: [Auth]
+      summary: Gửi lại mã OTP xác thực
+      description: Gửi lại OTP mới tới email. Chỉ có thể gọi sau ít nhất 1 phút kể từ lần gửi trước để tránh spam.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email]
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: nguyenvana@gmail.com
+      responses:
+        '200':
+          description: OTP mới đã được gửi
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  message:
+                    type: string
+                    example: OTP mới đã được gửi. Vui lòng kiểm tra email.
+                  data:
+                    type: object
+                    nullable: true
+                    example: null
+        '400':
+          description: Email đã được xác thực
+        '404':
+          description: Email không tồn tại
+        '429':
+          description: Gửi quá nhanh — vui lòng chờ ít nhất 1 phút
 
   /auth/login:
     post:
@@ -853,7 +940,9 @@ paths:
                           user:
                             $ref: '#/components/schemas/User'
         '401':
-          description: Invalid credentials
+          description: Sai email hoặc mật khẩu
+        '403':
+          description: Email chưa được xác thực — cần vào `/auth/verify-email` trước
 
   /auth/refresh-token:
     post:

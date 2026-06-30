@@ -36,3 +36,21 @@ export const logout = async (req, res, next) => {
     next(err);
   }
 };
+
+export const verifyEmail = async (req, res, next) => {
+  try {
+    const result = await authService.verifyEmail(req.body);
+    success(res, null, result.message);
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const resendVerification = async (req, res, next) => {
+  try {
+    const result = await authService.resendVerification(req.body);
+    success(res, null, result.message);
+  } catch (err) {
+    next(err);
+  }
+};

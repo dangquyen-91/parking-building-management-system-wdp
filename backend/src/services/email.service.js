@@ -1,7 +1,61 @@
-﻿
-// Brevo (Sendinblue) transactional email over HTTPS — works on hosts that
+﻿// Brevo (Sendinblue) transactional email over HTTPS — works on hosts that
 // block outbound SMTP ports (e.g. Render free tier blocks 465/587).
 const BREVO_ENDPOINT = 'https://api.brevo.com/v3/smtp/email';
+
+const sendEmail = async ({ to, subject, htmlContent }) => {
+  const { BREVO_API_KEY, BREVO_SENDER_EMAIL, BREVO_SENDER_NAME } = process.env;
+  if (!BREVO_API_KEY || !BREVO_SENDER_EMAIL) {
+    console.warn('Email not configured (BREVO_API_KEY/BREVO_SENDER_EMAIL missing) — emails skipped');
+    return;
+  }
+
+  const res = await fetch(BREVO_ENDPOINT, {
+    method: 'POST',
+    headers: {
+      'api-key': BREVO_API_KEY,
+      'Content-Type': 'application/json',
+      accept: 'application/json',
+    },
+    body: JSON.stringify({
+      sender: { name: BREVO_SENDER_NAME || 'Parking Building', email: BREVO_SENDER_EMAIL },
+      to: [{ email: to }],
+      subject,
+      htmlContent,
+    }),
+  });
+
+  if (!res.ok) {
+    const body = await res.text();
+    throw new Error(`Brevo API error ${res.status}: ${body}`);
+  }
+};
+
+const buildVerificationHtml = (otp) => `
+  <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; padding: 24px; border: 1px solid #e0e0e0; border-radius: 8px;">
+    <h2 style="color: #1565c0; margin-bottom: 8px;">Xác thực địa chỉ email</h2>
+    <p style="color: #555;">Chào mừng bạn đến với <b>Parking Building Management System</b>!</p>
+    <p style="color: #555;">Nhập mã OTP dưới đây để hoàn tất đăng ký. Mã có hiệu lực trong <b>10 phút</b>.</p>
+    <div style="text-align: center; margin: 32px 0;">
+      <span style="font-size: 40px; font-weight: bold; letter-spacing: 12px; color: #1565c0; background: #e3f2fd; padding: 16px 24px; border-radius: 8px;">${otp}</span>
+    </div>
+    <p style="color: #888; font-size: 13px;">Nếu bạn không tạo tài khoản này, hãy bỏ qua email này.</p>
+    <hr style="border: none; border-top: 1px solid #eee; margin: 24px 0;">
+    <p style="color: #bbb; font-size: 12px; text-align: center;">Parking Building Management System</p>
+  </div>
+`;
+
+export const sendVerificationEmail = async ({ email, otp }) => {
+  try {
+    await sendEmail({
+      to: email,
+      subject: 'Mã xác thực đăng ký tài khoản',
+      htmlContent: buildVerificationHtml(otp),
+    });
+    console.log('Verification email sent', { email });
+  } catch (err) {
+    console.error('Failed to send verification email', { error: err.message, email });
+  }
+};
 
 const formatDateTime = (date) =>
   new Date(date).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' });
@@ -38,41 +92,13 @@ const buildHtml = (booking) => `
 
 // Fire-and-forget — never throws, never blocks the main flow.
 export const sendBookingConfirmation = async (booking) => {
-  const { BREVO_API_KEY, BREVO_SENDER_EMAIL } = process.env;
-  if (!BREVO_API_KEY || !BREVO_SENDER_EMAIL) {
-    console.warn('Email not configured (BREVO_API_KEY/BREVO_SENDER_EMAIL missing) — emails skipped');
-    return;
-  }
   if (!booking?.email) return;
-
   try {
-    const res = await fetch(BREVO_ENDPOINT, {
-      method: 'POST',
-      headers: {
-        'api-key': BREVO_API_KEY,
-        'Content-Type': 'application/json',
-        accept: 'application/json',
-      },
-      body: JSON.stringify({
-        sender: {
-          name: process.env.BREVO_SENDER_NAME || 'Parking Booking',
-          email: BREVO_SENDER_EMAIL,
-        },
-        to: [{ email: booking.email }],
-        subject: `Xác nhận đặt chỗ gửi xe — ${booking.licensePlate}`,
-        htmlContent: buildHtml(booking),
-      }),
+    await sendEmail({
+      to: booking.email,
+      subject: `Xác nhận đặt chỗ gửi xe — ${booking.licensePlate}`,
+      htmlContent: buildHtml(booking),
     });
-
-    if (!res.ok) {
-      const body = await res.text();
-      console.error('Failed to send booking confirmation email', {
-        status: res.status,
-        body,
-        email: booking.email,
-      });
-      return;
-    }
     console.log('Booking confirmation email sent', { email: booking.email, bookingId: booking._id });
   } catch (err) {
     console.error('Failed to send booking confirmation email', { error: err.message, email: booking.email });
