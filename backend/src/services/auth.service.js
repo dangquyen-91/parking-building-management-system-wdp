@@ -2,7 +2,7 @@ import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
 import User from '../models/user.model.js';
 import AppError from '../utils/appError.js';
-import { sendVerificationEmail } from './email.service.js';
+import { sendVerificationEmail, sendPasswordResetEmail } from './email.service.js';
 
 const generateOtp = () => String(crypto.randomInt(100000, 1000000)).padStart(6, '0');
 
@@ -133,4 +133,48 @@ export const refreshAccessToken = async (token) => {
 
 export const logout = async (userId) => {
   await User.findByIdAndUpdate(userId, { refreshToken: null });
+};
+
+export const forgotPassword = async ({ email }) => {
+  const user = await User.findOne({ email }).select('+passwordResetExpires');
+  // Không tiết lộ email có tồn tại hay không để tránh user enumeration
+  if (!user || !user.isEmailVerified) {
+    return { message: 'Nếu email tồn tại, mã OTP sẽ được gửi tới hộp thư của bạn.' };
+  }
+
+  // Chống spam: chỉ cho gửi lại sau 1 phút
+  if (user.passwordResetExpires && user.passwordResetExpires > new Date(Date.now() + 9 * 60 * 1000)) {
+    throw new AppError('Vui lòng chờ ít nhất 1 phút trước khi yêu cầu gửi lại OTP', 429);
+  }
+
+  const otp = generateOtp();
+  user.passwordResetOtp = otp;
+  user.passwordResetExpires = new Date(Date.now() + 10 * 60 * 1000);
+  await user.save({ validateBeforeSave: false });
+
+  sendPasswordResetEmail({ email, otp });
+  return { message: 'Nếu email tồn tại, mã OTP sẽ được gửi tới hộp thư của bạn.' };
+};
+
+export const resetPassword = async ({ email, otp, newPassword }) => {
+  const user = await User.findOne({ email }).select('+passwordResetOtp +passwordResetExpires');
+  if (!user) throw new AppError('Email không tồn tại', 404);
+  if (!user.passwordResetOtp || !user.passwordResetExpires) {
+    throw new AppError('Chưa có yêu cầu đặt lại mật khẩu. Vui lòng thử lại.', 400);
+  }
+  if (user.passwordResetExpires < new Date()) {
+    throw new AppError('Mã OTP đã hết hạn. Vui lòng yêu cầu gửi lại.', 400);
+  }
+  if (user.passwordResetOtp !== otp) {
+    throw new AppError('Mã OTP không đúng', 400);
+  }
+
+  user.password = newPassword;
+  user.passwordResetOtp = undefined;
+  user.passwordResetExpires = undefined;
+  // Vô hiệu hoá tất cả refresh token đang active
+  user.refreshToken = undefined;
+  await user.save();
+
+  return { message: 'Đặt lại mật khẩu thành công. Vui lòng đăng nhập lại.' };
 };

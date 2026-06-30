@@ -44,6 +44,33 @@ const buildVerificationHtml = (otp) => `
   </div>
 `;
 
+const buildPasswordResetHtml = (otp) => `
+  <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; padding: 24px; border: 1px solid #e0e0e0; border-radius: 8px;">
+    <h2 style="color: #c62828; margin-bottom: 8px;">Đặt lại mật khẩu</h2>
+    <p style="color: #555;">Chúng tôi nhận được yêu cầu đặt lại mật khẩu cho tài khoản của bạn.</p>
+    <p style="color: #555;">Nhập mã OTP dưới đây để xác nhận. Mã có hiệu lực trong <b>10 phút</b>.</p>
+    <div style="text-align: center; margin: 32px 0;">
+      <span style="font-size: 40px; font-weight: bold; letter-spacing: 12px; color: #c62828; background: #ffebee; padding: 16px 24px; border-radius: 8px;">${otp}</span>
+    </div>
+    <p style="color: #888; font-size: 13px;">Nếu bạn không yêu cầu đặt lại mật khẩu, hãy bỏ qua email này. Mật khẩu sẽ không thay đổi.</p>
+    <hr style="border: none; border-top: 1px solid #eee; margin: 24px 0;">
+    <p style="color: #bbb; font-size: 12px; text-align: center;">Parking Building Management System</p>
+  </div>
+`;
+
+export const sendPasswordResetEmail = async ({ email, otp }) => {
+  try {
+    await sendEmail({
+      to: email,
+      subject: 'Mã OTP đặt lại mật khẩu',
+      htmlContent: buildPasswordResetHtml(otp),
+    });
+    console.log('Password reset email sent', { email });
+  } catch (err) {
+    console.error('Failed to send password reset email', { error: err.message, email });
+  }
+};
+
 export const sendVerificationEmail = async ({ email, otp }) => {
   try {
     await sendEmail({

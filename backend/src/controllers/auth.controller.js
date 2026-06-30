@@ -54,3 +54,21 @@ export const resendVerification = async (req, res, next) => {
     next(err);
   }
 };
+
+export const forgotPassword = async (req, res, next) => {
+  try {
+    const result = await authService.forgotPassword(req.body);
+    success(res, null, result.message);
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const resetPassword = async (req, res, next) => {
+  try {
+    const result = await authService.resetPassword(req.body);
+    success(res, null, result.message);
+  } catch (err) {
+    next(err);
+  }
+};

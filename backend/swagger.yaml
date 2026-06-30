@@ -944,6 +944,93 @@ paths:
         '403':
           description: Email chưa được xác thực — cần vào `/auth/verify-email` trước
 
+  /auth/forgot-password:
+    post:
+      tags: [Auth]
+      summary: Yêu cầu đặt lại mật khẩu
+      description: Gửi mã OTP 6 chữ số tới email để xác nhận đặt lại mật khẩu. OTP có hiệu lực trong 10 phút. Response luôn trả về 200 dù email có tồn tại hay không (tránh user enumeration).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email]
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: nguyenvana@gmail.com
+      responses:
+        '200':
+          description: OTP đã được gửi (hoặc email không tồn tại — response giống nhau)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  message:
+                    type: string
+                    example: Nếu email tồn tại, mã OTP sẽ được gửi tới hộp thư của bạn.
+                  data:
+                    type: object
+                    nullable: true
+                    example: null
+        '429':
+          description: Gửi quá nhanh — vui lòng chờ ít nhất 1 phút
+
+  /auth/reset-password:
+    post:
+      tags: [Auth]
+      summary: Đặt lại mật khẩu bằng OTP
+      description: Nhập OTP nhận được qua email và mật khẩu mới. Sau khi thành công, tất cả refresh token hiện tại sẽ bị vô hiệu hoá.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, otp, newPassword]
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: nguyenvana@gmail.com
+                otp:
+                  type: string
+                  minLength: 6
+                  maxLength: 6
+                  example: '274918'
+                newPassword:
+                  type: string
+                  minLength: 6
+                  example: NewPass@123
+      responses:
+        '200':
+          description: Đặt lại mật khẩu thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  message:
+                    type: string
+                    example: Đặt lại mật khẩu thành công. Vui lòng đăng nhập lại.
+                  data:
+                    type: object
+                    nullable: true
+                    example: null
+        '400':
+          description: OTP sai, đã hết hạn, hoặc chưa có yêu cầu đặt lại
+        '404':
+          description: Email không tồn tại
+
   /auth/refresh-token:
     post:
       tags: [Auth]
