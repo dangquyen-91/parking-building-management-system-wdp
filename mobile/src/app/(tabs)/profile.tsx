@@ -1,26 +1,24 @@
-import Ionicons from "react-native-vector-icons/Ionicons";
 import { useRouter } from "expo-router";
+import { useState } from "react";
 import { toast } from "sonner-native";
+import Ionicons from "react-native-vector-icons/Ionicons";
 
-import { GlassCard, Label, Page } from "../../components/parking-ui";
+import { GlassCard, Page } from "../../components/parking-ui";
+import {
+  ProfileAuthRequiredCard,
+  ProfileHeaderCard,
+  ProfileLoadingCard,
+  ProfileSubscriptionCard,
+  ProfileVehiclesCard,
+} from "../../components/profile";
 import { ThemeToggle } from "../../components/theme-toggle";
-import { useCurrentUserQuery, useLogoutMutation } from "../../hooks/useAuth";
-import { formatRole } from "@/utils/format";
-import { Link, Pressable, ScrollView, Text, View, useThemeColors } from "../../tw";
-
-const getInitials = (name?: string) => {
-  if (!name?.trim()) {
-    return "U";
-  }
-
-  return name
-    .trim()
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((part) => part[0])
-    .join("")
-    .toUpperCase();
-};
+import {
+  useAddVehicleMutation,
+  useCurrentUserQuery,
+  useLogoutMutation,
+} from "../../hooks/useAuth";
+import { formatDate, formatRole } from "@/utils/format";
+import { Pressable, ScrollView, Text, View, useThemeColors } from "../../tw";
 
 export default function Profile() {
   const router = useRouter();
@@ -31,16 +29,11 @@ export default function Profile() {
     isLoading,
   } = useCurrentUserQuery();
   const logoutMutation = useLogoutMutation();
+  const addVehicleMutation = useAddVehicleMutation();
 
-  const profileItems = currentUser
-    ? [
-        ["Họ và tên", currentUser.fullName],
-        ["Email", currentUser.email],
-        ["Số điện thoại", currentUser.phone || "Chưa cập nhật"],
-        ["Vai trò", formatRole(currentUser.role)],
-        ["Trạng thái", currentUser.isActive ? "Đang hoạt động" : "Ngừng hoạt động"],
-      ]
-    : [];
+  const [isAddingVehicle, setIsAddingVehicle] = useState(false);
+  const [licensePlate, setLicensePlate] = useState("");
+  const [vehicleType, setVehicleType] = useState<"car" | "motorcycle">("car");
 
   const handleLogout = async () => {
     try {
@@ -59,73 +52,136 @@ export default function Profile() {
     router.push("/subscription/history");
   };
 
+  const handleOpenProfileDetails = () => {
+    if (!currentUser?._id) {
+      return;
+    }
+
+    router.push({
+      pathname: "/profile/[profileId]",
+      params: { profileId: currentUser._id },
+    });
+  };
+
+  const handleAddVehicle = async () => {
+    const normalizedPlate = licensePlate.trim().toUpperCase();
+
+    if (normalizedPlate.length < 4) {
+      toast.info("Bien so chua hop le", {
+        description: "Vui long nhap bien so tu 4 ky tu tro len.",
+      });
+      return;
+    }
+
+    try {
+      await addVehicleMutation.mutateAsync({
+        licensePlate: normalizedPlate,
+        vehicleType,
+      });
+
+      setLicensePlate("");
+      setVehicleType("car");
+      setIsAddingVehicle(false);
+      toast.success("Thêm xe thành công");
+    } catch (mutationError) {
+      toast.info("Thêm xe thất bại", {
+        description:
+          mutationError instanceof Error
+            ? mutationError.message
+            : "Không thể thêm xe lúc này.",
+      });
+    }
+  };
+
   return (
     <Page
-      eyebrow="Tài khoản"
-      title={currentUser?.fullName ?? "Hồ sơ"}
-      subtitle="Thông tin tài khoản gửi xe của bạn trong hệ thống quản lý tòa nhà."
+      eyebrow="Tai khoan"
+      title={currentUser?.fullName ?? "Ho so"}
+      subtitle="Thông tin tài khỏan gửi xe của bạn trong hệ thống quản lý tòa nhà."
     >
       <ScrollView
         contentInsetAdjustmentBehavior="automatic"
         contentContainerClassName="gap-4 px-5 pb-[120px]"
       >
         {isLoading ? (
-          <GlassCard className="items-center gap-3">
-            <View className="h-[72px] w-[72px] items-center justify-center rounded-full bg-badge">
-              <Ionicons name="person" color={iconPrimary} size={30} />
-            </View>
-            <Text className="font-sans text-base font-extrabold text-fg">
-              Đang tải hồ sơ...
-            </Text>
-          </GlassCard>
+          <ProfileLoadingCard iconColor={iconPrimary} />
         ) : currentUser ? (
           <>
-            <GlassCard className="items-center gap-3">
-              <View className="h-[72px] w-[72px] items-center justify-center rounded-full bg-btn-primary">
-                <Text className="font-sans text-2xl font-black text-btn-primary-fg">
-                  {getInitials(currentUser.fullName)}
-                </Text>
-              </View>
-              <View className="items-center gap-1">
-                <Text className="font-sans text-xl font-extrabold text-fg">
-                  {currentUser.fullName}
-                </Text>
-                <Text selectable className="font-sans text-sm text-subtle">
-                  {currentUser.email}
-                </Text>
-              </View>
-            </GlassCard>
+            <ProfileHeaderCard
+              email={currentUser.email}
+              fullName={currentUser.fullName}
+            />
 
-            <GlassCard className="gap-3.5">
-              {profileItems.map(([label, value], index) => (
-                <View
-                  key={label}
-                  className={`gap-1 pb-3.5 ${
-                    index === profileItems.length - 1
-                      ? "border-b-0 pb-0"
-                      : "border-b border-border-theme"
-                  }`}
-                >
-                  <Label>{label}</Label>
-                  <Text selectable className="font-sans text-base font-bold text-fg">
-                    {value}
-                  </Text>
+            <Pressable onPress={handleOpenProfileDetails}>
+              <GlassCard className="gap-4">
+                <View className="flex-row items-center justify-between">
+                  <View className="gap-1">
+                    <Text className="font-sans text-base font-extrabold text-fg">
+                      Thong tin ca nhan
+                    </Text>
+                    <Text className="font-sans text-sm leading-5 text-subtle">
+                      Xem và chỉnh sửa thông tin cá nhân của bạn
+                    </Text>
+                  </View>
+                  <Ionicons name="chevron-forward" color={iconPrimary} size={20} />
                 </View>
-              ))}
-            </GlassCard>
 
-            <Pressable
-              className="flex-row items-center justify-between rounded-[28px] border border-border-strong bg-badge px-5 py-4"
-              onPress={handleOpenMySubscription}
-            >
-              <View className="gap-1">
-                <Label>Gói gửi xe</Label>
-                <Text className="font-sans text-base font-extrabold text-fg">
-                  Xem các gói của tôi
-                </Text>
-              </View>
-              <Ionicons name="chevron-forward" color={iconPrimary} size={20} />
+                <View className="gap-3">
+                  <View className="gap-1">
+                    <Text className="font-sans text-xs font-bold uppercase text-faint">
+                      Email
+                    </Text>
+                    <Text className="font-sans text-base font-bold text-fg">
+                      {currentUser.email}
+                    </Text>
+                  </View>
+                  <View className="gap-1">
+                    <Text className="font-sans text-xs font-bold uppercase text-faint">
+                      Số điện thoại
+                    </Text>
+                    <Text className="font-sans text-base font-bold text-fg">
+                      {currentUser.phone || "Chưa cập nhật"}
+                    </Text>
+                  </View>
+                  <View className="gap-1">
+                    <Text className="font-sans text-xs font-bold uppercase text-faint">
+                      Vai trò
+                    </Text>
+                    <Text className="font-sans text-base font-bold text-fg">
+                      {formatRole(currentUser.role)}
+                    </Text>
+                  </View>
+                  <View className="gap-1">
+                    <Text className="font-sans text-xs font-bold uppercase text-faint">
+                      Ngày sinh
+                    </Text>
+                    <Text className="font-sans text-base font-bold text-fg">
+                      {currentUser.dateOfBirth
+                        ? formatDate(currentUser.dateOfBirth)
+                        : "Chưa cập nhật"}
+                    </Text>
+                  </View>
+                </View>
+              </GlassCard>
             </Pressable>
+
+            <ProfileVehiclesCard
+              isAdding={isAddingVehicle}
+              isSubmitting={addVehicleMutation.isPending}
+              licensePlate={licensePlate}
+              onLicensePlateChange={setLicensePlate}
+              onSave={handleAddVehicle}
+              onToggle={() => setIsAddingVehicle((value) => !value)}
+              onVehicleTypeChange={setVehicleType}
+              placeholderColor=""
+              vehicleType={vehicleType}
+              vehicles={currentUser.vehicles}
+            />
+
+            <ProfileSubscriptionCard
+              iconColor={iconPrimary}
+              onPress={handleOpenMySubscription}
+            />
 
             <ThemeToggle />
 
@@ -142,27 +198,7 @@ export default function Profile() {
             </View>
           </>
         ) : (
-          <GlassCard className="gap-4">
-            <View className="h-12 w-12 items-center justify-center rounded-full bg-badge">
-              <Ionicons name="lock-closed" color={iconPrimary} size={22} />
-            </View>
-            <View className="gap-1">
-              <Text className="font-sans text-xl font-extrabold text-fg">
-                Cần đăng nhập
-              </Text>
-              <Text className="font-sans text-sm leading-5 text-subtle">
-                Đăng nhập để xem hồ sơ tài khoản của bạn.
-              </Text>
-            </View>
-            <Link href="/(auth)/login" asChild>
-              <Pressable className="items-center rounded-full bg-btn-primary py-4">
-                <Text className="font-sans text-base font-extrabold text-btn-primary-fg">
-                  Đăng nhập
-                </Text>
-              </Pressable>
-            </Link>
-            <ThemeToggle />
-          </GlassCard>
+          <ProfileAuthRequiredCard iconColor={iconPrimary} />
         )}
 
         {error ? (

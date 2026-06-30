@@ -5,7 +5,14 @@ import {
   saveAuthTokens,
   saveStoredUser,
 } from "./auth-storage";
-import type { AuthSession, LoginPayload, RegisterPayload, User } from "@/types/auth";
+import type {
+  AddVehiclePayload,
+  AuthSession,
+  LoginPayload,
+  RegisterPayload,
+  UpdateProfilePayload,
+  User,
+} from "@/types/auth";
 
 export const authKeys = {
   currentUser: ["auth", "currentUser"] as const,
@@ -55,4 +62,27 @@ export const logout = async () => {
   } finally {
     await clearAuthTokens();
   }
+};
+
+export const updateMyProfile = async (payload: UpdateProfilePayload) => {
+  const { user } = await apiRequest<{ user: User }>("/users/me", {
+    method: "PATCH",
+    data: payload,
+  });
+
+  await saveStoredUser(user);
+  return user;
+};
+
+export const addMyVehicle = async (payload: AddVehiclePayload) => {
+  const { user } = await apiRequest<{ user: User }>("/users/me/vehicles", {
+    method: "POST",
+    data: {
+      ...payload,
+      licensePlate: payload.licensePlate.trim().toUpperCase(),
+    },
+  });
+
+  await saveStoredUser(user);
+  return user;
 };

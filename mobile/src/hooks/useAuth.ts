@@ -1,6 +1,14 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { authKeys, getCurrentUser, login, logout, register } from "@/lib/auth";
+import {
+  addMyVehicle,
+  authKeys,
+  getCurrentUser,
+  login,
+  logout,
+  register,
+  updateMyProfile,
+} from "@/lib/auth";
 
 export const useCurrentUserQuery = () =>
   useQuery({
@@ -33,6 +41,28 @@ export const useLogoutMutation = () => {
       queryClient.setQueryData(authKeys.currentUser, null);
       queryClient.removeQueries({ queryKey: ["bookings"] });
       queryClient.removeQueries({ queryKey: ["subscriptions"] });
+    },
+  });
+};
+
+export const useUpdateProfileMutation = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: updateMyProfile,
+    onSuccess: (user) => {
+      queryClient.setQueryData(authKeys.currentUser, user);
+    },
+  });
+};
+
+export const useAddVehicleMutation = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: addMyVehicle,
+    onSuccess: (user) => {
+      queryClient.setQueryData(authKeys.currentUser, user);
     },
   });
 };

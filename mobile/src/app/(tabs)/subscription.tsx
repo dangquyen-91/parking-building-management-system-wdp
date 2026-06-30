@@ -79,6 +79,11 @@ export default function SubscriptionScreen() {
 
   const resolvedSelectedPlanId = selectedPlan?._id ?? null;
   const selectedVehicleType = selectedPlan?.vehicleType ?? "car";
+  const availableVehicles = useMemo(
+    () =>
+      (currentUser?.vehicles ?? []).filter((vehicle) => vehicle.vehicleType === selectedVehicleType),
+    [currentUser?.vehicles, selectedVehicleType],
+  );
   const availabilityQuery = useAvailableSubscriptionSlotsQuery(
     selectedVehicleType,
     Boolean(currentUser && selectedPlan),
@@ -287,6 +292,7 @@ export default function SubscriptionScreen() {
       >
         <SubscriptionPurchaseFormCard
           availableCarSlots={availableCarSlots}
+          availableVehicles={availableVehicles}
           availabilityLoading={availabilityQuery.isFetching}
           licensePlate={licensePlate}
           motorcycleAvailability={

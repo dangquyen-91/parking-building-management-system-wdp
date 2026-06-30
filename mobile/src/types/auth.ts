@@ -1,10 +1,38 @@
+export type UserGender = "male" | "female" | "other";
+
+export type UserVehicle = {
+  _id?: string;
+  licensePlate: string;
+  vehicleType: "car" | "motorcycle";
+};
+
 export type User = {
   _id: string;
   fullName: string;
   email: string;
   phone?: string;
+  cccd?: string;
+  dateOfBirth?: string;
+  gender?: UserGender;
+  address?: string;
+  vehicles?: UserVehicle[];
   role: string;
   isActive: boolean;
+};
+
+export type UpdateProfilePayload = {
+  fullName?: string;
+  email?: string;
+  phone?: string;
+  cccd?: string;
+  dateOfBirth?: string;
+  gender?: UserGender;
+  address?: string;
+};
+
+export type AddVehiclePayload = {
+  licensePlate: string;
+  vehicleType: "car" | "motorcycle";
 };
 
 export type LoginPayload = {
@@ -24,4 +52,3 @@ export type AuthSession = {
   refreshToken: string;
   user: User;
 };
-
