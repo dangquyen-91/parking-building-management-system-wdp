@@ -36,6 +36,13 @@ export const checkoutSchema = Joi.object({
   scannedPlate: Joi.string().trim().min(4).max(20).required(),
 });
 
+// Lost-QR checkout: no QR; staff verifies vehicle papers, only the camera plate.
+export const lostQrCheckoutSchema = Joi.object({
+  method: Joi.string().valid('cash', 'transfer').default('cash'),
+  scannedPlate: Joi.string().trim().min(4).max(20).required(),
+  note: Joi.string().trim().max(300).allow('', null),
+});
+
 export const lookupSchema = Joi.object({
   licensePlate: Joi.string().trim().min(4).max(20).required(),
 });
