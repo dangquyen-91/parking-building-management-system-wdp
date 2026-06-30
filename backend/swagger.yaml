@@ -37,6 +37,10 @@ tags:
     description: Car parking booking for walk-in customers (anonymous or logged-in)
   - name: Reports
     description: Manager dashboard — revenue, occupancy, peak hours (admin/manager)
+  - name: Incidents
+    description: Operational incidents logged by staff (e.g. walk-in lost QR) for admin/manager review
+  - name: Complaints
+    description: Resident complaints (e.g. someone parked in my reserved slot) handled by staff/manager/admin
 
 components:
   securitySchemes:
@@ -3235,6 +3239,289 @@ paths:
           description: Session or its payment not found
         '502':
           description: PayOS API error
+
+  /sessions/{id}/checkout/lost-qr:
+    post:
+      tags: [Sessions]
+      summary: Checkout a WALK-IN that lost its entry QR (admin, staff)
+      description: |
+        Dùng khi **khách vãng lai** (ô tô / xe máy, kể cả ô tô có booking) báo **mất vé QR**
+        đã cấp lúc check-in. Không cần QR: nhân viên **đối chiếu giấy tờ xe** khớp biển số,
+        rồi gọi endpoint này — hệ thống:
+        - Bắt buộc `scannedPlate` **khớp biển số** của session (nếu sai → 400).
+        - Tính phí gửi xe + **phạt cố định 100.000đ/lần**, thu **tiền mặt**, đóng session.
+        - Tự tạo **một bản ghi Incident** (`type: lost_qr`) để admin/manager xem (`GET /incidents`).
+
+        Không áp dụng cho **cư dân** (resident dùng QR gói cố định, mở lại được) → trả 400.
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [scannedPlate]
+              properties:
+                method:
+                  type: string
+                  enum: [cash, transfer]
+                  default: cash
+                  description: |
+                    `cash` (mặc định) → thu tiền mặt, đóng phiên ngay.
+                    `transfer` → tạo link PayOS (gồm cả phạt 100k); phiên đóng sau khi thanh toán
+                    (giống checkout/transfer — dùng webhook hoặc /checkout/confirm để đóng).
+                scannedPlate:
+                  type: string
+                  description: Biển số camera/nhân viên đọc tại cổng ra (phải khớp session)
+                  example: AB-66666
+                note:
+                  type: string
+                  description: Ghi chú sự cố (tùy chọn)
+                  example: Khách báo mất vé, đã đối chiếu cà-vẹt
+      responses:
+        '200':
+          description: Đã cho ra + thu phạt; session completed; tạo Incident
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      session:
+                        $ref: '#/components/schemas/ParkingSession'
+                      parkingFee:
+                        type: integer
+                        example: 35000
+                      penalty:
+                        type: integer
+                        example: 100000
+                      toCollect:
+                        type: integer
+                        description: Tiền mặt cần thu (phí phải trả + phạt)
+                        example: 135000
+                      fee:
+                        type: integer
+                        example: 135000
+                      incident:
+                        type: object
+        '400':
+          description: Biển số không khớp, session không active, hoặc là cư dân
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /incidents:
+    get:
+      tags: [Incidents]
+      summary: List operational incidents (admin, manager)
+      description: |
+        Danh sách sự cố do nhân viên ghi nhận (hiện có loại `lost_qr` — khách vãng lai mất vé).
+        Chỉ **admin** và **manager** xem được.
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: query
+          name: type
+          schema:
+            type: string
+            enum: [lost_qr]
+        - in: query
+          name: licensePlate
+          schema:
+            type: string
+        - in: query
+          name: page
+          schema:
+            type: integer
+        - in: query
+          name: limit
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Danh sách sự cố (phân trang)
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /incidents/{id}:
+    get:
+      tags: [Incidents]
+      summary: Get an incident detail (admin, manager)
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Chi tiết sự cố
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /complaints:
+    post:
+      tags: [Complaints]
+      summary: File a complaint — someone parked in my reserved slot (resident)
+      description: |
+        Cư dân (đăng nhập) khiếu nại có xe đỗ nhầm vào **chỗ của mình**. Hệ thống:
+        - Xác minh người khiếu nại **sở hữu** `slotId` (qua gói đang hoạt động) — nếu không → 403.
+        - Tra `offendingPlate` → tìm chủ xe B (nếu là cư dân có gói) + **SĐT** + chỗ đúng của B.
+        - Tạo khiếu nại, **tự gửi email cảnh báo cho B**, và trả về `callNow` (SĐT của B)
+          để nhân viên **gọi ngay song song** — không chờ B đọc mail.
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [slotId, offendingPlate]
+              properties:
+                slotId:
+                  type: string
+                  description: ID chỗ đỗ của chính người khiếu nại (đang bị đỗ nhầm)
+                offendingPlate:
+                  type: string
+                  description: Biển số xe đang đỗ sai
+                  example: 51B-99999
+                description:
+                  type: string
+                  example: Có xe lạ đỗ vào chỗ B12 của tôi
+      responses:
+        '201':
+          description: |
+            Đã tạo khiếu nại + gửi email cảnh báo. `callNow` chứa SĐT chủ xe để gọi ngay
+            (null nếu xe không có trong hệ thống → xử lý thủ công).
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      complaint:
+                        type: object
+                      callNow:
+                        type: object
+                        nullable: true
+                        properties:
+                          name: { type: string }
+                          phone: { type: string }
+                          correctSlot: { type: string }
+                          emailAlerted: { type: boolean }
+                      note: { type: string }
+        '403':
+          description: Bạn không sở hữu chỗ đỗ này
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+    get:
+      tags: [Complaints]
+      summary: List all complaints (admin, manager, staff)
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum: [open, in_progress, resolved]
+        - in: query
+          name: page
+          schema: { type: integer }
+        - in: query
+          name: limit
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Danh sách khiếu nại (phân trang)
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /complaints/me:
+    get:
+      tags: [Complaints]
+      summary: My complaints (the resident who filed)
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Danh sách khiếu nại của tôi
+
+  /complaints/{id}:
+    get:
+      tags: [Complaints]
+      summary: Complaint detail (admin, manager, staff)
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Chi tiết khiếu nại
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /complaints/{id}/status:
+    patch:
+      tags: [Complaints]
+      summary: Update complaint status (admin, manager, staff)
+      description: Nhân viên xử lý — đổi `open` → `in_progress` → `resolved`, kèm ghi chú xử lý.
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status:
+                  type: string
+                  enum: [open, in_progress, resolved]
+                resolutionNote:
+                  type: string
+                  example: B đã dời xe về B13 lúc 9:15
+      responses:
+        '200':
+          description: Đã cập nhật trạng thái
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
 
   /parking-rows:
     get:

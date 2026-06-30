@@ -117,6 +117,36 @@ const buildHtml = (booking) => `
   </div>
 `;
 
+const buildWrongSlotHtml = ({ name, plate, occupiedSlot, correctSlot }) => `
+  <div style="font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto; padding: 24px; border: 1px solid #e0e0e0; border-radius: 8px;">
+    <h2 style="color: #c62828;">⚠️ Xe của bạn đang đỗ sai chỗ</h2>
+    <p>Chào ${name || 'quý cư dân'},</p>
+    <p>Hệ thống ghi nhận xe biển số <b>${plate}</b> của bạn đang đỗ tại vị trí
+       <b>${occupiedSlot || '(không xác định)'}</b> — <b>không phải</b> chỗ đỗ của bạn.</p>
+    ${correctSlot
+      ? `<p>Vui lòng di chuyển xe về đúng chỗ của bạn: <b style="color:#2e7d32;">${correctSlot}</b>.</p>`
+      : `<p>Vui lòng di chuyển xe về đúng chỗ đỗ đã đăng ký của bạn.</p>`}
+    <p style="color:#c62828;"><b>Nhân viên bãi xe sẽ liên hệ trực tiếp với bạn ngay.</b> Mong bạn hợp tác di chuyển sớm để tránh ảnh hưởng cư dân khác.</p>
+    <hr style="border: none; border-top: 1px solid #eee; margin: 24px 0;">
+    <p style="color: #bbb; font-size: 12px; text-align: center;">Parking Building Management System</p>
+  </div>
+`;
+
+// Fire-and-forget — never throws, never blocks the main flow.
+export const sendWrongSlotAlert = async ({ email, name, plate, occupiedSlot, correctSlot }) => {
+  if (!email) return;
+  try {
+    await sendEmail({
+      to: email,
+      subject: `Cảnh báo: xe ${plate} đang đỗ sai chỗ — vui lòng di chuyển`,
+      htmlContent: buildWrongSlotHtml({ name, plate, occupiedSlot, correctSlot }),
+    });
+    console.log('Wrong-slot alert email sent', { email, plate });
+  } catch (err) {
+    console.error('Failed to send wrong-slot alert email', { error: err.message, email });
+  }
+};
+
 // Fire-and-forget — never throws, never blocks the main flow.
 export const sendBookingConfirmation = async (booking) => {
   if (!booking?.email) return;
