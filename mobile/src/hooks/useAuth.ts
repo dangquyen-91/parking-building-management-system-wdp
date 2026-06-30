@@ -6,6 +6,7 @@ import {
   getCurrentUser,
   login,
   logout,
+  removeMyVehicle,
   register,
   updateMyProfile,
 } from "@/lib/auth";
@@ -61,6 +62,17 @@ export const useAddVehicleMutation = () => {
 
   return useMutation({
     mutationFn: addMyVehicle,
+    onSuccess: (user) => {
+      queryClient.setQueryData(authKeys.currentUser, user);
+    },
+  });
+};
+
+export const useRemoveVehicleMutation = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: removeMyVehicle,
     onSuccess: (user) => {
       queryClient.setQueryData(authKeys.currentUser, user);
     },

@@ -1,4 +1,5 @@
 import { useRouter } from "expo-router";
+import { Alert } from "react-native";
 import { useState } from "react";
 import { toast } from "sonner-native";
 import Ionicons from "react-native-vector-icons/Ionicons";
@@ -16,7 +17,9 @@ import {
   useAddVehicleMutation,
   useCurrentUserQuery,
   useLogoutMutation,
+  useRemoveVehicleMutation,
 } from "../../hooks/useAuth";
+import type { UserVehicle } from "@/types/auth";
 import { formatDate, formatRole } from "@/utils/format";
 import { Pressable, ScrollView, Text, View, useThemeColors } from "../../tw";
 
@@ -30,9 +33,11 @@ export default function Profile() {
   } = useCurrentUserQuery();
   const logoutMutation = useLogoutMutation();
   const addVehicleMutation = useAddVehicleMutation();
+  const removeVehicleMutation = useRemoveVehicleMutation();
 
   const [isAddingVehicle, setIsAddingVehicle] = useState(false);
   const [licensePlate, setLicensePlate] = useState("");
+  const [removingVehicleId, setRemovingVehicleId] = useState<string | null>(null);
   const [vehicleType, setVehicleType] = useState<"car" | "motorcycle">("car");
 
   const handleLogout = async () => {
@@ -67,8 +72,8 @@ export default function Profile() {
     const normalizedPlate = licensePlate.trim().toUpperCase();
 
     if (normalizedPlate.length < 4) {
-      toast.info("Bien so chua hop le", {
-        description: "Vui long nhap bien so tu 4 ky tu tro len.",
+      toast.info("Biển số không hợp lệ", {
+        description: "Vui lòng nhập biển số từ 4 ký tự trở lên.",
       });
       return;
     }
@@ -91,6 +96,48 @@ export default function Profile() {
             : "Không thể thêm xe lúc này.",
       });
     }
+  };
+
+  const handleRemoveVehicle = (vehicle: UserVehicle) => {
+    if (!vehicle._id) {
+      toast.info("Không thể xóa xe", {
+        description: "Phương tiện này không có định danh hợp lệ.",
+      });
+      return;
+    }
+
+    const vehicleId = vehicle._id;
+
+    Alert.alert(
+      "Xóa phương tiện",
+      `Bạn có chắc muốn xóa biển số ${vehicle.licensePlate}?`,
+      [
+        {
+          style: "cancel",
+          text: "Hủy",
+        },
+        {
+          style: "destructive",
+          text: "Xóa",
+          onPress: async () => {
+            try {
+              setRemovingVehicleId(vehicleId);
+              await removeVehicleMutation.mutateAsync(vehicleId);
+              toast.success("Xóa xe thành công");
+            } catch (mutationError) {
+              toast.info("Xóa xe thất bại", {
+                description:
+                  mutationError instanceof Error
+                    ? mutationError.message
+                    : "Không thể xóa xe lúc này.",
+              });
+            } finally {
+              setRemovingVehicleId(null);
+            }
+          },
+        },
+      ],
+    );
   };
 
   return (
@@ -117,7 +164,7 @@ export default function Profile() {
                 <View className="flex-row items-center justify-between">
                   <View className="gap-1">
                     <Text className="font-sans text-base font-extrabold text-fg">
-                      Thong tin ca nhan
+                      Thông tin cá nhân
                     </Text>
                     <Text className="font-sans text-sm leading-5 text-subtle">
                       Xem và chỉnh sửa thông tin cá nhân của bạn
@@ -167,13 +214,16 @@ export default function Profile() {
 
             <ProfileVehiclesCard
               isAdding={isAddingVehicle}
+              isRemovingVehicle={removeVehicleMutation.isPending}
               isSubmitting={addVehicleMutation.isPending}
               licensePlate={licensePlate}
               onLicensePlateChange={setLicensePlate}
+              onRemoveVehicle={handleRemoveVehicle}
               onSave={handleAddVehicle}
               onToggle={() => setIsAddingVehicle((value) => !value)}
               onVehicleTypeChange={setVehicleType}
               placeholderColor=""
+              removingVehicleId={removingVehicleId}
               vehicleType={vehicleType}
               vehicles={currentUser.vehicles}
             />

@@ -1,17 +1,21 @@
 import { GlassCard, Label } from "@/components/parking-ui";
 import type { UserVehicle } from "@/types/auth";
 import { formatVehicleType } from "@/utils/format";
+import Ionicons from "react-native-vector-icons/Ionicons";
 import { Pressable, Text, TextInput, View, useThemeColors } from "@/tw";
 
 type ProfileVehiclesCardProps = {
   isAdding: boolean;
+  isRemovingVehicle: boolean;
   isSubmitting: boolean;
   licensePlate: string;
   onLicensePlateChange: (value: string) => void;
+  onRemoveVehicle: (vehicle: UserVehicle) => void;
   onSave: () => void;
   onToggle: () => void;
   onVehicleTypeChange: (value: "car" | "motorcycle") => void;
   placeholderColor: string;
+  removingVehicleId?: string | null;
   vehicleType: "car" | "motorcycle";
   vehicles?: UserVehicle[];
 };
@@ -28,17 +32,20 @@ const inputStyle = {
 
 export function ProfileVehiclesCard({
   isAdding,
+  isRemovingVehicle,
   isSubmitting,
   licensePlate,
   onLicensePlateChange,
+  onRemoveVehicle,
   onSave,
   onToggle,
   onVehicleTypeChange,
   placeholderColor,
+  removingVehicleId,
   vehicleType,
   vehicles,
 }: ProfileVehiclesCardProps) {
-  const { placeholder } = useThemeColors();
+  const { iconPrimary, placeholder } = useThemeColors();
 
   return (
     <GlassCard className="gap-4">
@@ -64,14 +71,28 @@ export function ProfileVehiclesCard({
           {vehicles.map((vehicle) => (
             <View
               key={vehicle._id ?? vehicle.licensePlate}
-              className="rounded-[18px] border border-border-theme bg-badge px-4 py-3.5"
+              className="flex-row items-center justify-between rounded-[18px] border border-border-theme bg-badge px-4 py-3.5"
             >
-              <Text className="font-sans text-base font-extrabold text-fg">
-                {vehicle.licensePlate}
-              </Text>
-              <Text className="mt-1 font-sans text-sm text-subtle">
-                {formatVehicleType(vehicle.vehicleType)}
-              </Text>
+              <View className="flex-1 pr-3">
+                <Text className="font-sans text-base font-extrabold text-fg">
+                  {vehicle.licensePlate}
+                </Text>
+                <Text className="mt-1 font-sans text-sm text-subtle">
+                  {formatVehicleType(vehicle.vehicleType)}
+                </Text>
+              </View>
+
+              <Pressable
+                className="h-10 w-10 items-center justify-center rounded-full border border-border-theme bg-input"
+                disabled={isRemovingVehicle || !vehicle._id}
+                onPress={() => onRemoveVehicle(vehicle)}
+              >
+                <Ionicons
+                  color={removingVehicleId === vehicle._id ? iconPrimary : "#dc2626"}
+                  name={removingVehicleId === vehicle._id ? "hourglass-outline" : "trash-outline"}
+                  size={18}
+                />
+              </Pressable>
             </View>
           ))}
         </View>

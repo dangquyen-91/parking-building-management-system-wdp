@@ -232,15 +232,6 @@ export default function SubscriptionDetailsScreen() {
                       </Text>
                     </GlassCard>
 
-                    <Pressable
-                      className="items-center rounded-full bg-btn-primary px-5 py-3.5"
-                      disabled={subscriptionQrMutation.isPending}
-                      onPress={handleReloadQr}
-                    >
-                      <Text className="font-sans text-base font-extrabold text-btn-primary-fg">
-                        Làm mới mã QR
-                      </Text>
-                    </Pressable>
                   </>
                 ) : (
                   <Pressable

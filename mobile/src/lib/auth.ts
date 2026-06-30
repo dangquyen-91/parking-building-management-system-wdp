@@ -86,3 +86,12 @@ export const addMyVehicle = async (payload: AddVehiclePayload) => {
   await saveStoredUser(user);
   return user;
 };
+
+export const removeMyVehicle = async (vehicleId: string) => {
+  const { user } = await apiRequest<{ user: User }>(`/users/me/vehicles/${vehicleId}`, {
+    method: "DELETE",
+  });
+
+  await saveStoredUser(user);
+  return user;
+};

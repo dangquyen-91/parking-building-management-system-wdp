@@ -66,7 +66,7 @@ export function ProfileDetailsCard({
     <GlassCard className="gap-4">
       <View className="flex-row items-center justify-between">
         <View className="gap-1">
-          <Label>Thong tin ca nhan</Label>
+          <Label>Thông tin cá nhân</Label>
           <Text className="font-sans text-base font-extrabold text-fg">
             Xem và chỉnh sửa thông tin cá nhân
           </Text>
@@ -201,7 +201,7 @@ export function ProfileDetailsCard({
             onPress={onSave}
           >
             <Text className="font-sans text-base font-extrabold text-btn-primary-fg">
-              {isSaving ? "Dang luu..." : "Luu thay doi"}
+              {isSaving ? "Đang lưu..." : "Lưu thay đổi"}
             </Text>
           </Pressable>
         </View>
