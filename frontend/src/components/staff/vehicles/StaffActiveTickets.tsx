@@ -1,4 +1,4 @@
-import { formatGateTime, visitorTypeLabel, type ParkingTicket } from '../data/staffGateData'
+import { formatGateTime, visitorTypeLabel, type ParkingTicket } from '../data/staffGateUi'
 
 type StaffActiveTicketsProps = {
   tickets: ParkingTicket[]

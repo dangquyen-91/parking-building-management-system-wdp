@@ -5,7 +5,7 @@ import {
   StaffGateToast,
   StaffPageHeader,
 } from '../../components/staff'
-import { formatGateTime } from '../../components/staff/data/staffGateData'
+import { formatGateTime } from '../../components/staff/data/staffGateUi'
 import { formatCustomerType, normalizePlate } from '../../components/staff/data/staffGateUtils'
 import { managerBuildingsApi, type Floor } from '../../services/managerBuildingsApi'
 import {

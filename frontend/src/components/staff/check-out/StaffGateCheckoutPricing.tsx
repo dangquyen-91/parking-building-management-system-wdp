@@ -1,5 +1,5 @@
 import type { GateCheckoutPreview, GateSession } from '../../../services/staffGateApi'
-import { formatStaffCurrency } from '../data/staffGateData'
+import { formatStaffCurrency } from '../data/staffGateUi'
 
 type StaffGateCheckoutPricingProps = {
   preview: GateCheckoutPreview
