@@ -6,6 +6,7 @@ import { StaffGateCheckoutActions, type CheckoutMethod } from './StaffGateChecko
 import { StaffGateCheckoutConfirmDialog } from './StaffGateCheckoutConfirmDialog'
 import { StaffGateCheckoutDetails } from './StaffGateCheckoutDetails'
 import { StaffGateCheckoutLookup } from './StaffGateCheckoutLookup'
+import { StaffGateLostTicketPanel, type LostTicketMethod } from './StaffGateLostTicketPanel'
 
 type StaffGateCheckoutPanelProps = {
   query: string
@@ -17,6 +18,7 @@ type StaffGateCheckoutPanelProps = {
   onQueryChange: (value: string) => void
   onCheckoutCash: (session: GateSession, qrValue: string) => void
   onCheckoutTransfer: (session: GateSession, qrValue: string) => void
+  onCheckoutLostTicket: (session: GateSession, method: LostTicketMethod, note?: string) => void
   onQrError?: (message: string) => void
   onQrSuccess?: (message: string) => void
 }
@@ -31,6 +33,7 @@ export function StaffGateCheckoutPanel({
   onQueryChange,
   onCheckoutCash,
   onCheckoutTransfer,
+  onCheckoutLostTicket,
   onQrError,
   onQrSuccess,
 }: StaffGateCheckoutPanelProps) {
@@ -102,6 +105,12 @@ export function StaffGateCheckoutPanel({
                 onSelectMethod={setConfirmMethod}
               />
             ) : null}
+          />
+
+          <StaffGateLostTicketPanel
+            session={session}
+            isSubmitting={isSubmitting}
+            onCheckoutLostTicket={onCheckoutLostTicket}
           />
         </div>
       </section>
