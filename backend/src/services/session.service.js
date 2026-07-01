@@ -5,6 +5,7 @@ import Floor from '../models/floor.model.js';
 import Subscription from '../models/subscription.model.js';
 import Payment from '../models/payment.model.js';
 import User from '../models/user.model.js';
+import Incident from '../models/incident.model.js';
 import * as pricingService from './pricing.service.js';
 import * as payosService from './payos.service.js';
 import * as bookingService from './booking.service.js';
@@ -613,6 +614,168 @@ export const checkOutCash = async (id, staffId, { qrToken, scannedPlate }) => {
     paidAt: exitTime,
     collectorId: staffId,
   });
+};
+
+// Per regulation: lost entry QR → staff verifies the vehicle's papers against
+// the plate manually, lets it out, and collects a fixed fine (cash at the gate).
+const LOST_QR_PENALTY = 100000;
+
+export const checkOutLostQr = async (id, staffId, { method = 'cash', scannedPlate, note }) => {
+  const session = await loadActiveSession(id);
+
+  // Only walk-ins receive a per-visit ticket QR at check-in (car/motorcycle,
+  // incl. walk-in car with a booking). Residents use a permanent subscription
+  // QR that can simply be re-shown via the QR endpoint — no lost-ticket fine.
+  if (session.customerType === 'resident') {
+    throw new AppError(
+      'Cư dân dùng QR gói cố định (mở lại qua mã QR gói), không áp dụng luồng mất vé vãng lai.',
+      400
+    );
+  }
+
+  // No QR to match: the staff confirmed the vehicle papers match the plate.
+  const normalizedScanned = scannedPlate.toUpperCase().replace(/\s/g, '');
+  if (session.licensePlate !== normalizedScanned) {
+    throw new AppError(
+      `Biển số (${normalizedScanned}) không khớp phiên đỗ xe đang check-out (${session.licensePlate}).`,
+      400
+    );
+  }
+
+  const exitTime = new Date();
+  const calc = await computeCheckoutFee(session, exitTime);
+  // `toCollect` = parking due now (overtime only for prepaid bookings) + fine.
+  const toCollect = calc.toCollect + LOST_QR_PENALTY;
+  const fee = calc.total + LOST_QR_PENALTY;
+  const breakdown = { ...calc.breakdown, lostQrPenalty: LOST_QR_PENALTY };
+
+  const logIncident = () =>
+    Incident.create({
+      type: 'lost_qr',
+      sessionId: session._id,
+      licensePlate: session.licensePlate,
+      vehicleType: session.vehicleType,
+      staffId,
+      fineAmount: LOST_QR_PENALTY,
+      description:
+        note?.trim() ||
+        `Khách báo mất QR. Nhân viên đối chiếu giấy tờ xe khớp biển ${session.licensePlate}, cho xuất bãi và thu phạt ${LOST_QR_PENALTY.toLocaleString('vi-VN')}đ (${method}).`,
+    });
+
+  // ---- TRANSFER: create a PayOS link (penalty included); session closes on payment ----
+  if (method === 'transfer') {
+    const existingPending = await Payment.findOne({ sessionId: session._id, status: 'pending' });
+    if (existingPending) {
+      return {
+        session: await session.populate(SESSION_POPULATE),
+        payment: {
+          orderCode: existingPending.orderCode,
+          amount: existingPending.amount,
+          checkoutUrl: existingPending.checkoutUrl,
+          paymentLinkId: existingPending.paymentLinkId,
+          qrCode: existingPending.providerData?.qrCode || null,
+        },
+        parkingFee: calc.total,
+        penalty: LOST_QR_PENALTY,
+        fee,
+        toCollect,
+        breakdown,
+        note: 'Đã có link PayOS đang chờ thanh toán cho phiên này — dùng lại link đó.',
+      };
+    }
+
+    await ParkingSession.findByIdAndUpdate(session._id, {
+      paymentMethod: 'transfer',
+      paymentStatus: 'pending',
+      fee,
+      feeBreakdown: breakdown,
+      checkOutStaffId: staffId,
+    });
+
+    const orderCode = payosService.generateOrderCode();
+    const staff = await User.findById(staffId).select('fullName email phone');
+    let payosResponse;
+    try {
+      payosResponse = await payosService.createPaymentLink({
+        orderCode,
+        amount: toCollect,
+        description: `Park ${session.licensePlate}`,
+        items: [{ name: `Parking ${session.vehicleType} + phạt mất QR`, quantity: 1, price: toCollect }],
+        buyerName: staff?.fullName,
+        buyerEmail: staff?.email,
+        buyerPhone: staff?.phone,
+      });
+    } catch (err) {
+      await ParkingSession.findByIdAndUpdate(session._id, {
+        paymentMethod: null,
+        paymentStatus: 'unpaid',
+        fee: 0,
+        feeBreakdown: {},
+        checkOutStaffId: null,
+      });
+      throw err;
+    }
+
+    const payment = await Payment.create({
+      targetType: 'session',
+      sessionId: session._id,
+      userId: session.userId || null,
+      provider: 'payos',
+      orderCode,
+      amount: toCollect,
+      description: `Park ${session.licensePlate} ${session.vehicleType} (mất QR)`,
+      status: 'pending',
+      checkoutUrl: payosResponse.checkoutUrl,
+      paymentLinkId: payosResponse.paymentLinkId,
+      providerData: payosResponse,
+    });
+
+    const incident = await logIncident();
+
+    return {
+      session: await session.populate(SESSION_POPULATE),
+      incident,
+      payment: {
+        orderCode: payment.orderCode,
+        amount: payment.amount,
+        checkoutUrl: payment.checkoutUrl,
+        paymentLinkId: payment.paymentLinkId,
+        qrCode: payosResponse.qrCode,
+        accountNumber: payosResponse.accountNumber,
+        accountName: payosResponse.accountName,
+        bin: payosResponse.bin,
+      },
+      parkingFee: calc.total,
+      penalty: LOST_QR_PENALTY,
+      fee,
+      toCollect,
+      breakdown,
+      note: 'Mất QR — đã đối chiếu giấy tờ. Quét QR PayOS để thanh toán (gồm phạt 100.000đ). Phiên sẽ đóng sau khi thanh toán.',
+    };
+  }
+
+  // ---- CASH (default): collect at the gate, close immediately ----
+  const closed = await closeSessionPaid(session, {
+    method: 'cash',
+    exitTime,
+    fee,
+    breakdown,
+    paidAt: exitTime,
+    collectorId: staffId,
+  });
+  const incident = await logIncident();
+
+  return {
+    session: closed,
+    incident,
+    payment: null,
+    parkingFee: calc.total,
+    penalty: LOST_QR_PENALTY,
+    fee,
+    toCollect,
+    breakdown,
+    note: 'Check-out không QR (mất QR): đã đối chiếu giấy tờ + thu phạt 100.000đ tiền mặt.',
+  };
 };
 
 export const checkOutTransfer = async (id, staffId, { qrToken, scannedPlate }) => {
