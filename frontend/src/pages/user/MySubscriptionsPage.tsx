@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ResidentSubscriptionTopNav, SubscriptionCredentialQr } from '../../components/subscription'
+import { complaintsApi } from '../../services/complaintsApi'
 import { userSubscriptionApi, type Subscription } from '../../services/userSubscriptionApi'
 import {
   formatSubscriptionDate,
@@ -14,6 +15,10 @@ export function MySubscriptionsPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [message, setMessage] = useState<string | null>(null)
+  const [complaintTarget, setComplaintTarget] = useState<Subscription | null>(null)
+  const [complaintPlate, setComplaintPlate] = useState('')
+  const [complaintDescription, setComplaintDescription] = useState('')
+  const [isComplaintSubmitting, setIsComplaintSubmitting] = useState(false)
 
   const stats = useMemo(() => {
     return {
@@ -54,6 +59,30 @@ export function MySubscriptionsPage() {
       setMessage('Đã hủy đơn chờ thanh toán.')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Không thể hủy đơn.')
+    }
+  }
+
+  async function handleSubmitComplaint() {
+    if (!complaintTarget?.slotId?._id || !complaintPlate.trim()) return
+
+    setError(null)
+    setMessage(null)
+    setIsComplaintSubmitting(true)
+
+    try {
+      const result = await complaintsApi.create({
+        slotId: complaintTarget.slotId._id,
+        offendingPlate: complaintPlate,
+        description: complaintDescription.trim() || undefined,
+      })
+      setMessage(result.note ?? 'Đã gửi khiếu nại xe đậu sai chỗ. Nhân viên sẽ kiểm tra và xử lý.')
+      setComplaintTarget(null)
+      setComplaintPlate('')
+      setComplaintDescription('')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Không gửi được khiếu nại đậu sai chỗ.')
+    } finally {
+      setIsComplaintSubmitting(false)
     }
   }
 
@@ -136,12 +165,31 @@ export function MySubscriptionsPage() {
                   key={subscription._id}
                   subscription={subscription}
                   onCancel={handleCancel}
+                  onReportWrongSlot={setComplaintTarget}
                 />
               ))}
             </div>
           </section>
         )}
       </main>
+
+      {complaintTarget && (
+        <WrongSlotComplaintDialog
+          subscription={complaintTarget}
+          offendingPlate={complaintPlate}
+          description={complaintDescription}
+          isSubmitting={isComplaintSubmitting}
+          onPlateChange={setComplaintPlate}
+          onDescriptionChange={setComplaintDescription}
+          onCancel={() => {
+            if (isComplaintSubmitting) return
+            setComplaintTarget(null)
+            setComplaintPlate('')
+            setComplaintDescription('')
+          }}
+          onSubmit={handleSubmitComplaint}
+        />
+      )}
     </div>
   )
 }
@@ -170,9 +218,10 @@ function StatBox({ label, value, tone }: StatBoxProps) {
 type SubscriptionCardProps = {
   subscription: Subscription
   onCancel: (subscription: Subscription) => void
+  onReportWrongSlot: (subscription: Subscription) => void
 }
 
-function SubscriptionCard({ subscription, onCancel }: SubscriptionCardProps) {
+function SubscriptionCard({ subscription, onCancel, onReportWrongSlot }: SubscriptionCardProps) {
   const floorLabel = subscription.slotId?.floorId?.floorNumber
     ? `Tầng ${subscription.slotId.floorId.floorNumber}`
     : subscription.vehicleType === 'motorcycle'
@@ -201,7 +250,18 @@ function SubscriptionCard({ subscription, onCancel }: SubscriptionCardProps) {
       {subscription.status === 'active' && (
         <div className="border-t border-theme p-4">
           <div className="grid gap-4 md:grid-cols-[12rem_minmax(0,1fr)] md:items-center">
-            <SubscriptionCredentialQr subscription={subscription} compact />
+            <div className="grid gap-3">
+              <SubscriptionCredentialQr subscription={subscription} compact />
+              {subscription.slotId?._id && (
+                <button
+                  type="button"
+                  onClick={() => onReportWrongSlot(subscription)}
+                  className="h-10 rounded-xl border border-rose-500/30 bg-rose-500/10 px-4 text-xs font-bold text-rose-700 transition-colors hover:bg-rose-500/15 dark:text-rose-200"
+                >
+                  Báo xe đậu sai chỗ
+                </button>
+              )}
+            </div>
             <div>
               <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-subtle">Thẻ cư dân QR</p>
               <p className="mt-2 text-sm text-muted">
@@ -234,6 +294,103 @@ function CardDetail({ label, value, hint }: { label: string; value: string; hint
       <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-subtle">{label}</p>
       <p className="mt-1.5 text-sm font-bold text-fg">{value}</p>
       {hint && <p className="mt-1 text-xs text-muted">{hint}</p>}
+    </div>
+  )
+}
+
+function WrongSlotComplaintDialog({
+  subscription,
+  offendingPlate,
+  description,
+  isSubmitting,
+  onPlateChange,
+  onDescriptionChange,
+  onCancel,
+  onSubmit,
+}: {
+  subscription: Subscription
+  offendingPlate: string
+  description: string
+  isSubmitting: boolean
+  onPlateChange: (value: string) => void
+  onDescriptionChange: (value: string) => void
+  onCancel: () => void
+  onSubmit: () => void
+}) {
+  const canSubmit = Boolean(offendingPlate.trim())
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
+      role="dialog"
+      aria-modal="true"
+      onClick={onCancel}
+    >
+      <div
+        className="w-full max-w-lg overflow-hidden rounded-2xl border border-theme bg-page shadow-2xl"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <div className="border-b border-theme bg-gradient-to-r from-rose-500/20 to-transparent p-5">
+          <p className="text-[10px] font-black uppercase tracking-[0.18em] text-rose-600 dark:text-rose-300">
+            Khiếu nại chỗ đỗ
+          </p>
+          <h3 className="mt-2 text-xl font-black text-fg">Báo xe đậu sai chỗ</h3>
+          <p className="mt-1 text-sm text-muted">
+            Chỗ của bạn: <b>{subscription.slotId?.slotCode ?? '-'}</b> · Biển số gói:{' '}
+            <b>{subscription.licensePlate}</b>
+          </p>
+        </div>
+
+        <div className="grid gap-4 p-5">
+          <label className="grid gap-2">
+            <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-subtle">
+              Biển số xe đang chiếm chỗ
+            </span>
+            <input
+              value={offendingPlate}
+              onChange={(event) => onPlateChange(event.target.value)}
+              placeholder="VD: 61K-424.94"
+              className="auth-input h-12 rounded-xl border px-4 text-base font-bold uppercase tracking-[0.08em] text-fg"
+            />
+          </label>
+
+          <label className="grid gap-2">
+            <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-subtle">
+              Ghi chú thêm
+            </span>
+            <textarea
+              value={description}
+              onChange={(event) => onDescriptionChange(event.target.value)}
+              rows={4}
+              placeholder="VD: Xe đang đậu chắn đúng ô của tôi từ sáng nay."
+              className="auth-input min-h-28 rounded-xl border px-4 py-3 text-sm text-fg"
+            />
+          </label>
+
+          <p className="rounded-xl border border-amber-400/30 bg-amber-500/10 p-3 text-xs text-amber-800 dark:text-amber-100">
+            Nếu xe đậu sai là xe cư dân trong hệ thống, backend sẽ tự gửi email cảnh báo cho chủ xe đó.
+          </p>
+        </div>
+
+        <div className="grid gap-3 border-t border-theme p-5 sm:grid-cols-2">
+          <button
+            type="button"
+            onClick={onCancel}
+            disabled={isSubmitting}
+            className="h-12 rounded-xl border border-theme bg-badge px-4 text-sm font-bold text-fg hover:bg-ghost disabled:opacity-60"
+          >
+            Hủy
+          </button>
+          <button
+            type="button"
+            onClick={onSubmit}
+            disabled={isSubmitting || !canSubmit}
+            className="h-12 rounded-xl bg-rose-600 px-4 text-sm font-bold text-white shadow-lg shadow-rose-600/20 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {isSubmitting ? 'Đang gửi...' : 'Gửi khiếu nại'}
+          </button>
+        </div>
+      </div>
     </div>
   )
 }

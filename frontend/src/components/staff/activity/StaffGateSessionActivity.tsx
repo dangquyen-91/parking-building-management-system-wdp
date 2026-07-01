@@ -1,5 +1,5 @@
 import type { GateSession } from '../../../services/staffGateApi'
-import { formatGateTime } from '../data/staffGateData'
+import { formatGateTime } from '../data/staffGateUi'
 import { formatCustomerType, formatSessionSpot } from '../data/staffGateUtils'
 
 type StaffGateSessionActivityProps = {

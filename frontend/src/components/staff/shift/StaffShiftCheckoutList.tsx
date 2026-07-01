@@ -1,5 +1,5 @@
 import type { GateSession } from '../../../services/staffGateApi'
-import { formatGateTime, formatStaffCurrency } from '../data/staffGateData'
+import { formatGateTime, formatStaffCurrency } from '../data/staffGateUi'
 import { formatCustomerType, formatVehicleType } from '../data/staffGateUtils'
 import { formatShiftPaymentMethod } from './staffShiftUtils'
 

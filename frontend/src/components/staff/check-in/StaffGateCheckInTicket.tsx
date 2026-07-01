@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import QRCode from 'qrcode'
 import type { GateSession } from '../../../services/staffGateApi'
-import { formatGateTime } from '../data/staffGateData'
+import { formatGateTime } from '../data/staffGateUi'
 import { formatCustomerType, formatVehicleType } from '../data/staffGateUtils'
 
 type StaffGateCheckInTicketProps = {
