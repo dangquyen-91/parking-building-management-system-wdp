@@ -153,6 +153,27 @@ export type GateCheckoutPreview = {
   } | null
 }
 
+export type GateLostQrCheckoutResult = {
+  session: GateSession
+  incident?: {
+    _id: string
+    type: 'lost_qr'
+    fineAmount: number
+    description?: string
+  }
+  payment: {
+    orderCode?: number
+    amount: number
+    checkoutUrl?: string
+    qrCode?: string
+  } | null
+  parkingFee: number
+  penalty: number
+  fee: number
+  toCollect: number
+  note?: string
+}
+
 type ActiveSessionsResponse = {
   sessions: GateSession[]
   total: number
@@ -308,6 +329,25 @@ export const staffGateApi = {
           fee?: number
         }>
       >(`/sessions/${sessionId}/checkout/transfer`, payload)
+      return response.data.data
+    } catch (error) {
+      throw getApiError(error)
+    }
+  },
+
+  async checkoutLostQr(
+    sessionId: string,
+    payload: {
+      method: 'cash' | 'transfer'
+      scannedPlate: string
+      note?: string
+    },
+  ) {
+    try {
+      const response = await staffHttp.post<ApiEnvelope<GateLostQrCheckoutResult>>(
+        `/sessions/${sessionId}/checkout/lost-qr`,
+        payload,
+      )
       return response.data.data
     } catch (error) {
       throw getApiError(error)
