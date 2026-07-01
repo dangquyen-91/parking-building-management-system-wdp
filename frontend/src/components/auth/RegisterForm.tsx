@@ -86,7 +86,7 @@ export function RegisterForm() {
       })
       setStatus('success')
       window.setTimeout(() => {
-        navigate('/login', { replace: true })
+        navigate('/verify-email', { replace: true, state: { email: values.email.trim() } })
       }, 700)
     } catch (error) {
       setStatus('idle')
@@ -200,7 +200,7 @@ export function RegisterForm() {
         )}
         {status === 'success' && (
           <p className="text-xs text-muted">
-            Tạo tài khoản thành công. Đang chuyển đến đăng nhập...
+            Tạo tài khoản thành công. Đang chuyển đến xác thực email...
           </p>
         )}
       </div>
@@ -210,7 +210,7 @@ export function RegisterForm() {
         labels={{
           idle: 'Tạo tài khoản',
           loading: 'Đang tạo tài khoản...',
-          success: 'Tài khoản đã sẵn sàng',
+          success: 'Kiểm tra email của bạn',
         }}
       />
 
