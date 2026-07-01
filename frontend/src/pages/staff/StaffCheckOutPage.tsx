@@ -52,7 +52,6 @@ export function StaffCheckOutPage() {
             onQueryChange={gate.setCheckoutQuery}
             onCheckoutCash={gate.handleCheckoutCash}
             onCheckoutTransfer={gate.handleCheckoutTransfer}
-            onCheckoutLostTicket={gate.handleCheckoutLostTicket}
             onQrError={gate.setToastMessage}
             onQrSuccess={gate.setToastMessage}
           />
