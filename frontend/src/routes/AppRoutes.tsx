@@ -16,6 +16,7 @@ import { AdminSubscriptionsPage } from '../pages/admin/AdminSubscriptionsPage'
 import { UserManagementPage } from '../pages/admin/UserManagementPage'
 import { LoginPage } from '../pages/auth/LoginPage'
 import { RegisterPage } from '../pages/auth/RegisterPage'
+import { VerifyEmailPage } from '../pages/auth/VerifyEmailPage'
 import { ManagerBuildingsPage } from '../pages/manager/ManagerBuildingsPage'
 import { ManagerBookingsPage } from '../pages/manager/ManagerBookingsPage'
 import { ManagerDashboardPage } from '../pages/manager/ManagerDashboardPage'
@@ -46,6 +47,7 @@ export const AppRoutes = () => {
       <Route path="/" element={<HomePage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
+      <Route path="/verify-email" element={<VerifyEmailPage />} />
       <Route path="/booking" element={<BookingPage />} />
       <Route path="/payment/success" element={<PaymentResultPage status="success" />} />
       <Route path="/payment/cancel" element={<PaymentResultPage status="cancel" />} />

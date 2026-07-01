@@ -47,6 +47,15 @@ export type RegisterPayload = {
   phone?: string
 }
 
+export type VerifyEmailPayload = {
+  email: string
+  otp: string
+}
+
+export type ResendVerificationPayload = {
+  email: string
+}
+
 export const AUTH_STORAGE_KEYS = {
   accessToken: 'accessToken',
   refreshToken: 'refreshToken',
@@ -124,6 +133,26 @@ export const authApi = {
       const response = await authHttp.post<ApiEnvelope<RegisterResponse>>('/auth/register', payload)
 
       return response.data.data
+    } catch (error) {
+      throw getApiError(error)
+    }
+  },
+
+  async verifyEmail(payload: VerifyEmailPayload) {
+    try {
+      const response = await authHttp.post<ApiEnvelope<null>>('/auth/verify-email', payload)
+
+      return response.data.message
+    } catch (error) {
+      throw getApiError(error)
+    }
+  },
+
+  async resendVerification(payload: ResendVerificationPayload) {
+    try {
+      const response = await authHttp.post<ApiEnvelope<null>>('/auth/resend-verification', payload)
+
+      return response.data.message
     } catch (error) {
       throw getApiError(error)
     }
