@@ -14,6 +14,7 @@ import { AdminSlotsPage } from '../pages/admin/AdminSlotsPage'
 import { AdminStaffPage } from '../pages/admin/AdminStaffPage'
 import { AdminSubscriptionsPage } from '../pages/admin/AdminSubscriptionsPage'
 import { UserManagementPage } from '../pages/admin/UserManagementPage'
+import { ForgotPasswordPage } from '../pages/auth/ForgotPasswordPage'
 import { LoginPage } from '../pages/auth/LoginPage'
 import { RegisterPage } from '../pages/auth/RegisterPage'
 import { VerifyEmailPage } from '../pages/auth/VerifyEmailPage'
@@ -46,6 +47,7 @@ export const AppRoutes = () => {
     <Routes>
       <Route path="/" element={<HomePage />} />
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/verify-email" element={<VerifyEmailPage />} />
       <Route path="/booking" element={<BookingPage />} />
