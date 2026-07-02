@@ -31,6 +31,13 @@ export { ManagerGateLogList } from './gate-logs/ManagerGateLogList'
 export { ManagerGateLogStats } from './gate-logs/ManagerGateLogStats'
 
 export {
+  ManagerLostTicketFilters,
+  type ManagerLostTicketVehicleFilter,
+} from './lost-tickets/ManagerLostTicketFilters'
+export { ManagerLostTicketList } from './lost-tickets/ManagerLostTicketList'
+export { ManagerLostTicketStats } from './lost-tickets/ManagerLostTicketStats'
+
+export {
   ManagerBookingFilters,
   type ManagerBookingStatusFilter,
 } from './bookings/ManagerBookingFilters'
