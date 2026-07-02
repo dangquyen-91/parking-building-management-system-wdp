@@ -16,7 +16,7 @@ import type {
   ManagerRevenueReport,
   ManagerSessionReport,
 } from '../../../services/managerReportsApi'
-import { formatCurrency } from '../managerData'
+import { formatCurrency } from '../managerUi'
 
 const chartColors = {
   primary: '#6366f1',

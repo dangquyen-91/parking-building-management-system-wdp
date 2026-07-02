@@ -1,4 +1,4 @@
-export { ManagerPageHeader } from './common/ManagerPageHeader'
+﻿export { ManagerPageHeader } from './common/ManagerPageHeader'
 export { ManagerStatCard } from './common/ManagerStatCard'
 export { ManagerStatusBadge } from './common/ManagerStatusBadge'
 
@@ -36,6 +36,13 @@ export {
 } from './lost-tickets/ManagerLostTicketFilters'
 export { ManagerLostTicketList } from './lost-tickets/ManagerLostTicketList'
 export { ManagerLostTicketStats } from './lost-tickets/ManagerLostTicketStats'
+
+export {
+  ManagerComplaintFilters,
+  type ManagerComplaintStatusFilter,
+} from './complaints/ManagerComplaintFilters'
+export { ManagerComplaintList } from './complaints/ManagerComplaintList'
+export { ManagerComplaintStats } from './complaints/ManagerComplaintStats'
 
 export {
   ManagerBookingFilters,
@@ -79,4 +86,5 @@ export {
 
 export {
   formatCurrency,
-} from './managerData'
+} from './managerUi'
+

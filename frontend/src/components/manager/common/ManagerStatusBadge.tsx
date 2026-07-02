@@ -1,4 +1,4 @@
-import { statusTone } from '../managerData'
+﻿import { statusTone } from '../managerUi'
 
 type ManagerStatusBadgeProps = {
   status: keyof typeof statusTone
@@ -13,4 +13,5 @@ export function ManagerStatusBadge({ status, label = status }: ManagerStatusBadg
     </span>
   )
 }
+
 
