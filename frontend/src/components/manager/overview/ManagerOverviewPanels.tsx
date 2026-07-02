@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import type { ManagerBooking } from '../../../services/managerBookingsApi'
 import type { ManagerOccupancyFloor } from '../../../services/managerReportsApi'
 import type { GateSession } from '../../../services/staffGateApi'
+import { getFloorSection } from '../../../utils/floorLabel'
 import { ManagerStatusBadge } from '../common/ManagerStatusBadge'
 
 function formatDateTime(value: string) {
@@ -23,7 +24,7 @@ export function ManagerOverviewCapacity({ floors }: { floors: ManagerOccupancyFl
       <div className="mb-4 flex items-start justify-between gap-3">
         <div>
           <p className="text-[10px] font-black uppercase tracking-[0.18em] text-subtle">Công suất</p>
-          <h2 className="mt-1 text-xl font-black text-fg">Tình trạng từng tầng</h2>
+          <h2 className="mt-1 text-xl font-black text-fg">Tình trạng từng khu</h2>
         </div>
         <Link to="/manager/slots" className="text-xs font-bold text-muted hover:text-fg">
           Quản lý chỗ đỗ
@@ -39,7 +40,7 @@ export function ManagerOverviewCapacity({ floors }: { floors: ManagerOccupancyFl
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   <p className="truncate font-bold text-fg">
-                    {floor.building?.name ?? 'Chưa xác định'} · Tầng {floor.floorNumber}
+                    {floor.building?.name ?? 'Chưa xác định'} · Tầng {floor.floorNumber} · Khu {getFloorSection(floor.section)}
                   </p>
                   <p className="mt-1 text-xs text-subtle">{vehicleLabel(floor.vehicleType)}</p>
                 </div>
