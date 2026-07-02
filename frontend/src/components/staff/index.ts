@@ -18,11 +18,15 @@ export { StaffGateCheckoutDetails } from './check-out/StaffGateCheckoutDetails'
 export { StaffGateCheckoutLookup } from './check-out/StaffGateCheckoutLookup'
 export { StaffGateCheckoutPanel } from './check-out/StaffGateCheckoutPanel'
 export { StaffGateCheckoutPricing } from './check-out/StaffGateCheckoutPricing'
+export { StaffGateLostTicketPanel, type LostTicketMethod } from './lost-ticket/StaffGateLostTicketPanel'
 export { StaffGateQrVerifier } from './scanner/StaffGateQrVerifier'
 export { StaffGateQrScanner } from './scanner/StaffGateQrScanner'
 export { StaffGateSessionActivity } from './activity/StaffGateSessionActivity'
 export { StaffGateSummary } from './activity/StaffGateSummary'
 export { StaffGateToast } from './activity/StaffGateToast'
+export { StaffIncidentCard } from './incidents/StaffIncidentCard'
+export { StaffIncidentFilters } from './incidents/StaffIncidentFilters'
+export { StaffIncidentStats } from './incidents/StaffIncidentStats'
 export { StaffActiveTickets } from './vehicles/StaffActiveTickets'
 export { StaffVehicleFilters } from './vehicles/StaffVehicleFilters'
 export { StaffVehicleList } from './vehicles/StaffVehicleList'
@@ -36,17 +40,9 @@ export {
   type ShiftStat,
 } from './shift/staffShiftUtils'
 export {
-  INITIAL_TICKETS,
-  STAFF_INCIDENTS,
-  STAFF_ZONES,
-  calculateMotorbikeFee,
   formatGateTime,
   formatStaffCurrency,
-  incidentStatusClass,
-  incidentStatusLabel,
   visitorTypeLabel,
-  type GateMode,
   type ParkingTicket,
-  type StaffIncident,
   type VisitorType,
-} from './data/staffGateData'
+} from './data/staffGateUi'
