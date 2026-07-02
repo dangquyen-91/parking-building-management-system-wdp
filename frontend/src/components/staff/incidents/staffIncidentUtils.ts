@@ -7,9 +7,15 @@ export const INCIDENT_STATUS_LABELS: Record<ComplaintStatus, string> = {
 }
 
 export const INCIDENT_STATUS_TONE: Record<ComplaintStatus, string> = {
-  open: 'border-amber-400/40 bg-amber-500/10 text-amber-700 dark:text-amber-200',
-  in_progress: 'border-sky-400/40 bg-sky-500/10 text-sky-700 dark:text-sky-200',
-  resolved: 'border-emerald-400/40 bg-emerald-500/10 text-emerald-700 dark:text-emerald-200',
+  open: 'border-amber-400/50 bg-amber-500/15 text-amber-800 dark:text-amber-100',
+  in_progress: 'border-sky-400/50 bg-sky-500/15 text-sky-800 dark:text-sky-100',
+  resolved: 'border-emerald-400/50 bg-emerald-500/15 text-emerald-800 dark:text-emerald-100',
+}
+
+export const INCIDENT_STATUS_DOT: Record<ComplaintStatus, string> = {
+  open: 'bg-amber-500',
+  in_progress: 'bg-sky-500',
+  resolved: 'bg-emerald-500',
 }
 
 export function formatIncidentDateTime(value: string) {
