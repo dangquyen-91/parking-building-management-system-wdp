@@ -79,12 +79,12 @@ export function StaffIncidentsPage() {
       <StaffPageHeader
         eyebrow="Sự cố & khiếu nại"
         title="Khiếu nại đậu sai chỗ"
-        description="Theo dõi các báo cáo cư dân gửi khi có xe khác chiếm ô đỗ. Staff có thể gọi chủ xe và cập nhật trạng thái xử lý."
+        description="Theo dõi xe đậu sai ô, gọi đúng chủ xe và cập nhật trạng thái xử lý trong ca trực."
         actions={
           <button
             type="button"
             onClick={() => void loadComplaints()}
-            className="h-11 rounded-xl border border-theme bg-badge px-4 text-sm font-bold text-fg hover:bg-ghost"
+            className="h-11 rounded-xl border border-theme bg-badge px-4 text-sm font-bold text-fg transition hover:bg-ghost"
           >
             Tải lại
           </button>
@@ -96,14 +96,17 @@ export function StaffIncidentsPage() {
       <StaffIncidentFilters statusFilter={statusFilter} onStatusFilterChange={setStatusFilter} />
 
       {isLoading ? (
-        <div className="rounded-xl border border-theme bg-badge p-6 text-center text-sm text-muted">
+        <div className="rounded-3xl border border-theme bg-badge p-8 text-center text-sm font-semibold text-muted">
           Đang tải danh sách khiếu nại...
         </div>
       ) : complaints.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-theme bg-badge p-10 text-center">
-          <h2 className="text-lg font-bold text-fg">Chưa có khiếu nại phù hợp</h2>
-          <p className="mt-2 text-sm text-muted">
-            Khi cư dân báo xe đậu sai chỗ, danh sách sẽ xuất hiện ở đây.
+        <div className="rounded-3xl border border-dashed border-theme bg-badge p-12 text-center">
+          <p className="mx-auto grid h-14 w-14 place-items-center rounded-2xl border border-theme bg-page text-2xl font-black text-fg">
+            ✓
+          </p>
+          <h2 className="mt-4 text-xl font-black text-fg">Chưa có khiếu nại phù hợp</h2>
+          <p className="mx-auto mt-2 max-w-md text-sm text-muted">
+            Khi cư dân báo xe đậu sai chỗ, thông tin biển số, ô bị chiếm và số điện thoại liên hệ sẽ xuất hiện ở đây.
           </p>
         </div>
       ) : (
