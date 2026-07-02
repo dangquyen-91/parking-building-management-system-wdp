@@ -125,12 +125,13 @@ export function LoginForm() {
           />
           Ghi nhớ thiết bị này
         </label>
-        <a
-          href="#recover"
+        <Link
+          to="/forgot-password"
+          state={{ email: values.email.trim() }}
           className="text-muted hover:text-fg transition-colors duration-200"
         >
           Quên mật khẩu?
-        </a>
+        </Link>
       </div>
 
       <div aria-live="polite" aria-atomic="true" className="min-h-[1.25rem]">
