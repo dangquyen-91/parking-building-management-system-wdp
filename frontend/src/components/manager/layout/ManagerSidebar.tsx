@@ -1,4 +1,4 @@
-import { forwardRef } from 'react'
+﻿import { forwardRef } from 'react'
 import { NavLink } from 'react-router-dom'
 import { ThemeToggle } from '../../common'
 import { LogoIcon } from '../../common/icons'
@@ -10,6 +10,7 @@ const MANAGER_NAV_ITEMS = [
   { to: '/manager/slots', label: 'Chỗ đỗ', detail: 'Slot và hàng xe', icon: 'slots' },
   { to: '/manager/bookings', label: 'Booking', detail: 'Đặt chỗ trả trước', icon: 'calendar' },
   { to: '/manager/gate-logs', label: 'Hoạt động cổng', detail: 'Xe vào, xe ra', icon: 'gate' },
+  { to: '/manager/lost-tickets', label: 'Mất vé', detail: 'Phạt và đối soát', icon: 'ticket' },
   { to: '/manager/staff', label: 'Nhân viên', detail: 'Tài khoản staff', icon: 'staff' },
   { to: '/manager/plans', label: 'Gói gửi xe', detail: 'Giá và trạng thái', icon: 'plan' },
   { to: '/manager/subscriptions', label: 'Người dùng gói', detail: 'Cư dân đã mua gói', icon: 'plan' },
@@ -46,6 +47,20 @@ function ManagerIcon({ name }: { name: (typeof MANAGER_NAV_ITEMS)[number]['icon'
       </svg>
     )
   }
+  if (name === 'ticket') {
+    return (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path
+          d="M5 7.5A2.5 2.5 0 0 1 7.5 5h9A2.5 2.5 0 0 1 19 7.5v2a2.5 2.5 0 0 0 0 5v2A2.5 2.5 0 0 1 16.5 19h-9A2.5 2.5 0 0 1 5 16.5v-2a2.5 2.5 0 0 0 0-5v-2Z"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinejoin="round"
+        />
+        <path d="M10 8h4M10 12h4M10 16h3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      </svg>
+    )
+  }
+
 
   if (name === 'report') {
     return (
@@ -120,14 +135,14 @@ export const ManagerSidebar = forwardRef<HTMLElement, ManagerSidebarProps>(funct
         <NavLink
           to="/manager"
           className="flex min-w-0 items-center gap-3 text-fg"
-          aria-label="Khu quản lý bãi xe"
+          aria-label="Khu quáº£n lÃ½ bÃ£i xe"
           onClick={onNavigate}
         >
           <span className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-badge shadow-sm">
             <LogoIcon size={22} />
           </span>
           <span className="min-w-0 leading-tight">
-            <span className="block truncate text-base font-black">Quản lý bãi xe</span>
+            <span className="block truncate text-base font-black">Quáº£n lÃ½ bÃ£i xe</span>
             <span className="mt-1 block truncate text-[11px] font-black uppercase tracking-[0.24em] text-subtle">
               Control Center
             </span>
@@ -139,13 +154,13 @@ export const ManagerSidebar = forwardRef<HTMLElement, ManagerSidebarProps>(funct
         <div className="mt-5 rounded-2xl border border-sky-500/25 bg-sky-500/10 p-3">
           <div className="flex items-center gap-2 text-xs font-bold text-sky-700 dark:text-sky-200">
             <span className="size-2 rounded-full bg-sky-500 shadow-[0_0_12px_rgba(14,165,233,0.9)]" />
-            Dữ liệu vận hành trực tiếp
+            Dá»¯ liá»‡u váº­n hÃ nh trá»±c tiáº¿p
           </div>
-          <p className="mt-1 text-[11px] text-muted">Theo dõi bãi xe, nhân viên và doanh thu</p>
+          <p className="mt-1 text-[11px] text-muted">Theo dÃµi bÃ£i xe, nhÃ¢n viÃªn vÃ  doanh thu</p>
         </div>
       </div>
 
-      <nav className="flex flex-1 flex-col gap-1 overflow-y-auto px-3 py-4" aria-label="Điều hướng quản lý">
+      <nav className="flex flex-1 flex-col gap-1 overflow-y-auto px-3 py-4" aria-label="Äiá»u hÆ°á»›ng quáº£n lÃ½">
         {MANAGER_NAV_ITEMS.map(({ to, label, detail, icon }) => (
           <NavLink key={to} to={to} className={linkClassName} end onClick={onNavigate}>
             <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-badge/70 group-[.active]:bg-white/15">
@@ -162,8 +177,8 @@ export const ManagerSidebar = forwardRef<HTMLElement, ManagerSidebarProps>(funct
       <div className="border-t border-theme p-4">
         <div className="hidden">
           <div>
-            <p className="text-xs font-bold text-fg">Giao diện</p>
-            <p className="text-[11px] text-subtle">Sáng / tối</p>
+            <p className="text-xs font-bold text-fg">Giao diá»‡n</p>
+            <p className="text-[11px] text-subtle">SÃ¡ng / tá»‘i</p>
           </div>
           <ThemeToggle className="border border-theme bg-page shadow-sm" />
         </div>
@@ -172,3 +187,4 @@ export const ManagerSidebar = forwardRef<HTMLElement, ManagerSidebarProps>(funct
     </aside>
   )
 })
+
