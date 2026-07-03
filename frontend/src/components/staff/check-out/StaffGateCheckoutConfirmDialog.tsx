@@ -1,5 +1,5 @@
 import type { GateSession } from '../../../services/staffGateApi'
-import { formatStaffCurrency } from '../data/staffGateData'
+import { formatStaffCurrency } from '../data/staffGateUi'
 import type { CheckoutMethod } from './StaffGateCheckoutActions'
 
 type StaffGateCheckoutConfirmDialogProps = {

@@ -14,13 +14,16 @@ import { AdminSlotsPage } from '../pages/admin/AdminSlotsPage'
 import { AdminStaffPage } from '../pages/admin/AdminStaffPage'
 import { AdminSubscriptionsPage } from '../pages/admin/AdminSubscriptionsPage'
 import { UserManagementPage } from '../pages/admin/UserManagementPage'
+import { ForgotPasswordPage } from '../pages/auth/ForgotPasswordPage'
 import { LoginPage } from '../pages/auth/LoginPage'
 import { RegisterPage } from '../pages/auth/RegisterPage'
 import { VerifyEmailPage } from '../pages/auth/VerifyEmailPage'
 import { ManagerBuildingsPage } from '../pages/manager/ManagerBuildingsPage'
 import { ManagerBookingsPage } from '../pages/manager/ManagerBookingsPage'
+import { ManagerComplaintsPage } from '../pages/manager/ManagerComplaintsPage'
 import { ManagerDashboardPage } from '../pages/manager/ManagerDashboardPage'
 import { ManagerGateLogsPage } from '../pages/manager/ManagerGateLogsPage'
+import { ManagerLostTicketsPage } from '../pages/manager/ManagerLostTicketsPage'
 import { ManagerPlansPage } from '../pages/manager/ManagerPlansPage'
 import { ManagerReportsPage } from '../pages/manager/ManagerReportsPage'
 import { ManagerSlotsPage } from '../pages/manager/ManagerSlotsPage'
@@ -46,6 +49,7 @@ export const AppRoutes = () => {
     <Routes>
       <Route path="/" element={<HomePage />} />
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/verify-email" element={<VerifyEmailPage />} />
       <Route path="/booking" element={<BookingPage />} />
@@ -94,6 +98,8 @@ export const AppRoutes = () => {
           <Route path="/manager/slots" element={<ManagerSlotsPage />} />
           <Route path="/manager/bookings" element={<ManagerBookingsPage />} />
           <Route path="/manager/gate-logs" element={<ManagerGateLogsPage />} />
+          <Route path="/manager/lost-tickets" element={<ManagerLostTicketsPage />} />
+          <Route path="/manager/complaints" element={<ManagerComplaintsPage />} />
           <Route path="/manager/staff" element={<ManagerStaffPage />} />
           <Route path="/manager/plans" element={<ManagerPlansPage />} />
           <Route path="/manager/subscriptions" element={<ManagerSubscriptionsPage />} />

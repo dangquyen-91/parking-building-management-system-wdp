@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import type { Floor } from '../../../services/managerBuildingsApi'
 import type { GateCheckoutPreview, GateSession } from '../../../services/staffGateApi'
-import { formatGateTime, formatStaffCurrency } from '../data/staffGateData'
+import { formatGateTime, formatStaffCurrency } from '../data/staffGateUi'
 import { formatCustomerType, formatSessionSpot, formatVehicleType } from '../data/staffGateUtils'
 import { StaffGateCheckoutPricing } from './StaffGateCheckoutPricing'
 

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { GateSession } from '../../../services/staffGateApi'
-import { formatStaffCurrency } from '../data/staffGateData'
+import { formatStaffCurrency } from '../data/staffGateUi'
 
 type LostTicketMethod = 'cash' | 'transfer'
 
