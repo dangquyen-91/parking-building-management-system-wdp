@@ -55,11 +55,6 @@ export function ManagerComplaintCard({ complaint, isUpdating, onUpdateStatus }: 
         <section className="flex flex-col justify-between gap-4 bg-page/35 p-5">
           <div>
             <p className="text-[10px] font-black uppercase tracking-[0.18em] text-subtle">Điều phối</p>
-            <div className="mt-3 space-y-3 text-sm text-muted">
-              <Step active={complaint.status === 'open'} text="Tiếp nhận khiếu nại mới từ cư dân." />
-              <Step active={complaint.status === 'in_progress'} text="Gọi chủ xe đậu sai để yêu cầu di chuyển." />
-              <Step active={complaint.status === 'resolved'} text="Đóng khiếu nại sau khi vị trí đã được giải quyết." />
-            </div>
           </div>
 
           <div className="grid gap-2">
@@ -85,7 +80,7 @@ export function ManagerComplaintCard({ complaint, isUpdating, onUpdateStatus }: 
             )}
             {complaint.status === 'resolved' && (
               <div className="rounded-2xl border border-emerald-400/30 bg-emerald-500/10 p-4 text-sm font-semibold text-emerald-700 dark:text-emerald-100">
-                Khiếu nại này đã được đóng.
+                Khiếu nại này đã được thực hiện.
               </div>
             )}
           </div>
@@ -120,11 +115,3 @@ function InfoCard({ label, value, important, wide }: { label: string; value: str
   )
 }
 
-function Step({ text, active }: { text: string; active: boolean }) {
-  return (
-    <p className="flex gap-3">
-      <span className={['mt-1 h-2.5 w-2.5 shrink-0 rounded-full', active ? 'bg-sky-500' : 'bg-border-strong'].join(' ')} />
-      <span>{text}</span>
-    </p>
-  )
-}
