@@ -1,11 +1,10 @@
-export type CheckInStep = 1 | 2 | 3 | 4 | 5
+export type CheckInStep = 1 | 2 | 3 | 4
 
 const CHECK_IN_STEPS: Array<{ value: CheckInStep; title: string; description: string }> = [
   { value: 1, title: 'Biển số', description: 'Camera hoặc nhập tay' },
   { value: 2, title: 'Thông tin', description: 'Loại khách và hồ sơ' },
   { value: 3, title: 'QR', description: 'Xác minh đúng xe' },
   { value: 4, title: 'Vị trí', description: 'Loại xe, tầng, ghi chú' },
-  { value: 5, title: 'Xác nhận', description: 'Kiểm tra và cho vào' },
 ]
 
 export function CheckInStepHeader({
@@ -18,7 +17,7 @@ export function CheckInStepHeader({
   onStepChange: (step: CheckInStep) => void
 }) {
   return (
-    <div className="grid gap-px border-b border-theme bg-[color:var(--border)] sm:grid-cols-5">
+    <div className="grid gap-px border-b border-theme bg-[color:var(--border)] sm:grid-cols-4">
       {CHECK_IN_STEPS.map((item) => {
         const active = step === item.value
         const done = step > item.value
@@ -96,7 +95,7 @@ export function CheckInWizardActions({
         )}
       </div>
 
-      {step < 5 ? (
+      {step < 4 ? (
         <button
           type="button"
           className="h-12 rounded-xl bg-btn-primary px-6 text-sm font-bold text-btn-primary-fg shadow-lg transition-transform hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0"

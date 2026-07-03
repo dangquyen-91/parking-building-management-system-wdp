@@ -55,17 +55,6 @@ export function StaffGateCheckoutPricing({
         </div>
       )}
 
-      {breakdown?.detail && (
-        <p className="mt-3 rounded-lg border border-sky-500/25 bg-sky-500/10 p-3 text-xs font-medium text-fg">
-          Chi tiết hệ thống: {breakdown.detail}
-        </p>
-      )}
-
-      {vehicleType === 'motorcycle' && (
-        <p className="mt-3 text-[11px] text-muted">
-          Chạm khung nào tính toàn bộ phí khung đó. Qua đủ ba khung trong 24 giờ: 30.000 VND.
-        </p>
-      )}
     </div>
   )
 }

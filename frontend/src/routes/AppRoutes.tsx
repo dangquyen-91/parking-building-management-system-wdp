@@ -34,6 +34,7 @@ import { StaffCheckInPage } from '../pages/staff/StaffCheckInPage'
 import { StaffCheckOutPage } from '../pages/staff/StaffCheckOutPage'
 import { StaffIncidentsPage } from '../pages/staff/StaffIncidentsPage'
 import { StaffLostTicketPage } from '../pages/staff/StaffLostTicketPage'
+import { StaffParkingOccupancyPage } from '../pages/staff/StaffParkingOccupancyPage'
 import { StaffShiftPage } from '../pages/staff/StaffShiftPage'
 import { StaffVehiclesPage } from '../pages/staff/StaffVehiclesPage'
 import { BookingPage } from '../pages/user/BookingPage'
@@ -85,6 +86,7 @@ export const AppRoutes = () => {
           <Route path="/staff/check-in" element={<StaffCheckInPage />} />
           <Route path="/staff/check-out" element={<StaffCheckOutPage />} />
           <Route path="/staff/vehicles" element={<StaffVehiclesPage />} />
+          <Route path="/staff/occupancy" element={<StaffParkingOccupancyPage />} />
           <Route path="/staff/lost-ticket" element={<StaffLostTicketPage />} />
           <Route path="/staff/incidents" element={<StaffIncidentsPage />} />
           <Route path="/staff/shift" element={<StaffShiftPage />} />

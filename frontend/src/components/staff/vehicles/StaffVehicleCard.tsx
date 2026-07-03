@@ -19,6 +19,12 @@ function InfoBlock({ label, children }: { label: string; children: ReactNode }) 
   )
 }
 
+function getCustomerTone(customerType: GateSession['customerType']) {
+  return customerType === 'resident'
+    ? 'border-emerald-500/35 bg-emerald-500/10 text-emerald-700 dark:text-emerald-200'
+    : 'border-amber-500/35 bg-amber-500/10 text-amber-700 dark:text-amber-200'
+}
+
 export function StaffVehicleCard({ session, floorMap, onCheckout }: StaffVehicleCardProps) {
   return (
     <article className="group overflow-hidden rounded-2xl border border-theme bg-page/70 shadow-sm transition-all hover:-translate-y-0.5 hover:border-theme-strong hover:bg-ghost hover:shadow-lg">
@@ -36,7 +42,7 @@ export function StaffVehicleCard({ session, floorMap, onCheckout }: StaffVehicle
             <span className="rounded-full border border-theme bg-badge px-2.5 py-1 text-[11px] font-bold text-fg">
               {formatVehicleType(session.vehicleType)}
             </span>
-            <span className="rounded-full border border-theme bg-badge px-2.5 py-1 text-[11px] text-muted">
+            <span className={`rounded-full border px-2.5 py-1 text-[11px] font-bold ${getCustomerTone(session.customerType)}`}>
               {formatCustomerType(session.customerType)}
             </span>
           </div>

@@ -85,10 +85,6 @@ export function ManagerLostTicketsPage() {
         </div>
       )}
 
-      <div className="mb-4 rounded-2xl border border-theme bg-badge px-4 py-3 text-xs text-muted">
-        Danh sách này lấy từ các sự cố <b className="text-fg">lost_qr</b> do staff tạo khi xử lý mất vé. Manager chỉ kiểm tra và đối soát, không tạo trực tiếp tại đây.
-      </div>
-
       <ManagerLostTicketList incidents={filteredIncidents} isLoading={isLoading} />
     </div>
   )
