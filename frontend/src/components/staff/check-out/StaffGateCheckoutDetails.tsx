@@ -54,7 +54,7 @@ export function StaffGateCheckoutDetails({
         <Detail label="Vị trí" value={formatSessionSpot(session, floorMap)} />
         <Detail label="Giờ vào" value={formatGateTime(session.entryTime)} />
         <Detail
-          label="Cần thu thêm"
+          label="Thu thêm tiền"
           value={isPreviewLoading ? 'Đang tính...' : formatStaffCurrency(amountToCollect)}
         />
         <Detail

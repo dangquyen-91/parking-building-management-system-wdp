@@ -22,6 +22,7 @@ export type GateBuildingRef = {
 export type GateFloorRef = {
   _id: string
   floorNumber?: number
+  section?: string
   vehicleType?: GateVehicleType
   floorType?: 'resident' | 'visitor'
   totalSlots?: number

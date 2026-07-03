@@ -2,6 +2,7 @@ export { StaffPageHeader } from './common/StaffPageHeader'
 export { StaffGateField } from './common/StaffGateField'
 export { StaffSidebar } from './layout/StaffSidebar'
 export { StaffAssignedParking } from './parking/StaffAssignedParking'
+export { StaffParkingOccupancyList } from './parking/StaffParkingOccupancyList'
 export { StaffGateCheckInForm } from './check-in/StaffGateCheckInForm'
 export { StaffGateCheckInSummary } from './check-in/StaffGateCheckInSummary'
 export {

@@ -8,6 +8,7 @@ const STAFF_NAV_ITEMS = [
   { to: '/staff/check-in', label: 'Xe vào', detail: 'Camera, tra cứu, QR', icon: 'gate' },
   { to: '/staff/check-out', label: 'Xe ra', detail: 'Tính phí, thanh toán', icon: 'checkout' },
   { to: '/staff/vehicles', label: 'Xe đang gửi', detail: 'Theo dõi trong bãi', icon: 'vehicles' },
+  { to: '/staff/occupancy', label: 'Sức chứa', detail: 'Tầng, khu, chỗ trống', icon: 'occupancy' },
   { to: '/staff/lost-ticket', label: 'Mất vé', detail: 'Xử lý ngoại lệ', icon: 'ticket' },
   { to: '/staff/incidents', label: 'Sự cố', detail: 'Ghi nhận nhanh', icon: 'incident' },
   { to: '/staff/shift', label: 'Tổng kết ca', detail: 'Kết ca và đối soát', icon: 'shift' },
@@ -28,6 +29,15 @@ function StaffIcon({ name }: { name: (typeof STAFF_NAV_ITEMS)[number]['icon'] })
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
         <path d="M5 16h14l-1.5-5h-11L5 16Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
         <path d="M7 11l1.5-3h7L17 11M7 18h.01M17 18h.01" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+      </svg>
+    )
+  }
+
+  if (name === 'occupancy') {
+    return (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M4 19V5h16v14H4Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+        <path d="M8 9h2M14 9h2M8 13h2M14 13h2M8 17h8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
       </svg>
     )
   }

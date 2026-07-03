@@ -5,8 +5,7 @@ import {
   StaffGateToast,
   StaffPageHeader,
 } from '../../components/staff'
-import { formatGateTime } from '../../components/staff/data/staffGateUi'
-import { formatCustomerType, normalizePlate } from '../../components/staff/data/staffGateUtils'
+import { normalizePlate } from '../../components/staff/data/staffGateUtils'
 import { managerBuildingsApi, type Floor } from '../../services/managerBuildingsApi'
 import {
   staffGateApi,
@@ -29,7 +28,6 @@ export function StaffLostTicketPage() {
 
   const floorMap = useMemo(() => new Map(floors.map((floor) => [floor._id, floor])), [floors])
   const normalizedQuery = normalizePlate(query)
-  const recentWalkInSessions = sessions.filter((session) => session.customerType !== 'resident').slice(0, 6)
 
   useEffect(() => {
     void loadData()
@@ -169,7 +167,7 @@ export function StaffLostTicketPage() {
         </div>
       )}
 
-      <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_24rem]">
+      <div className="grid items-start gap-5">
         <section className="liquid-glass-card overflow-hidden rounded-2xl">
           <div className="border-b border-theme bg-gradient-to-r from-rose-500/15 via-transparent to-transparent p-5 md:p-6">
             <p className="text-[10px] font-black uppercase tracking-[0.18em] text-rose-600 dark:text-rose-300">
@@ -224,60 +222,6 @@ export function StaffLostTicketPage() {
             />
           </div>
         </section>
-
-        <aside className="grid gap-5 xl:sticky xl:top-6">
-          <section className="liquid-glass-card rounded-2xl p-5">
-            <p className="text-[10px] font-black uppercase tracking-[0.18em] text-subtle">Checklist</p>
-            <h2 className="mt-1 text-base font-bold text-fg">Trước khi cho xe ra</h2>
-            <div className="mt-4 grid gap-3 text-sm text-muted">
-              <p className="rounded-xl border border-theme bg-badge p-3">1. Đối chiếu giấy tờ xe với biển số.</p>
-              <p className="rounded-xl border border-theme bg-badge p-3">2. Kiểm tra đúng xe đang active trong bãi.</p>
-              <p className="rounded-xl border border-theme bg-badge p-3">3. Thu tiền gửi xe và phí phạt mất vé.</p>
-              <p className="rounded-xl border border-theme bg-badge p-3">4. Chỉ xác nhận khi đã đủ bằng chứng.</p>
-            </div>
-          </section>
-
-          <section className="liquid-glass-card rounded-2xl p-5">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <p className="text-[10px] font-black uppercase tracking-[0.18em] text-subtle">Gợi ý gần đây</p>
-                <h2 className="mt-1 text-base font-bold text-fg">Xe vãng lai đang gửi</h2>
-              </div>
-              <button
-                type="button"
-                onClick={() => void loadData()}
-                className="rounded-full border border-theme bg-badge px-3 py-1 text-xs font-bold text-fg hover:bg-ghost"
-              >
-                Tải lại
-              </button>
-            </div>
-
-            <div className="mt-4 grid gap-2">
-              {recentWalkInSessions.length === 0 ? (
-                <p className="rounded-xl border border-dashed border-theme p-4 text-sm text-muted">
-                  Chưa có xe vãng lai đang gửi.
-                </p>
-              ) : (
-                recentWalkInSessions.map((session) => (
-                  <button
-                    key={session._id}
-                    type="button"
-                    onClick={() => {
-                      setQuery(session.licensePlate)
-                      setSelectedSession(session)
-                    }}
-                    className="rounded-xl border border-theme bg-badge p-3 text-left transition hover:border-rose-400/40 hover:bg-rose-500/5"
-                  >
-                    <p className="font-black tracking-[0.08em] text-fg">{session.licensePlate}</p>
-                    <p className="mt-1 text-xs text-muted">
-                      {formatCustomerType(session.customerType)} · Vào {formatGateTime(session.entryTime)}
-                    </p>
-                  </button>
-                ))
-              )}
-            </div>
-          </section>
-        </aside>
       </div>
 
       {toastMessage && <StaffGateToast message={toastMessage} onClose={() => setToastMessage(null)} />}

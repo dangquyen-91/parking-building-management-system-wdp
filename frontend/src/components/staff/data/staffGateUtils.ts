@@ -6,6 +6,7 @@ import type {
   GateSlot,
   GateVehicleType,
 } from '../../../services/staffGateApi'
+import { getFloorSection } from '../../../utils/floorLabel'
 
 export function normalizePlate(value: string) {
   return value.trim().toUpperCase().replace(/\s/g, '')
@@ -29,6 +30,10 @@ export function getBuildingName(floor?: Floor) {
 }
 
 export function formatSessionSpot(session: GateSession, floorMap?: Map<string, Floor>) {
+  if (session.customerType === 'walk_in') {
+    return 'Tự động'
+  }
+
   if (session.slotId && typeof session.slotId !== 'string') {
     return formatDetailedSpot(session.slotId.floorId, `Ô đỗ ${session.slotId.slotCode}`, floorMap)
   }
@@ -54,11 +59,13 @@ function formatDetailedSpot(
   const loadedFloor = floorMap?.get(floorId)
   const populatedFloor = typeof floorRef === 'string' ? undefined : floorRef
   const floorNumber = loadedFloor?.floorNumber ?? populatedFloor?.floorNumber
+  const section = loadedFloor?.section ?? populatedFloor?.section
   const buildingName = getBuildingName(loadedFloor)
 
   return [
     buildingName,
     floorNumber === undefined ? undefined : `Tầng ${floorNumber}`,
+    section ? `Khu ${getFloorSection(section)}` : undefined,
     spot,
   ].filter(Boolean).join(' · ')
 }

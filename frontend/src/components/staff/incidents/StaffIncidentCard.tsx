@@ -55,13 +55,7 @@ export function StaffIncidentCard({
         </section>
 
         <section className="flex flex-col justify-between gap-4 bg-page/35 p-5">
-          <div>
-            <p className="text-[10px] font-black uppercase tracking-[0.18em] text-subtle">Hướng xử lý</p>
-            <div className="mt-3 space-y-3 text-sm text-muted">
-              <Step active={complaint.status !== 'resolved'} text="Gọi chủ xe đậu sai để yêu cầu di chuyển." />
-              <Step active={complaint.status === 'resolved'} text="Cập nhật trạng thái sau khi xử lý xong." />
-            </div>
-          </div>
+          <p className="text-[10px] font-black uppercase tracking-[0.18em] text-subtle">Thao tác</p>
 
           <div className="grid gap-2">
             {complaint.status === 'open' && (
@@ -134,14 +128,5 @@ function InfoCard({
         {value}
       </p>
     </div>
-  )
-}
-
-function Step({ text, active }: { text: string; active: boolean }) {
-  return (
-    <p className="flex gap-3">
-      <span className={['mt-1 h-2.5 w-2.5 shrink-0 rounded-full', active ? 'bg-sky-500' : 'bg-emerald-500'].join(' ')} />
-      <span>{text}</span>
-    </p>
   )
 }
