@@ -1,6 +1,7 @@
 import type { StaffParkingOccupancyItem } from '../../../hooks/useStaffParkingOccupancy'
 import { getFloorSection } from '../../../utils/floorLabel'
 import { formatVehicleType } from '../data/staffGateUtils'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
 const FLOOR_TYPE_LABELS: Record<string, string> = {
   resident: 'Cư dân',
@@ -165,11 +166,22 @@ function BuildingOccupancyCard({ building }: { building: BuildingGroup }) {
               </span>
             </div>
 
-            <div className="grid gap-2 p-3">
+            <Table className="min-w-[680px]">
+              <TableHeader className="bg-page/35 text-xs text-subtle">
+                <TableRow className="border-theme hover:bg-transparent">
+                  <TableHead className="h-auto px-4 py-3 text-subtle">Khu / Phân loại</TableHead>
+                  <TableHead className="h-auto px-3 py-3 text-subtle">Tổng</TableHead>
+                  <TableHead className="h-auto px-3 py-3 text-subtle">Đang chiếm</TableHead>
+                  <TableHead className="h-auto px-3 py-3 text-subtle">Còn trống</TableHead>
+                  <TableHead className="h-auto px-3 py-3 text-subtle">Sử dụng</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
               {floor.sections.map((section) => (
                 <SectionRow key={section.key} item={section} />
               ))}
-            </div>
+              </TableBody>
+            </Table>
           </section>
         ))}
       </div>
@@ -179,8 +191,9 @@ function BuildingOccupancyCard({ building }: { building: BuildingGroup }) {
 
 function SectionRow({ item }: { item: StaffParkingOccupancyItem }) {
   return (
-    <div className="grid gap-3 rounded-xl border border-theme bg-page/70 p-3 md:grid-cols-[minmax(0,1fr)_auto] md:items-center">
-      <div className="flex flex-wrap items-center gap-2">
+    <TableRow className="border-theme bg-page/60 hover:bg-sky-500/5">
+      <TableCell className="px-4 py-3 whitespace-normal">
+        <div className="flex min-w-[17rem] flex-wrap items-center gap-2">
         <span className="rounded-full bg-btn-primary/10 px-3 py-1 text-sm font-black text-btn-primary">
           Khu {getFloorSection(item.section)}
         </span>
@@ -192,17 +205,23 @@ function SectionRow({ item }: { item: StaffParkingOccupancyItem }) {
             {FLOOR_TYPE_LABELS[item.floorType] ?? item.floorType}
           </span>
         )}
-        <span className="rounded-full border border-theme bg-badge px-3 py-1 text-xs font-bold text-fg">
-          {item.utilizationPercent}% sử dụng
-        </span>
-      </div>
-
-      <dl className="grid grid-cols-3 gap-2 text-center text-xs">
-        <MiniMetric label="Tổng" value={item.total} />
-        <MiniMetric label="Chiếm" value={item.occupied} />
-        <MiniMetric label="Trống" value={item.available} />
-      </dl>
-    </div>
+        </div>
+      </TableCell>
+      <TableCell className="px-3 py-3 font-black text-fg">{item.total}</TableCell>
+      <TableCell className="px-3 py-3 font-black text-fg">{item.occupied}</TableCell>
+      <TableCell className="px-3 py-3 font-black text-emerald-700 dark:text-emerald-200">{item.available}</TableCell>
+      <TableCell className="px-3 py-3">
+        <div className="min-w-[9rem]">
+          <div className="flex items-center justify-between gap-2 text-xs font-bold text-fg">
+            <span>{item.occupied}/{item.total}</span>
+            <span>{item.utilizationPercent}%</span>
+          </div>
+          <div className="mt-2 h-2 overflow-hidden rounded-full bg-badge">
+            <div className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-sky-500" style={{ width: `${Math.min(100, item.utilizationPercent)}%` }} />
+          </div>
+        </div>
+      </TableCell>
+    </TableRow>
   )
 }
 
@@ -215,11 +234,3 @@ function Summary({ label, value }: { label: string; value: number }) {
   )
 }
 
-function MiniMetric({ label, value }: { label: string; value: number }) {
-  return (
-    <div className="rounded-lg border border-theme bg-badge px-3 py-2">
-      <dt className="font-semibold text-subtle">{label}</dt>
-      <dd className="mt-0.5 font-black text-fg">{value}</dd>
-    </div>
-  )
-}

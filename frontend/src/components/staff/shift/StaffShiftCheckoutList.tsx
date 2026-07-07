@@ -2,6 +2,7 @@ import type { GateSession } from '../../../services/staffGateApi'
 import { formatGateTime, formatStaffCurrency } from '../data/staffGateUi'
 import { formatCustomerType, formatVehicleType } from '../data/staffGateUtils'
 import { formatShiftPaymentMethod } from './staffShiftUtils'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
 type StaffShiftCheckoutListProps = {
   sessions: GateSession[]
@@ -28,11 +29,22 @@ export function StaffShiftCheckoutList({ sessions, isLoading }: StaffShiftChecko
           <p className="mt-1 text-xs text-muted">Khi staff xử lý xe ra, dữ liệu sẽ xuất hiện ở đây.</p>
         </div>
       ) : (
-        <div>
+        <Table className="min-w-[760px]">
+          <TableHeader className="bg-page/35 text-xs text-subtle">
+            <TableRow className="border-theme hover:bg-transparent">
+              <TableHead className="h-auto px-4 py-3 text-subtle">Biển số xe</TableHead>
+              <TableHead className="h-auto px-3 py-3 text-subtle">Phân loại</TableHead>
+              <TableHead className="h-auto px-3 py-3 text-subtle">Thời gian ra</TableHead>
+              <TableHead className="h-auto px-3 py-3 text-subtle">Thanh toán</TableHead>
+              <TableHead className="h-auto px-4 py-3 text-right text-subtle">Số tiền</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
           {sessions.map((session) => (
             <ShiftSessionRow key={session._id} session={session} />
           ))}
-        </div>
+          </TableBody>
+        </Table>
       )}
     </section>
   )
@@ -40,29 +52,14 @@ export function StaffShiftCheckoutList({ sessions, isLoading }: StaffShiftChecko
 
 function ShiftSessionRow({ session }: { session: GateSession }) {
   return (
-    <div className="grid gap-3 border-b border-theme px-4 py-4 last:border-b-0 md:grid-cols-[1fr_0.9fr_0.9fr_0.9fr_auto] md:items-center">
-      <div>
-        <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-subtle">Biển số xe</p>
-        <p className="mt-1 text-lg font-black tracking-[0.06em] text-fg">{session.licensePlate}</p>
-      </div>
-      <div>
-        <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-subtle">Phân loại</p>
-        <p className="mt-1 text-sm font-semibold text-fg">
+    <TableRow className="border-theme hover:bg-emerald-500/5">
+      <TableCell className="px-4 py-4 text-lg font-black tracking-[0.06em] text-fg">{session.licensePlate}</TableCell>
+      <TableCell className="px-3 py-4 text-sm font-semibold text-fg">
           {formatVehicleType(session.vehicleType)} · {formatCustomerType(session.customerType)}
-        </p>
-      </div>
-      <div>
-        <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-subtle">Thời gian ra</p>
-        <p className="mt-1 text-sm font-semibold text-fg">{formatGateTime(session.exitTime || session.entryTime)}</p>
-      </div>
-      <div>
-        <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-subtle">Thanh toán</p>
-        <p className="mt-1 text-sm font-semibold text-fg">{formatShiftPaymentMethod(session)}</p>
-      </div>
-      <div className="md:text-right">
-        <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-subtle">Số tiền</p>
-        <p className="mt-1 text-base font-black text-fg">{formatStaffCurrency(session.fee || 0)}</p>
-      </div>
-    </div>
+      </TableCell>
+      <TableCell className="px-3 py-4 text-sm font-semibold text-fg">{formatGateTime(session.exitTime || session.entryTime)}</TableCell>
+      <TableCell className="px-3 py-4 text-sm font-semibold text-fg">{formatShiftPaymentMethod(session)}</TableCell>
+      <TableCell className="px-4 py-4 text-right text-base font-black text-fg">{formatStaffCurrency(session.fee || 0)}</TableCell>
+    </TableRow>
   )
 }
