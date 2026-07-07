@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { AdminPageShell, AdminStatCard, AdminStatusBadge } from '../../components/admin'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { adminApi, type AdminUser } from '../../services/adminApi'
 
 const roleLabels: Record<AdminUser['role'], string> = {
@@ -202,31 +203,31 @@ export function UserManagementPage() {
             ))}
           </div>
 
-          <div className="hidden overflow-x-auto md:block">
-            <table className="w-full min-w-[46rem] text-left text-sm">
-              <thead className="border-y border-theme bg-page/35 text-xs uppercase tracking-[0.14em] text-subtle">
-                <tr>
-                  <th className="px-3 py-3 font-medium">Người dùng</th>
-                  <th className="px-3 py-3 font-medium">Vai trò</th>
-                  <th className="px-3 py-3 font-medium">Điện thoại</th>
-                  <th className="px-3 py-3 font-medium">Ngày tạo</th>
-                  <th className="px-3 py-3 font-medium">Trạng thái</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-theme">
+          <div className="hidden md:block">
+            <Table className="min-w-[46rem] text-left">
+              <TableHeader className="border-y border-theme bg-page/35 text-xs uppercase tracking-[0.14em] text-subtle">
+                <TableRow className="border-theme hover:bg-transparent">
+                  <TableHead className="h-auto px-3 py-3 text-subtle">Người dùng</TableHead>
+                  <TableHead className="h-auto px-3 py-3 text-subtle">Vai trò</TableHead>
+                  <TableHead className="h-auto px-3 py-3 text-subtle">Điện thoại</TableHead>
+                  <TableHead className="h-auto px-3 py-3 text-subtle">Ngày tạo</TableHead>
+                  <TableHead className="h-auto px-3 py-3 text-subtle">Trạng thái</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
                 {isLoading && (
-                  <tr>
-                    <td className="px-3 py-6 text-muted" colSpan={5}>Đang tải người dùng...</td>
-                  </tr>
+                  <TableRow className="border-theme">
+                    <TableCell className="px-3 py-6 text-muted" colSpan={5}>Đang tải người dùng...</TableCell>
+                  </TableRow>
                 )}
                 {!isLoading && filteredUsers.length === 0 && (
-                  <tr>
-                    <td className="px-3 py-6 text-muted" colSpan={5}>Không tìm thấy người dùng.</td>
-                  </tr>
+                  <TableRow className="border-theme">
+                    <TableCell className="px-3 py-6 text-muted" colSpan={5}>Không tìm thấy người dùng.</TableCell>
+                  </TableRow>
                 )}
                 {!isLoading && filteredUsers.map((user) => (
-                  <tr key={user._id} className="align-top transition-colors hover:bg-sky-500/5">
-                    <td className="px-3 py-4">
+                  <TableRow key={user._id} className="border-theme align-top hover:bg-sky-500/5">
+                    <TableCell className="px-3 py-4 whitespace-normal">
                       <div className="flex items-center gap-3">
                         <span className={`flex size-10 shrink-0 items-center justify-center rounded-xl text-[11px] font-black ${roleMeta[user.role].badge}`}>
                           {getInitials(user.fullName)}
@@ -236,21 +237,21 @@ export function UserManagementPage() {
                           <p className="mt-1 text-xs text-subtle">{user.email}</p>
                         </div>
                       </div>
-                    </td>
-                    <td className="px-3 py-4">
+                    </TableCell>
+                    <TableCell className="px-3 py-4">
                       <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-bold ${roleMeta[user.role].badge}`}>
                         {roleLabels[user.role]}
                       </span>
-                    </td>
-                    <td className="px-3 py-4 text-muted">{user.phone ?? '-'}</td>
-                    <td className="px-3 py-4 text-muted">{user.createdAt ? new Date(user.createdAt).toLocaleString('vi-VN') : '-'}</td>
-                    <td className="px-3 py-4">
+                    </TableCell>
+                    <TableCell className="px-3 py-4 text-muted">{user.phone ?? '-'}</TableCell>
+                    <TableCell className="px-3 py-4 text-muted">{user.createdAt ? new Date(user.createdAt).toLocaleString('vi-VN') : '-'}</TableCell>
+                    <TableCell className="px-3 py-4">
                       <AdminStatusBadge status={user.isActive ? 'active' : 'inactive'} />
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                 ))}
-              </tbody>
-            </table>
+              </TableBody>
+            </Table>
           </div>
         </section>
 
