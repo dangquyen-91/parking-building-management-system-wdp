@@ -1,5 +1,6 @@
 import type { ManagerOccupancyFloor, ManagerOccupancyReport } from '../../../services/managerReportsApi'
 import { getFloorSection } from '../../../utils/floorLabel'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
 const VEHICLE_LABELS: Record<ManagerOccupancyFloor['vehicleType'], string> = {
   car: 'Ô tô',
@@ -135,11 +136,22 @@ function FloorOccupancyGroup({
         </span>
       </div>
 
-      <div className="divide-y divide-[color:var(--border)]">
+      <Table className="min-w-[720px]">
+        <TableHeader className="bg-page/35 text-xs text-subtle">
+          <TableRow className="border-theme hover:bg-transparent">
+            <TableHead className="h-auto px-3 py-3 text-subtle">Khu / Loại xe</TableHead>
+            <TableHead className="h-auto px-3 py-3 text-subtle">Đang đỗ</TableHead>
+            <TableHead className="h-auto px-3 py-3 text-subtle">Còn trống</TableHead>
+            <TableHead className="h-auto px-3 py-3 text-subtle">Khác</TableHead>
+            <TableHead className="h-auto px-3 py-3 text-subtle">Sử dụng</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
         {floors.map((floor) => (
           <OccupancyRow key={floor.floorId} floor={floor} />
         ))}
-      </div>
+        </TableBody>
+      </Table>
     </div>
   )
 }
@@ -148,12 +160,11 @@ function OccupancyRow({ floor }: { floor: ManagerOccupancyFloor }) {
   const usage = Math.min(100, Math.max(0, floor.utilizationPercent))
   const capacity = getCapacity(floor)
   const floorTypeLabel = floor.floorType ? FLOOR_TYPE_LABELS[floor.floorType] ?? floor.floorType : 'Chưa phân loại'
-  const secondaryCount = (floor.reserved ?? 0) + (floor.maintenance ?? 0)
 
   return (
-    <div className="bg-page/60 p-3 transition hover:bg-sky-500/5">
-      <div className="grid gap-3 xl:grid-cols-[minmax(0,1.35fr)_5.5rem_5.5rem_5.5rem_minmax(9rem,0.95fr)] xl:items-center">
-        <div className="min-w-0">
+    <TableRow className="border-theme bg-page/60 hover:bg-sky-500/5">
+      <TableCell className="px-3 py-3 whitespace-normal">
+        <div className="min-w-[15rem]">
           <div className="flex flex-wrap items-center gap-2">
             <span className="rounded-xl bg-btn-primary px-3 py-1 text-xs font-black text-btn-primary-fg">
               Khu {getFloorSection(floor.section)}
@@ -167,12 +178,17 @@ function OccupancyRow({ floor }: { floor: ManagerOccupancyFloor }) {
           </div>
           {floor.description && <p className="mt-1 truncate text-xs text-muted">{floor.description}</p>}
         </div>
-
-        <Metric label="Đang đỗ" value={floor.occupied} />
-        <Metric label="Còn trống" value={floor.empty} />
-        <Metric label="Khác" value={secondaryCount} />
-
-        <div className="rounded-xl border border-theme bg-badge p-3 xl:border-0 xl:bg-transparent xl:p-0">
+      </TableCell>
+      <TableCell className="px-3 py-3 font-black text-fg">{floor.occupied}</TableCell>
+      <TableCell className="px-3 py-3 font-black text-fg">{floor.empty}</TableCell>
+      <TableCell className="px-3 py-3 text-muted">
+        <div className="flex min-w-[8rem] flex-col gap-1 text-xs">
+          <span>Đặt trước {floor.reserved ?? 0}</span>
+          <span>Bảo trì {floor.maintenance ?? 0}</span>
+        </div>
+      </TableCell>
+      <TableCell className="px-3 py-3">
+        <div className="min-w-[9rem]">
           <div className="flex items-center justify-between gap-2 text-xs font-bold text-fg">
             <span>{floor.occupied}/{capacity}</span>
             <span>{usage}%</span>
@@ -181,24 +197,8 @@ function OccupancyRow({ floor }: { floor: ManagerOccupancyFloor }) {
             <div className="h-full rounded-full bg-gradient-to-r from-sky-500 to-emerald-400" style={{ width: `${usage}%` }} />
           </div>
         </div>
-      </div>
-
-      {(floor.reserved || floor.maintenance) ? (
-        <div className="mt-3 flex flex-wrap gap-2 text-[11px] text-muted xl:ml-[calc(0px)]">
-          <span className="rounded-full bg-badge px-2.5 py-1">Đặt trước {floor.reserved ?? 0}</span>
-          <span className="rounded-full bg-badge px-2.5 py-1">Bảo trì {floor.maintenance ?? 0}</span>
-        </div>
-      ) : null}
-    </div>
-  )
-}
-
-function Metric({ label, value }: { label: string; value: number }) {
-  return (
-    <div className="flex items-center justify-between rounded-xl border border-theme bg-badge px-3 py-2 xl:block xl:border-0 xl:bg-transparent xl:px-0 xl:py-0">
-      <span className="text-[10px] font-semibold uppercase tracking-[0.1em] text-subtle xl:block">{label}</span>
-      <span className="font-black text-fg xl:mt-1 xl:block">{value}</span>
-    </div>
+      </TableCell>
+    </TableRow>
   )
 }
 
