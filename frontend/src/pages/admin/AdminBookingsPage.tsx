@@ -7,6 +7,8 @@ import {
   type AdminBookingStatusFilter,
 } from '../../components/admin'
 import { adminApi, type AdminBooking } from '../../services/adminApi'
+import { Button } from '../../components/ui/button'
+import { Alert, AlertDescription } from '../../components/ui/alert'
 
 function getCustomerSearchText(booking: AdminBooking) {
   if (!booking.userId || typeof booking.userId === 'string') return ''
@@ -71,12 +73,11 @@ export function AdminBookingsPage() {
       <AdminBookingStats bookings={bookings} isLoading={isLoading} />
 
       {error && (
-        <div className="mb-5 flex items-center justify-between gap-3 rounded-2xl border border-rose-500/25 bg-rose-500/10 p-4 text-sm text-rose-700 dark:text-rose-200">
-          <span>{error}</span>
-          <button type="button" className="font-semibold hover:underline" onClick={() => void loadBookings()}>
+        <Alert variant="destructive" className="mb-5 flex items-center justify-between"><AlertDescription>{error}</AlertDescription>
+          <Button type="button" variant="link" className="h-auto p-0" onClick={() => void loadBookings()}>
             Thử lại
-          </button>
-        </div>
+          </Button>
+        </Alert>
       )}
 
       <AdminBookingList bookings={filteredBookings} isLoading={isLoading} />

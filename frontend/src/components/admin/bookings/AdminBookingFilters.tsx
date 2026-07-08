@@ -1,8 +1,15 @@
-import type { AdminBooking } from '../../../services/adminApi'
-import { OperationField } from '../operations/AdminOperationPrimitives'
+import { Search } from 'lucide-react'
+import { Input } from '../../ui/input'
+import { Label } from '../../ui/label'
+import { NativeSelect, NativeSelectOption } from '../../ui/native-select'
+import { Card, CardContent } from '../../ui/card'
 
-export type AdminBookingStatusFilter = 'all' | AdminBooking['status']
+export type AdminBookingStatusFilter = 'all' | 'pending' | 'paid' | 'used' | 'expired' | 'cancelled'
+type Props = { query: string; statusFilter: AdminBookingStatusFilter; onQueryChange: (value: string) => void; onStatusFilterChange: (value: AdminBookingStatusFilter) => void }
 
-export function AdminBookingFilters({ query, statusFilter, onQueryChange, onStatusFilterChange }: { query: string; statusFilter: AdminBookingStatusFilter; onQueryChange: (value: string) => void; onStatusFilterChange: (value: AdminBookingStatusFilter) => void }) {
-  return <div className="grid w-full gap-3 rounded-2xl border border-theme bg-page/55 p-3 shadow-sm backdrop-blur-sm sm:grid-cols-2 xl:min-w-[34rem]"><OperationField label="Tìm kiếm"><input className="h-11 min-w-0 rounded-xl border border-theme bg-page px-3 text-sm text-fg outline-none transition focus:border-violet-500 focus:ring-2 focus:ring-violet-500/15" value={query} onChange={(event) => onQueryChange(event.target.value)} placeholder="Biển số, số điện thoại hoặc khách hàng" /></OperationField><OperationField label="Trạng thái"><select className="h-11 min-w-0 rounded-xl border border-theme bg-page px-3 text-sm text-fg outline-none transition focus:border-amber-500 focus:ring-2 focus:ring-amber-500/15" value={statusFilter} onChange={(event) => onStatusFilterChange(event.target.value as AdminBookingStatusFilter)}><option value="all">Tất cả</option><option value="pending">Chờ thanh toán</option><option value="paid">Đã thanh toán</option><option value="used">Đã sử dụng</option><option value="expired">Hết hạn</option><option value="cancelled">Đã hủy</option></select></OperationField></div>
+export function AdminBookingFilters({ query, statusFilter, onQueryChange, onStatusFilterChange }: Props) {
+  return <Card className="w-full xl:min-w-[34rem]"><CardContent className="grid gap-3 p-4 sm:grid-cols-2">
+    <Label className="grid gap-2"><span>Tìm kiếm</span><div className="relative"><Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" /><Input className="pl-9" value={query} onChange={(e) => onQueryChange(e.target.value)} placeholder="Biển số, số điện thoại hoặc khách hàng" /></div></Label>
+    <Label className="grid gap-2"><span>Trạng thái</span><NativeSelect value={statusFilter} onChange={(e) => onStatusFilterChange(e.target.value as AdminBookingStatusFilter)}><NativeSelectOption value="all">Tất cả</NativeSelectOption><NativeSelectOption value="pending">Chờ thanh toán</NativeSelectOption><NativeSelectOption value="paid">Đã thanh toán</NativeSelectOption><NativeSelectOption value="used">Đã sử dụng</NativeSelectOption><NativeSelectOption value="expired">Hết hạn</NativeSelectOption><NativeSelectOption value="cancelled">Đã hủy</NativeSelectOption></NativeSelect></Label>
+  </CardContent></Card>
 }

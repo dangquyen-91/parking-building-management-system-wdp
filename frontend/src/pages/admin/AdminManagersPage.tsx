@@ -1,192 +1,28 @@
 import { useEffect, useMemo, useState } from 'react'
+import { Search, UserCog } from 'lucide-react'
 import { AdminPageShell, AdminStatCard, AdminStatusBadge } from '../../components/admin'
 import { adminApi, type AdminUser } from '../../services/adminApi'
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '../../components/ui/alert-dialog'
+import { Button } from '../../components/ui/button'
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '../../components/ui/card'
+import { Input } from '../../components/ui/input'
+import { Label } from '../../components/ui/label'
+import { NativeSelect, NativeSelectOption } from '../../components/ui/native-select'
+import { Skeleton } from '../../components/ui/skeleton'
 
 type ManagerStatusFilter = 'all' | 'active' | 'inactive'
 
 export function AdminManagersPage() {
-  const [managers, setManagers] = useState<AdminUser[]>([])
-  const [query, setQuery] = useState('')
-  const [statusFilter, setStatusFilter] = useState<ManagerStatusFilter>('all')
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [updatingId, setUpdatingId] = useState<string | null>(null)
-  const [snapshotTime] = useState(() => Date.now())
-
-  async function loadManagers() {
-    setIsLoading(true)
-    setError(null)
-
-    try {
-      const response = await adminApi.getUsers({ role: 'manager', limit: 100, sort: 'fullName', order: 'asc' })
-      setManagers(response.users ?? [])
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Không thể tải danh sách manager.')
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  useEffect(() => {
-    const timeoutId = window.setTimeout(() => void loadManagers(), 0)
-    return () => window.clearTimeout(timeoutId)
-  }, [])
-
-  const filteredManagers = useMemo(() => {
-    const normalizedQuery = query.trim().toLowerCase()
-
-    return managers.filter((manager) => {
-      const matchesQuery =
-        !normalizedQuery ||
-        manager.fullName.toLowerCase().includes(normalizedQuery) ||
-        manager.email.toLowerCase().includes(normalizedQuery) ||
-        manager.phone?.toLowerCase().includes(normalizedQuery)
-
-      if (!matchesQuery) return false
-      if (statusFilter !== 'all' && manager.isActive !== (statusFilter === 'active')) return false
-      return true
-    })
-  }, [managers, query, statusFilter])
-
-  async function handleToggleStatus(manager: AdminUser) {
-    setUpdatingId(manager._id)
-    setError(null)
-
-    try {
-      const result = await adminApi.updateUserStatus(manager._id, !manager.isActive)
-      setManagers((current) => current.map((item) => (item._id === result.user._id ? result.user : item)))
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Không thể cập nhật trạng thái manager.')
-    } finally {
-      setUpdatingId(null)
-    }
-  }
-
-  const activeManagers = managers.filter((manager) => manager.isActive).length
-  const inactiveManagers = managers.length - activeManagers
-  const recentlyCreated = managers.filter((manager) => {
-    if (!manager.createdAt) return false
-    return snapshotTime - new Date(manager.createdAt).getTime() <= 30 * 24 * 60 * 60 * 1000
-  }).length
-
-  return (
-    <AdminPageShell
-      eyebrow="Admin // Manager"
-      title="Quản lý manager"
-      description="Theo dõi tài khoản manager, trạng thái truy cập và thông tin liên hệ của đội ngũ quản lý vận hành."
-      actions={
-        <div className="grid w-full gap-3 rounded-2xl border border-theme bg-page/55 p-3 shadow-sm backdrop-blur-sm sm:grid-cols-2 xl:w-auto xl:min-w-[34rem]">
-          <label className="grid gap-1 text-xs font-medium text-subtle">
-            Tìm manager
-            <input
-              className="h-11 rounded-xl border border-theme bg-page px-3 text-sm text-fg outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-500/15"
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder="Tên, email hoặc số điện thoại"
-            />
-          </label>
-
-          <label className="grid gap-1 text-xs font-medium text-subtle">
-            Trạng thái tài khoản
-            <select
-              className="h-11 rounded-xl border border-theme bg-page px-3 text-sm text-fg outline-none transition focus:border-violet-500 focus:ring-2 focus:ring-violet-500/15"
-              value={statusFilter}
-              onChange={(event) => setStatusFilter(event.target.value as ManagerStatusFilter)}
-            >
-              <option value="all">Tất cả</option>
-              <option value="active">Đang hoạt động</option>
-              <option value="inactive">Đã khóa</option>
-            </select>
-          </label>
-        </div>
-      }
-    >
-      <div className="mb-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <AdminStatCard label="Tổng manager" value={isLoading ? '-' : managers.length} detail="Tài khoản có vai trò manager" tone="sky" />
-        <AdminStatCard label="Đang hoạt động" value={isLoading ? '-' : activeManagers} detail="Có thể truy cập khu manager" tone="emerald" />
-        <AdminStatCard label="Đã khóa" value={isLoading ? '-' : inactiveManagers} detail="Tạm ngưng quyền truy cập" tone="amber" />
-        <AdminStatCard label="Manager mới" value={isLoading ? '-' : recentlyCreated} detail="Tạo trong 30 ngày gần nhất" tone="violet" />
-      </div>
-
-      {error && (
-        <div className="mb-5 flex items-center justify-between gap-3 rounded-2xl border border-rose-500/25 bg-rose-500/10 p-4 text-sm text-rose-700 dark:text-rose-200">
-          <span>{error}</span>
-          <button type="button" className="font-semibold hover:underline" onClick={() => void loadManagers()}>
-            Thử lại
-          </button>
-        </div>
-      )}
-
-      {isLoading ? (
-        <div className="liquid-glass-card rounded-2xl border border-theme p-6 text-center text-sm text-muted">Đang tải danh sách manager...</div>
-      ) : filteredManagers.length === 0 ? (
-        <div className="liquid-glass-card rounded-2xl border border-dashed border-theme p-8 text-center text-sm text-muted">Không có manager phù hợp.</div>
-      ) : (
-        <section className="liquid-glass-card rounded-2xl border border-sky-500/15 p-4 shadow-sm md:p-5">
-          <span className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-sky-500 via-violet-500 to-fuchsia-500" />
-          <div className="mb-4 flex items-center justify-between gap-3">
-            <div>
-              <p className="text-[10px] font-black uppercase tracking-[0.18em] text-sky-600 dark:text-sky-300">Danh sách manager</p>
-              <h2 className="mt-1 text-lg font-black text-fg">Tài khoản quản lý</h2>
-            </div>
-            <span className="rounded-full border border-sky-500/20 bg-sky-500/10 px-3 py-1 text-xs font-bold text-sky-700 dark:text-sky-200">
-              {filteredManagers.length} manager
-            </span>
-          </div>
-
-          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-            {filteredManagers.map((manager) => (
-              <article key={manager._id} className="group relative overflow-hidden rounded-2xl border border-theme bg-gradient-to-br from-sky-500/10 via-badge to-badge p-5 transition-all hover:-translate-y-0.5 hover:border-sky-500/25 hover:shadow-lg">
-                <span className={`absolute inset-y-0 left-0 w-1 ${manager.isActive ? 'bg-emerald-500' : 'bg-amber-500'}`} />
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex min-w-0 items-center gap-3">
-                    <span className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-sky-500/15 text-xs font-black text-sky-700 dark:text-sky-200">
-                      {manager.fullName.trim().split(/\s+/).slice(-2).map((part) => part[0]).join('').toUpperCase()}
-                    </span>
-                    <div className="min-w-0">
-                      <p className="truncate text-base font-black text-fg">{manager.fullName}</p>
-                      <p className="mt-1 truncate text-xs text-subtle">{manager.email}</p>
-                    </div>
-                  </div>
-                  <AdminStatusBadge status={manager.isActive ? 'active' : 'inactive'} />
-                </div>
-
-                <dl className="mt-5 grid grid-cols-2 gap-3 text-sm">
-                  <div className="rounded-xl border border-theme bg-page/35 p-3">
-                    <dt className="text-xs text-subtle">Điện thoại</dt>
-                    <dd className="mt-1 truncate font-bold text-fg">{manager.phone ?? '-'}</dd>
-                  </div>
-                  <div className="rounded-xl border border-theme bg-page/35 p-3">
-                    <dt className="text-xs text-subtle">Ngày tạo</dt>
-                    <dd className="mt-1 font-bold text-fg">
-                      {manager.createdAt ? new Date(manager.createdAt).toLocaleDateString('vi-VN') : '-'}
-                    </dd>
-                  </div>
-                </dl>
-
-                <p className="mt-4 text-xs leading-5 text-muted">Quản lý hạ tầng, nhân viên, booking và báo cáo vận hành.</p>
-
-                <button
-                  type="button"
-                  disabled={updatingId === manager._id}
-                  onClick={() => void handleToggleStatus(manager)}
-                  className={`mt-5 h-11 w-full rounded-xl border px-4 text-sm font-bold transition disabled:cursor-not-allowed disabled:opacity-50 ${
-                    manager.isActive
-                      ? 'border-rose-500/25 bg-rose-500/10 text-rose-700 hover:bg-rose-500 hover:text-white dark:text-rose-200'
-                      : 'border-emerald-500/25 bg-emerald-500/10 text-emerald-700 hover:bg-emerald-500 hover:text-white dark:text-emerald-200'
-                  }`}
-                >
-                  {updatingId === manager._id
-                    ? 'Đang cập nhật...'
-                    : manager.isActive
-                      ? 'Khóa tài khoản'
-                      : 'Mở lại tài khoản'}
-                </button>
-              </article>
-            ))}
-          </div>
-        </section>
-      )}
-    </AdminPageShell>
-  )
+  const [managers, setManagers] = useState<AdminUser[]>([]); const [query, setQuery] = useState(''); const [statusFilter, setStatusFilter] = useState<ManagerStatusFilter>('all'); const [isLoading, setIsLoading] = useState(true); const [error, setError] = useState<string | null>(null); const [updatingId, setUpdatingId] = useState<string | null>(null); const [snapshotTime] = useState(() => Date.now())
+  async function loadManagers() { setIsLoading(true); setError(null); try { const response = await adminApi.getUsers({ role: 'manager', limit: 100, sort: 'fullName', order: 'asc' }); setManagers(response.users ?? []) } catch (err) { setError(err instanceof Error ? err.message : 'Không thể tải danh sách manager.') } finally { setIsLoading(false) } }
+  useEffect(() => { const id = window.setTimeout(() => void loadManagers(), 0); return () => window.clearTimeout(id) }, [])
+  const filteredManagers = useMemo(() => { const q = query.trim().toLowerCase(); return managers.filter((m) => (!q || m.fullName.toLowerCase().includes(q) || m.email.toLowerCase().includes(q) || m.phone?.toLowerCase().includes(q)) && (statusFilter === 'all' || m.isActive === (statusFilter === 'active'))) }, [managers, query, statusFilter])
+  async function handleToggleStatus(manager: AdminUser) { setUpdatingId(manager._id); setError(null); try { const result = await adminApi.updateUserStatus(manager._id, !manager.isActive); setManagers((items) => items.map((item) => item._id === result.user._id ? result.user : item)) } catch (err) { setError(err instanceof Error ? err.message : 'Không thể cập nhật trạng thái manager.') } finally { setUpdatingId(null) } }
+  const active = managers.filter((m) => m.isActive).length
+  const recent = managers.filter((m) => m.createdAt && snapshotTime - new Date(m.createdAt).getTime() <= 2_592_000_000).length
+  return <AdminPageShell eyebrow="Admin // Manager" title="Quản lý manager" description="Theo dõi tài khoản manager, trạng thái truy cập và thông tin liên hệ của đội ngũ quản lý vận hành." actions={<Card className="w-full xl:min-w-[34rem]"><CardContent className="grid gap-3 p-4 sm:grid-cols-2"><Label className="grid gap-2"><span>Tìm manager</span><div className="relative"><Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" /><Input className="pl-9" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Tên, email hoặc số điện thoại" /></div></Label><Label className="grid gap-2"><span>Trạng thái tài khoản</span><NativeSelect value={statusFilter} onChange={(e) => setStatusFilter(e.target.value as ManagerStatusFilter)}><NativeSelectOption value="all">Tất cả</NativeSelectOption><NativeSelectOption value="active">Đang hoạt động</NativeSelectOption><NativeSelectOption value="inactive">Đã khóa</NativeSelectOption></NativeSelect></Label></CardContent></Card>}>
+    <div className="mb-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4"><AdminStatCard label="Tổng manager" value={isLoading ? '-' : managers.length} detail="Tài khoản có vai trò manager" tone="sky" /><AdminStatCard label="Đang hoạt động" value={isLoading ? '-' : active} detail="Có thể truy cập khu manager" tone="emerald" /><AdminStatCard label="Đã khóa" value={isLoading ? '-' : managers.length - active} detail="Tạm ngưng quyền truy cập" tone="amber" /><AdminStatCard label="Manager mới" value={isLoading ? '-' : recent} detail="Tạo trong 30 ngày gần nhất" tone="violet" /></div>
+    {error && <Card className="mb-5 border-destructive/40"><CardContent className="flex items-center justify-between gap-3 p-4 text-sm text-destructive"><span>{error}</span><Button variant="ghost" size="sm" onClick={() => void loadManagers()}>Thử lại</Button></CardContent></Card>}
+    {isLoading ? <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">{Array.from({ length: 6 }, (_, i) => <Skeleton key={i} className="h-72 rounded-xl" />)}</div> : !filteredManagers.length ? <Card className="border-dashed"><CardContent className="p-10 text-center text-sm text-muted-foreground">Không có manager phù hợp.</CardContent></Card> : <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">{filteredManagers.map((manager) => <Card key={manager._id} className="transition-shadow hover:shadow-md"><CardHeader className="flex-row items-start justify-between"><div className="flex min-w-0 items-center gap-3"><span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary"><UserCog className="size-5" /></span><div className="min-w-0"><CardTitle className="truncate text-base">{manager.fullName}</CardTitle><p className="truncate text-xs text-muted-foreground">{manager.email}</p></div></div><AdminStatusBadge status={manager.isActive ? 'active' : 'inactive'} /></CardHeader><CardContent><dl className="grid grid-cols-2 gap-4 text-sm"><div><dt className="text-xs text-muted-foreground">Điện thoại</dt><dd className="mt-1 font-medium">{manager.phone ?? '-'}</dd></div><div><dt className="text-xs text-muted-foreground">Ngày tạo</dt><dd className="mt-1 font-medium">{manager.createdAt ? new Date(manager.createdAt).toLocaleDateString('vi-VN') : '-'}</dd></div></dl></CardContent><CardFooter><AlertDialog><AlertDialogTrigger asChild><Button className="w-full" variant={manager.isActive ? 'destructive' : 'default'} disabled={updatingId === manager._id}>{manager.isActive ? 'Khóa tài khoản' : 'Mở lại tài khoản'}</Button></AlertDialogTrigger><AlertDialogContent><AlertDialogHeader><AlertDialogTitle>{manager.isActive ? 'Khóa tài khoản manager?' : 'Mở lại tài khoản manager?'}</AlertDialogTitle><AlertDialogDescription>Thao tác này sẽ thay đổi quyền truy cập của {manager.fullName}.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel>Hủy</AlertDialogCancel><AlertDialogAction onClick={() => void handleToggleStatus(manager)}>Xác nhận</AlertDialogAction></AlertDialogFooter></AlertDialogContent></AlertDialog></CardFooter></Card>)}</section>}
+  </AdminPageShell>
 }

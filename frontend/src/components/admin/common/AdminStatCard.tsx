@@ -32,23 +32,25 @@ const toneClass = {
   },
 }
 
+const toneIcon = { violet: Users, sky: ParkingCircle, emerald: Activity, amber: CircleDollarSign }
+
 export function AdminStatCard({ label, value, detail, tone = 'violet' }: AdminStatCardProps) {
   const toneStyles = toneClass[tone]
+  const Icon = toneIcon[tone]
 
   return (
-    <div
-      className={`group relative min-h-36 overflow-hidden rounded-2xl border border-theme bg-gradient-to-br ${toneStyles.glow} via-badge to-badge p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-black/5`}
-    >
+    <Card className="group relative min-h-36 overflow-hidden transition-all hover:-translate-y-0.5 hover:shadow-md">
       <span className={`absolute inset-y-0 left-0 w-1 ${toneStyles.bar}`} />
-      <div className={`absolute -right-8 -top-10 size-32 rounded-full blur-2xl ${toneStyles.soft}`} />
-      <div className={`absolute right-4 top-4 flex size-11 items-end justify-center gap-1 rounded-2xl border border-current/15 bg-current/5 pb-2.5 ${toneStyles.text}`}>
-        <span className="h-2 w-1 rounded-full bg-current opacity-40" />
-        <span className="h-4 w-1 rounded-full bg-current opacity-65" />
-        <span className="h-6 w-1 rounded-full bg-current" />
-      </div>
-      <p className="relative text-[11px] font-black uppercase tracking-[0.16em] text-subtle">{label}</p>
-      <p className="relative mt-4 truncate text-3xl font-black tracking-tight text-fg">{value}</p>
-      <p className="relative mt-2 line-clamp-2 text-xs leading-5 text-muted">{detail}</p>
-    </div>
+      <CardContent className="p-5">
+        <div className="flex items-start justify-between gap-3">
+          <p className="text-xs font-medium text-muted-foreground">{label}</p>
+          <span className={`flex size-9 items-center justify-center rounded-lg ${toneStyles.soft} ${toneStyles.text}`}><Icon className="size-4" /></span>
+        </div>
+        <p className="mt-3 truncate text-2xl font-bold tracking-tight">{value}</p>
+        <p className="mt-1 line-clamp-2 text-xs leading-5 text-muted-foreground">{detail}</p>
+      </CardContent>
+    </Card>
   )
 }
+import { Activity, CircleDollarSign, ParkingCircle, Users } from 'lucide-react'
+import { Card, CardContent } from '../../ui/card'

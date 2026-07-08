@@ -108,6 +108,7 @@ export const AppRoutes = () => {
           <Route path="/manager/reports" element={<ManagerReportsPage />} />
         </Route>
       </Route>
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )
 }

@@ -1,21 +1,23 @@
 /* eslint-disable react-refresh/only-export-components */
 import type { ReactNode } from 'react'
 import type { GateUser } from '../../../services/staffGateApi'
+import { Badge } from '../../ui/badge'
+import { Card, CardContent, CardHeader, CardTitle } from '../../ui/card'
+import { Label } from '../../ui/label'
 
-export const operationInputClass = 'h-10 min-w-0 rounded-lg border border-theme bg-page px-3 text-sm text-fg outline-none focus:border-btn-primary'
+export const operationInputClass = 'border-input bg-transparent h-9 w-full min-w-0 rounded-md border px-3 py-1 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]'
 
 export function OperationField({ label, children }: { label: string; children: ReactNode }) {
-  return <label className="grid gap-1 text-xs font-medium text-subtle">{label}{children}</label>
+  return <Label className="grid gap-2 text-xs text-muted-foreground">{label}{children}</Label>
 }
 
 export function OperationEmpty({ text }: { text: string }) {
-  return <div className="liquid-glass-card rounded-2xl border border-dashed border-theme p-8 text-center text-sm text-muted">{text}</div>
+  return <Card className="border-dashed"><CardContent className="p-8 text-center text-sm text-muted-foreground">{text}</CardContent></Card>
 }
 
 export function OperationListShell({ eyebrow, title, count, children, tone = 'default' }: { eyebrow: string; title: string; count: string; children: ReactNode; tone?: 'default' | 'booking' | 'gate' }) {
-  const accent = tone === 'booking' ? 'from-violet-500 via-fuchsia-500 to-amber-400' : tone === 'gate' ? 'from-emerald-500 via-cyan-400 to-sky-500' : 'from-violet-500 via-sky-500 to-emerald-500'
-  const label = tone === 'gate' ? 'text-emerald-600 dark:text-emerald-300' : tone === 'booking' ? 'text-violet-600 dark:text-violet-300' : 'text-subtle'
-  return <section className="liquid-glass-card rounded-2xl border border-theme p-4 shadow-sm md:p-5"><span className={`absolute inset-x-0 top-0 h-1 bg-gradient-to-r ${accent}`} /><div className="mb-4 flex items-center justify-between gap-3"><div><p className={`text-[10px] font-black uppercase tracking-[0.18em] ${label}`}>{eyebrow}</p><h2 className="mt-1 text-lg font-black text-fg">{title}</h2></div><span className="rounded-full border border-theme bg-page/40 px-3 py-1 text-xs font-bold text-subtle">{count}</span></div><div className="grid gap-3">{children}</div></section>
+  void tone
+  return <Card><CardHeader className="flex-row items-center justify-between space-y-0"><div><p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">{eyebrow}</p><CardTitle className="mt-1 text-lg">{title}</CardTitle></div><Badge variant="secondary">{count}</Badge></CardHeader><CardContent className="grid gap-3">{children}</CardContent></Card>
 }
 
 export function OperationInfoCell({ label, value, detail, strong = false }: { label: string; value: string | number; detail?: string; strong?: boolean }) {

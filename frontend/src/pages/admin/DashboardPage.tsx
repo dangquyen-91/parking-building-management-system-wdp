@@ -4,6 +4,11 @@ import { AdminPageShell, AdminStatCard, AdminStatusBadge, formatAdminCurrency } 
 import { adminApi, type AdminBooking, type AdminDashboardReport, type AdminOccupancyReport } from '../../services/adminApi'
 import { formatFloorLabel } from '../../utils/floorLabel'
 import type { GateSession } from '../../services/staffGateApi'
+import { ArrowRight, RefreshCw } from 'lucide-react'
+import { Button } from '../../components/ui/button'
+import { Progress } from '../../components/ui/progress'
+import { Card, CardContent } from '../../components/ui/card'
+import { Alert, AlertDescription } from '../../components/ui/alert'
 
 function formatDateTime(value: string) {
   return new Intl.DateTimeFormat('vi-VN', {
@@ -192,23 +197,24 @@ export function DashboardPage() {
       title="Quản trị hệ thống"
       description="Theo dõi nhanh sức khỏe nền tảng, doanh thu, công suất bãi xe và các điểm cần xử lý trên toàn hệ thống."
       actions={
-        <button
+        <Button
           type="button"
+          variant="outline"
           disabled={isLoading}
           onClick={() => void loadAdminData()}
-          className="rounded-lg border border-theme px-4 py-2.5 text-sm font-semibold text-fg hover:bg-ghost disabled:opacity-50"
         >
+          <RefreshCw className={`size-4 ${isLoading ? 'animate-spin' : ''}`} />
           {isLoading ? 'Đang tải...' : 'Làm mới dữ liệu'}
-        </button>
+        </Button>
       }
     >
       {error && (
-        <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-rose-500/30 bg-rose-500/10 p-4 text-sm text-rose-700 dark:text-rose-300">
-          <span>{error}</span>
-          <button type="button" className="font-semibold underline" onClick={() => void loadAdminData()}>
+        <Alert variant="destructive" className="mb-5 flex items-center justify-between">
+          <AlertDescription>{error}</AlertDescription>
+          <Button type="button" variant="link" className="h-auto p-0" onClick={() => void loadAdminData()}>
             Thử lại
-          </button>
-        </div>
+          </Button>
+        </Alert>
       )}
 
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
@@ -242,10 +248,9 @@ export function DashboardPage() {
         {adminLinks.map((item, index) => {
           const styles = quickLinkStyles[index]
           return (
-          <Link
-            key={item.to}
+          <Card key={item.to} className={`overflow-hidden bg-gradient-to-br ${styles.glow} via-card to-card transition-shadow hover:shadow-md`}><Link
             to={item.to}
-            className={`group relative overflow-hidden rounded-2xl border border-theme bg-gradient-to-br ${styles.glow} via-badge to-badge p-4 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg`}
+            className="group block p-4"
           >
             <div className="relative flex items-center gap-3">
               <span className={`flex size-11 shrink-0 items-center justify-center rounded-2xl text-sm font-black shadow-lg ${styles.icon}`}>
@@ -255,15 +260,15 @@ export function DashboardPage() {
                 <span className="block text-sm font-bold text-fg">{item.label}</span>
                 <span className="mt-1 block line-clamp-1 text-xs text-muted">{item.detail}</span>
               </span>
-              <span className={`text-xl transition-transform group-hover:translate-x-1 ${styles.arrow}`}>→</span>
+              <ArrowRight className={`size-4 transition-transform group-hover:translate-x-1 ${styles.arrow}`} />
             </div>
-          </Link>
+          </Link></Card>
           )
         })}
       </section>
 
       <div className="mt-5 grid gap-5 xl:grid-cols-[1.4fr_1fr]">
-        <section className="liquid-glass-card rounded-2xl border border-sky-500/15 p-4 shadow-sm md:p-5">
+        <Card className="relative overflow-hidden p-4 md:p-5">
           <span className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-sky-500 via-cyan-400 to-emerald-400" />
           <div className="mb-4 flex items-start justify-between gap-3">
             <div>
@@ -280,7 +285,7 @@ export function DashboardPage() {
           ) : (
             <div className="grid gap-3 md:grid-cols-2">
               {(occupancy?.floors ?? []).slice(0, 6).map((floor) => (
-                <article key={floor.floorId} className="rounded-2xl border border-theme bg-badge p-4 transition-all hover:border-sky-500/30 hover:bg-sky-500/5">
+                <Card key={floor.floorId} className="shadow-none"><CardContent className="p-4">
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <p className="font-semibold text-fg">
@@ -293,28 +298,17 @@ export function DashboardPage() {
                       label={`${floor.utilizationPercent}%`}
                     />
                   </div>
-                  <div className="mt-4 h-2.5 overflow-hidden rounded-full bg-page">
-                    <div
-                      className={`h-full rounded-full ${
-                        floor.utilizationPercent >= 90
-                          ? 'bg-gradient-to-r from-amber-500 to-rose-500'
-                          : floor.utilizationPercent >= 60
-                            ? 'bg-gradient-to-r from-sky-500 to-violet-500'
-                            : 'bg-gradient-to-r from-emerald-500 to-cyan-400'
-                      }`}
-                      style={{ width: `${Math.min(100, floor.utilizationPercent)}%` }}
-                    />
-                  </div>
+                  <Progress value={Math.min(100, floor.utilizationPercent)} className="mt-4 h-2" />
                   <p className="mt-2 text-xs text-muted">
                     Đang đỗ {floor.occupied} · Còn trống {floor.empty} · Bảo trì {floor.maintenance ?? 0}
                   </p>
-                </article>
+                </CardContent></Card>
               ))}
             </div>
           )}
-        </section>
+        </Card>
 
-        <section className="liquid-glass-card rounded-2xl border border-rose-500/15 p-4 shadow-sm md:p-5">
+        <Card className="relative overflow-hidden p-4 md:p-5">
           <span className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-amber-400 via-orange-500 to-rose-500" />
           <div className="mb-4">
             <p className="text-[10px] uppercase tracking-[0.18em] text-subtle">Cần chú ý</p>
@@ -322,13 +316,11 @@ export function DashboardPage() {
           </div>
 
           {alerts.length === 0 ? (
-            <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-4 text-sm text-emerald-700 dark:text-emerald-200">
-              Chưa phát hiện vấn đề cần xử lý.
-            </div>
+            <Alert><AlertDescription>Chưa phát hiện vấn đề cần xử lý.</AlertDescription></Alert>
           ) : (
             <div className="space-y-2">
               {alerts.slice(0, 6).map((alert) => (
-                <Link key={alert.id} to={alert.to} className="block rounded-2xl border border-theme bg-badge p-3 transition-colors hover:border-rose-500/25 hover:bg-rose-500/5">
+                <Card key={alert.id} className="shadow-none"><Link to={alert.to} className="block p-3">
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <p className="text-sm font-semibold text-fg">{alert.title}</p>
@@ -336,15 +328,15 @@ export function DashboardPage() {
                     </div>
                     <AdminStatusBadge status={alert.tone} label="Kiểm tra" />
                   </div>
-                </Link>
+                </Link></Card>
               ))}
             </div>
           )}
-        </section>
+        </Card>
       </div>
 
       <div className="mt-5 grid gap-5 xl:grid-cols-2">
-        <section className="liquid-glass-card rounded-2xl border border-emerald-500/15 p-4 shadow-sm md:p-5">
+        <Card className="relative overflow-hidden p-4 md:p-5">
           <span className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-emerald-500 to-cyan-400" />
           <div className="mb-4 flex items-start justify-between gap-3">
             <div>
@@ -361,7 +353,7 @@ export function DashboardPage() {
           ) : (
             <div className="space-y-2">
               {sessions.map((session) => (
-                <article key={session._id} className="flex items-center justify-between gap-3 rounded-2xl border border-theme bg-badge p-3 transition-colors hover:border-emerald-500/25 hover:bg-emerald-500/5">
+                <Card key={session._id} className="shadow-none"><CardContent className="flex items-center justify-between gap-3 p-3">
                   <div className="min-w-0">
                     <p className="truncate text-sm font-semibold text-fg">{session.licensePlate}</p>
                     <p className="mt-1 text-xs text-subtle">
@@ -369,13 +361,13 @@ export function DashboardPage() {
                     </p>
                   </div>
                   <AdminStatusBadge status="active" label="Trong bãi" />
-                </article>
+                </CardContent></Card>
               ))}
             </div>
           )}
-        </section>
+        </Card>
 
-        <section className="liquid-glass-card rounded-2xl border border-violet-500/15 p-4 shadow-sm md:p-5">
+        <Card className="relative overflow-hidden p-4 md:p-5">
           <span className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-violet-500 to-fuchsia-500" />
           <div className="mb-4 flex items-start justify-between gap-3">
             <div>
@@ -392,20 +384,20 @@ export function DashboardPage() {
           ) : (
             <div className="space-y-2">
               {bookings.map((booking) => (
-                <article key={booking._id} className="flex items-center justify-between gap-3 rounded-2xl border border-theme bg-badge p-3 transition-colors hover:border-violet-500/25 hover:bg-violet-500/5">
+                <Card key={booking._id} className="shadow-none"><CardContent className="flex items-center justify-between gap-3 p-3">
                   <div className="min-w-0">
                     <p className="truncate text-sm font-semibold text-fg">{booking.licensePlate}</p>
                     <p className="mt-1 text-xs text-subtle">Dự kiến đến {formatDateTime(booking.expectedArrivalTime)}</p>
                   </div>
                   <AdminStatusBadge status="paid" label="Đã thanh toán" />
-                </article>
+                </CardContent></Card>
               ))}
             </div>
           )}
-        </section>
+        </Card>
       </div>
 
-      <section className="liquid-glass-card mt-5 rounded-2xl border border-theme p-4 shadow-sm md:p-5">
+      <Card className="relative mt-5 overflow-hidden p-4 md:p-5">
         <span className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-violet-500 via-sky-500 to-emerald-500" />
         <div className="mb-4">
           <p className="text-[10px] uppercase tracking-[0.18em] text-subtle">Phạm vi quản trị</p>
@@ -418,7 +410,7 @@ export function DashboardPage() {
           <AdminStatCard label="Gói cư dân" value={summary.subscriptions} detail={`${report?.activity.activeSubscriptions ?? 0} gói đang hoạt động`} tone="emerald" />
           <AdminStatCard label="Gói giá" value={summary.plans} detail="Các plan có trong hệ thống" tone="violet" />
         </div>
-      </section>
+      </Card>
     </AdminPageShell>
   )
 }

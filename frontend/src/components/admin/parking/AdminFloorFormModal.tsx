@@ -1,7 +1,10 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import type { ManagerBuildingSummary } from '../../../hooks/useManagerBuildings'
 import type { FloorPayload } from '../../../services/managerBuildingsApi'
-import { AdminField, AdminModal, AdminModalActions, adminInputClass } from '../common/AdminFormPrimitives'
+import { AdminField, AdminModal, AdminModalActions } from '../common/AdminFormPrimitives'
+import { Input } from '../../ui/input'
+import { NativeSelect, NativeSelectOption } from '../../ui/native-select'
+import { Textarea } from '../../ui/textarea'
 
 type AdminFloorFormModalProps = {
   open: boolean
@@ -37,6 +40,7 @@ export function AdminFloorFormModal({
 
   useEffect(() => {
     if (!open) return
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setBuildingId(initialValues?.buildingId ?? defaultBuilding)
     setFloorNumber(initialValues ? String(initialValues.floorNumber) : '')
     setSection(initialValues?.section ?? 'A')
@@ -70,39 +74,33 @@ export function AdminFloorFormModal({
     <AdminModal title={mode === 'create' ? 'Tạo tầng' : 'Chỉnh sửa tầng'} eyebrow="Admin // Tầng" error={error} onClose={onClose}>
       <form className="grid gap-4" onSubmit={handleSubmit}>
         <AdminField label="Tòa nhà">
-          <select className={adminInputClass} value={buildingId} disabled={mode === 'edit'} onChange={(event) => setBuildingId(event.target.value)}>
+          <NativeSelect value={buildingId} disabled={mode === 'edit'} onChange={(event) => setBuildingId(event.target.value)}>
             {buildings.map((item) => (
-              <option key={item.id} value={item.id}>{item.name}</option>
+              <NativeSelectOption key={item.id} value={item.id}>{item.name}</NativeSelectOption>
             ))}
-          </select>
+          </NativeSelect>
         </AdminField>
 
         <div className="grid gap-3 sm:grid-cols-2">
           <AdminField label="Số tầng">
-            <input className={adminInputClass} type="number" min="1" value={floorNumber} onChange={(event) => setFloorNumber(event.target.value)} />
+            <Input type="number" min="1" value={floorNumber} onChange={(event) => setFloorNumber(event.target.value)} />
           </AdminField>
           <AdminField label="Khu">
-            <input className={adminInputClass} value={section} maxLength={10} placeholder="A" onChange={(event) => setSection(event.target.value.toUpperCase())} />
+            <Input value={section} maxLength={10} placeholder="A" onChange={(event) => setSection(event.target.value.toUpperCase())} />
           </AdminField>
           <AdminField label="Tổng chỗ đỗ">
-            <input className={adminInputClass} type="number" min="1" value={totalSlots} onChange={(event) => setTotalSlots(event.target.value)} />
+            <Input type="number" min="1" value={totalSlots} onChange={(event) => setTotalSlots(event.target.value)} />
           </AdminField>
           <AdminField label="Loại xe">
-            <select className={adminInputClass} value={vehicleType} onChange={(event) => setVehicleType(event.target.value as FloorPayload['vehicleType'])}>
-              <option value="motorcycle">Xe máy</option>
-              <option value="car">Ô tô</option>
-            </select>
+            <NativeSelect value={vehicleType} onChange={(event) => setVehicleType(event.target.value as FloorPayload['vehicleType'])}><NativeSelectOption value="motorcycle">Xe máy</NativeSelectOption><NativeSelectOption value="car">Ô tô</NativeSelectOption></NativeSelect>
           </AdminField>
           <AdminField label="Loại tầng">
-            <select className={adminInputClass} value={floorType} onChange={(event) => setFloorType(event.target.value as FloorPayload['floorType'])}>
-              <option value="resident">Cư dân</option>
-              <option value="visitor">Khách</option>
-            </select>
+            <NativeSelect value={floorType} onChange={(event) => setFloorType(event.target.value as FloorPayload['floorType'])}><NativeSelectOption value="resident">Cư dân</NativeSelectOption><NativeSelectOption value="visitor">Khách</NativeSelectOption></NativeSelect>
           </AdminField>
         </div>
 
         <AdminField label="Mô tả">
-          <textarea className="min-h-20 rounded-xl border border-theme bg-page p-3 text-sm text-fg outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-500/15" value={description} onChange={(event) => setDescription(event.target.value)} />
+          <Textarea className="min-h-20" value={description} onChange={(event) => setDescription(event.target.value)} />
         </AdminField>
         <AdminModalActions disabled={!valid || isSubmitting} loading={isSubmitting} onClose={onClose} />
       </form>
