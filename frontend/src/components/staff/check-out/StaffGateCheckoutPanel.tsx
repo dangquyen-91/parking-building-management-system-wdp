@@ -55,7 +55,7 @@ export function StaffGateCheckoutPanel({
 
   return (
     <>
-      <Card>
+      <Card className="overflow-hidden border-emerald-500/20 bg-gradient-to-br from-background via-background to-emerald-500/5">
         <CardHeader>
           <CardDescription>Quy trình xe ra</CardDescription>
           <CardTitle>Thanh toán và trả xe</CardTitle>

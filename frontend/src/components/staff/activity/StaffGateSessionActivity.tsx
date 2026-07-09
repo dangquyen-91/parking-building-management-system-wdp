@@ -11,7 +11,7 @@ type StaffGateSessionActivityProps = {
 
 export function StaffGateSessionActivity({ sessions }: StaffGateSessionActivityProps) {
   return (
-    <Card>
+    <Card className="border-indigo-500/15 bg-gradient-to-br from-background to-indigo-500/5">
       <CardHeader>
         <CardDescription>Log ca trực</CardDescription>
         <div className="flex items-end justify-between gap-3">
@@ -27,13 +27,13 @@ export function StaffGateSessionActivity({ sessions }: StaffGateSessionActivityP
             return (
               <div key={session._id}>
                 {index > 0 && <Separator />}
-                <div className="p-4 transition-colors hover:bg-muted/50">
+                <div className="p-4 transition-colors hover:bg-sky-500/5">
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
                       <p className="truncate text-lg font-bold tracking-[0.04em]">{session.licensePlate}</p>
                       <p className="mt-1 text-xs text-muted-foreground">{formatCustomerType(session.customerType)}</p>
                     </div>
-                    <Badge variant={isActive ? 'default' : 'secondary'}>
+                    <Badge className={isActive ? 'border-0 bg-sky-600 text-white' : 'border-0 bg-emerald-600 text-white'}>
                       {isActive ? 'Xe vào' : 'Xe ra'}
                     </Badge>
                   </div>

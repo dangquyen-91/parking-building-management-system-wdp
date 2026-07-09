@@ -25,11 +25,11 @@ function InfoBlock({ label, children }: { label: string; children: ReactNode }) 
 
 export function StaffVehicleCard({ session, floorMap, onCheckout }: StaffVehicleCardProps) {
   return (
-    <Card className="transition-shadow hover:shadow-md">
+    <Card className="border-sky-500/15 bg-gradient-to-r from-background via-background to-sky-500/5 transition-shadow hover:shadow-md hover:shadow-sky-500/10">
       <CardContent className="grid gap-4 p-4 lg:grid-cols-[1.05fr_0.8fr_1.25fr_1fr_auto] lg:items-center">
         <div className="min-w-0">
           <p className="mb-2 text-xs font-medium text-muted-foreground">Biển số xe</p>
-          <p className="truncate text-2xl font-bold tracking-[0.06em]">{session.licensePlate}</p>
+          <p className="truncate text-2xl font-bold tracking-[0.06em] text-sky-700 dark:text-sky-300">{session.licensePlate}</p>
         </div>
 
         <InfoBlock label="Phân loại">

@@ -8,9 +8,27 @@ type IncidentStats = {
 }
 
 const STAT_ITEMS = [
-  { key: 'open', label: 'Mới gửi', detail: 'Cần kiểm tra ngay', icon: AlertCircle },
-  { key: 'inProgress', label: 'Đang xử lý', detail: 'Đang liên hệ chủ xe', icon: Clock },
-  { key: 'resolved', label: 'Đã xử lý', detail: 'Đã đóng khiếu nại', icon: CheckCircle2 },
+  {
+    key: 'open',
+    label: 'Mới gửi',
+    detail: 'Cần kiểm tra ngay',
+    icon: AlertCircle,
+    className: 'border-rose-500/25 bg-rose-500/10 text-rose-700 dark:text-rose-300',
+  },
+  {
+    key: 'inProgress',
+    label: 'Đang xử lý',
+    detail: 'Đang liên hệ chủ xe',
+    icon: Clock,
+    className: 'border-amber-500/25 bg-amber-500/10 text-amber-700 dark:text-amber-300',
+  },
+  {
+    key: 'resolved',
+    label: 'Đã xử lý',
+    detail: 'Đã đóng khiếu nại',
+    icon: CheckCircle2,
+    className: 'border-emerald-500/25 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300',
+  },
 ] as const
 
 export function StaffIncidentStats({ stats }: { stats: IncidentStats }) {
@@ -20,14 +38,14 @@ export function StaffIncidentStats({ stats }: { stats: IncidentStats }) {
         const Icon = item.icon
 
         return (
-          <Card key={item.key}>
+          <Card key={item.key} className={item.className}>
             <CardHeader className="flex-row items-center justify-between gap-4">
               <div>
-                <CardDescription>{item.label}</CardDescription>
+                <CardDescription className="text-current/75">{item.label}</CardDescription>
                 <CardTitle className="mt-2 text-4xl tabular-nums">{stats[item.key]}</CardTitle>
-                <p className="mt-1 text-sm text-muted-foreground">{item.detail}</p>
+                <p className="mt-1 text-sm text-current/70">{item.detail}</p>
               </div>
-              <span className="grid size-12 place-items-center rounded-lg bg-muted text-muted-foreground">
+              <span className="grid size-12 place-items-center rounded-lg bg-white/70 text-current shadow-sm dark:bg-white/10">
                 <Icon className="size-5" />
               </span>
             </CardHeader>

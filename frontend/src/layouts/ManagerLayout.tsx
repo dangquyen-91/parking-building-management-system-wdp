@@ -33,7 +33,7 @@ export function ManagerLayout() {
   })
 
   return (
-    <div className="relative h-screen overflow-hidden bg-[radial-gradient(circle_at_top_left,rgba(14,165,233,0.18),transparent_34%),radial-gradient(circle_at_85%_10%,rgba(16,185,129,0.12),transparent_32%),linear-gradient(135deg,var(--page-bg),var(--page-bg))] text-fg">
+    <div className="relative h-screen overflow-hidden bg-[radial-gradient(circle_at_top_left,rgba(14,165,233,0.16),transparent_34%),radial-gradient(circle_at_85%_10%,rgba(16,185,129,0.14),transparent_32%),linear-gradient(180deg,hsl(var(--background)),hsl(var(--muted))/0.42)] text-foreground">
       <SkipLink />
 
       {sidebarOpen && <OverlayBackdrop onClose={closeSidebar} label="Đóng menu quản lý" />}
@@ -44,11 +44,11 @@ export function ManagerLayout() {
         </div>
 
         <div className="flex h-full min-w-0 flex-1 flex-col">
-          <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center gap-3 border-b border-theme bg-page/85 px-4 shadow-sm backdrop-blur-xl lg:hidden">
+          <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center gap-3 border-b border-emerald-200/60 bg-background/85 px-4 shadow-sm backdrop-blur-xl lg:hidden dark:border-emerald-900/50">
             <button
               ref={menuButtonRef}
               type="button"
-              className="flex size-11 items-center justify-center rounded-2xl border border-theme bg-badge text-muted shadow-sm transition-colors hover:bg-ghost hover:text-fg"
+              className="flex size-11 items-center justify-center rounded-2xl border border-emerald-500/20 bg-emerald-500/10 text-emerald-700 shadow-sm transition-colors hover:bg-emerald-500/15 dark:text-emerald-300"
               aria-expanded={sidebarOpen}
               aria-controls="manager-sidebar"
               aria-label="Mở menu quản lý"
@@ -57,8 +57,8 @@ export function ManagerLayout() {
               <MenuIcon />
             </button>
             <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-black text-fg">{pageTitle}</p>
-              <p className="text-[11px] text-subtle">Trung tâm điều hành bãi xe</p>
+              <p className="truncate text-sm font-black text-foreground">{pageTitle}</p>
+              <p className="text-[11px] text-muted-foreground">Trung tâm điều hành bãi xe</p>
             </div>
             <ThemeToggle />
           </header>

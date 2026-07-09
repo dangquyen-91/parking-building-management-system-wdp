@@ -146,10 +146,10 @@ export function StaffGateCheckInForm({
   }
 
   return (
-    <Card>
+    <Card className="overflow-hidden border-sky-500/20 bg-gradient-to-br from-background via-background to-sky-500/5">
       <CardHeader>
         <div className="flex items-start gap-4">
-          <span className="flex size-11 shrink-0 items-center justify-center rounded-lg bg-primary text-lg font-bold text-primary-foreground">
+          <span className="flex size-11 shrink-0 items-center justify-center rounded-lg bg-sky-600 text-lg font-bold text-white shadow-lg shadow-sky-500/20">
             IN
           </span>
           <div>

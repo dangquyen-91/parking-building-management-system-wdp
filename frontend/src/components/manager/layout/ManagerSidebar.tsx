@@ -18,6 +18,19 @@ const MANAGER_NAV_ITEMS = [
   { to: '/manager/reports', label: 'Báo cáo', detail: 'Doanh thu, vận hành', icon: 'report' },
 ] as const
 
+const MANAGER_ICON_TONES = {
+  grid: 'bg-sky-500/15 text-sky-700 ring-sky-500/20 dark:text-sky-300',
+  building: 'bg-indigo-500/15 text-indigo-700 ring-indigo-500/20 dark:text-indigo-300',
+  slots: 'bg-cyan-500/15 text-cyan-700 ring-cyan-500/20 dark:text-cyan-300',
+  calendar: 'bg-emerald-500/15 text-emerald-700 ring-emerald-500/20 dark:text-emerald-300',
+  gate: 'bg-blue-500/15 text-blue-700 ring-blue-500/20 dark:text-blue-300',
+  ticket: 'bg-amber-500/15 text-amber-700 ring-amber-500/20 dark:text-amber-300',
+  complaint: 'bg-rose-500/15 text-rose-700 ring-rose-500/20 dark:text-rose-300',
+  staff: 'bg-violet-500/15 text-violet-700 ring-violet-500/20 dark:text-violet-300',
+  plan: 'bg-teal-500/15 text-teal-700 ring-teal-500/20 dark:text-teal-300',
+  report: 'bg-fuchsia-500/15 text-fuchsia-700 ring-fuchsia-500/20 dark:text-fuchsia-300',
+} as const
+
 function ManagerIcon({ name }: { name: (typeof MANAGER_NAV_ITEMS)[number]['icon'] }) {
   if (name === 'grid') {
     return (
@@ -111,8 +124,8 @@ function linkClassName({ isActive }: { isActive: boolean }) {
   return [
     'group flex items-center gap-3 rounded-2xl border px-3 py-3 text-sm transition-all duration-200',
     isActive
-      ? 'border-sky-400/40 bg-sky-500 text-white shadow-lg shadow-sky-500/20'
-      : 'border-transparent text-muted-foreground hover:border-border hover:bg-muted hover:text-foreground',
+      ? 'border-emerald-400/40 bg-gradient-to-r from-sky-600 to-emerald-500 text-white shadow-lg shadow-sky-500/20'
+      : 'border-transparent text-muted-foreground hover:border-emerald-500/20 hover:bg-white/80 hover:text-foreground dark:hover:bg-white/10',
   ].join(' ')
 }
 
@@ -130,7 +143,7 @@ export const ManagerSidebar = forwardRef<HTMLElement, ManagerSidebarProps>(funct
       ref={ref}
       id="manager-sidebar"
       className={[
-        'flex flex-col border-r border-border bg-background/90 shadow-2xl backdrop-blur-xl',
+        'flex flex-col border-r border-emerald-200/60 bg-background/92 shadow-2xl backdrop-blur-xl dark:border-emerald-900/50',
         'max-lg:fixed max-lg:inset-y-0 max-lg:left-0 max-lg:z-50',
         'max-lg:w-[min(19rem,86vw)] max-lg:max-h-screen max-lg:overscroll-contain',
         'lg:fixed lg:inset-y-0 lg:left-0 lg:z-30 lg:h-screen lg:w-72 lg:translate-x-0 lg:visible lg:pointer-events-auto',
@@ -140,7 +153,7 @@ export const ManagerSidebar = forwardRef<HTMLElement, ManagerSidebarProps>(funct
           : 'max-lg:-translate-x-full max-lg:invisible max-lg:pointer-events-none',
       ].join(' ')}
     >
-      <div className="border-b border-border p-5">
+      <div className="border-b border-emerald-200/60 bg-gradient-to-br from-sky-500/10 via-background to-emerald-500/10 p-5 dark:border-emerald-900/50">
         <div className="flex items-center justify-between gap-3">
         <NavLink
           to="/manager"
@@ -148,7 +161,7 @@ export const ManagerSidebar = forwardRef<HTMLElement, ManagerSidebarProps>(funct
           aria-label="Khu quản lý bãi xe"
           onClick={onNavigate}
         >
-          <span className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-card shadow-sm">
+          <span className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-500 to-emerald-500 text-white shadow-lg shadow-sky-500/20">
             <LogoIcon size={22} />
           </span>
           <span className="min-w-0 leading-tight">
@@ -158,7 +171,7 @@ export const ManagerSidebar = forwardRef<HTMLElement, ManagerSidebarProps>(funct
             </span>
           </span>
         </NavLink>
-        <ThemeToggle className="shrink-0 border border-border bg-card shadow-sm" />
+        <ThemeToggle className="shrink-0 border border-emerald-500/20 bg-card shadow-sm" />
         </div>
 
         <div className="mt-5 rounded-2xl border border-sky-500/25 bg-sky-500/10 p-3">
@@ -173,7 +186,7 @@ export const ManagerSidebar = forwardRef<HTMLElement, ManagerSidebarProps>(funct
       <nav className="flex flex-1 flex-col gap-1 overflow-y-auto px-3 py-4" aria-label="Điều hướng quản lý">
         {MANAGER_NAV_ITEMS.map(({ to, label, detail, icon }) => (
           <NavLink key={to} to={to} className={linkClassName} end onClick={onNavigate}>
-            <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-card/70 group-[.active]:bg-white/15">
+            <span className={`flex size-10 shrink-0 items-center justify-center rounded-xl ring-1 group-[.active]:bg-white/20 group-[.active]:text-white group-[.active]:ring-white/20 ${MANAGER_ICON_TONES[icon]}`}>
               <ManagerIcon name={icon} />
             </span>
             <span className="min-w-0">

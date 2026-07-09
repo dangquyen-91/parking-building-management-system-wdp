@@ -32,9 +32,9 @@ export function AdminParkingSpaceHeader({
       title="Quản lý chỗ đỗ"
       description="Quản lý ô đỗ ô tô, hàng xe máy, trạng thái và sức chứa."
       actions={
-        <div className="grid w-full gap-3 xl:min-w-[36rem] xl:max-w-[52rem]">
-          <div className="flex flex-col gap-3 rounded-lg border bg-card p-3 sm:flex-row sm:items-end">
-            <div className="grid flex-1 gap-3 sm:grid-cols-2">
+        <div className="grid w-full min-w-0 gap-3 xl:max-w-[52rem]">
+          <div className="flex min-w-0 flex-col gap-3 rounded-lg border border-violet-500/15 bg-card/90 p-3 sm:flex-row sm:items-end">
+            <div className="grid min-w-0 flex-1 gap-3 sm:grid-cols-2">
               <AdminField label="Tòa nhà">
                 <NativeSelect className="w-full" value={buildingFilter} onChange={(event) => onBuildingFilterChange(event.target.value)}>
                   <NativeSelectOption value="all">Tất cả</NativeSelectOption>
@@ -52,9 +52,9 @@ export function AdminParkingSpaceHeader({
                 </NativeSelect>
               </AdminField>
             </div>
-            <div className="grid gap-2 sm:grid-cols-2">
-              <Button size="lg" onClick={onCreateSlot}>Tạo ô ô tô</Button>
-              <Button size="lg" variant="outline" onClick={onCreateRow}>Tạo hàng xe máy</Button>
+            <div className="grid shrink-0 gap-2 sm:grid-cols-2">
+              <Button size="lg" className="whitespace-normal" onClick={onCreateSlot}>Tạo ô ô tô</Button>
+              <Button size="lg" variant="outline" className="whitespace-normal" onClick={onCreateRow}>Tạo hàng xe máy</Button>
             </div>
           </div>
         </div>

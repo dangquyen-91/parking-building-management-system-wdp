@@ -34,7 +34,7 @@ export function DashboardLayout() {
   })
 
   return (
-    <div data-admin-ui className="relative h-screen overflow-hidden bg-background text-foreground">
+    <div data-admin-ui className="relative h-screen overflow-hidden bg-[radial-gradient(circle_at_top_left,rgba(124,58,237,0.14),transparent_32%),radial-gradient(circle_at_90%_8%,rgba(14,165,233,0.14),transparent_30%),linear-gradient(180deg,hsl(var(--background)),hsl(var(--muted))/0.42)] text-foreground">
       <SkipLink />
       {sidebarOpen && <OverlayBackdrop onClose={closeSidebar} label="Đóng menu quản trị" />}
       <div className="flex h-full w-full">
@@ -42,7 +42,7 @@ export function DashboardLayout() {
           <AdminSidebar ref={sidebarRef} isOpen={sidebarOpen} onNavigate={closeSidebar} />
         </div>
         <div className="flex h-full min-w-0 flex-1 flex-col">
-          <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center gap-3 border-b bg-background/90 px-4 backdrop-blur-xl lg:hidden">
+          <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center gap-3 border-b border-violet-200/60 bg-background/85 px-4 shadow-sm backdrop-blur-xl lg:hidden dark:border-violet-900/50">
             <Button ref={menuButtonRef} variant="outline" size="icon" aria-expanded={sidebarOpen} aria-controls="admin-sidebar" aria-label="Mở menu quản trị" onClick={() => setSidebarOpen(true)}>
               <Menu className="size-5" />
             </Button>

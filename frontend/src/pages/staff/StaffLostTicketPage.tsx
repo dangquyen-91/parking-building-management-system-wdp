@@ -161,7 +161,7 @@ export function StaffLostTicketPage() {
         </Alert>
       )}
 
-      <Card>
+      <Card className="border-amber-500/20 bg-gradient-to-br from-background via-background to-amber-500/5">
         <CardHeader>
           <CardDescription>Mất vé / mất QR</CardDescription>
           <CardTitle>Tìm xe và xử lý ngoại lệ</CardTitle>

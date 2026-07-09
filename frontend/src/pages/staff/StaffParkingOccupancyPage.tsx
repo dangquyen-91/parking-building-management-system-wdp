@@ -135,9 +135,9 @@ export function StaffParkingOccupancyPage() {
 
 function SummaryCard({ label, value }: { label: string; value: number }) {
   return (
-    <Card>
+    <Card className="border-cyan-500/20 bg-cyan-500/10 text-cyan-700 dark:text-cyan-300">
       <CardHeader>
-        <CardDescription>{label}</CardDescription>
+        <CardDescription className="text-current/75">{label}</CardDescription>
         <CardTitle className="text-3xl">{value}</CardTitle>
       </CardHeader>
     </Card>

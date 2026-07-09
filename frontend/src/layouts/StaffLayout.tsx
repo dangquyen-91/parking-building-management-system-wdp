@@ -22,7 +22,7 @@ export function StaffLayout() {
   const pageTitle = STAFF_PAGE_TITLES[pathname] ?? 'Nhân viên'
 
   return (
-    <div className="h-screen overflow-hidden bg-background text-foreground">
+    <div className="h-screen overflow-hidden bg-[radial-gradient(circle_at_top_left,rgba(14,165,233,0.14),transparent_30%),radial-gradient(circle_at_top_right,rgba(16,185,129,0.12),transparent_28%),linear-gradient(180deg,hsl(var(--background)),hsl(var(--muted))/0.45)] text-foreground">
       <SkipLink />
 
       <div className="flex h-full w-full">
@@ -31,7 +31,7 @@ export function StaffLayout() {
         </div>
 
         <div className="flex min-h-screen min-w-0 flex-1 flex-col lg:min-h-0">
-          <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center gap-3 border-b bg-background/90 px-4 backdrop-blur lg:hidden">
+          <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center gap-3 border-b border-sky-200/60 bg-background/85 px-4 shadow-sm backdrop-blur lg:hidden dark:border-sky-900/50">
             <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
               <SheetTrigger asChild>
                 <Button variant="outline" size="icon-lg" aria-label="Mở menu nhân viên">
