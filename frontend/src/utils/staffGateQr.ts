@@ -180,8 +180,7 @@ export function validateExitQr({
   if (!isWalkInQr(payload)) return 'Khách vãng lai phải đưa lại vé QR lúc vào.'
 
   const stored = getStoredTicketForSession(session)
-  if (!stored) return 'Không tìm thấy vé QR lúc vào trên trình duyệt staff này.'
-  if (stored.qrValue !== qrValue) return 'QR không khớp vé đã cấp lúc xe vào.'
+  if (stored && stored.qrValue !== qrValue) return 'QR không khớp vé đã cấp lúc xe vào.'
 
   return null
 }

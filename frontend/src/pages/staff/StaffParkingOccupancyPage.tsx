@@ -1,8 +1,13 @@
+import { RefreshCw, RotateCcw } from 'lucide-react'
 import { useMemo, useState, type ReactNode } from 'react'
 import {
   StaffPageHeader,
   StaffParkingOccupancyList,
 } from '../../components/staff'
+import { Button } from '../../components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card'
+import { Label } from '../../components/ui/label'
+import { NativeSelect } from '../../components/ui/native-select'
 import { useStaffParkingOccupancy } from '../../hooks/useStaffParkingOccupancy'
 import { getFloorSection } from '../../utils/floorLabel'
 
@@ -11,12 +16,7 @@ type FloorTypeFilter = 'all' | 'resident' | 'visitor'
 type AvailabilityFilter = 'all' | 'available' | 'full'
 
 export function StaffParkingOccupancyPage() {
-  const {
-    occupancyItems,
-    isLoading,
-    error,
-    reload,
-  } = useStaffParkingOccupancy()
+  const { occupancyItems, isLoading, error, reload } = useStaffParkingOccupancy()
   const [buildingFilter, setBuildingFilter] = useState('all')
   const [floorFilter, setFloorFilter] = useState('all')
   const [sectionFilter, setSectionFilter] = useState('all')
@@ -87,21 +87,17 @@ export function StaffParkingOccupancyPage() {
         title="Tòa nhà, tầng và khu"
         description="Xem nhanh từng khu còn bao nhiêu chỗ, đang chiếm bao nhiêu chỗ để điều phối xe vào/ra rõ ràng hơn."
         actions={
-          <button
-            type="button"
-            onClick={() => void reload()}
-            disabled={isLoading}
-            className="h-12 rounded-2xl border border-theme bg-page px-5 text-sm font-black text-fg shadow-sm transition-colors hover:bg-ghost disabled:opacity-60"
-          >
+          <Button type="button" variant="outline" onClick={() => void reload()} disabled={isLoading}>
+            <RefreshCw className="size-4" />
             {isLoading ? 'Đang cập nhật...' : 'Làm mới sức chứa'}
-          </button>
+          </Button>
         }
       />
 
       <section className="mb-6 grid gap-3 md:grid-cols-3">
-        <SummaryCard label="Tổng chỗ" value={totals.total} tone="sky" />
-        <SummaryCard label="Đang chiếm" value={totals.occupied} tone="amber" />
-        <SummaryCard label="Còn trống" value={totals.available} tone="emerald" />
+        <SummaryCard label="Tổng chỗ" value={totals.total} />
+        <SummaryCard label="Đang chiếm" value={totals.occupied} />
+        <SummaryCard label="Còn trống" value={totals.available} />
       </section>
 
       <OccupancyFilters
@@ -132,28 +128,19 @@ export function StaffParkingOccupancyPage() {
         onClear={clearFilters}
       />
 
-      <StaffParkingOccupancyList
-        items={filteredItems}
-        isLoading={isLoading}
-        error={error}
-      />
+      <StaffParkingOccupancyList items={filteredItems} isLoading={isLoading} error={error} />
     </div>
   )
 }
 
-function SummaryCard({ label, value, tone }: { label: string; value: number; tone: 'sky' | 'amber' | 'emerald' }) {
-  const toneClass = {
-    sky: 'bg-sky-500/15',
-    amber: 'bg-amber-500/15',
-    emerald: 'bg-emerald-500/15',
-  }[tone]
-
+function SummaryCard({ label, value }: { label: string; value: number }) {
   return (
-    <div className="relative overflow-hidden rounded-3xl border border-theme bg-badge p-5 shadow-sm">
-      <div className={`pointer-events-none absolute -right-10 -top-10 size-28 rounded-full ${toneClass} blur-2xl`} />
-      <p className="relative text-[10px] font-black uppercase tracking-[0.18em] text-subtle">{label}</p>
-      <p className="relative mt-2 text-4xl font-black text-fg">{value}</p>
-    </div>
+    <Card>
+      <CardHeader>
+        <CardDescription>{label}</CardDescription>
+        <CardTitle className="text-3xl">{value}</CardTitle>
+      </CardHeader>
+    </Card>
   )
 }
 
@@ -178,9 +165,6 @@ type OccupancyFiltersProps = {
   onClear: () => void
 }
 
-const selectClass =
-  'h-11 w-full rounded-xl border border-theme bg-page px-3 text-sm font-bold text-fg outline-none transition focus:border-btn-primary'
-
 function OccupancyFilters({
   buildingOptions,
   floorOptions,
@@ -202,64 +186,53 @@ function OccupancyFilters({
   onClear,
 }: OccupancyFiltersProps) {
   return (
-    <section className="mb-6 overflow-hidden rounded-[1.75rem] border border-theme bg-badge shadow-sm">
-      <div className="border-b border-theme bg-gradient-to-r from-sky-500/10 via-transparent to-emerald-500/10 p-4 md:p-5">
-        <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-          <div>
-            <p className="text-[10px] font-black uppercase tracking-[0.18em] text-subtle">Bộ lọc sức chứa</p>
-            <h2 className="mt-1 text-xl font-black text-fg">{visibleCount}/{totalCount} khu phù hợp</h2>
-          </div>
-          <button
-            type="button"
-            onClick={onClear}
-            className="h-10 rounded-xl border border-theme bg-page px-4 text-sm font-bold text-fg transition hover:bg-ghost"
-          >
-            Xóa lọc
-          </button>
+    <Card className="mb-6">
+      <CardHeader className="gap-3 md:flex-row md:items-end md:justify-between">
+        <div>
+          <CardDescription>Bộ lọc sức chứa</CardDescription>
+          <CardTitle>{visibleCount}/{totalCount} khu phù hợp</CardTitle>
         </div>
-      </div>
-
-      <div className="grid gap-4 p-4 md:grid-cols-2 xl:grid-cols-6">
+        <Button type="button" variant="outline" onClick={onClear}>
+          <RotateCcw className="size-4" />
+          Xóa lọc
+        </Button>
+      </CardHeader>
+      <CardContent className="grid gap-4 md:grid-cols-2 xl:grid-cols-6">
         <FilterSelect label="Tòa nhà" value={buildingFilter} onChange={onBuildingFilterChange}>
           <option value="all">Tất cả tòa nhà</option>
           {buildingOptions.map((building) => (
             <option key={building} value={building}>{building}</option>
           ))}
         </FilterSelect>
-
         <FilterSelect label="Tầng" value={floorFilter} onChange={onFloorFilterChange}>
           <option value="all">Tất cả tầng</option>
           {floorOptions.map((floor) => (
             <option key={floor} value={String(floor)}>Tầng {floor}</option>
           ))}
         </FilterSelect>
-
         <FilterSelect label="Khu" value={sectionFilter} onChange={onSectionFilterChange}>
           <option value="all">Tất cả khu</option>
           {sectionOptions.map((section) => (
             <option key={section} value={section}>Khu {section}</option>
           ))}
         </FilterSelect>
-
         <FilterSelect label="Loại xe" value={vehicleFilter} onChange={(value) => onVehicleFilterChange(value as VehicleFilter)}>
           <option value="all">Tất cả</option>
           <option value="motorcycle">Xe máy</option>
           <option value="car">Ô tô</option>
         </FilterSelect>
-
         <FilterSelect label="Loại khu" value={floorTypeFilter} onChange={(value) => onFloorTypeFilterChange(value as FloorTypeFilter)}>
           <option value="all">Tất cả</option>
           <option value="resident">Cư dân</option>
           <option value="visitor">Khách vãng lai</option>
         </FilterSelect>
-
         <FilterSelect label="Trạng thái" value={availabilityFilter} onChange={(value) => onAvailabilityFilterChange(value as AvailabilityFilter)}>
           <option value="all">Tất cả</option>
           <option value="available">Còn chỗ</option>
           <option value="full">Đã đầy</option>
         </FilterSelect>
-      </div>
-    </section>
+      </CardContent>
+    </Card>
   )
 }
 
@@ -275,11 +248,11 @@ function FilterSelect({
   children: ReactNode
 }) {
   return (
-    <label className="grid gap-1.5 text-xs font-black text-subtle">
+    <Label className="grid gap-2 text-xs text-muted-foreground">
       {label}
-      <select className={selectClass} value={value} onChange={(event) => onChange(event.target.value)}>
+      <NativeSelect value={value} onChange={(event) => onChange(event.target.value)}>
         {children}
-      </select>
-    </label>
+      </NativeSelect>
+    </Label>
   )
 }

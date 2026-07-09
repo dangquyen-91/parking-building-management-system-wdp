@@ -1,3 +1,4 @@
+import { RefreshCw } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import {
   StaffPageHeader,
@@ -9,6 +10,8 @@ import {
   isShiftSessionToday,
   type ShiftStat,
 } from '../../components/staff'
+import { Alert, AlertDescription } from '../../components/ui/alert'
+import { Button } from '../../components/ui/button'
 import { staffGateApi, type GateSession } from '../../services/staffGateApi'
 
 export function StaffShiftPage() {
@@ -97,21 +100,17 @@ export function StaffShiftPage() {
         title="Tổng kết ca"
         description="Đối soát lượt xe, doanh thu và ghi chú trước khi bàn giao cho ca tiếp theo."
         actions={
-          <button
-            type="button"
-            onClick={() => void loadShiftData()}
-            disabled={isLoading}
-            className="h-12 rounded-2xl border border-theme bg-page px-5 text-sm font-black text-fg shadow-sm transition-colors hover:bg-ghost disabled:opacity-60"
-          >
+          <Button type="button" variant="outline" onClick={() => void loadShiftData()} disabled={isLoading}>
+            <RefreshCw className="size-4" />
             {isLoading ? 'Đang cập nhật...' : 'Làm mới dữ liệu'}
-          </button>
+          </Button>
         }
       />
 
       {error && (
-        <p className="mb-5 rounded-2xl border border-rose-500/40 bg-rose-500/10 p-4 text-sm text-rose-700 dark:text-rose-200">
-          {error}
-        </p>
+        <Alert variant="destructive" className="mb-5">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
       )}
 
       <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">

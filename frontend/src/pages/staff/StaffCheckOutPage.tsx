@@ -5,6 +5,8 @@ import {
   StaffGateToast,
   StaffPageHeader,
 } from '../../components/staff'
+import { Alert, AlertDescription } from '../../components/ui/alert'
+import { Skeleton } from '../../components/ui/skeleton'
 import { useStaffGateController } from '../../hooks/useStaffGateController'
 
 export function StaffCheckOutPage() {
@@ -26,20 +28,19 @@ export function StaffCheckOutPage() {
       />
 
       {gate.actionMessage && (
-        <div className="mb-5 flex items-start gap-3 rounded-xl border border-sky-500/30 bg-sky-500/10 p-4 text-sm text-fg">
-          <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-sky-500 text-xs font-bold text-white">i</span>
-          {gate.actionMessage}
-        </div>
+        <Alert className="mb-5">
+          <AlertDescription>{gate.actionMessage}</AlertDescription>
+        </Alert>
       )}
 
       {gate.error && (
-        <div className="mb-5 rounded-xl border border-rose-500/30 bg-rose-500/10 p-4 text-sm text-rose-700 dark:text-rose-200">
-          {gate.error}
-        </div>
+        <Alert variant="destructive" className="mb-5">
+          <AlertDescription>{gate.error}</AlertDescription>
+        </Alert>
       )}
 
       {gate.isLoading ? (
-        <div className="rounded-lg border border-theme bg-badge p-5 text-sm text-muted">Đang tải dữ liệu cổng...</div>
+        <Skeleton className="h-80 rounded-xl" />
       ) : (
         <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_24rem]">
           <StaffGateCheckoutPanel

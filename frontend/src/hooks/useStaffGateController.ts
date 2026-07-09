@@ -103,7 +103,9 @@ export function useStaffGateController() {
       return qr.qrToken
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Không lấy được QR token thật của gói cư dân.'
-      throw new Error(`QR cư dân đã khớp, nhưng chưa lấy được token backend để mở cổng: ${message}`)
+      throw new Error(`QR cư dân đã khớp, nhưng chưa lấy được token backend để mở cổng: ${message}`, {
+        cause: err,
+      })
     }
   }
 

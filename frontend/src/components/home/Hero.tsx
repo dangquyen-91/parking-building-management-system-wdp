@@ -1,6 +1,5 @@
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
-import { useCallback } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import {
   heroBg,
   heroCard,
@@ -15,6 +14,10 @@ import {
   heroTabFromSlug,
   type HeroTab,
 } from '../../data/homeData'
+import { Badge } from '../ui/badge'
+import { Button } from '../ui/button'
+import { Card, CardContent } from '../ui/card'
+import { Tabs, TabsList, TabsTrigger } from '../ui/tabs'
 
 const HERO_BG_PNG = '/hero-bg.png'
 
@@ -22,15 +25,11 @@ export function Hero() {
   const [searchParams, setSearchParams] = useSearchParams()
   const activeTab = heroTabFromSlug(searchParams.get('tab'))
   const reduceMotion = useReducedMotion()
-
   const content = HERO_TAB_CONTENT[activeTab]
 
-  const setActiveTab = useCallback(
-    (tab: HeroTab) => {
-      setSearchParams({ tab: HERO_TAB_SLUGS[tab] }, { replace: true })
-    },
-    [setSearchParams],
-  )
+  function setActiveTab(tab: HeroTab) {
+    setSearchParams({ tab: HERO_TAB_SLUGS[tab] }, { replace: true })
+  }
 
   const motionProps = reduceMotion
     ? {}
@@ -39,18 +38,16 @@ export function Hero() {
         animate: 'visible' as const,
       }
 
-  const tabPanelId = (tab: HeroTab) => `hero-panel-${HERO_TAB_SLUGS[tab]}`
-
   return (
-    <section className="relative min-h-screen flex flex-col overflow-hidden bg-hero-base">
+    <section className="relative flex min-h-[92svh] flex-col overflow-hidden bg-background">
       <motion.div
         className="absolute inset-0"
         variants={reduceMotion ? undefined : heroBg}
         {...motionProps}
       >
-        <picture className="block w-full h-full">
+        <picture className="block h-full w-full">
           <img
-            className="w-full h-full object-cover object-center"
+            className="h-full w-full object-cover object-center"
             src={HERO_BG_PNG}
             alt=""
             width={3840}
@@ -61,42 +58,37 @@ export function Hero() {
             draggable={false}
           />
         </picture>
-        <div className="absolute inset-0 hero-scrim pointer-events-none" aria-hidden="true" />
+        <div className="absolute inset-0 bg-background/75 backdrop-blur-[1px] dark:bg-background/55" aria-hidden="true" />
       </motion.div>
 
-      <div className="relative z-10 flex-1 flex flex-col justify-end pb-10 lg:pb-14">
+      <div className="relative z-10 flex flex-1 flex-col justify-end px-6 pb-10 pt-28 md:px-12 lg:px-16 lg:pb-14">
         <motion.div
-          className="flex items-end justify-between gap-6 px-6 md:px-12 lg:px-16"
+          className="mx-auto flex w-full max-w-7xl items-end justify-between gap-6"
           variants={reduceMotion ? undefined : heroStagger}
           {...motionProps}
         >
-          <motion.div className="flex-1 min-w-0" variants={reduceMotion ? undefined : heroItem}>
+          <motion.div className="min-w-0 flex-1" variants={reduceMotion ? undefined : heroItem}>
             <AnimatePresence mode="wait">
               <motion.div
                 key={activeTab}
-                id={tabPanelId(activeTab)}
                 role="tabpanel"
-                aria-labelledby={`hero-tab-${HERO_TAB_SLUGS[activeTab]}`}
                 variants={reduceMotion ? undefined : tabPanel}
                 initial={reduceMotion ? false : 'initial'}
                 animate={reduceMotion ? undefined : 'animate'}
                 exit={reduceMotion ? undefined : 'exit'}
               >
-                <p className="text-[10px] tracking-[0.2em] text-hero-subtle uppercase mb-3 select-none">
+                <Badge variant="secondary" className="mb-3">
                   {content.eyebrow}
-                </p>
-                <h1
-                  className="text-5xl md:text-6xl lg:text-7xl font-bold text-hero-fg uppercase leading-none mb-4 text-balance"
-                  style={{ letterSpacing: '-0.02em' }}
-                >
-                  {content.headingLines.map((line, i) => (
+                </Badge>
+                <h1 className="mb-4 max-w-4xl text-5xl font-bold uppercase leading-none text-foreground md:text-6xl lg:text-7xl">
+                  {content.headingLines.map((line, index) => (
                     <span key={`${activeTab}-${line}`}>
                       {line}
-                      {i < content.headingLines.length - 1 && <br />}
+                      {index < content.headingLines.length - 1 && <br />}
                     </span>
                   ))}
                 </h1>
-                <p className="text-sm text-hero-muted mb-6 max-w-sm">
+                <p className="mb-6 max-w-lg text-sm leading-7 text-muted-foreground md:text-base">
                   {content.subheading}
                 </p>
               </motion.div>
@@ -104,34 +96,23 @@ export function Hero() {
 
             <motion.div
               variants={reduceMotion ? undefined : heroItem}
-              role="tablist"
-              aria-label="Góc nhìn phần giới thiệu"
-              className="flex items-center gap-2 flex-wrap"
+              className="flex flex-wrap items-center gap-3"
             >
-              {HERO_TABS.map((tab) => {
-                const selected = activeTab === tab
-                return (
-                  <motion.button
-                    key={tab}
-                    id={`hero-tab-${HERO_TAB_SLUGS[tab]}`}
-                    type="button"
-                    role="tab"
-                    aria-selected={selected}
-                    aria-controls={tabPanelId(tab)}
-                    tabIndex={selected ? 0 : -1}
-                    onClick={() => setActiveTab(tab)}
-                    whileTap={reduceMotion ? undefined : { scale: 0.97 }}
-                    className={[
-                      'text-xs font-medium rounded-full px-4 py-2 transition-colors duration-200',
-                      selected
-                        ? 'bg-hero-tab-active text-hero-tab-active-fg'
-                        : 'liquid-glass-hero text-hero-muted hover:text-hero-fg',
-                    ].join(' ')}
-                  >
-                    {tab}
-                  </motion.button>
-                )
-              })}
+              <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as HeroTab)}>
+                <TabsList>
+                  {HERO_TABS.map((tab) => (
+                    <TabsTrigger key={tab} value={tab}>
+                      {tab}
+                    </TabsTrigger>
+                  ))}
+                </TabsList>
+              </Tabs>
+              <Button asChild>
+                <Link to="/booking">Đặt chỗ</Link>
+              </Button>
+              <Button variant="outline" asChild>
+                <Link to="/login">Đăng nhập</Link>
+              </Button>
             </motion.div>
           </motion.div>
 
@@ -143,12 +124,16 @@ export function Hero() {
                 initial={reduceMotion ? false : 'initial'}
                 animate={reduceMotion ? undefined : 'animate'}
                 exit={reduceMotion ? undefined : 'exit'}
-                className="liquid-glass-hero rounded-2xl p-5 w-72 shrink-0 hidden lg:block"
+                className="hidden w-80 shrink-0 lg:block"
                 aria-live="polite"
               >
-                <p className="text-xs text-hero-muted leading-relaxed mb-4">
-                  {content.card.body}
-                </p>
+                <Card className="bg-card/90 backdrop-blur">
+                  <CardContent className="p-5">
+                    <p className="text-sm leading-7 text-muted-foreground">
+                      {content.card.body}
+                    </p>
+                  </CardContent>
+                </Card>
               </motion.div>
             )}
           </AnimatePresence>

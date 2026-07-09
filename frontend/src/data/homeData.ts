@@ -26,11 +26,7 @@ export type HeroTabContent = {
 export const HERO_TAB_CONTENT: Record<HeroTab, HeroTabContent> = {
   'Tổng quan': {
     eyebrow: 'Góc nhìn // Tổng quan',
-    headingLines: [
-      'Hệ thống',
-      'bãi đỗ cho',
-      'tòa nhà của bạn.',
-    ],
+    headingLines: ['Hệ thống', 'bãi đỗ cho', 'tòa nhà của bạn.'],
     subheading:
       'Một hệ thống thống nhất để giám sát, kiểm soát và tối ưu mọi điểm ra vào của phương tiện.',
     card: {
@@ -39,12 +35,7 @@ export const HERO_TAB_CONTENT: Record<HeroTab, HeroTabContent> = {
   },
   'Thông minh': {
     eyebrow: 'Góc nhìn // Thông minh',
-    headingLines: [
-      'Chấm dứt',
-      'cảnh hỗn loạn',
-      'ở bãi đỗ',
-      'tầng hầm.',
-    ],
+    headingLines: ['Chấm dứt', 'cảnh hỗn loạn', 'ở bãi đỗ', 'tầng hầm.'],
     subheading:
       'Loại bỏ hàng chờ ùn tắc, vé giấy thất lạc và sự khó chịu khi tìm hướng di chuyển.',
     card: {
@@ -53,12 +44,7 @@ export const HERO_TAB_CONTENT: Record<HeroTab, HeroTabContent> = {
   },
   'Hiện đại hóa': {
     eyebrow: 'Góc nhìn // Hiện đại hóa',
-    headingLines: [
-      'Sẵn sàng',
-      'hiện đại hóa',
-      'bãi đỗ trong',
-      'tòa nhà?',
-    ],
+    headingLines: ['Sẵn sàng', 'hiện đại hóa', 'bãi đỗ trong', 'tòa nhà?'],
     subheading:
       'Biến hạ tầng cũ thành một tài sản không gian thông minh, liền mạch và dễ vận hành.',
     card: {

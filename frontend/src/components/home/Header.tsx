@@ -1,7 +1,15 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { BrandLink, MenuIcon, OverlayBackdrop, ThemeToggle, UserMenu } from '../common'
-import { useOverlayPanel } from '../../hooks/useOverlayPanel'
+import { MenuIcon } from 'lucide-react'
+import { BrandLink, ThemeToggle, UserMenu } from '../common'
+import { Button } from '../ui/button'
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '../ui/sheet'
 import { authApi, getStoredAuthUser, type AuthUser } from '../../services/authApi'
 
 const NAV_LINKS = [
@@ -15,15 +23,6 @@ export function Header() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [authUser, setAuthUser] = useState<AuthUser | undefined>(() => getStoredAuthUser())
   const [logoutStatus, setLogoutStatus] = useState<'idle' | 'loading'>('idle')
-  const mobileNavRef = useRef<HTMLElement>(null)
-  const menuButtonRef = useRef<HTMLButtonElement>(null)
-
-  const { close: closeMenu } = useOverlayPanel({
-    isOpen: menuOpen,
-    panelRef: mobileNavRef,
-    triggerRef: menuButtonRef,
-    onClose: () => setMenuOpen(false),
-  })
 
   useEffect(() => {
     const handleStorage = () => {
@@ -48,148 +47,113 @@ export function Header() {
       // Local auth is cleared in authApi.logout even if the API request fails.
     } finally {
       setAuthUser(undefined)
-      closeMenu()
+      setMenuOpen(false)
       setLogoutStatus('idle')
     }
   }
 
   return (
-    <header className="fixed top-4 left-0 right-0 z-50 px-4 md:px-12 lg:px-16">
-      <div className="liquid-glass nav-glass rounded-full flex items-center justify-between gap-3 h-14 px-4 md:px-6 max-w-7xl mx-auto">
-        <BrandLink className="flex items-center gap-2 text-fg font-medium text-sm shrink-0 hover:text-fg" />
+    <header className="fixed left-0 right-0 top-4 z-50 px-4 md:px-12 lg:px-16">
+      <div className="mx-auto flex h-14 max-w-7xl items-center justify-between gap-3 rounded-xl border bg-background/90 px-4 shadow-sm backdrop-blur md:px-6">
+        <BrandLink className="flex shrink-0 items-center gap-2 text-sm font-medium text-foreground hover:text-foreground" />
 
-        <nav className="hidden lg:flex items-center gap-1" aria-label="Main navigation">
+        <nav className="hidden items-center gap-1 lg:flex" aria-label="Main navigation">
           {NAV_LINKS.map(({ href, label }) => (
-            <a
-              key={href}
-              href={href}
-              className="text-xs text-muted hover:text-fg transition-colors duration-200 px-3 py-1.5 rounded-full hover:bg-ghost"
-            >
-              {label}
-            </a>
+            <Button key={href} variant="ghost" size="sm" asChild>
+              <a href={href}>{label}</a>
+            </Button>
           ))}
         </nav>
 
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex shrink-0 items-center gap-2">
           {authUser ? (
             <UserMenu user={authUser} logoutStatus={logoutStatus} onLogout={handleLogout} />
           ) : (
             <>
-              <Link
-                to="/login"
-                className="hidden sm:inline-flex text-xs text-muted hover:text-fg transition-colors duration-200 px-3 py-1.5"
-              >
-                Đăng nhập
-              </Link>
-              <Link
-                to="/register"
-                className="hidden md:inline-flex text-xs text-muted hover:text-fg transition-colors duration-200 px-3 py-1.5"
-              >
-                Đăng ký
-              </Link>
+              <Button variant="ghost" size="sm" className="hidden sm:inline-flex" asChild>
+                <Link to="/login">Đăng nhập</Link>
+              </Button>
+              <Button variant="ghost" size="sm" className="hidden md:inline-flex" asChild>
+                <Link to="/register">Đăng ký</Link>
+              </Button>
             </>
           )}
           <ThemeToggle />
-          <Link
-            to="/booking"
-            className="inline-flex items-center text-xs font-medium bg-btn-primary text-btn-primary-fg hover:opacity-90 transition-opacity duration-200 rounded-full px-4 py-2"
-          >
-            Đặt chỗ
-          </Link>
-          <button
-            ref={menuButtonRef}
-            type="button"
-            className="lg:hidden w-8 h-8 flex items-center justify-center text-muted hover:text-fg rounded-full hover:bg-ghost"
-            aria-expanded={menuOpen}
-            aria-controls="mobile-nav"
-            aria-label={menuOpen ? 'Đóng menu' : 'Mở menu'}
-            onClick={() => setMenuOpen((o) => !o)}
-          >
-            <MenuIcon size={18} />
-          </button>
-        </div>
-      </div>
-
-      {menuOpen && (
-        <>
-          <OverlayBackdrop onClose={closeMenu} label="Đóng menu điều hướng" />
-          <nav
-            ref={mobileNavRef}
-            id="mobile-nav"
-            className="liquid-glass rounded-2xl mt-2 p-4 flex flex-col gap-1 max-w-7xl mx-auto lg:hidden relative z-50 overscroll-contain max-h-[min(70vh,24rem)] overflow-y-auto"
-            aria-label="Mobile navigation"
-          >
-            {NAV_LINKS.map(({ href, label }) => (
-              <a
-                key={href}
-                href={href}
-                className="text-sm text-muted hover:text-fg py-2 px-2 rounded-lg hover:bg-ghost transition-colors"
-                onClick={closeMenu}
-              >
-                {label}
-              </a>
-            ))}
-            {authUser ? (
-              <>
-                <div className="px-2 py-2">
-                  <p className="truncate text-sm font-semibold text-fg">{authUser.fullName}</p>
-                  <p className="mt-0.5 truncate text-xs text-subtle">{authUser.email}</p>
-                </div>
-                {authUser.role === 'user' && (
+          <Button size="sm" asChild>
+            <Link to="/booking">Đặt chỗ</Link>
+          </Button>
+          <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon" className="lg:hidden" aria-label="Mở menu">
+                <MenuIcon className="size-4" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-80 max-w-[85vw]">
+              <SheetHeader>
+                <SheetTitle>Parking Simulator</SheetTitle>
+              </SheetHeader>
+              <nav className="grid gap-1 px-4" aria-label="Mobile navigation">
+                {NAV_LINKS.map(({ href, label }) => (
+                  <Button key={href} variant="ghost" className="justify-start" asChild>
+                    <a href={href} onClick={() => setMenuOpen(false)}>
+                      {label}
+                    </a>
+                  </Button>
+                ))}
+                {authUser ? (
                   <>
-                    <Link
-                      to="/my-bookings"
-                      className="rounded-lg px-2 py-2 text-sm text-muted transition-colors hover:bg-ghost hover:text-fg"
-                      onClick={closeMenu}
+                    <div className="my-2 rounded-lg border bg-muted/40 p-3">
+                      <p className="truncate text-sm font-semibold">{authUser.fullName}</p>
+                      <p className="mt-0.5 truncate text-xs text-muted-foreground">{authUser.email}</p>
+                    </div>
+                    {authUser.role === 'user' && (
+                      <>
+                        <Button variant="ghost" className="justify-start" asChild>
+                          <Link to="/my-bookings" onClick={() => setMenuOpen(false)}>
+                            Đặt chỗ của tôi
+                          </Link>
+                        </Button>
+                        <Button variant="ghost" className="justify-start" asChild>
+                          <Link to="/profile" onClick={() => setMenuOpen(false)}>
+                            Hồ sơ
+                          </Link>
+                        </Button>
+                      </>
+                    )}
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      className="justify-start"
+                      onClick={handleLogout}
+                      disabled={logoutStatus === 'loading'}
                     >
-                      Đặt chỗ của tôi
-                    </Link>
-                    <Link
-                      to="/profile"
-                      className="rounded-lg px-2 py-2 text-sm text-muted transition-colors hover:bg-ghost hover:text-fg"
-                      onClick={closeMenu}
-                    >
-                      Hồ sơ
-                    </Link>
+                      {logoutStatus === 'loading' ? 'Đang đăng xuất...' : 'Đăng xuất'}
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Button variant="ghost" className="justify-start" asChild>
+                      <Link to="/login" onClick={() => setMenuOpen(false)}>
+                        Đăng nhập
+                      </Link>
+                    </Button>
+                    <Button variant="ghost" className="justify-start" asChild>
+                      <Link to="/register" onClick={() => setMenuOpen(false)}>
+                        Đăng ký
+                      </Link>
+                    </Button>
                   </>
                 )}
-                <button
-                  type="button"
-                  className="text-left text-sm text-muted hover:text-fg py-2 px-2 rounded-lg hover:bg-ghost transition-colors disabled:cursor-not-allowed disabled:opacity-60"
-                  onClick={handleLogout}
-                  disabled={logoutStatus === 'loading'}
-                >
-                  {logoutStatus === 'loading' ? 'Đang đăng xuất...' : 'Đăng xuất'}
-                </button>
-              </>
-            ) : (
-              <>
-                <Link
-                  to="/login"
-                  className="text-sm text-muted hover:text-fg py-2 px-2 rounded-lg hover:bg-ghost transition-colors"
-                  onClick={closeMenu}
-                >
-                  Đăng nhập
-                </Link>
-                <Link
-                  to="/register"
-                  className="text-sm text-muted hover:text-fg py-2 px-2 rounded-lg hover:bg-ghost transition-colors"
-                  onClick={closeMenu}
-                >
-                  Đăng ký
-                </Link>
-              </>
-            )}
-            <Link
-              to="/booking"
-              className="text-sm text-muted hover:text-fg py-2 px-2 rounded-lg hover:bg-ghost transition-colors"
-              onClick={closeMenu}
-            >
-              Đặt chỗ
-            </Link>
-          </nav>
-        </>
-      )}
+                <Button className="mt-2 justify-start" asChild>
+                  <Link to="/booking" onClick={() => setMenuOpen(false)}>
+                    Đặt chỗ
+                  </Link>
+                </Button>
+              </nav>
+            </SheetContent>
+          </Sheet>
+        </div>
+      </div>
     </header>
   )
 }
