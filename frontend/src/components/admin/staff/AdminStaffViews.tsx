@@ -1,4 +1,4 @@
-import { Search, UserRound } from 'lucide-react'
+﻿import { Search, UserRound } from 'lucide-react'
 import type { AdminUser } from '../../../services/adminApi'
 import type { GateSession } from '../../../services/staffGateApi'
 import { AdminStatCard } from '../common/AdminStatCard'
@@ -33,3 +33,4 @@ export function AdminStaffList({ staff, sessions, isLoading }: { staff: AdminUse
     return <Card key={user._id} className="transition-shadow hover:shadow-md"><CardHeader className="flex-row items-start justify-between"><div className="flex min-w-0 items-center gap-3"><span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary"><UserRound className="size-5" /></span><div className="min-w-0"><p className="truncate font-semibold">{user.fullName}</p><p className="truncate text-xs text-muted-foreground">{user.email}</p></div></div><AdminStatusBadge status={user.isActive ? 'active' : 'inactive'} /></CardHeader><CardContent><dl className="grid grid-cols-2 gap-4 text-sm"><div><dt className="text-xs text-muted-foreground">Số điện thoại</dt><dd className="mt-1 font-medium">{user.phone || 'Chưa cập nhật'}</dd></div><div><dt className="text-xs text-muted-foreground">Xe phụ trách</dt><dd className="mt-1 font-medium">{staffSessions.length}</dd></div></dl>{staffSessions.length > 0 && <div className="mt-4 flex flex-wrap gap-2 border-t pt-4">{staffSessions.slice(0, 5).map((s) => <Badge key={s._id} variant="secondary">{s.licensePlate}</Badge>)}</div>}</CardContent></Card>
   })}</section>
 }
+

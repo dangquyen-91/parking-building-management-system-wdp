@@ -1,3 +1,4 @@
+﻿import { Button } from '@/components/ui/button'
 import { useCallback, useEffect, useState } from 'react'
 import {
   ManagerOccupancyTable,
@@ -113,9 +114,9 @@ export function ManagerReportsPage() {
       {error && (
         <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-700 dark:text-red-300">
           <span>{error}</span>
-          <button type="button" className="font-semibold underline" onClick={() => void loadReports()}>
+          <Button type="button" className="font-semibold underline" onClick={() => void loadReports()}>
             Thử lại
-          </button>
+          </Button>
         </div>
       )}
 
@@ -184,3 +185,6 @@ export function ManagerReportsPage() {
     </div>
   )
 }
+
+
+

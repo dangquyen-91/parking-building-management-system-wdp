@@ -1,3 +1,6 @@
+﻿import { Label } from '@/components/ui/label'
+import { Input } from '@/components/ui/input'
+import { NativeSelect } from '@/components/ui/native-select'
 import type { GateVehicleType } from '../../../services/staffGateApi'
 
 export type ManagerLostTicketVehicleFilter = 'all' | GateVehicleType
@@ -17,28 +20,32 @@ export function ManagerLostTicketFilters({
 }: ManagerLostTicketFiltersProps) {
   return (
     <div className="grid w-full gap-3 md:grid-cols-2 xl:w-auto xl:min-w-[34rem]">
-      <label className="grid gap-1 text-xs font-medium text-subtle">
+      <Label className="grid gap-1 text-xs font-medium text-muted-foreground">
         Tìm biển số
-        <input
-          className="h-10 rounded-lg border border-theme bg-page px-3 text-sm text-fg outline-none focus:border-btn-primary"
+        <Input
+          className="h-10 rounded-lg border border-border bg-background px-3 text-sm text-foreground outline-none focus:border-ring"
           value={query}
           onChange={(event) => onQueryChange(event.target.value)}
           placeholder="Ví dụ: 61K-424.94"
         />
-      </label>
+      </Label>
 
-      <label className="grid gap-1 text-xs font-medium text-subtle">
+      <Label className="grid gap-1 text-xs font-medium text-muted-foreground">
         Loại xe
-        <select
-          className="h-10 rounded-lg border border-theme bg-page px-3 text-sm text-fg"
+        <NativeSelect
+          className="h-10 rounded-lg border border-border bg-background px-3 text-sm text-foreground"
           value={vehicleFilter}
           onChange={(event) => onVehicleFilterChange(event.target.value as ManagerLostTicketVehicleFilter)}
         >
           <option value="all">Tất cả</option>
           <option value="motorcycle">Xe máy</option>
           <option value="car">Ô tô</option>
-        </select>
-      </label>
+        </NativeSelect>
+      </Label>
     </div>
   )
 }
+
+
+
+

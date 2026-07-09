@@ -1,3 +1,4 @@
+﻿import { Button } from '@/components/ui/button'
 import { useEffect, useMemo, useState } from 'react'
 import {
   ManagerPageHeader,
@@ -101,9 +102,9 @@ export function ManagerPlansPage() {
       <ManagerPlanStats plans={plans} isLoading={isLoading} />
 
       {error && (
-        <div className="mb-4 flex items-center justify-between gap-3 rounded-lg border border-theme bg-rose-500/10 p-4 text-sm text-rose-200">
+        <div className="mb-4 flex items-center justify-between gap-3 rounded-lg border border-border bg-rose-500/10 p-4 text-sm text-rose-200">
           <span>{error}</span>
-          <button type="button" className="font-semibold hover:underline" onClick={() => void loadPlans()}>Thử lại</button>
+          <Button type="button" className="font-semibold hover:underline" onClick={() => void loadPlans()}>Thử lại</Button>
         </div>
       )}
 
@@ -125,3 +126,6 @@ export function ManagerPlansPage() {
     </div>
   )
 }
+
+
+

@@ -1,4 +1,4 @@
-type AdminStatCardProps = {
+﻿type AdminStatCardProps = {
   label: string
   value: string | number
   detail: string
@@ -54,3 +54,4 @@ export function AdminStatCard({ label, value, detail, tone = 'violet' }: AdminSt
 }
 import { Activity, CircleDollarSign, ParkingCircle, Users } from 'lucide-react'
 import { Card, CardContent } from '../../ui/card'
+

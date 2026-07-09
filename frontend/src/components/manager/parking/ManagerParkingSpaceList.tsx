@@ -1,4 +1,4 @@
-import { ManagerRowGridSection } from './ManagerRowGridSection'
+﻿import { ManagerRowGridSection } from './ManagerRowGridSection'
 import { ManagerSlotGridSection } from './ManagerSlotGridSection'
 import type { Building, Floor } from '../../../services/managerBuildingsApi'
 import type { ParkingRow } from '../../../services/managerParkingRowApi'
@@ -42,7 +42,7 @@ export function ManagerParkingSpaceList({
 
   if (isLoading) {
     return (
-      <div className="liquid-glass-card rounded-lg border border-theme bg-badge p-4 text-sm text-muted">
+      <div className="bg-card text-card-foreground ring-1 ring-border rounded-lg border border-border bg-card p-4 text-sm text-muted-foreground">
         Đang tải dữ liệu chỗ đỗ...
       </div>
     )
@@ -50,7 +50,7 @@ export function ManagerParkingSpaceList({
 
   if (filteredSlots.length === 0 && filteredRows.length === 0) {
     return (
-      <div className="liquid-glass-card rounded-lg border border-theme bg-badge p-4 text-sm text-muted">
+      <div className="bg-card text-card-foreground ring-1 ring-border rounded-lg border border-border bg-card p-4 text-sm text-muted-foreground">
         Không có chỗ đỗ nào phù hợp với bộ lọc hiện tại.
       </div>
     )
@@ -97,3 +97,5 @@ export function ManagerParkingSpaceList({
     </section>
   )
 }
+
+

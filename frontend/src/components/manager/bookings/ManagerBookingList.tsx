@@ -1,4 +1,7 @@
-import type { ManagerBooking } from '../../../services/managerBookingsApi'
+﻿import type { ManagerBooking } from '../../../services/managerBookingsApi'
+import { Badge } from '@/components/ui/badge'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Skeleton } from '@/components/ui/skeleton'
 import { ManagerBookingCard } from './ManagerBookingCard'
 
 type ManagerBookingListProps = {
@@ -8,27 +11,39 @@ type ManagerBookingListProps = {
 
 export function ManagerBookingList({ bookings, isLoading }: ManagerBookingListProps) {
   if (isLoading) {
-    return <div className="liquid-glass-card rounded-lg p-4 text-sm text-muted">Đang tải danh sách booking...</div>
+    return (
+      <Card>
+        <CardContent className="grid gap-3 p-4">
+          <Skeleton className="h-6 w-48" />
+          <Skeleton className="h-24 w-full" />
+          <Skeleton className="h-24 w-full" />
+        </CardContent>
+      </Card>
+    )
   }
 
   if (bookings.length === 0) {
-    return <div className="liquid-glass-card rounded-lg p-4 text-sm text-muted">Không có booking phù hợp.</div>
+    return (
+      <Card>
+        <CardContent className="p-4 text-sm text-muted-foreground">Không có booking phù hợp.</CardContent>
+      </Card>
+    )
   }
 
   return (
-    <section className="liquid-glass-card rounded-lg p-4 md:p-5">
-      <div className="mb-4 flex items-center justify-between gap-3">
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between gap-3 border-b">
         <div>
-          <p className="text-[10px] uppercase tracking-[0.18em] text-subtle">Danh sách đặt chỗ</p>
-          <h2 className="mt-1 text-base font-semibold text-fg">Booking gần đây</h2>
+          <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Danh sách đặt chỗ</p>
+          <CardTitle>Booking gần đây</CardTitle>
         </div>
-        <span className="rounded-full border border-theme px-3 py-1 text-xs font-semibold text-subtle">
-          {bookings.length} booking
-        </span>
-      </div>
-      <div className="grid gap-3">
+        <Badge variant="outline">{bookings.length} booking</Badge>
+      </CardHeader>
+      <CardContent className="grid gap-3 p-4 md:p-5">
         {bookings.map((booking) => <ManagerBookingCard key={booking._id} booking={booking} />)}
-      </div>
-    </section>
+      </CardContent>
+    </Card>
   )
 }
+
+

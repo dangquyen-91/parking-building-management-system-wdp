@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+﻿import { useEffect, useState } from 'react'
 import type { BuildingPayload } from '../../../services/managerBuildingsApi'
 import { AdminField, AdminModal, AdminModalActions } from '../common/AdminFormPrimitives'
 import { Input } from '../../ui/input'
@@ -24,3 +24,4 @@ export function AdminBuildingFormModal({ open, mode, initialValues, isSubmitting
     </AdminModal>
   )
 }
+

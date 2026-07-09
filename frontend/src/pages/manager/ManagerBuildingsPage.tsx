@@ -1,3 +1,6 @@
+﻿import { Label } from '@/components/ui/label'
+import { Button } from '@/components/ui/button'
+import { NativeSelect } from '@/components/ui/native-select'
 import { useMemo, useState } from 'react'
 import {
   ManagerBuildingCard,
@@ -130,24 +133,24 @@ export function ManagerBuildingsPage() {
         description="Xem chi tiết tòa nhà, danh sách tầng và tổng sức chứa."
         actions={
           <div className="grid w-full gap-3 lg:min-w-[36rem] lg:max-w-[42rem]">
-            <div className="flex flex-col gap-3 rounded-lg border border-theme bg-badge/60 p-3 sm:flex-row sm:items-end sm:justify-between">
+            <div className="flex flex-col gap-3 rounded-lg border border-border bg-card/60 p-3 sm:flex-row sm:items-end sm:justify-between">
               <div className="grid flex-1 gap-3 sm:grid-cols-2">
-                <label className="grid gap-1 text-xs font-medium text-subtle">
+                <Label className="grid gap-1 text-xs font-medium text-muted-foreground">
                   Trạng thái
-                  <select
-                    className="h-10 w-full rounded-lg border border-theme bg-page px-3 text-sm text-fg outline-none transition focus:border-btn-primary"
+                  <NativeSelect
+                    className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm text-foreground outline-none transition focus:border-ring"
                     value={statusFilter}
                     onChange={(event) => setStatusFilter(event.target.value as typeof statusFilter)}
                   >
                     <option value="all">Tất cả</option>
                     <option value="active">Đang hoạt động</option>
                     <option value="inactive">Ngừng hoạt động</option>
-                  </select>
-                </label>
-                <label className="grid gap-1 text-xs font-medium text-subtle">
+                  </NativeSelect>
+                </Label>
+                <Label className="grid gap-1 text-xs font-medium text-muted-foreground">
                   Tên tòa nhà
-                  <select
-                    className="h-10 w-full rounded-lg border border-theme bg-page px-3 text-sm text-fg outline-none transition focus:border-btn-primary"
+                  <NativeSelect
+                    className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm text-foreground outline-none transition focus:border-ring"
                     value={buildingFilter}
                     onChange={(event) => setBuildingFilter(event.target.value)}
                   >
@@ -157,25 +160,25 @@ export function ManagerBuildingsPage() {
                         {building.name}
                       </option>
                     ))}
-                  </select>
-                </label>
+                  </NativeSelect>
+                </Label>
               </div>
 
               <div className="flex flex-col gap-2 sm:flex-row">
-                <button
+                <Button
                   type="button"
-                  className="h-10 rounded-lg bg-btn-primary px-4 text-sm font-semibold text-btn-primary-fg transition hover:opacity-90"
+                  className="h-10 rounded-lg bg-primary px-4 text-sm font-semibold text-primary-foreground transition hover:opacity-90"
                   onClick={handleOpenCreate}
                 >
                   Tạo tòa nhà
-                </button>
-                <button
+                </Button>
+                <Button
                   type="button"
-                  className="h-10 rounded-lg border border-theme px-4 text-sm font-semibold text-fg transition hover:bg-badge"
+                  className="h-10 rounded-lg border border-border px-4 text-sm font-semibold text-foreground transition hover:bg-card"
                   onClick={handleOpenCreateFloor}
                 >
                   Tạo tầng
-                </button>
+                </Button>
               </div>
             </div>
           </div>
@@ -189,19 +192,19 @@ export function ManagerBuildingsPage() {
       </div>
 
       {error && (
-        <div className="liquid-glass-card rounded-lg border border-theme bg-badge p-4 text-sm text-rose-100">
+        <div className="bg-card text-card-foreground ring-1 ring-border rounded-lg border border-border bg-card p-4 text-sm text-rose-100">
           {error}
         </div>
       )}
 
       {!error && isLoading && (
-        <div className="liquid-glass-card rounded-lg border border-theme bg-badge p-4 text-sm text-muted">
+        <div className="bg-card text-card-foreground ring-1 ring-border rounded-lg border border-border bg-card p-4 text-sm text-muted-foreground">
           Đang tải dữ liệu tòa nhà...
         </div>
       )}
 
       {!error && !isLoading && filteredSummaries.length === 0 && (
-        <div className="liquid-glass-card rounded-lg border border-theme bg-badge p-4 text-sm text-muted">
+        <div className="bg-card text-card-foreground ring-1 ring-border rounded-lg border border-border bg-card p-4 text-sm text-muted-foreground">
           Không có tòa nhà nào phù hợp với bộ lọc hiện tại.
         </div>
       )}
@@ -263,3 +266,7 @@ export function ManagerBuildingsPage() {
     </div>
   )
 }
+
+
+
+

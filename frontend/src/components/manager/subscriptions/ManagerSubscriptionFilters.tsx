@@ -1,3 +1,5 @@
+import { Input } from '@/components/ui/input'
+import { NativeSelect } from '@/components/ui/native-select'
 import type {
   ManagerSubscriptionStatus,
   ManagerSubscriptionVehicleType,
@@ -25,17 +27,17 @@ export function ManagerSubscriptionFilters({
 }: Props) {
   return (
     <div className="grid gap-2 sm:grid-cols-3">
-      <input
+      <Input
         type="search"
+        className="h-10"
         value={query}
         placeholder="Tên, email, SĐT hoặc biển số"
         onChange={(event) => onQueryChange(event.target.value)}
-        className="h-10 min-w-0 rounded-lg border border-theme bg-page px-3 text-sm text-fg outline-none focus:border-btn-primary"
       />
-      <select
+      <NativeSelect
+        className="w-full"
         value={status}
         onChange={(event) => onStatusChange(event.target.value as ManagerSubscriptionStatusFilter)}
-        className="h-10 rounded-lg border border-theme bg-page px-3 text-sm text-fg"
       >
         <option value="all">Tất cả trạng thái</option>
         <option value="active">Đang hoạt động</option>
@@ -43,16 +45,16 @@ export function ManagerSubscriptionFilters({
         <option value="pending">Chờ thanh toán</option>
         <option value="expired">Đã hết hạn</option>
         <option value="cancelled">Đã hủy</option>
-      </select>
-      <select
+      </NativeSelect>
+      <NativeSelect
+        className="w-full"
         value={vehicleType}
         onChange={(event) => onVehicleTypeChange(event.target.value as ManagerSubscriptionVehicleFilter)}
-        className="h-10 rounded-lg border border-theme bg-page px-3 text-sm text-fg"
       >
         <option value="all">Tất cả loại xe</option>
         <option value="motorcycle">Xe máy</option>
         <option value="car">Ô tô</option>
-      </select>
+      </NativeSelect>
     </div>
   )
 }

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+﻿import { useEffect, useMemo, useState } from 'react'
 import {
   AdminGateLogFilters,
   AdminGateLogList,
@@ -87,3 +87,4 @@ export function AdminGateLogsPage() {
     </AdminPageShell>
   )
 }
+

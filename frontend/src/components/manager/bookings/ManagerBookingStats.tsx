@@ -1,4 +1,4 @@
-import type { ManagerBooking } from '../../../services/managerBookingsApi'
+﻿import type { ManagerBooking } from '../../../services/managerBookingsApi'
 import { formatCurrency } from '../managerUi'
 import { ManagerStatCard } from '../common/ManagerStatCard'
 
@@ -24,3 +24,5 @@ export function ManagerBookingStats({ bookings, isLoading }: ManagerBookingStats
     </div>
   )
 }
+
+

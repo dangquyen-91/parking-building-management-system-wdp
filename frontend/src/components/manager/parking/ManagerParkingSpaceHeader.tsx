@@ -1,3 +1,6 @@
+﻿import { Label } from '@/components/ui/label'
+import { Button } from '@/components/ui/button'
+import { NativeSelect } from '@/components/ui/native-select'
 import { ManagerPageHeader } from '../common/ManagerPageHeader'
 import type { Building, Floor } from '../../../services/managerBuildingsApi'
 import { getFloorSection } from '../../../utils/floorLabel'
@@ -15,9 +18,6 @@ type ManagerParkingSpaceHeaderProps = {
   onCreateSlot: () => void
   onCreateRow: () => void
 }
-
-const selectClass =
-  'h-10 w-full rounded-lg border border-theme bg-page px-3 text-sm font-semibold text-fg outline-none transition focus:border-btn-primary'
 
 function formatVehicleType(vehicleType: Floor['vehicleType']) {
   return vehicleType === 'motorcycle' ? 'Xe máy' : 'Ô tô'
@@ -46,12 +46,12 @@ export function ManagerParkingSpaceHeader({
       title="Chỗ đỗ"
       description="Chọn tòa nhà, tầng và khu để xem đúng nhóm chỗ đỗ cần quản lý."
       actions={
-        <div className="w-full lg:min-w-[42rem] lg:max-w-[56rem]">
-          <div className="grid gap-4 md:grid-cols-3">
-            <label className="grid gap-1 text-xs font-bold text-subtle">
+        <div className="w-full xl:min-w-[36rem] xl:max-w-[52rem]">
+          <div className="grid gap-3 md:grid-cols-3">
+            <Label className="grid gap-2 text-xs font-medium text-muted-foreground">
               Tòa nhà
-              <select
-                className={selectClass}
+              <NativeSelect
+                className="w-full"
                 value={buildingFilter}
                 onChange={(event) => onBuildingFilterChange(event.target.value)}
               >
@@ -61,13 +61,13 @@ export function ManagerParkingSpaceHeader({
                     {building.name}
                   </option>
                 ))}
-              </select>
-            </label>
+              </NativeSelect>
+            </Label>
 
-            <label className="grid gap-1 text-xs font-bold text-subtle">
+            <Label className="grid gap-2 text-xs font-medium text-muted-foreground">
               Tầng
-              <select
-                className={selectClass}
+              <NativeSelect
+                className="w-full"
                 value={floorNumberFilter}
                 onChange={(event) => onFloorNumberFilterChange(event.target.value)}
               >
@@ -77,13 +77,13 @@ export function ManagerParkingSpaceHeader({
                     Tầng {floorNumber}
                   </option>
                 ))}
-              </select>
-            </label>
+              </NativeSelect>
+            </Label>
 
-            <label className="grid gap-1 text-xs font-bold text-subtle">
+            <Label className="grid gap-2 text-xs font-medium text-muted-foreground">
               Khu
-              <select
-                className={selectClass}
+              <NativeSelect
+                className="w-full"
                 value={sectionFilter}
                 onChange={(event) => onSectionFilterChange(event.target.value)}
               >
@@ -96,28 +96,33 @@ export function ManagerParkingSpaceHeader({
                     {formatFloorType(floor.floorType)}
                   </option>
                 ))}
-              </select>
-            </label>
+              </NativeSelect>
+            </Label>
           </div>
 
           <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:justify-end">
-            <button
+            <Button
               type="button"
-              className="h-10 rounded-lg bg-btn-primary px-4 text-sm font-bold text-btn-primary-fg transition hover:opacity-90"
+              size="lg"
               onClick={onCreateSlot}
             >
               Tạo ô đỗ ô tô
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
-              className="h-10 rounded-lg border border-theme/70 bg-page/20 px-4 text-sm font-bold text-fg transition hover:bg-page/50"
+              variant="outline"
+              size="lg"
               onClick={onCreateRow}
             >
               Tạo hàng xe máy
-            </button>
+            </Button>
           </div>
         </div>
       }
     />
   )
 }
+
+
+
+

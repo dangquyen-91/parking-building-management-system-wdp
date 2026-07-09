@@ -1,4 +1,4 @@
-export type AdminStatus =
+﻿export type AdminStatus =
   | 'active'
   | 'inactive'
   | 'pending'
@@ -389,3 +389,4 @@ export function getRoleCount(role: AdminUser['role']) {
 export function formatAdminCurrency(value: number) {
   return `${value.toLocaleString('vi-VN')} VND`
 }
+

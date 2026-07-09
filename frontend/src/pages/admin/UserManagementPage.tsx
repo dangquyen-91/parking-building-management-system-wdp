@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+﻿import { useEffect, useMemo, useState } from 'react'
 import { Search } from 'lucide-react'
 import { AdminPageShell, AdminStatCard, AdminStatusBadge } from '../../components/admin'
 import { adminApi, type AdminUser } from '../../services/adminApi'
@@ -28,3 +28,4 @@ export function UserManagementPage() {
     </div>
   </AdminPageShell>
 }
+

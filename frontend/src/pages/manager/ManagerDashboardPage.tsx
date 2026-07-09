@@ -1,3 +1,4 @@
+﻿import { Button } from '@/components/ui/button'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   ManagerOverviewActivity,
@@ -125,14 +126,14 @@ export function ManagerDashboardPage() {
         title="Tổng quan vận hành"
         description="Theo dõi nhanh tình trạng bãi xe, hoạt động hôm nay và các vấn đề cần xử lý."
         actions={
-          <button
+          <Button
             type="button"
             disabled={loading}
             onClick={() => void loadOverview()}
-            className="h-12 rounded-2xl border border-theme bg-page px-5 text-sm font-black text-fg shadow-sm transition-colors hover:bg-ghost disabled:opacity-50"
+            className="h-12 rounded-2xl border border-border bg-background px-5 text-sm font-black text-foreground shadow-sm transition-colors hover:bg-muted disabled:opacity-50"
           >
             {loading ? 'Đang tải...' : 'Làm mới dữ liệu'}
-          </button>
+          </Button>
         }
       />
 
@@ -185,3 +186,6 @@ export function ManagerDashboardPage() {
     </div>
   )
 }
+
+
+

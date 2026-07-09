@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+﻿import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { AdminPageShell, AdminStatCard, AdminStatusBadge, formatAdminCurrency } from '../../components/admin'
 import { adminApi, type AdminBooking, type AdminDashboardReport, type AdminOccupancyReport } from '../../services/adminApi'
@@ -257,8 +257,8 @@ export function DashboardPage() {
                 {String(index + 1).padStart(2, '0')}
               </span>
               <span className="min-w-0 flex-1">
-                <span className="block text-sm font-bold text-fg">{item.label}</span>
-                <span className="mt-1 block line-clamp-1 text-xs text-muted">{item.detail}</span>
+                <span className="block text-sm font-bold text-foreground">{item.label}</span>
+                <span className="mt-1 block line-clamp-1 text-xs text-muted-foreground">{item.detail}</span>
               </span>
               <ArrowRight className={`size-4 transition-transform group-hover:translate-x-1 ${styles.arrow}`} />
             </div>
@@ -272,26 +272,26 @@ export function DashboardPage() {
           <span className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-sky-500 via-cyan-400 to-emerald-400" />
           <div className="mb-4 flex items-start justify-between gap-3">
             <div>
-              <p className="text-[10px] uppercase tracking-[0.18em] text-subtle">Công suất</p>
-              <h2 className="mt-1 text-base font-semibold text-fg">Tình trạng từng tầng</h2>
+              <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Công suất</p>
+              <h2 className="mt-1 text-base font-semibold text-foreground">Tình trạng từng tầng</h2>
             </div>
-            <Link to="/admin/slots" className="text-xs font-semibold text-muted hover:text-fg">
+            <Link to="/admin/slots" className="text-xs font-semibold text-muted-foreground hover:text-foreground">
               Quản lý chỗ đỗ
             </Link>
           </div>
 
           {(occupancy?.floors.length ?? 0) === 0 ? (
-            <p className="py-8 text-center text-sm text-subtle">Chưa có dữ liệu tầng đỗ xe.</p>
+            <p className="py-8 text-center text-sm text-muted-foreground">Chưa có dữ liệu tầng đỗ xe.</p>
           ) : (
             <div className="grid gap-3 md:grid-cols-2">
               {(occupancy?.floors ?? []).slice(0, 6).map((floor) => (
                 <Card key={floor.floorId} className="shadow-none"><CardContent className="p-4">
                   <div className="flex items-start justify-between gap-3">
                     <div>
-                      <p className="font-semibold text-fg">
+                      <p className="font-semibold text-foreground">
                         {floor.building?.name ?? 'Chưa xác định'} / {formatFloorLabel(floor)}
                       </p>
-                      <p className="mt-1 text-xs text-subtle">{vehicleLabel(floor.vehicleType)}</p>
+                      <p className="mt-1 text-xs text-muted-foreground">{vehicleLabel(floor.vehicleType)}</p>
                     </div>
                     <AdminStatusBadge
                       status={floor.utilizationPercent >= 90 ? 'occupied' : 'available'}
@@ -299,7 +299,7 @@ export function DashboardPage() {
                     />
                   </div>
                   <Progress value={Math.min(100, floor.utilizationPercent)} className="mt-4 h-2" />
-                  <p className="mt-2 text-xs text-muted">
+                  <p className="mt-2 text-xs text-muted-foreground">
                     Đang đỗ {floor.occupied} · Còn trống {floor.empty} · Bảo trì {floor.maintenance ?? 0}
                   </p>
                 </CardContent></Card>
@@ -311,8 +311,8 @@ export function DashboardPage() {
         <Card className="relative overflow-hidden p-4 md:p-5">
           <span className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-amber-400 via-orange-500 to-rose-500" />
           <div className="mb-4">
-            <p className="text-[10px] uppercase tracking-[0.18em] text-subtle">Cần chú ý</p>
-            <h2 className="mt-1 text-base font-semibold text-fg">Cảnh báo hệ thống</h2>
+            <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Cần chú ý</p>
+            <h2 className="mt-1 text-base font-semibold text-foreground">Cảnh báo hệ thống</h2>
           </div>
 
           {alerts.length === 0 ? (
@@ -323,8 +323,8 @@ export function DashboardPage() {
                 <Card key={alert.id} className="shadow-none"><Link to={alert.to} className="block p-3">
                   <div className="flex items-start justify-between gap-3">
                     <div>
-                      <p className="text-sm font-semibold text-fg">{alert.title}</p>
-                      <p className="mt-1 text-xs text-muted">{alert.detail}</p>
+                      <p className="text-sm font-semibold text-foreground">{alert.title}</p>
+                      <p className="mt-1 text-xs text-muted-foreground">{alert.detail}</p>
                     </div>
                     <AdminStatusBadge status={alert.tone} label="Kiểm tra" />
                   </div>
@@ -340,23 +340,23 @@ export function DashboardPage() {
           <span className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-emerald-500 to-cyan-400" />
           <div className="mb-4 flex items-start justify-between gap-3">
             <div>
-              <p className="text-[10px] uppercase tracking-[0.18em] text-subtle">Hoạt động cổng</p>
-              <h2 className="mt-1 text-base font-semibold text-fg">Xe vừa vào bãi</h2>
+              <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Hoạt động cổng</p>
+              <h2 className="mt-1 text-base font-semibold text-foreground">Xe vừa vào bãi</h2>
             </div>
-            <Link to="/admin/gate-logs" className="text-xs font-semibold text-muted hover:text-fg">
+            <Link to="/admin/gate-logs" className="text-xs font-semibold text-muted-foreground hover:text-foreground">
               Xem tất cả
             </Link>
           </div>
 
           {sessions.length === 0 ? (
-            <p className="py-8 text-center text-sm text-subtle">Hiện không có xe trong bãi.</p>
+            <p className="py-8 text-center text-sm text-muted-foreground">Hiện không có xe trong bãi.</p>
           ) : (
             <div className="space-y-2">
               {sessions.map((session) => (
                 <Card key={session._id} className="shadow-none"><CardContent className="flex items-center justify-between gap-3 p-3">
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-semibold text-fg">{session.licensePlate}</p>
-                    <p className="mt-1 text-xs text-subtle">
+                    <p className="truncate text-sm font-semibold text-foreground">{session.licensePlate}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">
                       {vehicleLabel(session.vehicleType)} · Vào {formatDateTime(session.entryTime)}
                     </p>
                   </div>
@@ -371,23 +371,23 @@ export function DashboardPage() {
           <span className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-violet-500 to-fuchsia-500" />
           <div className="mb-4 flex items-start justify-between gap-3">
             <div>
-              <p className="text-[10px] uppercase tracking-[0.18em] text-subtle">Booking sắp đến</p>
-              <h2 className="mt-1 text-base font-semibold text-fg">Đã thanh toán, chưa sử dụng</h2>
+              <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Booking sắp đến</p>
+              <h2 className="mt-1 text-base font-semibold text-foreground">Đã thanh toán, chưa sử dụng</h2>
             </div>
-            <Link to="/admin/bookings" className="text-xs font-semibold text-muted hover:text-fg">
+            <Link to="/admin/bookings" className="text-xs font-semibold text-muted-foreground hover:text-foreground">
               Quản lý booking
             </Link>
           </div>
 
           {bookings.length === 0 ? (
-            <p className="py-8 text-center text-sm text-subtle">Không có booking đang chờ sử dụng.</p>
+            <p className="py-8 text-center text-sm text-muted-foreground">Không có booking đang chờ sử dụng.</p>
           ) : (
             <div className="space-y-2">
               {bookings.map((booking) => (
                 <Card key={booking._id} className="shadow-none"><CardContent className="flex items-center justify-between gap-3 p-3">
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-semibold text-fg">{booking.licensePlate}</p>
-                    <p className="mt-1 text-xs text-subtle">Dự kiến đến {formatDateTime(booking.expectedArrivalTime)}</p>
+                    <p className="truncate text-sm font-semibold text-foreground">{booking.licensePlate}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">Dự kiến đến {formatDateTime(booking.expectedArrivalTime)}</p>
                   </div>
                   <AdminStatusBadge status="paid" label="Đã thanh toán" />
                 </CardContent></Card>
@@ -400,8 +400,8 @@ export function DashboardPage() {
       <Card className="relative mt-5 overflow-hidden p-4 md:p-5">
         <span className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-violet-500 via-sky-500 to-emerald-500" />
         <div className="mb-4">
-          <p className="text-[10px] uppercase tracking-[0.18em] text-subtle">Phạm vi quản trị</p>
-          <h2 className="mt-1 text-base font-semibold text-fg">Tài nguyên hệ thống</h2>
+          <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Phạm vi quản trị</p>
+          <h2 className="mt-1 text-base font-semibold text-foreground">Tài nguyên hệ thống</h2>
         </div>
 
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
@@ -414,3 +414,4 @@ export function DashboardPage() {
     </AdminPageShell>
   )
 }
+

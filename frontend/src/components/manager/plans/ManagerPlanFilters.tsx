@@ -1,3 +1,5 @@
+import { Label } from '@/components/ui/label'
+import { NativeSelect } from '@/components/ui/native-select'
 import type { ManagerPlan } from '../../../services/managerPlansApi'
 
 export type ManagerPlanVehicleFilter = 'all' | ManagerPlan['vehicleType']
@@ -18,31 +20,31 @@ export function ManagerPlanFilters({
 }: ManagerPlanFiltersProps) {
   return (
     <div className="grid w-full gap-3 sm:grid-cols-2 xl:w-auto xl:min-w-[30rem]">
-      <label className="grid gap-1 text-xs font-medium text-subtle">
+      <Label className="grid gap-1 text-xs text-muted-foreground">
         Loại xe
-        <select
-          className="h-10 rounded-lg border border-theme bg-page px-3 text-sm text-fg"
+        <NativeSelect
+          className="w-full"
           value={vehicleFilter}
           onChange={(event) => onVehicleFilterChange(event.target.value as ManagerPlanVehicleFilter)}
         >
           <option value="all">Tất cả</option>
           <option value="motorcycle">Xe máy</option>
           <option value="car">Ô tô</option>
-        </select>
-      </label>
+        </NativeSelect>
+      </Label>
 
-      <label className="grid gap-1 text-xs font-medium text-subtle">
+      <Label className="grid gap-1 text-xs text-muted-foreground">
         Trạng thái
-        <select
-          className="h-10 rounded-lg border border-theme bg-page px-3 text-sm text-fg"
+        <NativeSelect
+          className="w-full"
           value={statusFilter}
           onChange={(event) => onStatusFilterChange(event.target.value as ManagerPlanStatusFilter)}
         >
           <option value="all">Tất cả</option>
           <option value="active">Đang mở bán</option>
           <option value="inactive">Tạm dừng</option>
-        </select>
-      </label>
+        </NativeSelect>
+      </Label>
     </div>
   )
 }

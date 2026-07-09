@@ -1,3 +1,8 @@
+﻿import { Label } from '@/components/ui/label'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { NativeSelect } from '@/components/ui/native-select'
+import { Textarea } from '@/components/ui/textarea'
 import { useEffect, useMemo, useState, type FormEvent } from 'react'
 import { OverlayBackdrop } from '../../common'
 import { useLockBodyScroll } from '../../../hooks/useLockBodyScroll'
@@ -149,51 +154,51 @@ export function ManagerSlotFormModal({
         label="Đóng form ô đỗ"
         className="fixed inset-0 z-40 bg-overlay/80 backdrop-blur-[2px]"
       />
-      <div className="relative z-50 w-full max-w-xl rounded-2xl border border-theme bg-page p-5 shadow-xl">
+      <div className="relative z-50 w-full max-w-xl rounded-2xl border border-border bg-background p-5 shadow-xl">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="text-[10px] uppercase tracking-[0.2em] text-subtle">Quản lý // Ô đỗ</p>
-            <h2 className="mt-2 text-xl font-semibold text-fg">
+            <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Quản lý // Ô đỗ</p>
+            <h2 className="mt-2 text-xl font-semibold text-foreground">
               {mode === 'create' ? 'Tạo ô đỗ ô tô' : 'Chỉnh sửa ô đỗ ô tô'}
             </h2>
-            <p className="mt-2 text-xs text-muted">Quản lý mã ô đỗ, trạng thái và ghi chú.</p>
+            <p className="mt-2 text-xs text-muted-foreground">Quản lý mã ô đỗ, trạng thái và ghi chú.</p>
           </div>
-          <button type="button" className="text-xs text-subtle hover:text-fg" onClick={onClose}>
+          <Button type="button" className="text-xs text-muted-foreground hover:text-foreground" onClick={onClose}>
             Đóng
-          </button>
+          </Button>
         </div>
 
         <form className="mt-5 grid gap-4" onSubmit={handleSubmit}>
           {mode === 'create' && (
             <div className="flex flex-wrap gap-2">
-              <button
+              <Button
                 type="button"
                 className={`h-9 rounded-full border px-4 text-xs font-semibold transition ${
                   createMode === 'single'
-                    ? 'border-transparent bg-btn-primary text-btn-primary-fg'
-                    : 'border-theme text-subtle hover:text-fg'
+                    ? 'border-transparent bg-primary text-primary-foreground'
+                    : 'border-border text-muted-foreground hover:text-foreground'
                 }`}
                 onClick={() => setCreateMode('single')}
               >
                 Một ô
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
                 className={`h-9 rounded-full border px-4 text-xs font-semibold transition ${
                   createMode === 'bulk'
-                    ? 'border-transparent bg-btn-primary text-btn-primary-fg'
-                    : 'border-theme text-subtle hover:text-fg'
+                    ? 'border-transparent bg-primary text-primary-foreground'
+                    : 'border-border text-muted-foreground hover:text-foreground'
                 }`}
                 onClick={() => setCreateMode('bulk')}
               >
                 Tạo hàng loạt
-              </button>
+              </Button>
             </div>
           )}
-          <label className="grid gap-2 text-xs text-subtle">
+          <Label className="grid gap-2 text-xs text-muted-foreground">
             Tầng
-            <select
-              className="h-10 rounded-lg border border-theme bg-page px-3 text-sm text-fg"
+            <NativeSelect
+              className="h-10 rounded-lg border border-border bg-background px-3 text-sm text-foreground"
               value={floorId}
               onChange={(event) => setFloorId(event.target.value)}
               required
@@ -204,74 +209,74 @@ export function ManagerSlotFormModal({
                   {floor.label}
                 </option>
               ))}
-            </select>
-          </label>
+            </NativeSelect>
+          </Label>
 
           {mode === 'create' && createMode === 'bulk' ? (
             <div className="grid gap-3 sm:grid-cols-2">
-              <label className="grid gap-2 text-xs text-subtle">
+              <Label className="grid gap-2 text-xs text-muted-foreground">
                 Số lượng
-                <input
-                  className="h-10 rounded-lg border border-theme bg-page px-3 text-sm text-fg"
+                <Input
+                  className="h-10 rounded-lg border border-border bg-background px-3 text-sm text-foreground"
                   value={quantity}
                   onChange={(event) => setQuantity(event.target.value)}
                   placeholder="20"
                   inputMode="numeric"
                   required
                 />
-              </label>
-              <label className="grid gap-2 text-xs text-subtle">
+              </Label>
+              <Label className="grid gap-2 text-xs text-muted-foreground">
                 Bắt đầu từ
-                <input
-                  className="h-10 rounded-lg border border-theme bg-page px-3 text-sm text-fg"
+                <Input
+                  className="h-10 rounded-lg border border-border bg-background px-3 text-sm text-foreground"
                   value={startFrom}
                   onChange={(event) => setStartFrom(event.target.value)}
                   placeholder="1"
                   inputMode="numeric"
                   required
                 />
-              </label>
-              <label className="grid gap-2 text-xs text-subtle sm:col-span-2">
+              </Label>
+              <Label className="grid gap-2 text-xs text-muted-foreground sm:col-span-2">
                 Tiền tố
-                <input
-                  className="h-10 rounded-lg border border-theme bg-page px-3 text-sm text-fg"
+                <Input
+                  className="h-10 rounded-lg border border-border bg-background px-3 text-sm text-foreground"
                   value={prefix}
                   onChange={(event) => setPrefix(event.target.value)}
                   placeholder="A"
                 />
-              </label>
+              </Label>
             </div>
           ) : (
-            <label className="grid gap-2 text-xs text-subtle">
+            <Label className="grid gap-2 text-xs text-muted-foreground">
               Mã ô đỗ
-              <input
-                className="h-10 rounded-lg border border-theme bg-page px-3 text-sm text-fg"
+              <Input
+                className="h-10 rounded-lg border border-border bg-background px-3 text-sm text-foreground"
                 value={slotCode}
                 onChange={(event) => setSlotCode(event.target.value)}
                 placeholder="A01"
                 required
               />
-            </label>
+            </Label>
           )}
 
           {mode === 'edit' && (
             <div className="grid gap-3 sm:grid-cols-2">
-              <label className="grid gap-2 text-xs text-subtle">
+              <Label className="grid gap-2 text-xs text-muted-foreground">
                 Loại xe
-                <select
-                  className="h-10 rounded-lg border border-theme bg-page px-3 text-sm text-fg"
+                <NativeSelect
+                  className="h-10 rounded-lg border border-border bg-background px-3 text-sm text-foreground"
                   value={vehicleType}
                   onChange={(event) => setVehicleType(event.target.value as 'car' | 'motorcycle')}
                 >
                   <option value="car">Ô tô</option>
                   <option value="motorcycle">Xe máy</option>
-                </select>
-              </label>
+                </NativeSelect>
+              </Label>
 
-              <label className="grid gap-2 text-xs text-subtle">
+              <Label className="grid gap-2 text-xs text-muted-foreground">
                 Trạng thái
-                <select
-                  className="h-10 rounded-lg border border-theme bg-page px-3 text-sm text-fg"
+                <NativeSelect
+                  className="h-10 rounded-lg border border-border bg-background px-3 text-sm text-foreground"
                   value={status}
                   onChange={(event) => setStatus(event.target.value as SlotStatus)}
                 >
@@ -280,38 +285,38 @@ export function ManagerSlotFormModal({
                       {SLOT_STATUS_LABELS[slotStatus]}
                     </option>
                   ))}
-                </select>
-              </label>
+                </NativeSelect>
+              </Label>
             </div>
           )}
 
-          <label className="grid gap-2 text-xs text-subtle">
+          <Label className="grid gap-2 text-xs text-muted-foreground">
             Ghi chú (không bắt buộc)
-            <textarea
-              className="min-h-[96px] rounded-lg border border-theme bg-page px-3 py-2 text-sm text-fg"
+            <Textarea
+              className="min-h-[96px] rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
               value={note}
               onChange={(event) => setNote(event.target.value)}
               placeholder="Ví dụ: Dành riêng cho khách VIP"
             />
-          </label>
+          </Label>
 
           {error && (
-            <div className="rounded-lg border border-theme bg-rose-500/10 px-3 py-2 text-xs text-rose-100">
+            <div className="rounded-lg border border-border bg-rose-500/10 px-3 py-2 text-xs text-rose-100">
               {error}
             </div>
           )}
 
           <div className="flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-end">
-            <button
+            <Button
               type="button"
-              className="h-10 rounded-lg border border-theme px-4 text-sm text-subtle hover:text-fg"
+              className="h-10 rounded-lg border border-border px-4 text-sm text-muted-foreground hover:text-foreground"
               onClick={onClose}
             >
               Hủy
-            </button>
-            <button
+            </Button>
+            <Button
               type="submit"
-              className="h-10 rounded-lg bg-btn-primary px-4 text-sm font-semibold text-btn-primary-fg transition-opacity disabled:cursor-not-allowed disabled:opacity-60"
+              className="h-10 rounded-lg bg-primary px-4 text-sm font-semibold text-primary-foreground transition-opacity disabled:cursor-not-allowed disabled:opacity-60"
               disabled={!isValid || isSubmitting}
             >
               {isSubmitting
@@ -321,10 +326,14 @@ export function ManagerSlotFormModal({
                   ? 'Tạo các ô đỗ'
                   : 'Tạo ô đỗ'
                 : 'Lưu thay đổi'}
-            </button>
+            </Button>
           </div>
         </form>
       </div>
     </div>
   )
 }
+
+
+
+

@@ -1,3 +1,4 @@
+﻿import { Button } from '@/components/ui/button'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   ManagerPageHeader,
@@ -71,20 +72,20 @@ export function ManagerSubscriptionsPage() {
         title="Người dùng gói"
         description="Theo dõi người đã đăng ký, thời hạn gói, phương tiện và trạng thái sử dụng bãi xe."
         actions={
-          <button
+          <Button
             type="button"
             disabled={loading}
             onClick={() => void loadSubscriptions()}
-            className="h-10 rounded-lg border border-theme px-4 text-sm font-semibold text-fg hover:bg-ghost disabled:opacity-50"
+            className="h-10 rounded-lg border border-border px-4 text-sm font-semibold text-foreground hover:bg-muted disabled:opacity-50"
           >
             {loading ? 'Đang tải...' : 'Làm mới'}
-          </button>
+          </Button>
         }
       />
 
       <ManagerSubscriptionStats subscriptions={subscriptions} activePlates={activePlates} snapshotTime={snapshotTime} />
 
-      <section className="liquid-glass-card mb-5 rounded-lg p-4">
+      <section className="bg-card text-card-foreground ring-1 ring-border mb-5 rounded-lg p-4">
         <ManagerSubscriptionFilters
           query={query}
           status={status}
@@ -98,9 +99,9 @@ export function ManagerSubscriptionsPage() {
       {error && (
         <div className="mb-5 flex items-center justify-between gap-3 rounded-lg border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-700 dark:text-red-300">
           <span>{error}</span>
-          <button type="button" className="font-semibold underline" onClick={() => void loadSubscriptions()}>
+          <Button type="button" className="font-semibold underline" onClick={() => void loadSubscriptions()}>
             Thử lại
-          </button>
+          </Button>
         </div>
       )}
 
@@ -113,3 +114,6 @@ export function ManagerSubscriptionsPage() {
     </div>
   )
 }
+
+
+

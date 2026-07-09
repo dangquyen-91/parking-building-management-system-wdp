@@ -1,4 +1,4 @@
-import type { ManagerPlan } from '../../../services/managerPlansApi'
+﻿import type { ManagerPlan } from '../../../services/managerPlansApi'
 import { ManagerPlanCard } from './ManagerPlanCard'
 
 type ManagerPlanListProps = {
@@ -17,15 +17,15 @@ export function ManagerPlanList({
   onToggle,
 }: ManagerPlanListProps) {
   if (isLoading) {
-    return <div className="liquid-glass-card rounded-lg p-4 text-sm text-muted">Đang tải danh sách gói...</div>
+    return <div className="bg-card text-card-foreground ring-1 ring-border rounded-lg p-4 text-sm text-muted-foreground">Đang tải danh sách gói...</div>
   }
 
   if (plans.length === 0) {
-    return <div className="liquid-glass-card rounded-lg p-4 text-sm text-muted">Không có gói nào phù hợp với bộ lọc.</div>
+    return <div className="bg-card text-card-foreground ring-1 ring-border rounded-lg p-4 text-sm text-muted-foreground">Không có gói nào phù hợp với bộ lọc.</div>
   }
 
   return (
-    <section className="grid gap-4 md:grid-cols-2">
+    <section className="grid items-stretch gap-4 md:grid-cols-2">
       {plans.map((plan) => (
         <ManagerPlanCard
           key={plan._id}
@@ -38,3 +38,5 @@ export function ManagerPlanList({
     </section>
   )
 }
+
+

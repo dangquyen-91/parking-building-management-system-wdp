@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+﻿import type { ReactNode } from 'react'
 import { X } from 'lucide-react'
 import { Button } from '../../ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '../../ui/dialog'
@@ -50,3 +50,4 @@ export function AdminModalActions({ disabled, loading, onClose }: { disabled: bo
     </div>
   )
 }
+

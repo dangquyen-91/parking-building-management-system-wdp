@@ -1,4 +1,4 @@
-import { forwardRef } from 'react'
+﻿import { forwardRef } from 'react'
 import { NavLink } from 'react-router-dom'
 import { BarChart3, Building2, CalendarCheck2, CarFront, ClipboardList, CreditCard, Gauge, Layers3, ShieldCheck, UserCog, Users, Warehouse } from 'lucide-react'
 import { LogoIcon } from '../../common/icons'
@@ -65,3 +65,4 @@ export const AdminSidebar = forwardRef<HTMLElement, AdminSidebarProps>(function 
     </aside>
   )
 })
+

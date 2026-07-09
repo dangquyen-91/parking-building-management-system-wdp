@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from 'react'
+﻿import { useEffect, useState, type FormEvent } from 'react'
 import type { ManagerBuildingSummary } from '../../../hooks/useManagerBuildings'
 import type { FloorPayload } from '../../../services/managerBuildingsApi'
 import { AdminField, AdminModal, AdminModalActions } from '../common/AdminFormPrimitives'
@@ -107,3 +107,4 @@ export function AdminFloorFormModal({
     </AdminModal>
   )
 }
+

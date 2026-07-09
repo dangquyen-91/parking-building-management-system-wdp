@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+﻿import { useMemo, useState } from 'react'
 import {
   AdminBuildingCard,
   AdminBuildingFormModal,
@@ -79,3 +79,4 @@ export function AdminBuildingsPage() {
     </AdminPageShell>
   )
 }
+

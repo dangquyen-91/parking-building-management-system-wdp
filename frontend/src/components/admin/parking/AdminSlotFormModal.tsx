@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+﻿import { useEffect, useState } from 'react'
 import type { Floor } from '../../../services/managerBuildingsApi'
 import type { SlotBulkCreatePayload, SlotCreatePayload, SlotStatus, SlotUpdatePayload } from '../../../services/managerParkingSlotApi'
 import { formatFloorLabel } from '../../../utils/floorLabel'
@@ -146,3 +146,4 @@ export function AdminSlotFormModal({
     </AdminModal>
   )
 }
+

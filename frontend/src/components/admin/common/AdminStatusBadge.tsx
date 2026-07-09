@@ -1,4 +1,4 @@
-import { adminStatusTone, type AdminStatus } from '../adminData'
+﻿import { adminStatusTone, type AdminStatus } from '../adminData'
 import { Badge } from '../../ui/badge'
 
 type AdminStatusBadgeProps = {
@@ -36,3 +36,4 @@ export function AdminStatusBadge({ status, label = statusLabels[status] }: Admin
     </Badge>
   )
 }
+

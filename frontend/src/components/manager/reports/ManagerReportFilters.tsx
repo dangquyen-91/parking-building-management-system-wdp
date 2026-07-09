@@ -1,3 +1,7 @@
+﻿import { Label } from '@/components/ui/label'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { NativeSelect } from '@/components/ui/native-select'
 type ManagerReportFiltersProps = {
   from: string
   to: string
@@ -20,52 +24,56 @@ export function ManagerReportFilters({
   onApply,
 }: ManagerReportFiltersProps) {
   return (
-    <section className="liquid-glass-card mb-5 rounded-lg p-4">
+    <section className="bg-card text-card-foreground ring-1 ring-border mb-5 rounded-lg p-4">
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-[1fr_1fr_1fr_auto] xl:items-end">
-        <label className="text-xs font-medium text-muted">
+        <Label className="text-xs font-medium text-muted-foreground">
           Từ ngày
-          <input
+          <Input
             type="date"
             value={from}
             max={to}
             onChange={(event) => onFromChange(event.target.value)}
-            className="mt-1.5 w-full rounded-lg border border-theme bg-page px-3 py-2.5 text-sm text-fg outline-none focus:border-accent"
+            className="mt-1.5 w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm text-foreground outline-none focus:border-accent"
           />
-        </label>
+        </Label>
 
-        <label className="text-xs font-medium text-muted">
+        <Label className="text-xs font-medium text-muted-foreground">
           Đến ngày
-          <input
+          <Input
             type="date"
             value={to}
             min={from}
             onChange={(event) => onToChange(event.target.value)}
-            className="mt-1.5 w-full rounded-lg border border-theme bg-page px-3 py-2.5 text-sm text-fg outline-none focus:border-accent"
+            className="mt-1.5 w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm text-foreground outline-none focus:border-accent"
           />
-        </label>
+        </Label>
 
-        <label className="text-xs font-medium text-muted">
+        <Label className="text-xs font-medium text-muted-foreground">
           Khoảng giờ cao điểm
-          <select
+          <NativeSelect
             value={peakDays}
             onChange={(event) => onPeakDaysChange(Number(event.target.value))}
-            className="mt-1.5 w-full rounded-lg border border-theme bg-page px-3 py-2.5 text-sm text-fg outline-none focus:border-accent"
+            className="mt-1.5 w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm text-foreground outline-none focus:border-accent"
           >
             <option value={7}>7 ngày gần nhất</option>
             <option value={14}>14 ngày gần nhất</option>
             <option value={30}>30 ngày gần nhất</option>
-          </select>
-        </label>
+          </NativeSelect>
+        </Label>
 
-        <button
+        <Button
           type="button"
           disabled={loading || !from || !to || from > to}
           onClick={onApply}
-          className="rounded-lg bg-btn-primary px-5 py-2.5 text-sm font-semibold text-btn-primary-fg transition-opacity disabled:cursor-not-allowed disabled:opacity-50"
+          className="rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition-opacity disabled:cursor-not-allowed disabled:opacity-50"
         >
           {loading ? 'Đang tải...' : 'Áp dụng'}
-        </button>
+        </Button>
       </div>
     </section>
   )
 }
+
+
+
+

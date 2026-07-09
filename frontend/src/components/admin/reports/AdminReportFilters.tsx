@@ -1,4 +1,4 @@
-import { RefreshCw } from 'lucide-react'
+﻿import { RefreshCw } from 'lucide-react'
 import { Button } from '../../ui/button'
 import { Input } from '../../ui/input'
 import { Label } from '../../ui/label'
@@ -17,3 +17,4 @@ export function AdminReportFilters({ from, to, peakDays, loading, onFromChange, 
     <Button type="button" disabled={loading || !from || !to || from > to} onClick={onApply}><RefreshCw className={`size-4 ${loading ? 'animate-spin' : ''}`} />{loading ? 'Đang tải...' : 'Áp dụng'}</Button>
   </CardContent></Card>
 }
+

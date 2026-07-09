@@ -1,4 +1,4 @@
-import type { ManagerOccupancyFloor, ManagerOccupancyReport } from '../../../services/managerReportsApi'
+﻿import type { ManagerOccupancyFloor, ManagerOccupancyReport } from '../../../services/managerReportsApi'
 import { getFloorSection } from '../../../utils/floorLabel'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
@@ -35,35 +35,35 @@ export function ManagerOccupancyTable({ report }: { report: ManagerOccupancyRepo
   const overallUsage = Math.min(100, Math.max(0, report.overall.utilizationPercent))
 
   return (
-    <section className="liquid-glass-card overflow-hidden rounded-3xl">
-      <div className="border-b border-theme bg-gradient-to-r from-sky-500/15 via-emerald-500/10 to-transparent p-5">
+    <section className="bg-card text-card-foreground ring-1 ring-border overflow-hidden rounded-3xl">
+      <div className="border-b border-border bg-gradient-to-r from-sky-500/15 via-emerald-500/10 to-transparent p-5">
         <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div>
-            <p className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.18em] text-subtle">
+            <p className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.18em] text-muted-foreground">
               <span className="size-2 rounded-full bg-emerald-500" />
               Công suất hiện tại
             </p>
-            <h2 className="mt-2 text-xl font-black text-fg">Bản đồ tải theo tòa nhà</h2>
-            <p className="mt-1 text-sm text-muted">Gom theo tòa nhà, tầng và khu để dễ nhìn khu nào đang còn chỗ.</p>
+            <h2 className="mt-2 text-xl font-black text-foreground">Bản đồ tải theo tòa nhà</h2>
+            <p className="mt-1 text-sm text-muted-foreground">Gom theo tòa nhà, tầng và khu để dễ nhìn khu nào đang còn chỗ.</p>
           </div>
 
-          <div className="min-w-[14rem] rounded-2xl border border-theme bg-page/60 p-3">
-            <div className="flex items-center justify-between gap-4 text-xs font-bold text-muted">
+          <div className="min-w-[14rem] rounded-2xl border border-border bg-background/60 p-3">
+            <div className="flex items-center justify-between gap-4 text-xs font-bold text-muted-foreground">
               <span>Tổng sử dụng</span>
-              <span className="text-fg">{overallUsage}%</span>
+              <span className="text-foreground">{overallUsage}%</span>
             </div>
-            <div className="mt-2 h-2 overflow-hidden rounded-full bg-badge">
+            <div className="mt-2 h-2 overflow-hidden rounded-full bg-card">
               <div className="h-full rounded-full bg-gradient-to-r from-sky-500 via-cyan-400 to-emerald-400" style={{ width: `${overallUsage}%` }} />
             </div>
-            <p className="mt-2 text-xs text-muted">
-              <span className="font-black text-fg">{report.overall.occupied}</span>/{report.overall.totalCapacity} vị trí đang dùng
+            <p className="mt-2 text-xs text-muted-foreground">
+              <span className="font-black text-foreground">{report.overall.occupied}</span>/{report.overall.totalCapacity} vị trí đang dùng
             </p>
           </div>
         </div>
       </div>
 
       {groups.length === 0 ? (
-        <p className="py-8 text-center text-sm text-subtle">Chưa có dữ liệu tầng đỗ xe.</p>
+        <p className="py-8 text-center text-sm text-muted-foreground">Chưa có dữ liệu tầng đỗ xe.</p>
       ) : (
         <div className="grid max-h-[38rem] gap-4 overflow-y-auto p-4 sidebar-scrollbar">
           {groups.map((building) => (
@@ -79,21 +79,21 @@ function BuildingOccupancyGroup({ group }: { group: BuildingGroup }) {
   const usage = group.totalCapacity > 0 ? Math.round((group.occupied / group.totalCapacity) * 100) : 0
 
   return (
-    <article className="overflow-hidden rounded-3xl border border-theme bg-page/65 shadow-sm">
-      <div className="border-b border-theme p-4">
+    <article className="overflow-hidden rounded-3xl border border-border bg-background/65 shadow-sm">
+      <div className="border-b border-border p-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <p className="text-lg font-black text-fg">{group.buildingName}</p>
-            <p className="mt-1 text-xs text-muted">
+            <p className="text-lg font-black text-foreground">{group.buildingName}</p>
+            <p className="mt-1 text-xs text-muted-foreground">
               {group.floors.length} tầng · {group.occupied}/{group.totalCapacity} vị trí đang dùng
             </p>
           </div>
-          <div className="rounded-2xl border border-theme bg-badge px-4 py-2 text-right">
-            <p className="text-xl font-black text-fg">{usage}%</p>
-            <p className="text-[10px] uppercase tracking-[0.12em] text-subtle">Sử dụng</p>
+          <div className="rounded-2xl border border-border bg-card px-4 py-2 text-right">
+            <p className="text-xl font-black text-foreground">{usage}%</p>
+            <p className="text-[10px] uppercase tracking-[0.12em] text-muted-foreground">Sử dụng</p>
           </div>
         </div>
-        <div className="mt-4 h-2 overflow-hidden rounded-full bg-badge">
+        <div className="mt-4 h-2 overflow-hidden rounded-full bg-card">
           <div className="h-full rounded-full bg-gradient-to-r from-sky-500 to-emerald-400" style={{ width: `${usage}%` }} />
         </div>
       </div>
@@ -123,11 +123,11 @@ function FloorOccupancyGroup({
   const usage = totalCapacity > 0 ? Math.round((occupied / totalCapacity) * 100) : 0
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-theme bg-badge">
-      <div className="flex flex-col gap-3 border-b border-theme bg-page/45 p-3 sm:flex-row sm:items-center sm:justify-between">
+    <div className="overflow-hidden rounded-2xl border border-border bg-card">
+      <div className="flex flex-col gap-3 border-b border-border bg-background/45 p-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <p className="text-sm font-black text-fg">Tầng {floorNumber}</p>
-          <p className="mt-1 text-xs text-muted">
+          <p className="text-sm font-black text-foreground">Tầng {floorNumber}</p>
+          <p className="mt-1 text-xs text-muted-foreground">
             {floors.length} khu · {occupied}/{totalCapacity} vị trí
           </p>
         </div>
@@ -137,13 +137,13 @@ function FloorOccupancyGroup({
       </div>
 
       <Table className="min-w-[720px]">
-        <TableHeader className="bg-page/35 text-xs text-subtle">
-          <TableRow className="border-theme hover:bg-transparent">
-            <TableHead className="h-auto px-3 py-3 text-subtle">Khu / Loại xe</TableHead>
-            <TableHead className="h-auto px-3 py-3 text-subtle">Đang đỗ</TableHead>
-            <TableHead className="h-auto px-3 py-3 text-subtle">Còn trống</TableHead>
-            <TableHead className="h-auto px-3 py-3 text-subtle">Khác</TableHead>
-            <TableHead className="h-auto px-3 py-3 text-subtle">Sử dụng</TableHead>
+        <TableHeader className="bg-background/35 text-xs text-muted-foreground">
+          <TableRow className="border-border hover:bg-transparent">
+            <TableHead className="h-auto px-3 py-3 text-muted-foreground">Khu / Loại xe</TableHead>
+            <TableHead className="h-auto px-3 py-3 text-muted-foreground">Đang đỗ</TableHead>
+            <TableHead className="h-auto px-3 py-3 text-muted-foreground">Còn trống</TableHead>
+            <TableHead className="h-auto px-3 py-3 text-muted-foreground">Khác</TableHead>
+            <TableHead className="h-auto px-3 py-3 text-muted-foreground">Sử dụng</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -162,26 +162,26 @@ function OccupancyRow({ floor }: { floor: ManagerOccupancyFloor }) {
   const floorTypeLabel = floor.floorType ? FLOOR_TYPE_LABELS[floor.floorType] ?? floor.floorType : 'Chưa phân loại'
 
   return (
-    <TableRow className="border-theme bg-page/60 hover:bg-sky-500/5">
+    <TableRow className="border-border bg-background/60 hover:bg-sky-500/5">
       <TableCell className="px-3 py-3 whitespace-normal">
         <div className="min-w-[15rem]">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="rounded-xl bg-btn-primary px-3 py-1 text-xs font-black text-btn-primary-fg">
+            <span className="rounded-xl bg-primary px-3 py-1 text-xs font-black text-primary-foreground">
               Khu {getFloorSection(floor.section)}
             </span>
             <span className={`rounded-full border px-2.5 py-1 text-[11px] font-bold ${VEHICLE_TONES[floor.vehicleType]}`}>
               {VEHICLE_LABELS[floor.vehicleType]}
             </span>
-            <span className="rounded-full border border-theme bg-badge px-2.5 py-1 text-[11px] font-bold text-muted">
+            <span className="rounded-full border border-border bg-card px-2.5 py-1 text-[11px] font-bold text-muted-foreground">
               {floorTypeLabel}
             </span>
           </div>
-          {floor.description && <p className="mt-1 truncate text-xs text-muted">{floor.description}</p>}
+          {floor.description && <p className="mt-1 truncate text-xs text-muted-foreground">{floor.description}</p>}
         </div>
       </TableCell>
-      <TableCell className="px-3 py-3 font-black text-fg">{floor.occupied}</TableCell>
-      <TableCell className="px-3 py-3 font-black text-fg">{floor.empty}</TableCell>
-      <TableCell className="px-3 py-3 text-muted">
+      <TableCell className="px-3 py-3 font-black text-foreground">{floor.occupied}</TableCell>
+      <TableCell className="px-3 py-3 font-black text-foreground">{floor.empty}</TableCell>
+      <TableCell className="px-3 py-3 text-muted-foreground">
         <div className="flex min-w-[8rem] flex-col gap-1 text-xs">
           <span>Đặt trước {floor.reserved ?? 0}</span>
           <span>Bảo trì {floor.maintenance ?? 0}</span>
@@ -189,11 +189,11 @@ function OccupancyRow({ floor }: { floor: ManagerOccupancyFloor }) {
       </TableCell>
       <TableCell className="px-3 py-3">
         <div className="min-w-[9rem]">
-          <div className="flex items-center justify-between gap-2 text-xs font-bold text-fg">
+          <div className="flex items-center justify-between gap-2 text-xs font-bold text-foreground">
             <span>{floor.occupied}/{capacity}</span>
             <span>{usage}%</span>
           </div>
-          <div className="mt-2 h-2 overflow-hidden rounded-full bg-badge">
+          <div className="mt-2 h-2 overflow-hidden rounded-full bg-card">
             <div className="h-full rounded-full bg-gradient-to-r from-sky-500 to-emerald-400" style={{ width: `${usage}%` }} />
           </div>
         </div>
@@ -252,3 +252,5 @@ function compareSections(a: ManagerOccupancyFloor, b: ManagerOccupancyFloor) {
   if (sectionCompare !== 0) return sectionCompare
   return VEHICLE_LABELS[a.vehicleType].localeCompare(VEHICLE_LABELS[b.vehicleType], 'vi')
 }
+
+

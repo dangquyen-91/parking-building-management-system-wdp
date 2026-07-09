@@ -112,7 +112,7 @@ function linkClassName({ isActive }: { isActive: boolean }) {
     'group flex items-center gap-3 rounded-2xl border px-3 py-3 text-sm transition-all duration-200',
     isActive
       ? 'border-sky-400/40 bg-sky-500 text-white shadow-lg shadow-sky-500/20'
-      : 'border-transparent text-muted hover:border-theme hover:bg-ghost hover:text-fg',
+      : 'border-transparent text-muted-foreground hover:border-border hover:bg-muted hover:text-foreground',
   ].join(' ')
 }
 
@@ -130,7 +130,7 @@ export const ManagerSidebar = forwardRef<HTMLElement, ManagerSidebarProps>(funct
       ref={ref}
       id="manager-sidebar"
       className={[
-        'flex flex-col border-r border-theme bg-page/90 shadow-2xl backdrop-blur-xl',
+        'flex flex-col border-r border-border bg-background/90 shadow-2xl backdrop-blur-xl',
         'max-lg:fixed max-lg:inset-y-0 max-lg:left-0 max-lg:z-50',
         'max-lg:w-[min(19rem,86vw)] max-lg:max-h-screen max-lg:overscroll-contain',
         'lg:fixed lg:inset-y-0 lg:left-0 lg:z-30 lg:h-screen lg:w-72 lg:translate-x-0 lg:visible lg:pointer-events-auto',
@@ -140,25 +140,25 @@ export const ManagerSidebar = forwardRef<HTMLElement, ManagerSidebarProps>(funct
           : 'max-lg:-translate-x-full max-lg:invisible max-lg:pointer-events-none',
       ].join(' ')}
     >
-      <div className="border-b border-theme p-5">
+      <div className="border-b border-border p-5">
         <div className="flex items-center justify-between gap-3">
         <NavLink
           to="/manager"
-          className="flex min-w-0 items-center gap-3 text-fg"
+          className="flex min-w-0 items-center gap-3 text-foreground"
           aria-label="Khu quản lý bãi xe"
           onClick={onNavigate}
         >
-          <span className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-badge shadow-sm">
+          <span className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-card shadow-sm">
             <LogoIcon size={22} />
           </span>
           <span className="min-w-0 leading-tight">
             <span className="block truncate text-base font-black">Quản lý bãi xe</span>
-            <span className="mt-1 block truncate text-[11px] font-black uppercase tracking-[0.24em] text-subtle">
+            <span className="mt-1 block truncate text-[11px] font-black uppercase tracking-[0.24em] text-muted-foreground">
               Control Center
             </span>
           </span>
         </NavLink>
-        <ThemeToggle className="shrink-0 border border-theme bg-badge shadow-sm" />
+        <ThemeToggle className="shrink-0 border border-border bg-card shadow-sm" />
         </div>
 
         <div className="mt-5 rounded-2xl border border-sky-500/25 bg-sky-500/10 p-3">
@@ -166,14 +166,14 @@ export const ManagerSidebar = forwardRef<HTMLElement, ManagerSidebarProps>(funct
             <span className="size-2 rounded-full bg-sky-500 shadow-[0_0_12px_rgba(14,165,233,0.9)]" />
             Dữ liệu vận hành trực tiếp
           </div>
-          <p className="mt-1 text-[11px] text-muted">Theo dõi bãi xe, nhân viên và doanh thu</p>
+          <p className="mt-1 text-[11px] text-muted-foreground">Theo dõi bãi xe, nhân viên và doanh thu</p>
         </div>
       </div>
 
       <nav className="flex flex-1 flex-col gap-1 overflow-y-auto px-3 py-4" aria-label="Điều hướng quản lý">
         {MANAGER_NAV_ITEMS.map(({ to, label, detail, icon }) => (
           <NavLink key={to} to={to} className={linkClassName} end onClick={onNavigate}>
-            <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-badge/70 group-[.active]:bg-white/15">
+            <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-card/70 group-[.active]:bg-white/15">
               <ManagerIcon name={icon} />
             </span>
             <span className="min-w-0">
@@ -184,17 +184,19 @@ export const ManagerSidebar = forwardRef<HTMLElement, ManagerSidebarProps>(funct
         ))}
       </nav>
 
-      <div className="border-t border-theme p-4">
+      <div className="border-t border-border p-4">
         <div className="hidden">
           <div>
-            <p className="text-xs font-bold text-fg">Giao diện</p>
-            <p className="text-[11px] text-subtle">Sáng / tối</p>
+            <p className="text-xs font-bold text-foreground">Giao diện</p>
+            <p className="text-[11px] text-muted-foreground">Sáng / tối</p>
           </div>
-          <ThemeToggle className="border border-theme bg-page shadow-sm" />
+          <ThemeToggle className="border border-border bg-background shadow-sm" />
         </div>
         <LogoutButton />
       </div>
     </aside>
   )
 })
+
+
 

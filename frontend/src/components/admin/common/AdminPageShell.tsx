@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+﻿import type { ReactNode } from 'react'
 import { Card, CardContent } from '../../ui/card'
 
 type AdminPageShellProps = {
@@ -31,7 +31,7 @@ export function AdminPageShell({
               <h1 className="max-w-4xl text-2xl font-bold tracking-tight md:text-3xl">{title}</h1>
               <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">{description}</p>
             </div>
-            {actions && <div className="shrink-0">{actions}</div>}
+            {actions && <div className="w-full xl:w-auto xl:shrink-0">{actions}</div>}
           </div>
         </CardContent>
       </Card>
@@ -39,3 +39,4 @@ export function AdminPageShell({
     </div>
   )
 }
+

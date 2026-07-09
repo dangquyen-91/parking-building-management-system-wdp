@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from 'react'
+﻿import { useEffect, useState, type FormEvent } from 'react'
 import type { ManagerPlan, ManagerPlanUpdatePayload } from '../../../services/managerPlansApi'
 import { AdminStatCard } from '../common/AdminStatCard'
 import { AdminStatusBadge } from '../common/AdminStatusBadge'
@@ -25,7 +25,32 @@ export function AdminPlanStats({ plans, isLoading }: { plans: ManagerPlan[]; isL
 export function AdminPlanList({ plans, isLoading, updatingId, onEdit, onToggle }: { plans: ManagerPlan[]; isLoading: boolean; updatingId: string | null; onEdit: (plan: ManagerPlan) => void; onToggle: (plan: ManagerPlan) => void }) {
   if (isLoading) return <OperationEmpty text="Đang tải danh sách gói..." />
   if (!plans.length) return <OperationEmpty text="Không có gói phù hợp." />
-  return <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">{plans.map((plan) => <Card key={plan._id} className="transition-shadow hover:shadow-md"><CardHeader className="flex-row items-start justify-between"><div><p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{plan.code}</p><CardTitle className="mt-2">{plan.name}</CardTitle></div><AdminStatusBadge status={plan.isActive ? 'active' : 'inactive'} /></CardHeader><CardContent><p className="text-3xl font-bold">{formatAdminCurrency(plan.price)}</p><p className="mt-1 text-xs text-muted-foreground">{plan.durationDays} ngày · {plan.vehicleType === 'car' ? 'Ô tô' : 'Xe máy'}</p><p className="mt-4 min-h-12 text-sm leading-6 text-muted-foreground">{plan.description || 'Không có mô tả.'}</p></CardContent><CardFooter className="gap-2"><Button className="flex-1" variant="outline" onClick={() => onEdit(plan)}>Chỉnh sửa</Button><Button className="flex-1" variant={plan.isActive ? 'destructive' : 'default'} disabled={updatingId === plan._id} onClick={() => onToggle(plan)}>{updatingId === plan._id ? 'Đang lưu...' : plan.isActive ? 'Tạm dừng' : 'Kích hoạt'}</Button></CardFooter></Card>)}</section>
+  return (
+    <section className="grid items-stretch gap-4 md:grid-cols-2 xl:grid-cols-3">
+      {plans.map((plan) => (
+        <Card key={plan._id} className="h-full min-h-72 transition-shadow hover:shadow-md">
+          <CardHeader className="flex-row items-start justify-between">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{plan.code}</p>
+              <CardTitle className="mt-2">{plan.name}</CardTitle>
+            </div>
+            <AdminStatusBadge status={plan.isActive ? 'active' : 'inactive'} />
+          </CardHeader>
+          <CardContent className="flex flex-1 flex-col">
+            <p className="text-3xl font-bold">{formatAdminCurrency(plan.price)}</p>
+            <p className="mt-1 text-xs text-muted-foreground">{plan.durationDays} ngày · {plan.vehicleType === 'car' ? 'Ô tô' : 'Xe máy'}</p>
+            <p className="mt-4 min-h-12 flex-1 text-sm leading-6 text-muted-foreground">{plan.description || 'Không có mô tả.'}</p>
+          </CardContent>
+          <CardFooter className="grid gap-2 sm:grid-cols-2">
+            <Button variant="outline" onClick={() => onEdit(plan)}>Chỉnh sửa</Button>
+            <Button variant={plan.isActive ? 'destructive' : 'default'} disabled={updatingId === plan._id} onClick={() => onToggle(plan)}>
+              {updatingId === plan._id ? 'Đang lưu...' : plan.isActive ? 'Tạm dừng' : 'Kích hoạt'}
+            </Button>
+          </CardFooter>
+        </Card>
+      ))}
+    </section>
+  )
 }
 
 export function AdminPlanFormModal({ plan, isSubmitting, error, onClose, onSubmit }: { plan: ManagerPlan | null; isSubmitting: boolean; error: string | null; onClose: () => void; onSubmit: (payload: ManagerPlanUpdatePayload) => void }) {
@@ -35,3 +60,4 @@ export function AdminPlanFormModal({ plan, isSubmitting, error, onClose, onSubmi
   function submit(event: FormEvent) { event.preventDefault(); onSubmit({ name: name.trim(), price: Number(price), durationDays: Number(durationDays), description: description.trim() }) }
   return <Dialog open={Boolean(plan)} onOpenChange={(open) => !open && onClose()}><DialogContent><form onSubmit={submit}><DialogHeader><DialogDescription>Admin // Gói gửi xe</DialogDescription><DialogTitle>Chỉnh sửa gói</DialogTitle></DialogHeader><div className="grid gap-4 py-5"><OperationField label="Tên gói"><Input value={name} onChange={(e) => setName(e.target.value)} required /></OperationField><div className="grid gap-4 sm:grid-cols-2"><OperationField label="Giá"><Input type="number" min="0" value={price} onChange={(e) => setPrice(e.target.value)} required /></OperationField><OperationField label="Thời hạn (ngày)"><Input type="number" min="1" value={durationDays} onChange={(e) => setDurationDays(e.target.value)} required /></OperationField></div><OperationField label="Mô tả"><Textarea className="min-h-24" value={description} onChange={(e) => setDescription(e.target.value)} /></OperationField>{error && <p className="text-sm text-destructive">{error}</p>}</div><DialogFooter><Button type="button" variant="outline" onClick={onClose}>Hủy</Button><Button disabled={isSubmitting}>{isSubmitting ? 'Đang lưu...' : 'Lưu thay đổi'}</Button></DialogFooter></form></DialogContent></Dialog>
 }
+

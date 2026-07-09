@@ -1,3 +1,4 @@
+﻿import { Button } from '@/components/ui/button'
 import { useEffect, useMemo, useState } from 'react'
 import {
   ManagerLostTicketFilters,
@@ -79,9 +80,9 @@ export function ManagerLostTicketsPage() {
       {error && (
         <div className="mb-5 flex items-center justify-between gap-3 rounded-2xl border border-rose-400/30 bg-rose-500/10 p-4 text-sm text-rose-700 dark:text-rose-100">
           <span>{error}</span>
-          <button type="button" className="font-semibold hover:underline" onClick={() => void loadLostTickets()}>
+          <Button type="button" className="font-semibold hover:underline" onClick={() => void loadLostTickets()}>
             Thử lại
-          </button>
+          </Button>
         </div>
       )}
 
@@ -89,3 +90,6 @@ export function ManagerLostTicketsPage() {
     </div>
   )
 }
+
+
+

@@ -1,3 +1,7 @@
+﻿import { Label } from '@/components/ui/label'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
 import { useRef, useState, type FormEvent } from 'react'
 import { useFocusTrap } from '../../../hooks/useFocusTrap'
 import { useLockBodyScroll } from '../../../hooks/useLockBodyScroll'
@@ -86,88 +90,92 @@ function ManagerPlanForm({
         role="dialog"
         aria-modal="true"
         aria-labelledby="manager-plan-dialog-title"
-        className="relative z-50 w-full max-w-xl rounded-2xl border border-theme bg-page p-5 shadow-xl"
+        className="relative z-50 w-full max-w-xl rounded-2xl border border-border bg-background p-5 shadow-xl"
       >
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="text-[10px] uppercase tracking-[0.2em] text-subtle">Quản lý // Gói gửi xe</p>
-            <h2 id="manager-plan-dialog-title" className="mt-2 text-xl font-semibold text-fg">
+            <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Quản lý // Gói gửi xe</p>
+            <h2 id="manager-plan-dialog-title" className="mt-2 text-xl font-semibold text-foreground">
               Chỉnh sửa gói
             </h2>
-            <p className="mt-2 text-xs text-muted">{plan.code}</p>
+            <p className="mt-2 text-xs text-muted-foreground">{plan.code}</p>
           </div>
-          <button type="button" className="text-xs text-subtle hover:text-fg" onClick={onClose}>
+          <Button type="button" className="text-xs text-muted-foreground hover:text-foreground" onClick={onClose}>
             Đóng
-          </button>
+          </Button>
         </div>
 
         <form className="mt-5 grid gap-4" onSubmit={handleSubmit}>
-          <label className="grid gap-2 text-xs text-subtle">
+          <Label className="grid gap-2 text-xs text-muted-foreground">
             Tên gói
-            <input
+            <Input
               autoFocus
-              className="h-10 rounded-lg border border-theme bg-page px-3 text-sm text-fg focus:outline-none focus:ring-2 focus:ring-btn-primary/60"
+              className="h-10 rounded-lg border border-border bg-background px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring/50"
               value={name}
               maxLength={100}
               onChange={(event) => setName(event.target.value)}
               required
             />
-          </label>
+          </Label>
 
           <div className="grid gap-4 sm:grid-cols-2">
-            <label className="grid gap-2 text-xs text-subtle">
+            <Label className="grid gap-2 text-xs text-muted-foreground">
               Giá (VND)
-              <input
+              <Input
                 type="number"
                 min="0"
                 step="1"
-                className="h-10 rounded-lg border border-theme bg-page px-3 text-sm text-fg focus:outline-none focus:ring-2 focus:ring-btn-primary/60"
+                className="h-10 rounded-lg border border-border bg-background px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring/50"
                 value={price}
                 onChange={(event) => setPrice(event.target.value)}
                 required
               />
-            </label>
-            <label className="grid gap-2 text-xs text-subtle">
+            </Label>
+            <Label className="grid gap-2 text-xs text-muted-foreground">
               Thời hạn (ngày)
-              <input
+              <Input
                 type="number"
                 min="1"
                 step="1"
-                className="h-10 rounded-lg border border-theme bg-page px-3 text-sm text-fg focus:outline-none focus:ring-2 focus:ring-btn-primary/60"
+                className="h-10 rounded-lg border border-border bg-background px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring/50"
                 value={durationDays}
                 onChange={(event) => setDurationDays(event.target.value)}
                 required
               />
-            </label>
+            </Label>
           </div>
 
-          <label className="grid gap-2 text-xs text-subtle">
+          <Label className="grid gap-2 text-xs text-muted-foreground">
             Mô tả
-            <textarea
-              className="min-h-[96px] rounded-lg border border-theme bg-page px-3 py-2 text-sm text-fg focus:outline-none focus:ring-2 focus:ring-btn-primary/60"
+            <Textarea
+              className="min-h-[96px] rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring/50"
               value={description}
               maxLength={500}
               onChange={(event) => setDescription(event.target.value)}
             />
             <span className="text-right">{description.length}/500</span>
-          </label>
+          </Label>
 
           {error && <div className="rounded-lg bg-rose-500/10 px-3 py-2 text-xs text-rose-200">{error}</div>}
 
           <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-            <button type="button" className="h-10 rounded-lg border border-theme px-4 text-sm text-subtle hover:text-fg" onClick={onClose}>
+            <Button type="button" className="h-10 rounded-lg border border-border px-4 text-sm text-muted-foreground hover:text-foreground" onClick={onClose}>
               Hủy
-            </button>
-            <button
+            </Button>
+            <Button
               type="submit"
               disabled={!isValid || isSubmitting}
-              className="h-10 rounded-lg bg-btn-primary px-4 text-sm font-semibold text-btn-primary-fg disabled:cursor-not-allowed disabled:opacity-60"
+              className="h-10 rounded-lg bg-primary px-4 text-sm font-semibold text-primary-foreground disabled:cursor-not-allowed disabled:opacity-60"
             >
               {isSubmitting ? 'Đang lưu...' : 'Lưu thay đổi'}
-            </button>
+            </Button>
           </div>
         </form>
       </div>
     </div>
   )
 }
+
+
+
+

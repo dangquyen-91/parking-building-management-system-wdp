@@ -1,4 +1,4 @@
-import type { ManagerIncident, ManagerIncidentUser } from '../../../services/managerIncidentsApi'
+﻿import type { ManagerIncident, ManagerIncidentUser } from '../../../services/managerIncidentsApi'
 import type { GateVehicleType } from '../../../services/staffGateApi'
 
 export const LOST_TICKET_VEHICLE_LABELS: Record<GateVehicleType, string> = {
@@ -34,3 +34,5 @@ export function getIncidentVehicleType(incident: ManagerIncident) {
   const session = getIncidentSession(incident)
   return incident.vehicleType ?? session?.vehicleType
 }
+
+

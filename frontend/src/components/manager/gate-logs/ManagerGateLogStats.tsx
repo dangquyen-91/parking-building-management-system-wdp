@@ -1,4 +1,4 @@
-import type { ManagerGateDashboard } from '../../../services/managerGateLogsApi'
+﻿import type { ManagerGateDashboard } from '../../../services/managerGateLogsApi'
 import type { GateSession, GateSessionStatus } from '../../../services/staffGateApi'
 import { formatCurrency } from '../managerUi'
 import { ManagerStatCard } from '../common/ManagerStatCard'
@@ -87,3 +87,5 @@ export function ManagerGateLogStats({
     </div>
   )
 }
+
+

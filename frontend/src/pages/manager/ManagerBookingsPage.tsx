@@ -1,4 +1,6 @@
-import { useEffect, useMemo, useState } from 'react'
+﻿import { useEffect, useMemo, useState } from 'react'
+import { Alert, AlertAction, AlertDescription } from '@/components/ui/alert'
+import { Button } from '@/components/ui/button'
 import {
   ManagerBookingFilters,
   ManagerBookingList,
@@ -94,15 +96,19 @@ export function ManagerBookingsPage() {
       <ManagerBookingStats bookings={bookings} isLoading={isLoading} />
 
       {error && (
-        <div className="mb-5 flex items-center justify-between gap-3 rounded-lg border border-theme bg-rose-500/10 p-4 text-sm text-rose-200">
-          <span>{error}</span>
-          <button type="button" className="font-semibold hover:underline" onClick={() => void loadBookings()}>
-            Thử lại
-          </button>
-        </div>
+        <Alert variant="destructive" className="mb-5">
+          <AlertDescription>{error}</AlertDescription>
+          <AlertAction>
+            <Button type="button" variant="destructive" size="sm" onClick={() => void loadBookings()}>
+              Thử lại
+            </Button>
+          </AlertAction>
+        </Alert>
       )}
 
       <ManagerBookingList bookings={filteredBookings} isLoading={isLoading} />
     </div>
   )
 }
+
+

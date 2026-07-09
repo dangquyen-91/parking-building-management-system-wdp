@@ -1,4 +1,4 @@
-/* eslint-disable react-refresh/only-export-components */
+﻿/* eslint-disable react-refresh/only-export-components */
 import type { ReactNode } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../ui/card'
 
@@ -12,7 +12,7 @@ export function AdminChartShell({ eyebrow, title, description, children, tone }:
 }
 
 export function AdminChartEmpty() {
-  return <p className="flex h-full items-center justify-center text-sm text-subtle">Chưa có dữ liệu trong khoảng này.</p>
+  return <p className="flex h-full items-center justify-center text-sm text-muted-foreground">Chưa có dữ liệu trong khoảng này.</p>
 }
 
 export function shortAdminDate(date: string) {
@@ -22,3 +22,4 @@ export function shortAdminDate(date: string) {
 export function compactAdminCurrency(value: number) {
   return value >= 1_000_000 ? `${(value / 1_000_000).toFixed(1)}tr` : value >= 1_000 ? `${Math.round(value / 1_000)}k` : String(value)
 }
+

@@ -1,4 +1,4 @@
-import type { Complaint, ComplaintStatus, ComplaintUser } from '../../../services/complaintsApi'
+﻿import type { Complaint, ComplaintStatus, ComplaintUser } from '../../../services/complaintsApi'
 
 export const MANAGER_COMPLAINT_STATUS_LABELS: Record<ComplaintStatus, string> = {
   open: 'Mới gửi',
@@ -54,3 +54,5 @@ export function getManagerComplaintResolutionNote(status: ComplaintStatus) {
     ? 'Manager đã tiếp nhận và yêu cầu nhân viên liên hệ chủ xe.'
     : 'Manager đã xác nhận khiếu nại đậu sai chỗ đã được xử lý.'
 }
+
+

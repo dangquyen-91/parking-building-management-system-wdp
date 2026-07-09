@@ -1,3 +1,7 @@
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { NativeSelect } from '@/components/ui/native-select'
+
 export type ManagerStaffStatusFilter = 'all' | 'active' | 'inactive'
 
 type ManagerStaffFiltersProps = {
@@ -15,28 +19,28 @@ export function ManagerStaffFilters({
 }: ManagerStaffFiltersProps) {
   return (
     <div className="grid w-full gap-3 sm:grid-cols-2 xl:w-auto xl:min-w-[32rem]">
-      <label className="grid gap-1 text-xs font-medium text-subtle">
+      <Label className="grid gap-1 text-xs text-muted-foreground">
         Tìm nhân viên
-        <input
-          className="h-10 rounded-lg border border-theme bg-page px-3 text-sm text-fg outline-none focus:border-btn-primary"
+        <Input
+          className="h-10"
           value={query}
           onChange={(event) => onQueryChange(event.target.value)}
           placeholder="Tên, email hoặc số điện thoại"
         />
-      </label>
+      </Label>
 
-      <label className="grid gap-1 text-xs font-medium text-subtle">
+      <Label className="grid gap-1 text-xs text-muted-foreground">
         Trạng thái tài khoản
-        <select
-          className="h-10 rounded-lg border border-theme bg-page px-3 text-sm text-fg"
+        <NativeSelect
+          className="w-full"
           value={statusFilter}
           onChange={(event) => onStatusFilterChange(event.target.value as ManagerStaffStatusFilter)}
         >
           <option value="all">Tất cả</option>
           <option value="active">Đang hoạt động</option>
           <option value="inactive">Đã khóa</option>
-        </select>
-      </label>
+        </NativeSelect>
+      </Label>
     </div>
   )
 }

@@ -1,4 +1,4 @@
-/* eslint-disable react-refresh/only-export-components */
+﻿/* eslint-disable react-refresh/only-export-components */
 import type { ReactNode } from 'react'
 import type { GateUser } from '../../../services/staffGateApi'
 import { Badge } from '../../ui/badge'
@@ -21,11 +21,11 @@ export function OperationListShell({ eyebrow, title, count, children, tone = 'de
 }
 
 export function OperationInfoCell({ label, value, detail, strong = false }: { label: string; value: string | number; detail?: string; strong?: boolean }) {
-  return <div className="flex min-h-20 min-w-0 flex-col justify-center rounded-xl bg-page/45 p-3"><p className="text-xs text-subtle">{label}</p><p className={`mt-1 truncate text-fg ${strong ? 'font-black' : 'font-semibold'}`}>{value}</p>{detail && <p className="mt-1 truncate text-xs text-muted">{detail}</p>}</div>
+  return <div className="flex min-h-20 min-w-0 flex-col justify-center rounded-xl bg-background/45 p-3"><p className="text-xs text-muted-foreground">{label}</p><p className={`mt-1 truncate text-foreground ${strong ? 'font-black' : 'font-semibold'}`}>{value}</p>{detail && <p className="mt-1 truncate text-xs text-muted-foreground">{detail}</p>}</div>
 }
 
 export function OperationValue({ label, value, detail, strong = false }: { label: string; value: string | number; detail?: string; strong?: boolean }) {
-  return <div className="min-w-0"><dt className="text-xs text-subtle">{label}</dt><dd className={`mt-1 truncate text-fg ${strong ? 'text-lg font-semibold' : 'font-medium'}`}>{value}</dd>{detail && <p className="mt-1 truncate text-xs text-muted">{detail}</p>}</div>
+  return <div className="min-w-0"><dt className="text-xs text-muted-foreground">{label}</dt><dd className={`mt-1 truncate text-foreground ${strong ? 'text-lg font-semibold' : 'font-medium'}`}>{value}</dd>{detail && <p className="mt-1 truncate text-xs text-muted-foreground">{detail}</p>}</div>
 }
 
 export function formatOperationDateTime(value: string) {
@@ -39,3 +39,4 @@ export function formatOperationDate(value?: string | null) {
 export function getOperationStaffName(staff?: GateUser | string | null) {
   return !staff ? 'Không xác định' : typeof staff === 'string' ? staff : staff.fullName || staff.email || 'Không xác định'
 }
+

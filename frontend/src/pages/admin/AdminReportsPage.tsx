@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+﻿import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   AdminOccupancyTable,
   AdminPageShell,
@@ -169,17 +169,17 @@ export function AdminReportsPage() {
         </CardHeader><CardContent>
 
         {busiestFloors.length === 0 ? (
-          <p className="py-8 text-center text-sm text-subtle">Chưa có dữ liệu công suất.</p>
+          <p className="py-8 text-center text-sm text-muted-foreground">Chưa có dữ liệu công suất.</p>
         ) : (
           <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
             {busiestFloors.map((floor) => (
               <Card key={floor.floorId} className="shadow-none"><CardContent className="p-4">
-                <p className="text-sm font-black text-fg">
+                <p className="text-sm font-black text-foreground">
                   {floor.building?.name ?? 'Tòa nhà'} / {formatFloorLabel(floor)}
                 </p>
-                <p className="mt-1 text-xs text-subtle">{floor.vehicleType === 'car' ? 'Ô tô' : 'Xe máy'}</p>
+                <p className="mt-1 text-xs text-muted-foreground">{floor.vehicleType === 'car' ? 'Ô tô' : 'Xe máy'}</p>
                 <Progress className="mt-4" value={Math.min(100, floor.utilizationPercent)} />
-                <p className="mt-2 text-xs text-muted">
+                <p className="mt-2 text-xs text-muted-foreground">
                   {floor.utilizationPercent}% sử dụng · còn {floor.empty} vị trí
                 </p>
               </CardContent></Card>
@@ -190,3 +190,4 @@ export function AdminReportsPage() {
     </AdminPageShell>
   )
 }
+

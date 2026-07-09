@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+﻿import { useEffect, useState } from 'react'
 import type { Floor } from '../../../services/managerBuildingsApi'
 import type { RowCreatePayload, RowUpdatePayload } from '../../../services/managerParkingRowApi'
 import { formatFloorLabel } from '../../../utils/floorLabel'
@@ -66,3 +66,4 @@ export function AdminRowFormModal({
     </AdminModal>
   )
 }
+

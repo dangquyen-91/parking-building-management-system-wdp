@@ -1,4 +1,4 @@
-import type { ManagerStaffUser } from '../../../services/managerStaffApi'
+﻿import type { ManagerStaffUser } from '../../../services/managerStaffApi'
 import type { GateSession } from '../../../services/staffGateApi'
 import { ManagerStatCard } from '../common/ManagerStatCard'
 
@@ -25,3 +25,5 @@ export function ManagerStaffStats({ staff, sessions, isLoading }: ManagerStaffSt
     </div>
   )
 }
+
+

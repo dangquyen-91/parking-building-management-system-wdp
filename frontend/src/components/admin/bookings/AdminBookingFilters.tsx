@@ -1,4 +1,4 @@
-import { Search } from 'lucide-react'
+﻿import { Search } from 'lucide-react'
 import { Input } from '../../ui/input'
 import { Label } from '../../ui/label'
 import { NativeSelect, NativeSelectOption } from '../../ui/native-select'
@@ -13,3 +13,4 @@ export function AdminBookingFilters({ query, statusFilter, onQueryChange, onStat
     <Label className="grid gap-2"><span>Trạng thái</span><NativeSelect value={statusFilter} onChange={(e) => onStatusFilterChange(e.target.value as AdminBookingStatusFilter)}><NativeSelectOption value="all">Tất cả</NativeSelectOption><NativeSelectOption value="pending">Chờ thanh toán</NativeSelectOption><NativeSelectOption value="paid">Đã thanh toán</NativeSelectOption><NativeSelectOption value="used">Đã sử dụng</NativeSelectOption><NativeSelectOption value="expired">Hết hạn</NativeSelectOption><NativeSelectOption value="cancelled">Đã hủy</NativeSelectOption></NativeSelect></Label>
   </CardContent></Card>
 }
+
