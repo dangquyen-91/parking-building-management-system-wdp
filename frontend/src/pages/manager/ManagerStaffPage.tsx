@@ -83,10 +83,6 @@ export function ManagerStaffPage() {
         </div>
       )}
 
-      <div className="mb-4 rounded-lg border border-theme bg-badge px-4 py-3 text-xs text-muted">
-        Manager có quyền theo dõi nhân viên. Việc sửa thông tin, đổi vai trò hoặc khóa tài khoản hiện thuộc quyền Admin.
-      </div>
-
       <ManagerStaffList staff={filteredStaff} sessions={sessions} isLoading={isLoading} />
     </div>
   )

@@ -78,6 +78,15 @@ export const checkOutTransfer = async (req, res, next) => {
   }
 };
 
+export const checkOutLostQr = async (req, res, next) => {
+  try {
+    const result = await sessionService.checkOutLostQr(req.params.id, req.user._id, req.body);
+    success(res, result, 'Vehicle checked out (lost QR) — papers verified, penalty collected');
+  } catch (err) {
+    next(err);
+  }
+};
+
 export const confirmCheckout = async (req, res, next) => {
   try {
     const session = await sessionService.confirmCheckout(req.params.id);

@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import type { Floor } from '../../../services/managerBuildingsApi'
 import type { GateCheckoutPreview, GateSession } from '../../../services/staffGateApi'
-import { formatGateTime, formatStaffCurrency } from '../data/staffGateData'
+import { formatGateTime, formatStaffCurrency } from '../data/staffGateUi'
 import { formatCustomerType, formatSessionSpot, formatVehicleType } from '../data/staffGateUtils'
 import { StaffGateCheckoutPricing } from './StaffGateCheckoutPricing'
 
@@ -54,7 +54,7 @@ export function StaffGateCheckoutDetails({
         <Detail label="Vị trí" value={formatSessionSpot(session, floorMap)} />
         <Detail label="Giờ vào" value={formatGateTime(session.entryTime)} />
         <Detail
-          label="Cần thu thêm"
+          label="Thu thêm tiền"
           value={isPreviewLoading ? 'Đang tính...' : formatStaffCurrency(amountToCollect)}
         />
         <Detail

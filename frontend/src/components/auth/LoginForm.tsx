@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { type FormEvent, useState } from 'react'
+import { type FormEvent, useMemo, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useStaggerFormMotion } from '../../hooks/useStaggerFormMotion'
 import { authApi, getDefaultRouteForRole } from '../../services/authApi'
@@ -33,7 +33,11 @@ export function LoginForm() {
   const navigate = useNavigate()
   const location = useLocation()
   const { motionForm, fieldVariants } = useStaggerFormMotion()
-  const [values, setValues] = useState<LoginValues>({ email: '', password: '' })
+  const initialEmail = useMemo(() => {
+    const stateEmail = (location.state as { email?: string } | null)?.email
+    return stateEmail || ''
+  }, [location.state])
+  const [values, setValues] = useState<LoginValues>({ email: initialEmail, password: '' })
   const [errors, setErrors] = useState<LoginErrors>({})
   const [status, setStatus] = useState<'idle' | 'loading' | 'success'>('idle')
   const [remember, setRemember] = useState(false)
@@ -121,12 +125,13 @@ export function LoginForm() {
           />
           Ghi nhớ thiết bị này
         </label>
-        <a
-          href="#recover"
+        <Link
+          to="/forgot-password"
+          state={{ email: values.email.trim() }}
           className="text-muted hover:text-fg transition-colors duration-200"
         >
           Quên mật khẩu?
-        </a>
+        </Link>
       </div>
 
       <div aria-live="polite" aria-atomic="true" className="min-h-[1.25rem]">
@@ -155,6 +160,13 @@ export function LoginForm() {
         Chưa có tài khoản?{' '}
         <Link to="/register" className="text-fg hover:text-fg transition-colors">
           Tạo tài khoản
+        </Link>
+      </p>
+
+      <p className="text-center text-xs text-faint">
+        Chưa xác thực email?{' '}
+        <Link to="/verify-email" state={{ email: values.email.trim() }} className="text-fg transition-colors hover:text-fg">
+          Nhập mã OTP
         </Link>
       </p>
     </form>

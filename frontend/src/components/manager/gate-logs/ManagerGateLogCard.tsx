@@ -68,9 +68,9 @@ function InfoCell({
 export function ManagerGateLogCard({ session }: ManagerGateLogCardProps) {
   const spotLabel = formatSessionSpot(session)
   const badge = statusBadge[session.status]
-  const timeLabel = session.status === 'completed' ? 'Thời gian ra' : 'Thời gian vào'
-  const timeValue = session.status === 'completed' && session.exitTime ? session.exitTime : session.entryTime
   const durationLabel = session.status === 'active' ? 'Đã gửi' : 'Thời lượng'
+  const exitTimeLabel =
+    session.status === 'completed' && session.exitTime ? `Ra ${formatDateTime(session.exitTime)}` : undefined
 
   return (
     <article className="rounded-2xl border border-theme bg-badge p-3 shadow-sm transition-all hover:-translate-y-0.5 hover:bg-ghost hover:shadow-lg">
@@ -87,7 +87,7 @@ export function ManagerGateLogCard({ session }: ManagerGateLogCardProps) {
         />
         <InfoCell label="Vị trí" value={spotLabel} title={spotLabel} wrap />
         <InfoCell label="Nhân viên ghi nhận" value={getStaffName(session.staffId)} />
-        <InfoCell label={timeLabel} value={formatDateTime(timeValue)} />
+        <InfoCell label="Thời gian vào" value={formatDateTime(session.entryTime)} subValue={exitTimeLabel} />
 
         <div className="flex min-h-20 min-w-0 flex-col items-start justify-start rounded-xl bg-page/55 p-3 text-left">
           <p className="text-xs text-subtle">Trạng thái</p>

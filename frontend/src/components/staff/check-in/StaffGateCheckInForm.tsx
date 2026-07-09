@@ -9,7 +9,6 @@ import type { StaffGateFloorOption } from '../../../utils/staffGateAllocation'
 import { StaffGateField } from '../common/StaffGateField'
 import { StaffAssignedParking } from '../parking/StaffAssignedParking'
 import { StaffGateCameraScanner } from '../scanner/StaffGateCameraScanner'
-import { StaffGateCheckInSummary } from './StaffGateCheckInSummary'
 import {
   CheckInStepHeader,
   CheckInWizardActions,
@@ -126,12 +125,11 @@ export function StaffGateCheckInForm({
     if (targetStep === 2) return lookupMatchesPlate && Boolean(lookupResult)
     if (targetStep === 3) return lookupMatchesPlate && Boolean(lookupResult)
     if (targetStep === 4) return isWalkIn ? Boolean(issuedWalkInQrValue) : Boolean(entryQrValue)
-    if (targetStep === 5) return isWalkIn ? Boolean(issuedWalkInQrValue) : Boolean(entryQrValue)
     return false
   }
 
   function goNext() {
-    if (step < 5) setStep((step + 1) as CheckInStep)
+    if (step < 4) setStep((step + 1) as CheckInStep)
   }
 
   function goPrevious() {
@@ -334,31 +332,17 @@ export function StaffGateCheckInForm({
           </>
         )}
 
-        {step === 5 && (
-          <>
-            <StepIntro title="Bước 5: Xác nhận xe vào" description="Kiểm tra lại toàn bộ thông tin trước khi ghi nhận phiên gửi xe." />
-            <StaffGateCheckInSummary
-              plate={lookupResult?.licensePlate || normalizePlate(plate)}
-              customerType={checkInCustomerType}
-              vehicleType={vehicleType}
-              qrVerified={isWalkIn ? Boolean(issuedWalkInQrValue) : Boolean(entryQrValue)}
-              note={note}
-            />
-          </>
-        )}
-
         <CheckInWizardActions
           step={step}
           canNext={
             (step === 1 && lookupMatchesPlate && Boolean(lookupResult))
             || (step === 2 && lookupMatchesPlate && Boolean(lookupResult))
             || (step === 3 && (isWalkIn ? Boolean(issuedWalkInQrValue) : Boolean(entryQrValue)))
-            || step === 4
           }
           canCheckIn={canCheckIn}
           isSubmitting={isSubmitting}
           onPrevious={step > 1 ? goPrevious : undefined}
-          onNext={step < 5 ? goNext : undefined}
+          onNext={step < 4 ? goNext : undefined}
           onCheckIn={onCheckIn}
         />
       </div>

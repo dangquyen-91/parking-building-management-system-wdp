@@ -1,4 +1,4 @@
-import { formatStaffCurrency } from '../data/staffGateData'
+import { formatStaffCurrency } from '../data/staffGateUi'
 
 type StaffShiftHandoverPanelProps = {
   lastStaffName: string

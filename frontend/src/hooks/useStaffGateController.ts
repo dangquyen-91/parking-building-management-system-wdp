@@ -336,6 +336,43 @@ export function useStaffGateController() {
     }
   }
 
+  async function handleCheckoutLostTicket(
+    session: GateSession,
+    method: 'cash' | 'transfer',
+    note?: string,
+  ) {
+    setIsSubmitting(true)
+    setActionMessage(null)
+
+    try {
+      const response = await staffGateApi.checkoutLostQr(session._id, {
+        method,
+        scannedPlate: session.licensePlate,
+        note,
+      })
+
+      if (response.payment?.checkoutUrl) {
+        rememberStaffGatePaymentReturn(response.payment.orderCode, session.licensePlate)
+        window.open(response.payment.checkoutUrl, '_blank', 'noopener,noreferrer')
+        setPendingTransferSession(session)
+        setActionMessage(
+          `Đã tạo mã thanh toán mất vé cho ${session.licensePlate}. Tổng cần thu ${response.toCollect.toLocaleString('vi-VN')}đ.`,
+        )
+      } else {
+        forgetTicketForSession(session._id)
+        closeSessionLocally(session._id, response.session)
+        setActionMessage(
+          `Đã xử lý mất vé và ghi nhận xe ra ${response.session.licensePlate}. Phạt ${response.penalty.toLocaleString('vi-VN')}đ.`,
+        )
+        await loadGateData()
+      }
+    } catch (err) {
+      setActionMessage(err instanceof Error ? err.message : 'Xử lý mất vé thất bại.')
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
   function closeSessionLocally(activeSessionId: string, completedSession: GateSession) {
     setActiveSessions((current) => current.filter((item) => item._id !== activeSessionId))
     setCompletedSessions((current) => [completedSession, ...current])
@@ -456,5 +493,6 @@ export function useStaffGateController() {
     setCheckoutQuery,
     handleCheckoutCash,
     handleCheckoutTransfer,
+    handleCheckoutLostTicket,
   }
 }

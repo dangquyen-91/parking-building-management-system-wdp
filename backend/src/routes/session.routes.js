@@ -8,6 +8,7 @@ import {
   previewCheckout,
   checkOutCash,
   checkOutTransfer,
+  checkOutLostQr,
   confirmCheckout,
   scanPlate,
   getSessionQR,
@@ -21,6 +22,7 @@ import {
   verifyQRSchema,
   scanPlateSchema,
   checkoutSchema,
+  lostQrCheckoutSchema,
   requestEntryQRSchema,
 } from '../validations/session.validation.js';
 
@@ -42,6 +44,7 @@ router.get('/:id/checkout/preview', authorize('admin', 'manager', 'staff'), prev
 router.post('/:id/checkout/cash', authorize('admin', 'staff'), validate(checkoutSchema), checkOutCash);
 router.post('/:id/checkout/transfer', authorize('admin', 'staff'), validate(checkoutSchema), checkOutTransfer);
 router.post('/:id/checkout/confirm', authorize('admin', 'staff'), confirmCheckout);
+router.post('/:id/checkout/lost-qr', authorize('admin', 'staff'), validate(lostQrCheckoutSchema), checkOutLostQr);
 
 router.get('/', authorize('admin', 'manager', 'staff'), getActiveSessions);
 router.get('/:id/qr', authorize('admin', 'manager', 'staff'), getSessionQR);

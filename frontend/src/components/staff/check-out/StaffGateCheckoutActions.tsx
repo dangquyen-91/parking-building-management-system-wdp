@@ -1,4 +1,4 @@
-import { formatStaffCurrency } from '../data/staffGateData'
+import { formatStaffCurrency } from '../data/staffGateUi'
 
 type CheckoutMethod = 'cash' | 'transfer'
 
@@ -37,11 +37,6 @@ export function StaffGateCheckoutActions({
       >
         {amountToCollect > 0 ? `Chuyển khoản ${formatStaffCurrency(amountToCollect)}` : 'Xác nhận xe ra'}
       </button>
-      {!checkoutVerified && (
-        <p className="text-center text-[11px] font-medium text-amber-600 dark:text-amber-300 sm:col-span-2">
-          Cần quét đúng QR và khớp biển số camera trước khi thanh toán và cho xe ra.
-        </p>
-      )}
     </div>
   )
 }

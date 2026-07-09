@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import QRCode from 'qrcode'
 import type { GateSession } from '../../../services/staffGateApi'
-import { formatGateTime } from '../data/staffGateData'
+import { formatGateTime } from '../data/staffGateUi'
 import { formatCustomerType, formatVehicleType } from '../data/staffGateUtils'
 
 type StaffGateCheckInTicketProps = {
@@ -12,7 +12,6 @@ type StaffGateCheckInTicketProps = {
 
 export function StaffGateCheckInTicket({ session, qrValue, onClose }: StaffGateCheckInTicketProps) {
   const [qrDataUrl, setQrDataUrl] = useState('')
-  const [message, setMessage] = useState<string>()
 
   useEffect(() => {
     let ignore = false
@@ -62,14 +61,9 @@ export function StaffGateCheckInTicket({ session, qrValue, onClose }: StaffGateC
           </div>
         </div>
 
-        {message && <p className="mx-5 mb-4 rounded-xl border border-sky-500/25 bg-sky-500/10 p-3 text-xs text-fg md:mx-6">{message}</p>}
-
-        <div className="grid gap-3 border-t border-theme p-5 sm:grid-cols-3">
+        <div className="grid gap-3 border-t border-theme p-5 sm:grid-cols-2">
           <button type="button" onClick={() => window.print()} className="h-11 rounded-xl border border-theme bg-badge px-4 text-xs font-bold text-fg hover:bg-ghost">
             In vé QR
-          </button>
-          <button type="button" onClick={() => setMessage('Mô phỏng: vé QR đã được gửi tới số điện thoại của khách.')} className="h-11 rounded-xl border border-theme bg-badge px-4 text-xs font-bold text-fg hover:bg-ghost">
-            Gửi SMS
           </button>
           <button type="button" onClick={onClose} className="h-11 rounded-xl bg-emerald-600 px-4 text-xs font-bold text-white hover:bg-emerald-500">
             Hoàn tất

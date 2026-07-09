@@ -1,4 +1,4 @@
-import { forwardRef } from 'react'
+﻿import { forwardRef } from 'react'
 import { NavLink } from 'react-router-dom'
 import { ThemeToggle } from '../../common'
 import { LogoIcon } from '../../common/icons'
@@ -10,6 +10,8 @@ const MANAGER_NAV_ITEMS = [
   { to: '/manager/slots', label: 'Chỗ đỗ', detail: 'Slot và hàng xe', icon: 'slots' },
   { to: '/manager/bookings', label: 'Booking', detail: 'Đặt chỗ trả trước', icon: 'calendar' },
   { to: '/manager/gate-logs', label: 'Hoạt động cổng', detail: 'Xe vào, xe ra', icon: 'gate' },
+  { to: '/manager/lost-tickets', label: 'Mất vé', detail: 'Phạt và đối soát', icon: 'ticket' },
+  { to: '/manager/complaints', label: 'Khiếu nại', detail: 'Đậu sai chỗ', icon: 'complaint' },
   { to: '/manager/staff', label: 'Nhân viên', detail: 'Tài khoản staff', icon: 'staff' },
   { to: '/manager/plans', label: 'Gói gửi xe', detail: 'Giá và trạng thái', icon: 'plan' },
   { to: '/manager/subscriptions', label: 'Người dùng gói', detail: 'Cư dân đã mua gói', icon: 'plan' },
@@ -46,6 +48,29 @@ function ManagerIcon({ name }: { name: (typeof MANAGER_NAV_ITEMS)[number]['icon'
       </svg>
     )
   }
+  if (name === 'ticket') {
+    return (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path
+          d="M5 7.5A2.5 2.5 0 0 1 7.5 5h9A2.5 2.5 0 0 1 19 7.5v2a2.5 2.5 0 0 0 0 5v2A2.5 2.5 0 0 1 16.5 19h-9A2.5 2.5 0 0 1 5 16.5v-2a2.5 2.5 0 0 0 0-5v-2Z"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinejoin="round"
+        />
+        <path d="M10 8h4M10 12h4M10 16h3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      </svg>
+    )
+  }
+
+  if (name === 'complaint') {
+    return (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M12 4 3.5 19h17L12 4Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+        <path d="M12 9v4M12 16.5h.01" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+      </svg>
+    )
+  }
+
 
   if (name === 'report') {
     return (
@@ -172,3 +197,4 @@ export const ManagerSidebar = forwardRef<HTMLElement, ManagerSidebarProps>(funct
     </aside>
   )
 })
+

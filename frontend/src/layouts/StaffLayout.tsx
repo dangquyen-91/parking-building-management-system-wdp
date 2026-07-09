@@ -8,6 +8,7 @@ const STAFF_PAGE_TITLES: Record<string, string> = {
   '/staff/check-in': 'Xe vào',
   '/staff/check-out': 'Xe ra',
   '/staff/vehicles': 'Xe đang gửi',
+  '/staff/occupancy': 'Sức chứa',
   '/staff/lost-ticket': 'Mất vé',
   '/staff/incidents': 'Sự cố',
   '/staff/shift': 'Tổng kết ca',

@@ -20,6 +20,8 @@ import subscriptionRoutes from './routes/subscription.routes.js';
 import bookingRoutes from './routes/booking.routes.js';
 import paymentRoutes from './routes/payment.routes.js';
 import reportRoutes from './routes/report.routes.js';
+import incidentRoutes from './routes/incident.routes.js';
+import complaintRoutes from './routes/complaint.routes.js';
 import webhookRoutes from './routes/webhook.routes.js';
 import { startSubscriptionJobs } from './jobs/subscription.job.js';
 import { startBookingJobs } from './jobs/booking.job.js';
@@ -55,6 +57,8 @@ app.use('/api/v1/subscriptions', subscriptionRoutes);
 app.use('/api/v1/bookings', bookingRoutes);
 app.use('/api/v1/payments', paymentRoutes);
 app.use('/api/v1/reports', reportRoutes);
+app.use('/api/v1/incidents', incidentRoutes);
+app.use('/api/v1/complaints', complaintRoutes);
 
 app.get('/health', (_req, res) =>
   res.json({ success: true, message: 'OK', data: { env: process.env.NODE_ENV } })

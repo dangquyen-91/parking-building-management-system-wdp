@@ -1,5 +1,5 @@
 import type { ManagerBooking } from '../../../services/managerBookingsApi'
-import { formatCurrency } from '../managerData'
+import { formatCurrency } from '../managerUi'
 import { ManagerStatCard } from '../common/ManagerStatCard'
 
 type ManagerBookingStatsProps = {

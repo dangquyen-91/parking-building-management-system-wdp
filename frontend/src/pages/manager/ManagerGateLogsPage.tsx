@@ -100,10 +100,6 @@ export function ManagerGateLogsPage() {
         </div>
       )}
 
-      <div className="mb-4 rounded-lg border border-theme bg-badge px-4 py-3 text-xs text-muted">
-        Danh sách chi tiết thay đổi theo trạng thái đang chọn. Mặc định là xe đang trong bãi; chọn “Đã ra” để xem lịch sử checkout.
-      </div>
-
       <ManagerGateLogList sessions={filteredSessions} isLoading={isLoading} />
     </div>
   )
