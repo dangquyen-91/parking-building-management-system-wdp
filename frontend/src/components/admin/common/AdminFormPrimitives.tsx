@@ -1,10 +1,15 @@
-import type { ReactNode } from 'react'
+﻿import type { ReactNode } from 'react'
+import { X } from 'lucide-react'
+import { Button } from '../../ui/button'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '../../ui/dialog'
+import { Label } from '../../ui/label'
+import { Alert, AlertDescription } from '../../ui/alert'
 
 export const adminInputClass =
-  'h-11 rounded-xl border border-theme bg-page px-3 text-sm text-fg outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-500/15'
+  'border-input bg-transparent h-9 w-full min-w-0 rounded-md border px-3 py-1 text-sm shadow-xs outline-none transition-[color,box-shadow] focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50'
 
 export function AdminField({ label, children }: { label: string; children: ReactNode }) {
-  return <label className="grid gap-1 text-xs font-medium text-subtle">{label}{children}</label>
+  return <Label className="grid gap-2 text-xs text-muted-foreground">{label}{children}</Label>
 }
 
 export function AdminModal({
@@ -21,30 +26,28 @@ export function AdminModal({
   children: ReactNode
 }) {
   return (
-    <div className="fixed inset-0 z-[80] grid place-items-center bg-overlay p-4 backdrop-blur-sm" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && onClose()}>
-      <div className="liquid-glass-card max-h-[90vh] w-full max-w-xl overflow-y-auto rounded-[2rem] border border-sky-500/15 p-5 shadow-2xl md:p-6">
-        <span className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-violet-500 via-sky-500 to-emerald-500" />
-        <div className="mb-5 flex justify-between gap-4">
-          <div>
-            <p className="text-[10px] font-black uppercase tracking-[0.18em] text-sky-600 dark:text-sky-300">{eyebrow}</p>
-            <h2 className="mt-2 text-2xl font-black text-fg">{title}</h2>
-          </div>
-          <button type="button" className="flex size-10 items-center justify-center rounded-xl border border-theme text-muted transition hover:bg-ghost hover:text-fg" onClick={onClose} aria-label="Đóng">✕</button>
-        </div>
-        {error && <p className="mb-4 rounded-xl border border-rose-500/20 bg-rose-500/10 p-3 text-sm text-rose-700 dark:text-rose-300">{error}</p>}
+    <Dialog open onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="max-h-[90vh] max-w-xl overflow-y-auto" showCloseButton={false}>
+        <DialogHeader className="pr-10">
+          <DialogDescription className="text-[10px] font-semibold uppercase tracking-[0.18em]">{eyebrow}</DialogDescription>
+          <DialogTitle className="text-2xl">{title}</DialogTitle>
+        </DialogHeader>
+        <Button type="button" variant="ghost" size="icon" className="absolute right-4 top-4" onClick={onClose} aria-label="Đóng"><X /></Button>
+        {error && <Alert variant="destructive"><AlertDescription>{error}</AlertDescription></Alert>}
         {children}
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   )
 }
 
 export function AdminModalActions({ disabled, loading, onClose }: { disabled: boolean; loading: boolean; onClose: () => void }) {
   return (
     <div className="flex flex-col-reverse justify-end gap-2 pt-2 sm:flex-row">
-      <button type="button" className="h-11 rounded-xl border border-theme px-4 text-sm font-bold text-fg transition hover:bg-ghost" onClick={onClose}>Hủy</button>
-      <button className="h-11 rounded-xl bg-gradient-to-r from-sky-500 to-violet-500 px-5 text-sm font-black text-white shadow-lg shadow-sky-500/20 transition-transform hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0" disabled={disabled}>
+      <Button type="button" variant="outline" onClick={onClose}>Hủy</Button>
+      <Button disabled={disabled}>
         {loading ? 'Đang lưu...' : 'Lưu thay đổi'}
-      </button>
+      </Button>
     </div>
   )
 }
+

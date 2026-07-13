@@ -6,21 +6,26 @@ import type {
   GateVehicleType,
 } from '../../../services/staffGateApi'
 import type { StaffGateFloorOption } from '../../../utils/staffGateAllocation'
+import { Badge } from '../../ui/badge'
+import { Button } from '../../ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../ui/card'
+import { Input } from '../../ui/input'
+import { Textarea } from '../../ui/textarea'
 import { StaffGateField } from '../common/StaffGateField'
 import { StaffAssignedParking } from '../parking/StaffAssignedParking'
 import { StaffGateCameraScanner } from '../scanner/StaffGateCameraScanner'
-import {
-  CheckInStepHeader,
-  CheckInWizardActions,
-  StepIntro,
-  type CheckInStep,
-} from './StaffGateCheckInSteps'
 import { StaffGateQrScanner } from '../scanner/StaffGateQrScanner'
 import {
   formatCustomerType,
   formatVehicleType,
   normalizePlate,
 } from '../data/staffGateUtils'
+import {
+  CheckInStepHeader,
+  CheckInWizardActions,
+  StepIntro,
+  type CheckInStep,
+} from './StaffGateCheckInSteps'
 
 type StaffGateCheckInFormProps = {
   plate: string
@@ -84,7 +89,6 @@ export function StaffGateCheckInForm({
     let ignore = false
 
     if (!issuedWalkInQrValue) {
-      setWalkInQrDataUrl('')
       return undefined
     }
 
@@ -106,11 +110,16 @@ export function StaffGateCheckInForm({
     previousLookupMatchesRef.current = lookupMatchesPlate
 
     if (!lookupMatchesPlate) {
-      setStep(1)
-      return
+      const timeoutId = window.setTimeout(() => setStep(1), 0)
+      return () => window.clearTimeout(timeoutId)
     }
 
-    if (justMatched) setStep(2)
+    if (justMatched) {
+      const timeoutId = window.setTimeout(() => setStep(2), 0)
+      return () => window.clearTimeout(timeoutId)
+    }
+
+    return undefined
   }, [lookupMatchesPlate])
 
   useEffect(() => {
@@ -137,45 +146,50 @@ export function StaffGateCheckInForm({
   }
 
   return (
-    <section className="liquid-glass-card overflow-hidden rounded-2xl">
-      <div className="border-b border-theme bg-gradient-to-r from-emerald-500/15 via-transparent to-transparent p-5 md:p-6">
+    <Card className="overflow-hidden border-sky-500/20 bg-gradient-to-br from-background via-background to-sky-500/5">
+      <CardHeader>
         <div className="flex items-start gap-4">
-          <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-emerald-500 text-lg font-black text-white shadow-lg shadow-emerald-500/20">
+          <span className="flex size-11 shrink-0 items-center justify-center rounded-lg bg-sky-600 text-lg font-bold text-white shadow-lg shadow-sky-500/20">
             IN
           </span>
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-emerald-600 dark:text-emerald-300">Quy trình xe vào</p>
-            <h2 className="mt-1 text-xl font-bold text-fg">Tiếp nhận phương tiện</h2>
-            <p className="mt-1 text-sm text-muted">Làm theo từng bước để camera, QR và vị trí không bị lẫn thao tác.</p>
+            <CardDescription>Quy trình xe vào</CardDescription>
+            <CardTitle>Tiếp nhận phương tiện</CardTitle>
+            <CardDescription>
+              Làm theo từng bước để camera, QR và vị trí không bị lẫn thao tác.
+            </CardDescription>
           </div>
         </div>
-      </div>
+      </CardHeader>
 
       <CheckInStepHeader step={step} canOpenStep={canOpenStep} onStepChange={setStep} />
 
-      <div className="grid gap-6 p-5 md:p-6">
+      <CardContent className="grid gap-6 p-5 md:p-6">
         {step === 1 && (
           <>
-            <StepIntro title="Bước 1: Quét hoặc nhập biển số" description="Camera chỉ nhập nhanh biển số vào ô tra cứu. Staff vẫn có thể sửa tay trước khi tra cứu." />
+            <StepIntro
+              title="Bước 1: Quét hoặc nhập biển số"
+              description="Camera chỉ nhập nhanh biển số vào ô tra cứu. Staff vẫn có thể sửa tay trước khi tra cứu."
+            />
             <StaffGateCameraScanner gate="entry" onUsePlate={onPlateChange} />
 
             <StaffGateField label="Biển số xe">
               <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_9rem]">
-                <input
+                <Input
                   required
                   value={plate}
                   onChange={(event) => onPlateChange(event.target.value)}
                   placeholder="VD: 59X2-481.22"
-                  className="auth-input h-14 rounded-xl border px-4 text-lg font-bold uppercase tracking-[0.08em] text-fg"
+                  className="h-14 text-lg font-bold uppercase tracking-[0.08em]"
                 />
-                <button
+                <Button
                   type="button"
                   onClick={onLookup}
                   disabled={isLookupLoading || normalizePlate(plate).length < 4}
-                  className="h-14 rounded-xl bg-btn-primary px-4 text-sm font-bold text-btn-primary-fg shadow-lg transition-transform hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0"
+                  className="h-14"
                 >
                   {isLookupLoading ? 'Đang tra cứu...' : 'Tra cứu xe'}
-                </button>
+                </Button>
               </div>
             </StaffGateField>
           </>
@@ -183,31 +197,38 @@ export function StaffGateCheckInForm({
 
         {step === 2 && lookupMatchesPlate && lookupResult && (
           <>
-            <StepIntro title="Bước 2: Kiểm tra thông tin xe" description="Đối chiếu loại khách, chủ xe, gói cư dân hoặc booking trước khi xác minh QR." />
+            <StepIntro
+              title="Bước 2: Kiểm tra thông tin xe"
+              description="Đối chiếu loại khách, chủ xe, gói cư dân hoặc booking trước khi xác minh QR."
+            />
 
-            <div className="rounded-2xl border border-emerald-500/35 bg-emerald-500/10 p-5 text-sm">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                <div>
-                  <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-subtle">Biển số xe</p>
-                  <p className="mt-1 text-2xl font-black tracking-[0.08em] text-fg">{lookupResult.licensePlate}</p>
-                  <p className="mt-2 text-muted">
-                    {lookupResult.booking ? 'Khách đặt trước' : formatCustomerType(lookupResult.customerType)}
-                    {lookupResult.subscription?.owner?.fullName ? ` / ${lookupResult.subscription.owner.fullName}` : ''}
-                  </p>
+            <Card size="sm">
+              <CardContent className="p-5 text-sm">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                  <div>
+                    <p className="text-xs text-muted-foreground">Biển số xe</p>
+                    <p className="mt-1 text-2xl font-bold tracking-[0.08em]">{lookupResult.licensePlate}</p>
+                    <p className="mt-2 text-muted-foreground">
+                      {lookupResult.booking ? 'Khách đặt trước' : formatCustomerType(lookupResult.customerType)}
+                      {lookupResult.subscription?.owner?.fullName ? ` / ${lookupResult.subscription.owner.fullName}` : ''}
+                    </p>
+                  </div>
+                  <Badge variant="secondary">
+                    {lookupResult.status === 'already_active' ? 'Đang gửi' : 'Sẵn sàng xác minh QR'}
+                  </Badge>
                 </div>
-                <span className="w-fit rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-[11px] font-semibold text-emerald-700 dark:text-emerald-200">
-                  {lookupResult.status === 'already_active' ? 'Đang gửi' : 'Sẵn sàng xác minh QR'}
-                </span>
-              </div>
-            </div>
+              </CardContent>
+            </Card>
 
             {lookupResult.booking && (
-              <div className="rounded-xl border border-sky-500/40 bg-sky-500/10 p-4 text-sm">
-                <p className="font-semibold text-fg">Đặt chỗ ô tô đã thanh toán</p>
-                <p className="mt-1 text-xs text-muted">
-                  Đã trả trước {lookupResult.booking.durationHours} giờ. Vé QR cổng vào vẫn được xác minh để đối chiếu khi xe ra.
-                </p>
-              </div>
+              <Card size="sm">
+                <CardHeader>
+                  <CardTitle>Đặt chỗ ô tô đã thanh toán</CardTitle>
+                  <CardDescription>
+                    Đã trả trước {lookupResult.booking.durationHours} giờ. Vé QR cổng vào vẫn được xác minh để đối chiếu khi xe ra.
+                  </CardDescription>
+                </CardHeader>
+              </Card>
             )}
           </>
         )}
@@ -219,95 +240,94 @@ export function StaffGateCheckInForm({
               description={isResident ? 'Cư dân đưa QR gói đã mua để đối chiếu với biển số camera.' : 'Khách vãng lai chỉ cần cấp vé QR, không cần quét lại ngay lúc xe vào.'}
             />
 
-            <div className="grid gap-4 rounded-2xl border border-theme bg-badge p-4">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                <div>
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-subtle">Xác minh QR cổng vào</p>
-                  <h3 className="mt-1 text-base font-bold text-fg">
-                    {isResident ? 'Quét QR gói cư dân' : 'Cấp vé QR vãng lai'}
-                  </h3>
-                  <p className="mt-1 text-xs text-muted">
-                    {isResident
-                      ? `QR phải khớp biển số camera ${lookupResult.licensePlate}. Sau khi xác minh mới cho xe vào.`
-                      : `Vé QR được gắn với biển số ${lookupResult.licensePlate} và dùng để đối chiếu khi xe ra.`}
-                  </p>
-                </div>
-                <span className={`w-fit rounded-full px-3 py-1 text-[10px] font-bold text-white ${(isWalkIn ? issuedWalkInQrValue : entryQrValue) ? 'bg-emerald-500' : 'bg-amber-500'}`}>
-                  {isWalkIn
-                    ? issuedWalkInQrValue
-                      ? 'ĐÃ CẤP VÉ'
-                      : 'CHƯA CẤP VÉ'
-                    : entryQrValue
-                      ? 'QR ĐÃ KHỚP'
-                      : 'CHỜ QR'}
-                </span>
-              </div>
-
-              {isWalkIn && (
-                <div className="grid gap-3 md:grid-cols-[12rem_minmax(0,1fr)]">
-                  <div className="flex min-h-44 items-center justify-center rounded-xl border border-theme bg-white p-3">
-                    {walkInQrDataUrl ? (
-                      <img src={walkInQrDataUrl} alt={`Vé QR ${lookupResult.licensePlate}`} className="size-full object-contain" />
-                    ) : (
-                      <p className="text-center text-xs text-zinc-500">Bấm cấp vé để tạo QR vãng lai.</p>
-                    )}
-                  </div>
-                  <div className="grid content-start gap-3">
-                    <button
-                      type="button"
-                      onClick={onIssueWalkInQr}
-                      className="h-11 rounded-xl bg-sky-600 px-4 text-xs font-bold text-white hover:bg-sky-500"
-                    >
-                      {issuedWalkInQrValue ? 'Cấp lại vé QR' : 'Cấp vé QR vãng lai'}
-                    </button>
-                    <p className="text-xs text-muted">
-                      Vé QR này chỉ dùng cho biển số đang đọc. Sau khi xác nhận xe vào, đưa vé này cho khách giữ để quét khi xe ra.
+            <Card size="sm">
+              <CardContent className="grid gap-4 p-4">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                  <div>
+                    <p className="text-xs text-muted-foreground">Xác minh QR cổng vào</p>
+                    <h3 className="mt-1 text-base font-bold">
+                      {isResident ? 'Quét QR gói cư dân' : 'Cấp vé QR vãng lai'}
+                    </h3>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {isResident
+                        ? `QR phải khớp biển số camera ${lookupResult.licensePlate}. Sau khi xác minh mới cho xe vào.`
+                        : `Vé QR được gắn với biển số ${lookupResult.licensePlate} và dùng để đối chiếu khi xe ra.`}
                     </p>
                   </div>
+                  <Badge variant={(isWalkIn ? issuedWalkInQrValue : entryQrValue) ? 'default' : 'secondary'}>
+                    {isWalkIn
+                      ? issuedWalkInQrValue
+                        ? 'Đã cấp vé'
+                        : 'Chưa cấp vé'
+                      : entryQrValue
+                        ? 'QR đã khớp'
+                        : 'Chờ QR'}
+                  </Badge>
                 </div>
-              )}
 
-              {isResident && (
-                <StaffGateQrScanner
-                  title="QR gói cư dân"
-                  description="Cư dân đưa QR gói đã mua để đối chiếu với biển số camera."
-                  verified={Boolean(entryQrValue)}
-                  onScan={onEntryQrScanned}
-                />
-              )}
-              {entryQrError && (
-                <p className="rounded-xl border border-rose-500/25 bg-rose-500/10 p-3 text-xs text-rose-700 dark:text-rose-200">
-                  {entryQrError}
-                </p>
-              )}
-            </div>
+                {isWalkIn && (
+                  <div className="grid gap-3 md:grid-cols-[12rem_minmax(0,1fr)]">
+                    <div className="flex min-h-44 items-center justify-center rounded-lg border bg-white p-3">
+                      {issuedWalkInQrValue && walkInQrDataUrl ? (
+                        <img src={walkInQrDataUrl} alt={`Vé QR ${lookupResult.licensePlate}`} className="size-full object-contain" />
+                      ) : (
+                        <p className="text-center text-xs text-zinc-500">Bấm cấp vé để tạo QR vãng lai.</p>
+                      )}
+                    </div>
+                    <div className="grid content-start gap-3">
+                      <Button type="button" onClick={onIssueWalkInQr}>
+                        {issuedWalkInQrValue ? 'Cấp lại vé QR' : 'Cấp vé QR vãng lai'}
+                      </Button>
+                      <p className="text-xs text-muted-foreground">
+                        Vé QR này chỉ dùng cho biển số đang đọc. Sau khi xác nhận xe vào, đưa vé này cho khách giữ để quét khi xe ra.
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {isResident && (
+                  <StaffGateQrScanner
+                    title="QR gói cư dân"
+                    description="Cư dân đưa QR gói đã mua để đối chiếu với biển số camera."
+                    verified={Boolean(entryQrValue)}
+                    onScan={onEntryQrScanned}
+                  />
+                )}
+                {entryQrError && (
+                  <p className="rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive">
+                    {entryQrError}
+                  </p>
+                )}
+              </CardContent>
+            </Card>
           </>
         )}
 
         {step === 4 && (
           <>
-            <StepIntro title="Bước 4: Chọn loại xe và vị trí" description="Hệ thống tự chọn hàng còn chỗ hoặc giữ vị trí theo gói cư dân." />
+            <StepIntro
+              title="Bước 4: Chọn loại xe và vị trí"
+              description="Hệ thống tự chọn hàng còn chỗ hoặc giữ vị trí theo gói cư dân."
+            />
 
             <StaffGateField label="Loại xe">
               <div className="grid gap-3 sm:grid-cols-2">
                 {(['motorcycle', 'car'] as const).map((type) => (
-                  <button
+                  <Button
                     key={type}
                     type="button"
+                    variant={vehicleType === type ? 'default' : 'outline'}
                     onClick={() => onVehicleTypeChange(type)}
                     disabled={isVehicleTypeLocked}
-                    className={[
-                      'min-h-20 rounded-xl border px-4 text-left transition-all disabled:cursor-not-allowed disabled:opacity-70',
-                      vehicleType === type
-                        ? 'border-theme-strong bg-btn-primary text-btn-primary-fg shadow-lg'
-                        : 'border-theme bg-badge text-muted hover:-translate-y-0.5 hover:bg-ghost hover:text-fg',
-                    ].join(' ')}
+                    className="h-auto min-h-20 justify-start px-4 text-left"
                   >
-                    <span className="block text-sm font-semibold">{formatVehicleType(type)}</span>
-                    <span className="mt-1 block text-xs opacity-75">
-                      {type === 'car' ? 'Vãng lai theo tầng, cư dân giữ ô riêng' : 'Tự chọn hàng còn chỗ'}
+                    <span>
+                      <span className="block text-sm font-semibold">{formatVehicleType(type)}</span>
+                      <span className="mt-1 block text-xs opacity-75">
+                        {type === 'car' ? 'Vãng lai theo tầng, cư dân giữ ô riêng' : 'Tự chọn hàng còn chỗ'}
+                      </span>
                     </span>
-                  </button>
+                  </Button>
                 ))}
               </div>
             </StaffGateField>
@@ -321,12 +341,11 @@ export function StaffGateCheckInForm({
             />
 
             <StaffGateField label="Ghi chú">
-              <textarea
+              <Textarea
                 value={note}
                 onChange={(event) => onNoteChange(event.target.value)}
                 rows={3}
                 placeholder="VD: thẻ tạm, tình trạng xe, hướng dẫn đặc biệt..."
-                className="auth-input resize-none rounded-xl border px-4 py-3 text-sm text-fg"
               />
             </StaffGateField>
           </>
@@ -345,7 +364,7 @@ export function StaffGateCheckInForm({
           onNext={step < 4 ? goNext : undefined}
           onCheckIn={onCheckIn}
         />
-      </div>
-    </section>
+      </CardContent>
+    </Card>
   )
 }

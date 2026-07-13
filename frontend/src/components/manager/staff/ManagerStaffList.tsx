@@ -1,4 +1,4 @@
-import type { ManagerStaffUser } from '../../../services/managerStaffApi'
+﻿import type { ManagerStaffUser } from '../../../services/managerStaffApi'
 import type { GateSession } from '../../../services/staffGateApi'
 import { ManagerStaffCard } from './ManagerStaffCard'
 
@@ -10,11 +10,11 @@ type ManagerStaffListProps = {
 
 export function ManagerStaffList({ staff, sessions, isLoading }: ManagerStaffListProps) {
   if (isLoading) {
-    return <div className="liquid-glass-card rounded-lg p-4 text-sm text-muted">Đang tải danh sách nhân viên...</div>
+    return <div className="bg-card text-card-foreground ring-1 ring-border rounded-lg p-4 text-sm text-muted-foreground">Đang tải danh sách nhân viên...</div>
   }
 
   if (staff.length === 0) {
-    return <div className="liquid-glass-card rounded-lg p-4 text-sm text-muted">Không có nhân viên phù hợp.</div>
+    return <div className="bg-card text-card-foreground ring-1 ring-border rounded-lg p-4 text-sm text-muted-foreground">Không có nhân viên phù hợp.</div>
   }
 
   return (
@@ -23,3 +23,5 @@ export function ManagerStaffList({ staff, sessions, isLoading }: ManagerStaffLis
     </section>
   )
 }
+
+

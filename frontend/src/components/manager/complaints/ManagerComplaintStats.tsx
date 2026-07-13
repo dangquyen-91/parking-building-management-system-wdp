@@ -1,4 +1,4 @@
-import { ManagerStatCard } from '../common/ManagerStatCard'
+﻿import { ManagerStatCard } from '../common/ManagerStatCard'
 
 type ManagerComplaintStatsProps = {
   stats: {
@@ -19,3 +19,5 @@ export function ManagerComplaintStats({ stats }: ManagerComplaintStatsProps) {
     </section>
   )
 }
+
+

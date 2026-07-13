@@ -1,4 +1,4 @@
-import type { ManagerPlan } from '../../../services/managerPlansApi'
+﻿import type { ManagerPlan } from '../../../services/managerPlansApi'
 import { ManagerStatCard } from '../common/ManagerStatCard'
 
 type ManagerPlanStatsProps = {
@@ -27,3 +27,5 @@ export function ManagerPlanStats({ plans, isLoading }: ManagerPlanStatsProps) {
     </div>
   )
 }
+
+

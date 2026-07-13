@@ -1,3 +1,4 @@
+﻿import { Button } from '@/components/ui/button'
 import type { ManagerPlan } from '../../../services/managerPlansApi'
 import { formatSubscriptionCurrency, VEHICLE_LABELS } from '../../../utils/subscriptionUi'
 import { ManagerStatusBadge } from '../common/ManagerStatusBadge'
@@ -16,13 +17,13 @@ export function ManagerPlanCard({
   onToggle,
 }: ManagerPlanCardProps) {
   return (
-    <article className="liquid-glass-card group relative overflow-hidden rounded-2xl border border-theme p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-xl">
+    <article className="bg-card text-card-foreground ring-1 ring-border group relative flex h-full min-h-72 flex-col overflow-hidden rounded-xl border border-border p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md">
       <div className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-sky-500 via-emerald-500 to-violet-500 opacity-70" />
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-[10px] uppercase tracking-[0.18em] text-subtle">{plan.code}</p>
-          <h2 className="mt-2 text-xl font-black text-fg">{plan.name}</h2>
-          <p className="mt-1 text-xs text-muted">
+          <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">{plan.code}</p>
+          <h2 className="mt-2 text-xl font-black text-foreground">{plan.name}</h2>
+          <p className="mt-1 text-xs text-muted-foreground">
             {VEHICLE_LABELS[plan.vehicleType]} / {plan.durationDays} ngày
           </p>
         </div>
@@ -31,32 +32,37 @@ export function ManagerPlanCard({
             status={plan.isActive ? 'active' : 'inactive'}
             label={plan.isActive ? 'Đang mở bán' : 'Tạm dừng'}
           />
-          <p className="max-w-40 text-[11px] font-medium text-subtle">
+          <p className="max-w-40 text-[11px] font-medium text-muted-foreground">
             {plan.isActive ? 'Người dùng có thể đăng ký' : 'Không hiển thị để đăng ký'}
           </p>
         </div>
       </div>
 
-      <p className="mt-5 text-3xl font-black tracking-tight text-fg">{formatSubscriptionCurrency(plan.price)}</p>
-      <p className="mt-3 min-h-10 text-sm text-muted">{plan.description || 'Chưa có mô tả.'}</p>
+      <p className="mt-5 text-3xl font-black tracking-tight text-foreground">{formatSubscriptionCurrency(plan.price)}</p>
+      <p className="mt-3 min-h-10 flex-1 text-sm text-muted-foreground">{plan.description || 'Chưa có mô tả.'}</p>
 
-      <div className="mt-5 flex flex-col gap-2 border-t border-theme pt-4 sm:flex-row">
-        <button
+      <div className="mt-5 grid gap-2 border-t border-border pt-4 sm:grid-cols-2">
+        <Button
           type="button"
-          className="h-11 flex-1 rounded-xl bg-btn-primary px-4 text-sm font-bold text-btn-primary-fg shadow-lg transition-transform hover:-translate-y-0.5"
+          size="lg"
           onClick={() => onEdit(plan)}
         >
           Chỉnh sửa
-        </button>
-        <button
+        </Button>
+        <Button
           type="button"
+          variant={plan.isActive ? 'destructive' : 'outline'}
           disabled={isUpdating}
-          className="h-11 flex-1 rounded-xl border border-theme px-4 text-sm font-bold text-fg hover:bg-badge disabled:opacity-60"
+          size="lg"
+          className="disabled:opacity-60"
           onClick={() => onToggle(plan)}
         >
           {isUpdating ? 'Đang cập nhật...' : plan.isActive ? 'Tạm dừng gói' : 'Mở lại gói'}
-        </button>
+        </Button>
       </div>
     </article>
   )
 }
+
+
+

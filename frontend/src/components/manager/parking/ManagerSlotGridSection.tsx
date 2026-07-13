@@ -1,3 +1,4 @@
+﻿import { Button } from '@/components/ui/button'
 import { ManagerStatusBadge } from '../common/ManagerStatusBadge'
 import type { Floor } from '../../../services/managerBuildingsApi'
 import type { ParkingSlot } from '../../../services/managerParkingSlotApi'
@@ -64,17 +65,17 @@ export function ManagerSlotGridSection({
   const availableCount = slots.filter((slot) => slot.status === 'empty').length
 
   return (
-    <div className="liquid-glass-card overflow-hidden rounded-2xl border border-theme bg-badge shadow-sm">
-      <div className="border-b border-theme p-5">
+    <div className="bg-card text-card-foreground ring-1 ring-border overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
+      <div className="border-b border-border p-5">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <p className="text-xs uppercase tracking-[0.2em] text-subtle">Khu ô tô</p>
-            <h3 className="mt-2 text-xl font-black text-fg">
+            <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Khu ô tô</p>
+            <h3 className="mt-2 text-xl font-black text-foreground">
               {buildingName ? `${buildingName} / ` : ''}Tầng {floorNumber ?? '-'} · Khu {getFloorSection(section)}
             </h3>
             <div className="mt-3 flex flex-wrap gap-2 text-xs">
-              <span className="rounded-full border border-theme bg-page/60 px-3 py-1 font-bold text-fg">Ô tô</span>
-              <span className="rounded-full border border-theme bg-page/60 px-3 py-1 font-bold text-fg">
+              <span className="rounded-full border border-border bg-background/60 px-3 py-1 font-bold text-foreground">Ô tô</span>
+              <span className="rounded-full border border-border bg-background/60 px-3 py-1 font-bold text-foreground">
                 {FLOOR_TYPE_LABELS[floorType]}
               </span>
               <span className="rounded-full bg-emerald-500/10 px-3 py-1 font-black text-emerald-700 dark:text-emerald-200">
@@ -82,42 +83,47 @@ export function ManagerSlotGridSection({
               </span>
             </div>
           </div>
-          <div className="rounded-2xl border border-theme bg-page/50 px-4 py-3 text-right">
-            <p className="text-2xl font-black text-fg">{slots.length}</p>
-            <p className="text-xs text-muted">Tổng ô đỗ</p>
+          <div className="rounded-2xl border border-border bg-background/50 px-4 py-3 text-right">
+            <p className="text-2xl font-black text-foreground">{slots.length}</p>
+            <p className="text-xs text-muted-foreground">Tổng ô đỗ</p>
           </div>
         </div>
 
-        <div className="mt-4 flex flex-wrap gap-2 text-[11px] text-muted">
+        <div className="mt-4 flex flex-wrap gap-2 text-[11px] text-muted-foreground">
           {(Object.keys(SLOT_STATUS_LABELS) as ParkingSlot['status'][]).map((status) => (
             <ManagerStatusBadge key={status} status={getBadgeStatus(status)} label={SLOT_STATUS_LABELS[status]} />
           ))}
         </div>
       </div>
 
-      <div className="grid gap-3 p-4 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6">
+      <div className="grid gap-3 p-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
         {slots.map((slot) => (
           <article
             key={slot._id}
-            className={`group relative overflow-hidden rounded-2xl border p-4 shadow-sm transition hover:-translate-y-1 hover:shadow-lg ${SLOT_CARD_TONES[slot.status]}`}
+            className={`group relative flex min-h-40 flex-col overflow-hidden rounded-xl border p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md ${SLOT_CARD_TONES[slot.status]}`}
           >
             <span className={`absolute right-4 top-4 size-2.5 rounded-full ${SLOT_DOT_TONES[slot.status]}`} />
 
-            <button type="button" className="block w-full text-left" onClick={() => onEdit(slot)}>
+            <Button
+              type="button"
+              variant="ghost"
+              className="h-auto w-full flex-1 flex-col items-start justify-start gap-0 bg-transparent p-0 text-left text-current hover:bg-transparent hover:text-current"
+              onClick={() => onEdit(slot)}
+            >
               <p className="text-2xl font-black tracking-[0.08em]">{slot.slotCode}</p>
               <p className="mt-1 text-xs font-black uppercase tracking-[0.12em]">{SLOT_STATUS_LABELS[slot.status]}</p>
               <p className="mt-4 min-h-10 text-xs leading-relaxed opacity-80">
                 {slot.note || SLOT_STATUS_DETAILS[slot.status]}
               </p>
-            </button>
+            </Button>
 
             <div className="mt-4 flex items-center justify-between gap-2 border-t border-current/15 pt-3 text-xs">
-              <button type="button" className="font-black hover:opacity-80" onClick={() => onEdit(slot)}>
+              <Button type="button" variant="outline" size="sm" onClick={() => onEdit(slot)}>
                 Sửa
-              </button>
-              <button type="button" className="font-black text-rose-600 hover:text-rose-700" onClick={() => onDelete(slot)}>
+              </Button>
+              <Button type="button" variant="destructive" size="sm" onClick={() => onDelete(slot)}>
                 Xóa
-              </button>
+              </Button>
             </div>
           </article>
         ))}
@@ -125,3 +131,6 @@ export function ManagerSlotGridSection({
     </div>
   )
 }
+
+
+

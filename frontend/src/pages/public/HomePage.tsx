@@ -34,7 +34,7 @@ export function HomePage() {
   }
 
   return (
-    <div className="bg-page text-fg min-h-screen">
+    <div className="min-h-screen bg-background text-foreground">
       <SkipLink />
       <Header />
       <main id="main" tabIndex={-1}>

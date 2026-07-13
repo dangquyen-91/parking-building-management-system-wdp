@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+﻿import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   AdminPageShell,
   AdminSubscriptionFilters,
@@ -9,6 +9,9 @@ import {
 } from '../../components/admin'
 import { adminApi, type AdminSubscription } from '../../services/adminApi'
 import { isSubscriptionExpiringSoon } from '../../utils/managerSubscriptionUi'
+import { Button } from '../../components/ui/button'
+import { Card, CardContent } from '../../components/ui/card'
+import { Alert, AlertDescription } from '../../components/ui/alert'
 
 export function AdminSubscriptionsPage() {
   const [subscriptions, setSubscriptions] = useState<AdminSubscription[]>([])
@@ -66,14 +69,14 @@ export function AdminSubscriptionsPage() {
       title="Người dùng gói"
       description="Theo dõi người đã đăng ký, thời hạn gói, phương tiện và trạng thái sử dụng bãi xe."
       actions={
-        <button
+        <Button
           type="button"
           disabled={loading}
           onClick={() => void loadSubscriptions()}
-          className="h-11 rounded-xl border border-emerald-500/25 bg-emerald-500/10 px-5 text-sm font-bold text-emerald-700 transition hover:bg-emerald-500 hover:text-white disabled:opacity-50 dark:text-emerald-200"
+          variant="outline"
         >
           {loading ? 'Đang tải...' : 'Làm mới'}
-        </button>
+        </Button>
       }
     >
       <AdminSubscriptionStats
@@ -82,8 +85,7 @@ export function AdminSubscriptionsPage() {
         snapshotTime={snapshotTime}
       />
 
-      <section className="liquid-glass-card mb-5 rounded-2xl border border-emerald-500/15 p-4 shadow-sm">
-        <span className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-emerald-500 via-sky-500 to-violet-500" />
+      <Card className="mb-5"><CardContent className="p-4">
         <AdminSubscriptionFilters
           query={query}
           status={status}
@@ -92,15 +94,14 @@ export function AdminSubscriptionsPage() {
           onStatusChange={setStatus}
           onVehicleTypeChange={setVehicleType}
         />
-      </section>
+      </CardContent></Card>
 
       {error && (
-        <div className="mb-5 flex items-center justify-between gap-3 rounded-2xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-700 dark:text-red-300">
-          <span>{error}</span>
-          <button type="button" className="font-semibold underline" onClick={() => void loadSubscriptions()}>
+        <Alert variant="destructive" className="mb-5 flex items-center justify-between"><AlertDescription>{error}</AlertDescription>
+          <Button type="button" variant="link" className="h-auto p-0" onClick={() => void loadSubscriptions()}>
             Thử lại
-          </button>
-        </div>
+          </Button>
+        </Alert>
       )}
 
       <AdminSubscriptionList
@@ -112,3 +113,4 @@ export function AdminSubscriptionsPage() {
     </AdminPageShell>
   )
 }
+

@@ -1,4 +1,6 @@
-import type { ReactNode } from 'react'
+﻿import type { ReactNode } from 'react'
+import { Card, CardContent } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
 
 type ManagerPageHeaderProps = {
   eyebrow: string
@@ -14,21 +16,22 @@ export function ManagerPageHeader({
   actions,
 }: ManagerPageHeaderProps) {
   return (
-    <section className="relative mb-6 overflow-hidden rounded-[2rem] border border-theme bg-badge shadow-sm">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(14,165,233,0.2),transparent_36%),radial-gradient(circle_at_85%_10%,rgba(16,185,129,0.16),transparent_30%)]" />
-      <div className="relative p-5 md:p-7">
+    <Card className="mb-6 overflow-hidden border-emerald-500/20 bg-gradient-to-br from-white via-sky-50/70 to-emerald-50/70 shadow-sm dark:from-slate-950 dark:via-sky-950/25 dark:to-emerald-950/20">
+      <CardContent className="p-5 md:p-7">
         <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
-          <div>
-            <div className="mb-3 flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.22em] text-subtle">
-              <span className="size-2 rounded-full bg-emerald-500 shadow-[0_0_18px_rgba(16,185,129,0.85)]" />
+          <div className="min-w-0">
+            <Badge className="mb-3 gap-2 border-0 bg-emerald-600 text-[10px] font-semibold uppercase tracking-[0.16em] text-white">
+              <span className="size-1.5 rounded-full bg-emerald-500" />
               {eyebrow}
-            </div>
-            <h1 className="max-w-4xl text-3xl font-black tracking-tight text-fg md:text-5xl">{title}</h1>
-            <p className="mt-3 max-w-3xl text-sm leading-6 text-muted md:text-base">{description}</p>
+            </Badge>
+            <h1 className="max-w-4xl break-words text-3xl font-semibold tracking-tight text-slate-950 md:text-4xl dark:text-white">{title}</h1>
+            <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground md:text-base">{description}</p>
           </div>
-          {actions && <div className="shrink-0">{actions}</div>}
+          {actions && <div className="min-w-0 w-full xl:w-auto xl:max-w-[48rem] xl:shrink-0">{actions}</div>}
         </div>
-      </div>
-    </section>
+      </CardContent>
+    </Card>
   )
 }
+
+

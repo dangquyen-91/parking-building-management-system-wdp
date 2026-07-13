@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+﻿import { useEffect, useMemo, useState } from 'react'
 import {
   AdminPageShell,
   AdminStaffFilters,
@@ -8,6 +8,8 @@ import {
 } from '../../components/admin'
 import { adminApi, type AdminUser } from '../../services/adminApi'
 import type { GateSession } from '../../services/staffGateApi'
+import { Alert, AlertDescription } from '../../components/ui/alert'
+import { Button } from '../../components/ui/button'
 
 export function AdminStaffPage() {
   const [staff, setStaff] = useState<AdminUser[]>([])
@@ -73,20 +75,22 @@ export function AdminStaffPage() {
       <AdminStaffStats staff={staff} sessions={sessions} isLoading={isLoading} />
 
       {error && (
-        <div className="mb-5 flex items-center justify-between gap-3 rounded-2xl border border-rose-500/25 bg-rose-500/10 p-4 text-sm text-rose-700 dark:text-rose-200">
-          <span>{error}</span>
-          <button type="button" className="font-semibold hover:underline" onClick={() => void loadStaffData()}>
+        <Alert variant="destructive" className="mb-5 flex items-center justify-between gap-4">
+          <AlertDescription>{error}</AlertDescription>
+          <Button type="button" variant="link" className="h-auto p-0" onClick={() => void loadStaffData()}>
             Thử lại
-          </button>
-        </div>
+          </Button>
+        </Alert>
       )}
 
-      <div className="mb-5 flex items-start gap-3 rounded-2xl border border-sky-500/20 bg-sky-500/10 px-4 py-3 text-xs leading-5 text-sky-800 dark:text-sky-200">
-        <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-sky-500 text-xs font-black text-white">i</span>
-        <span>Admin có thể theo dõi nhân viên tại đây. Việc chỉnh vai trò, khóa hoặc mở tài khoản nằm ở trang Người dùng.</span>
-      </div>
+      <Alert className="mb-5">
+        <AlertDescription>
+          Admin có thể theo dõi nhân viên tại đây. Việc chỉnh vai trò, khóa hoặc mở tài khoản nằm ở trang Người dùng.
+        </AlertDescription>
+      </Alert>
 
       <AdminStaffList staff={filteredStaff} sessions={sessions} isLoading={isLoading} />
     </AdminPageShell>
   )
 }
+

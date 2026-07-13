@@ -1,3 +1,4 @@
+﻿import { Button } from '@/components/ui/button'
 import { useState } from 'react'
 import {
   ManagerParkingSpaceHeader,
@@ -169,7 +170,7 @@ export function ManagerSlotsPage() {
       </div>
 
       {error && (
-        <div className="liquid-glass-card rounded-lg border border-theme bg-badge p-4 text-sm text-rose-100">
+        <div className="bg-card text-card-foreground ring-1 ring-border rounded-lg border border-border bg-card p-4 text-sm text-rose-100">
           {error}
         </div>
       )}
@@ -232,33 +233,33 @@ export function ManagerSlotsPage() {
 
       {slotPendingDelete && (
         <div className="fixed inset-0 z-50 grid place-items-center bg-black/45 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md overflow-hidden rounded-3xl border border-theme bg-page shadow-2xl">
-            <div className="border-b border-theme bg-gradient-to-r from-rose-500/15 via-transparent to-transparent p-6">
+          <div className="w-full max-w-md overflow-hidden rounded-3xl border border-border bg-background shadow-2xl">
+            <div className="border-b border-border bg-gradient-to-r from-rose-500/15 via-transparent to-transparent p-6">
               <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-rose-600 dark:text-rose-300">
                 Xác nhận xóa
               </p>
-              <h2 className="mt-2 text-2xl font-black text-fg">Xóa ô đỗ {slotPendingDelete.slotCode}?</h2>
-              <p className="mt-2 text-sm leading-6 text-muted">
+              <h2 className="mt-2 text-2xl font-black text-foreground">Xóa ô đỗ {slotPendingDelete.slotCode}?</h2>
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">
                 Thao tác này sẽ xóa ô đỗ khỏi danh sách quản lý. Hãy chắc chắn ô không còn được sử dụng trước khi tiếp tục.
               </p>
             </div>
             <div className="flex flex-col-reverse gap-3 p-5 sm:flex-row sm:justify-end">
-              <button
+              <Button
                 type="button"
-                className="h-11 rounded-xl border border-theme px-5 text-sm font-bold text-fg transition-colors hover:bg-ghost disabled:cursor-not-allowed disabled:opacity-60"
+                className="h-11 rounded-xl border border-border px-5 text-sm font-bold text-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-60"
                 onClick={() => setSlotPendingDelete(null)}
                 disabled={isDeletingSlot}
               >
                 Hủy
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
                 className="h-11 rounded-xl bg-rose-600 px-5 text-sm font-bold text-white shadow-lg shadow-rose-600/20 transition-colors hover:bg-rose-500 disabled:cursor-not-allowed disabled:opacity-60"
                 onClick={handleConfirmDeleteSlot}
                 disabled={isDeletingSlot}
               >
                 {isDeletingSlot ? 'Đang xóa...' : 'Xóa ô đỗ'}
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -266,3 +267,6 @@ export function ManagerSlotsPage() {
     </div>
   )
 }
+
+
+

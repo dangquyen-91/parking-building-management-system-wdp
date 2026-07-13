@@ -1,3 +1,4 @@
+﻿import { Button } from '@/components/ui/button'
 import { useId, useMemo, useState } from 'react'
 import type { ManagerBuildingSummary } from '../../../hooks/useManagerBuildings'
 import { getFloorSection } from '../../../utils/floorLabel'
@@ -60,9 +61,9 @@ export function ManagerBuildingCard({ building, onEdit, onEditFloor }: ManagerBu
   }
 
   return (
-    <article className="group overflow-hidden rounded-2xl border border-theme bg-badge shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg">
+    <article className="group overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg">
       <div className="relative p-5">
-        <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-cyan-400 via-btn-primary to-emerald-400" />
+        <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-cyan-400 via-primary to-emerald-400" />
         <div className="absolute right-4 top-4 size-20 rounded-full bg-cyan-400/10 blur-2xl" />
 
         <div className="relative flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
@@ -72,12 +73,12 @@ export function ManagerBuildingCard({ building, onEdit, onEditFloor }: ManagerBu
                 P
               </span>
               <div className="min-w-0">
-                <p className="truncate text-xl font-black text-fg">{building.name}</p>
-                <p className="mt-1 truncate text-xs text-subtle">{building.address}</p>
+                <p className="truncate text-xl font-black text-foreground">{building.name}</p>
+                <p className="mt-1 truncate text-xs text-muted-foreground">{building.address}</p>
               </div>
             </div>
 
-            {building.description && <p className="mt-4 max-w-3xl text-sm leading-relaxed text-muted">{building.description}</p>}
+            {building.description && <p className="mt-4 max-w-3xl text-sm leading-relaxed text-muted-foreground">{building.description}</p>}
 
             <span
               className={`mt-4 inline-flex rounded-full px-3 py-1 text-xs font-bold ${
@@ -91,49 +92,49 @@ export function ManagerBuildingCard({ building, onEdit, onEditFloor }: ManagerBu
           </div>
 
           <div className="grid min-w-[16rem] grid-cols-2 gap-3">
-            <div className="rounded-2xl border border-theme bg-page/50 p-4 text-center">
-              <p className="text-xs uppercase tracking-[0.16em] text-subtle">Tầng</p>
-              <p className="mt-2 text-2xl font-black text-fg">{building.floorCount}</p>
-              <p className="mt-1 text-[11px] text-muted">{building.activeFloors} khu hoạt động</p>
+            <div className="rounded-2xl border border-border bg-background/50 p-4 text-center">
+              <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">Tầng</p>
+              <p className="mt-2 text-2xl font-black text-foreground">{building.floorCount}</p>
+              <p className="mt-1 text-[11px] text-muted-foreground">{building.activeFloors} khu hoạt động</p>
             </div>
-            <div className="rounded-2xl border border-theme bg-page/50 p-4 text-center">
-              <p className="text-xs uppercase tracking-[0.16em] text-subtle">Chỗ đỗ</p>
-              <p className="mt-2 text-2xl font-black text-fg">{building.totalSlots}</p>
-              <p className="mt-1 text-[11px] text-muted">Tổng sức chứa</p>
+            <div className="rounded-2xl border border-border bg-background/50 p-4 text-center">
+              <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">Chỗ đỗ</p>
+              <p className="mt-2 text-2xl font-black text-foreground">{building.totalSlots}</p>
+              <p className="mt-1 text-[11px] text-muted-foreground">Tổng sức chứa</p>
             </div>
           </div>
         </div>
 
         <div className="relative mt-5 flex flex-wrap items-center gap-3">
-          <button
+          <Button
             type="button"
-            className="inline-flex h-10 items-center justify-center rounded-xl border border-theme bg-page/60 px-4 text-sm font-bold text-fg transition hover:bg-page"
+            className="inline-flex h-10 items-center justify-center rounded-xl border border-border bg-background/60 px-4 text-sm font-bold text-foreground transition hover:bg-background"
             aria-expanded={isOpen}
             aria-controls={contentId}
             onClick={() => setIsOpen((prev) => !prev)}
           >
             {isOpen ? 'Ẩn danh sách tầng' : 'Xem danh sách tầng'}
-            <span className="ml-2 rounded-full bg-btn-primary/10 px-2 py-0.5 text-xs text-btn-primary">
+            <span className="ml-2 rounded-full bg-primary/10 px-2 py-0.5 text-xs text-primary">
               {floorGroups.length}
             </span>
-          </button>
+          </Button>
 
           {onEdit && (
-            <button
+            <Button
               type="button"
-              className="inline-flex h-10 items-center justify-center rounded-xl bg-btn-primary px-4 text-sm font-bold text-btn-primary-fg transition hover:opacity-90"
+              className="inline-flex h-10 items-center justify-center rounded-xl bg-primary px-4 text-sm font-bold text-primary-foreground transition hover:opacity-90"
               onClick={() => onEdit(building)}
             >
               Sửa tòa nhà
-            </button>
+            </Button>
           )}
         </div>
       </div>
 
       {isOpen && (
-        <div id={contentId} className="border-t border-theme bg-page/30 p-4">
+        <div id={contentId} className="border-t border-border bg-background/30 p-4">
           {floorGroups.length === 0 ? (
-            <div className="rounded-xl border border-theme bg-badge/70 px-4 py-3 text-sm text-muted">
+            <div className="rounded-xl border border-border bg-card/70 px-4 py-3 text-sm text-muted-foreground">
               Chưa có tầng/khu nào được tạo.
             </div>
           ) : (
@@ -142,42 +143,42 @@ export function ManagerBuildingCard({ building, onEdit, onEditFloor }: ManagerBu
                 const isFloorOpen = openFloors.has(group.floorNumber)
 
                 return (
-                  <section key={group.floorNumber} className="overflow-hidden rounded-2xl border border-theme bg-badge/80">
-                    <button
+                  <section key={group.floorNumber} className="overflow-hidden rounded-2xl border border-border bg-card/80">
+                    <Button
                       type="button"
-                      className="flex w-full items-center justify-between gap-4 px-4 py-4 text-left transition hover:bg-page/50"
+                      className="flex w-full items-center justify-between gap-4 px-4 py-4 text-left transition hover:bg-background/50"
                       aria-expanded={isFloorOpen}
                       onClick={() => toggleFloor(group.floorNumber)}
                     >
                       <div>
-                        <p className="text-base font-black text-fg">Tầng {group.floorNumber}</p>
-                        <p className="mt-1 text-xs text-muted">
+                        <p className="text-base font-black text-foreground">Tầng {group.floorNumber}</p>
+                        <p className="mt-1 text-xs text-muted-foreground">
                           {group.floors.length} khu · {group.totalSlots} chỗ đỗ
                         </p>
                       </div>
-                      <span className="rounded-full bg-btn-primary/10 px-3 py-1 text-xs font-bold text-btn-primary">
+                      <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-bold text-primary">
                         {isFloorOpen ? 'Thu gọn' : 'Xem khu'}
                       </span>
-                    </button>
+                    </Button>
 
                     {isFloorOpen && (
-                      <div className="grid gap-2 border-t border-theme p-3">
+                      <div className="grid gap-2 border-t border-border p-3">
                         {group.floors.map((floor) => (
                           <div
                             key={floor.id}
-                            className="grid gap-3 rounded-xl border border-theme bg-page/60 p-3 sm:grid-cols-[1fr_auto] sm:items-center"
+                            className="grid gap-3 rounded-xl border border-border bg-background/60 p-3 sm:grid-cols-[1fr_auto] sm:items-center"
                           >
                             <div className="flex flex-wrap items-center gap-2">
-                              <span className="rounded-full bg-btn-primary/10 px-3 py-1 text-sm font-black text-btn-primary">
+                              <span className="rounded-full bg-primary/10 px-3 py-1 text-sm font-black text-primary">
                                 Khu {getFloorSection(floor.section)}
                               </span>
-                              <span className="rounded-full border border-theme bg-badge px-3 py-1 text-xs font-bold text-fg">
+                              <span className="rounded-full border border-border bg-card px-3 py-1 text-xs font-bold text-foreground">
                                 {formatVehicleType(floor.vehicleType)}
                               </span>
-                              <span className="rounded-full border border-theme bg-badge px-3 py-1 text-xs font-bold text-fg">
+                              <span className="rounded-full border border-border bg-card px-3 py-1 text-xs font-bold text-foreground">
                                 {formatFloorType(floor.floorType)}
                               </span>
-                              <span className="rounded-full border border-theme bg-badge px-3 py-1 text-xs font-bold text-fg">
+                              <span className="rounded-full border border-border bg-card px-3 py-1 text-xs font-bold text-foreground">
                                 {floor.totalSlots} chỗ
                               </span>
                               <span className="rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-bold text-emerald-700 dark:text-emerald-200">
@@ -186,13 +187,13 @@ export function ManagerBuildingCard({ building, onEdit, onEditFloor }: ManagerBu
                             </div>
 
                             {onEditFloor && (
-                              <button
+                              <Button
                                 type="button"
-                                className="h-9 rounded-xl border border-btn-primary/40 bg-btn-primary/10 px-4 text-xs font-bold text-btn-primary transition hover:border-btn-primary hover:bg-btn-primary hover:text-btn-primary-fg"
+                                className="h-9 rounded-xl border border-ring/40 bg-primary/10 px-4 text-xs font-bold text-primary transition hover:border-ring hover:bg-primary hover:text-primary-foreground"
                                 onClick={() => onEditFloor(floor)}
                               >
                                 Sửa khu
-                              </button>
+                              </Button>
                             )}
                           </div>
                         ))}
@@ -208,3 +209,6 @@ export function ManagerBuildingCard({ building, onEdit, onEditFloor }: ManagerBu
     </article>
   )
 }
+
+
+

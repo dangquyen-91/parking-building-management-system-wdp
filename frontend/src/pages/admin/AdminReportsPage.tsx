@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+﻿import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   AdminOccupancyTable,
   AdminPageShell,
@@ -18,6 +18,10 @@ import {
   type AdminSessionStatsReport,
 } from '../../services/adminApi'
 import { formatFloorLabel } from '../../utils/floorLabel'
+import { Button } from '../../components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card'
+import { Progress } from '../../components/ui/progress'
+import { Alert, AlertDescription } from '../../components/ui/alert'
 
 function toDateInput(date: Date) {
   const offset = date.getTimezoneOffset()
@@ -106,12 +110,11 @@ export function AdminReportsPage() {
       />
 
       {error && (
-        <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-rose-500/30 bg-rose-500/10 p-4 text-sm text-rose-700 dark:text-rose-300">
-          <span>{error}</span>
-          <button type="button" className="font-semibold underline" onClick={() => void loadReports()}>
+        <Alert variant="destructive" className="mb-5 flex items-center justify-between"><AlertDescription>{error}</AlertDescription>
+          <Button type="button" variant="link" className="h-auto p-0" onClick={() => void loadReports()}>
             Thử lại
-          </button>
-        </div>
+          </Button>
+        </Alert>
       )}
 
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
@@ -160,34 +163,31 @@ export function AdminReportsPage() {
         {occupancy && <AdminOccupancyTable report={occupancy} />}
       </div>
 
-      <section className="liquid-glass-card mt-5 rounded-2xl border border-amber-500/15 p-4 shadow-sm md:p-5">
-        <span className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500" />
-        <div className="mb-4">
+      <Card className="mt-5"><CardHeader>
           <p className="text-[10px] font-black uppercase tracking-[0.18em] text-amber-600 dark:text-amber-300">Điểm nóng công suất</p>
-          <h2 className="mt-1 text-lg font-black text-fg">Tầng sử dụng cao nhất</h2>
-        </div>
+          <CardTitle>Tầng sử dụng cao nhất</CardTitle>
+        </CardHeader><CardContent>
 
         {busiestFloors.length === 0 ? (
-          <p className="py-8 text-center text-sm text-subtle">Chưa có dữ liệu công suất.</p>
+          <p className="py-8 text-center text-sm text-muted-foreground">Chưa có dữ liệu công suất.</p>
         ) : (
           <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
             {busiestFloors.map((floor) => (
-              <article key={floor.floorId} className="rounded-2xl border border-theme bg-badge p-4 transition-all hover:-translate-y-0.5 hover:border-amber-500/25 hover:bg-amber-500/5">
-                <p className="text-sm font-black text-fg">
+              <Card key={floor.floorId} className="shadow-none"><CardContent className="p-4">
+                <p className="text-sm font-black text-foreground">
                   {floor.building?.name ?? 'Tòa nhà'} / {formatFloorLabel(floor)}
                 </p>
-                <p className="mt-1 text-xs text-subtle">{floor.vehicleType === 'car' ? 'Ô tô' : 'Xe máy'}</p>
-                <div className="mt-4 h-2.5 overflow-hidden rounded-full bg-page">
-                  <div className={`h-full rounded-full ${floor.utilizationPercent >= 90 ? 'bg-gradient-to-r from-amber-500 to-rose-500' : 'bg-gradient-to-r from-sky-500 to-violet-500'}`} style={{ width: `${Math.min(100, floor.utilizationPercent)}%` }} />
-                </div>
-                <p className="mt-2 text-xs text-muted">
+                <p className="mt-1 text-xs text-muted-foreground">{floor.vehicleType === 'car' ? 'Ô tô' : 'Xe máy'}</p>
+                <Progress className="mt-4" value={Math.min(100, floor.utilizationPercent)} />
+                <p className="mt-2 text-xs text-muted-foreground">
                   {floor.utilizationPercent}% sử dụng · còn {floor.empty} vị trí
                 </p>
-              </article>
+              </CardContent></Card>
             ))}
           </div>
         )}
-      </section>
+      </CardContent></Card>
     </AdminPageShell>
   )
 }
+

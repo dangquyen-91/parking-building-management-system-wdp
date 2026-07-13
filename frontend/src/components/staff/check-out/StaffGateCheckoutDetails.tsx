@@ -1,6 +1,9 @@
 import type { ReactNode } from 'react'
+import { Search } from 'lucide-react'
 import type { Floor } from '../../../services/managerBuildingsApi'
 import type { GateCheckoutPreview, GateSession } from '../../../services/staffGateApi'
+import { Badge } from '../../ui/badge'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../ui/card'
 import { formatGateTime, formatStaffCurrency } from '../data/staffGateUi'
 import { formatCustomerType, formatSessionSpot, formatVehicleType } from '../data/staffGateUtils'
 import { StaffGateCheckoutPricing } from './StaffGateCheckoutPricing'
@@ -24,70 +27,76 @@ export function StaffGateCheckoutDetails({
 }: StaffGateCheckoutDetailsProps) {
   if (!session) {
     return (
-      <div className="flex min-h-44 flex-col items-center justify-center rounded-xl border border-dashed border-theme bg-badge p-6 text-center">
-        <span className="flex size-12 items-center justify-center rounded-full bg-ghost text-xl text-muted">⌕</span>
-        <p className="mt-3 text-sm font-semibold text-fg">Chưa tìm thấy xe đang gửi</p>
-        <p className="mt-1 max-w-sm text-xs text-muted">Nhập biển số hoặc mã phiên để xem thông tin và thực hiện thanh toán.</p>
-      </div>
+      <Card className="border-dashed">
+        <CardHeader className="items-center text-center">
+          <span className="flex size-12 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+            <Search className="size-5" />
+          </span>
+          <CardTitle>Chưa tìm thấy xe đang gửi</CardTitle>
+          <CardDescription>
+            Nhập biển số hoặc mã phiên để xem thông tin và thực hiện thanh toán.
+          </CardDescription>
+        </CardHeader>
+      </Card>
     )
   }
 
   const hasPrepaidBooking = Boolean(preview?.bookingId)
 
   return (
-    <div className="overflow-hidden rounded-xl border border-theme bg-badge">
-      <div className="border-b border-theme bg-gradient-to-r from-sky-500/10 to-transparent p-5">
+    <Card>
+      <CardHeader>
         <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <p className="text-2xl font-black tracking-[0.08em] text-fg">{session.licensePlate}</p>
-            <p className="mt-1 text-xs text-subtle">Mã phiên: {session._id}</p>
+            <CardTitle className="text-2xl tracking-[0.08em]">{session.licensePlate}</CardTitle>
+            <CardDescription>Mã phiên: {session._id}</CardDescription>
           </div>
-          <span className="w-fit rounded-full border border-emerald-400/40 bg-emerald-500/10 px-3 py-1 text-[11px] font-medium text-emerald-700 dark:text-emerald-200">
-            Đang gửi
-          </span>
+          <Badge variant="secondary">Đang gửi</Badge>
         </div>
-      </div>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <dl className="grid gap-3 sm:grid-cols-2">
+          <Detail label="Loại khách" value={formatCustomerType(session.customerType)} />
+          <Detail label="Loại xe" value={formatVehicleType(session.vehicleType)} />
+          <Detail label="Vị trí" value={formatSessionSpot(session, floorMap)} />
+          <Detail label="Giờ vào" value={formatGateTime(session.entryTime)} />
+          <Detail
+            label="Thu thêm tiền"
+            value={isPreviewLoading ? 'Đang tính...' : formatStaffCurrency(amountToCollect)}
+          />
+          <Detail
+            label="Trạng thái"
+            value={amountToCollect === 0 ? 'Không cần thu thêm' : 'Chờ thanh toán'}
+          />
+          {hasPrepaidBooking && (
+            <>
+              <Detail label="Đặt chỗ đã trả trước" value={formatStaffCurrency(preview?.prepaidAmount ?? 0)} />
+              <Detail
+                label="Phí quá giờ"
+                value={`${preview?.overtimeHours ?? 0} giờ / ${formatStaffCurrency(preview?.overtimeFee ?? 0)}`}
+              />
+            </>
+          )}
+        </dl>
 
-      <dl className="grid gap-px bg-[color:var(--border)] sm:grid-cols-2">
-        <Detail label="Loại khách" value={formatCustomerType(session.customerType)} />
-        <Detail label="Loại xe" value={formatVehicleType(session.vehicleType)} />
-        <Detail label="Vị trí" value={formatSessionSpot(session, floorMap)} />
-        <Detail label="Giờ vào" value={formatGateTime(session.entryTime)} />
-        <Detail
-          label="Thu thêm tiền"
-          value={isPreviewLoading ? 'Đang tính...' : formatStaffCurrency(amountToCollect)}
-        />
-        <Detail
-          label="Trạng thái"
-          value={amountToCollect === 0 ? 'Không cần thu thêm' : 'Chờ thanh toán'}
-        />
-        {hasPrepaidBooking && (
-          <>
-            <Detail label="Đặt chỗ đã trả trước" value={formatStaffCurrency(preview?.prepaidAmount ?? 0)} />
-            <Detail
-              label="Phí quá giờ"
-              value={`${preview?.overtimeHours ?? 0} giờ / ${formatStaffCurrency(preview?.overtimeFee ?? 0)}`}
-            />
-          </>
+        {preview?.note && (
+          <p className="rounded-lg border bg-muted/30 p-3 text-xs text-muted-foreground">
+            {formatCheckoutNote(preview.note)}
+          </p>
         )}
-      </dl>
 
-      {preview?.note && (
-        <p className="m-4 rounded-lg border border-theme bg-page p-3 text-xs text-muted">{formatCheckoutNote(preview.note)}</p>
-      )}
-
-      {preview && <StaffGateCheckoutPricing preview={preview} vehicleType={session.vehicleType} />}
-
+        {preview && <StaffGateCheckoutPricing preview={preview} vehicleType={session.vehicleType} />}
+      </CardContent>
       {actions}
-    </div>
+    </Card>
   )
 }
 
 function Detail({ label, value }: { label: string; value: string }) {
   return (
-    <div className="bg-page p-4">
-      <dt className="text-[11px] font-medium uppercase tracking-[0.1em] text-subtle">{label}</dt>
-      <dd className="mt-1.5 font-semibold text-fg">{value}</dd>
+    <div className="rounded-lg border bg-muted/30 p-4">
+      <dt className="text-xs text-muted-foreground">{label}</dt>
+      <dd className="mt-1.5 font-medium">{value}</dd>
     </div>
   )
 }

@@ -1,5 +1,12 @@
+import { Search } from 'lucide-react'
 import type { StaffParkingOccupancyItem } from '../../../hooks/useStaffParkingOccupancy'
 import { getFloorSection } from '../../../utils/floorLabel'
+import { Alert, AlertDescription } from '../../ui/alert'
+import { Badge } from '../../ui/badge'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../ui/card'
+import { Progress } from '../../ui/progress'
+import { Skeleton } from '../../ui/skeleton'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../ui/table'
 import { formatVehicleType } from '../data/staffGateUtils'
 
 const FLOOR_TYPE_LABELS: Record<string, string> = {
@@ -20,26 +27,29 @@ export function StaffParkingOccupancyList({
 }: StaffParkingOccupancyListProps) {
   if (error) {
     return (
-      <p className="rounded-3xl border border-rose-500/40 bg-rose-500/10 p-5 text-sm font-semibold text-rose-700 dark:text-rose-200">
-        {error}
-      </p>
+      <Alert variant="destructive">
+        <AlertDescription>{error}</AlertDescription>
+      </Alert>
     )
   }
 
   if (isLoading) {
-    return (
-      <p className="rounded-3xl border border-theme bg-badge p-8 text-center text-sm font-semibold text-muted">
-        Đang tải sức chứa từng khu...
-      </p>
-    )
+    return <Skeleton className="h-64 rounded-xl" />
   }
 
   if (items.length === 0) {
     return (
-      <div className="rounded-3xl border border-dashed border-theme bg-badge p-10 text-center">
-        <p className="text-lg font-black text-fg">Chưa có dữ liệu sức chứa</p>
-        <p className="mt-2 text-sm text-muted">Khi tòa nhà, tầng và khu đã được tạo, dữ liệu sẽ hiện ở đây.</p>
-      </div>
+      <Card className="border-dashed">
+        <CardHeader className="items-center text-center">
+          <span className="flex size-12 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+            <Search className="size-5" />
+          </span>
+          <CardTitle>Chưa có dữ liệu sức chứa</CardTitle>
+          <CardDescription>
+            Khi tòa nhà, tầng và khu đã được tạo, dữ liệu sẽ hiện ở đây.
+          </CardDescription>
+        </CardHeader>
+      </Card>
     )
   }
 
@@ -121,105 +131,97 @@ function BuildingOccupancyCard({ building }: { building: BuildingGroup }) {
   const percent = building.total > 0 ? Math.round((building.occupied / building.total) * 100) : 0
 
   return (
-    <article className="liquid-glass-card overflow-hidden rounded-3xl border border-theme">
-      <div className="relative border-b border-theme p-5">
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-sky-400 via-emerald-400 to-cyan-400" />
-        <div className="pointer-events-none absolute right-6 top-6 size-24 rounded-full bg-emerald-400/10 blur-2xl" />
-
-        <div className="relative flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+    <Card>
+      <CardHeader>
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
           <div>
-            <p className="text-[10px] font-black uppercase tracking-[0.18em] text-subtle">Tòa nhà</p>
-            <h2 className="mt-2 text-2xl font-black text-fg">{building.name}</h2>
-            <p className="mt-1 text-sm text-muted">
+            <CardDescription>Tòa nhà</CardDescription>
+            <CardTitle className="mt-2 text-2xl">{building.name}</CardTitle>
+            <CardDescription>
               {building.floors.length} tầng · {building.total} chỗ · đang dùng {building.occupied}
-            </p>
+            </CardDescription>
           </div>
-
           <div className="grid min-w-[18rem] grid-cols-3 gap-2">
             <Summary label="Tổng" value={building.total} />
             <Summary label="Chiếm" value={building.occupied} />
             <Summary label="Trống" value={building.available} />
           </div>
         </div>
+        <Progress value={percent} className="mt-2" />
+      </CardHeader>
 
-        <div className="relative mt-5 h-2 overflow-hidden rounded-full bg-ghost">
-          <div
-            className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-sky-500"
-            style={{ width: `${Math.min(100, percent)}%` }}
-          />
-        </div>
-      </div>
-
-      <div className="grid gap-3 bg-page/30 p-4">
+      <CardContent className="grid gap-3">
         {building.floors.map((floor) => (
-          <section key={floor.floorNumber} className="overflow-hidden rounded-2xl border border-theme bg-badge/80">
-            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-theme px-4 py-4">
+          <Card key={floor.floorNumber} size="sm">
+            <CardHeader className="gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div>
-                <p className="text-base font-black text-fg">Tầng {floor.floorNumber}</p>
-                <p className="mt-1 text-xs text-muted">
+                <CardTitle>Tầng {floor.floorNumber}</CardTitle>
+                <CardDescription>
                   {floor.sections.length} khu · {floor.available}/{floor.total} còn trống
-                </p>
+                </CardDescription>
               </div>
-              <span className="rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-black text-emerald-700 dark:text-emerald-200">
-                Đang chiếm {floor.occupied}
-              </span>
-            </div>
-
-            <div className="grid gap-2 p-3">
-              {floor.sections.map((section) => (
-                <SectionRow key={section.key} item={section} />
-              ))}
-            </div>
-          </section>
+              <Badge variant="secondary">Đang chiếm {floor.occupied}</Badge>
+            </CardHeader>
+            <CardContent>
+              <Table className="min-w-[680px]">
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Khu / Phân loại</TableHead>
+                    <TableHead>Tổng</TableHead>
+                    <TableHead>Đang chiếm</TableHead>
+                    <TableHead>Còn trống</TableHead>
+                    <TableHead>Sử dụng</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {floor.sections.map((section) => (
+                    <SectionRow key={section.key} item={section} />
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
         ))}
-      </div>
-    </article>
+      </CardContent>
+    </Card>
   )
 }
 
 function SectionRow({ item }: { item: StaffParkingOccupancyItem }) {
   return (
-    <div className="grid gap-3 rounded-xl border border-theme bg-page/70 p-3 md:grid-cols-[minmax(0,1fr)_auto] md:items-center">
-      <div className="flex flex-wrap items-center gap-2">
-        <span className="rounded-full bg-btn-primary/10 px-3 py-1 text-sm font-black text-btn-primary">
-          Khu {getFloorSection(item.section)}
-        </span>
-        <span className="rounded-full border border-theme bg-badge px-3 py-1 text-xs font-bold text-fg">
-          {formatVehicleType(item.vehicleType)}
-        </span>
-        {item.floorType && (
-          <span className="rounded-full border border-theme bg-badge px-3 py-1 text-xs font-bold text-fg">
-            {FLOOR_TYPE_LABELS[item.floorType] ?? item.floorType}
-          </span>
-        )}
-        <span className="rounded-full border border-theme bg-badge px-3 py-1 text-xs font-bold text-fg">
-          {item.utilizationPercent}% sử dụng
-        </span>
-      </div>
-
-      <dl className="grid grid-cols-3 gap-2 text-center text-xs">
-        <MiniMetric label="Tổng" value={item.total} />
-        <MiniMetric label="Chiếm" value={item.occupied} />
-        <MiniMetric label="Trống" value={item.available} />
-      </dl>
-    </div>
+    <TableRow>
+      <TableCell className="whitespace-normal">
+        <div className="flex min-w-[17rem] flex-wrap items-center gap-2">
+          <Badge>Khu {getFloorSection(item.section)}</Badge>
+          <Badge variant="secondary">{formatVehicleType(item.vehicleType)}</Badge>
+          {item.floorType && (
+            <Badge variant="outline">
+              {FLOOR_TYPE_LABELS[item.floorType] ?? item.floorType}
+            </Badge>
+          )}
+        </div>
+      </TableCell>
+      <TableCell className="font-semibold">{item.total}</TableCell>
+      <TableCell className="font-semibold">{item.occupied}</TableCell>
+      <TableCell className="font-semibold text-emerald-700 dark:text-emerald-300">{item.available}</TableCell>
+      <TableCell>
+        <div className="min-w-[9rem]">
+          <div className="flex items-center justify-between gap-2 text-xs font-medium">
+            <span>{item.occupied}/{item.total}</span>
+            <span>{item.utilizationPercent}%</span>
+          </div>
+          <Progress value={Math.min(100, item.utilizationPercent)} className="mt-2" />
+        </div>
+      </TableCell>
+    </TableRow>
   )
 }
 
 function Summary({ label, value }: { label: string; value: number }) {
   return (
-    <div className="rounded-2xl border border-theme bg-page/60 p-3 text-center">
-      <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-subtle">{label}</p>
-      <p className="mt-1 text-2xl font-black text-fg">{value}</p>
-    </div>
-  )
-}
-
-function MiniMetric({ label, value }: { label: string; value: number }) {
-  return (
-    <div className="rounded-lg border border-theme bg-badge px-3 py-2">
-      <dt className="font-semibold text-subtle">{label}</dt>
-      <dd className="mt-0.5 font-black text-fg">{value}</dd>
+    <div className="rounded-lg border bg-muted/30 p-3 text-center">
+      <p className="text-xs text-muted-foreground">{label}</p>
+      <p className="mt-1 text-2xl font-bold">{value}</p>
     </div>
   )
 }

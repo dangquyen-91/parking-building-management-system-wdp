@@ -1,4 +1,4 @@
-import { ManagerStatCard } from '../common/ManagerStatCard'
+﻿import { ManagerStatCard } from '../common/ManagerStatCard'
 import type { ManagerIncident } from '../../../services/managerIncidentsApi'
 import { formatLostTicketCurrency, getIncidentVehicleType } from './managerLostTicketUi'
 
@@ -42,3 +42,5 @@ export function ManagerLostTicketStats({ incidents, total, isLoading }: ManagerL
     </div>
   )
 }
+
+

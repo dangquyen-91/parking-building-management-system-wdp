@@ -1,4 +1,4 @@
-import type { GateSession, GateSessionStatus, GateUser } from '../../../services/staffGateApi'
+﻿import type { GateSession, GateSessionStatus, GateUser } from '../../../services/staffGateApi'
 import { formatCustomerType, formatSessionSpot, formatVehicleType } from '../../staff/data/staffGateUtils'
 import { ManagerStatusBadge } from '../common/ManagerStatusBadge'
 
@@ -49,18 +49,18 @@ function InfoCell({
   wrap?: boolean
 }) {
   return (
-    <div className="flex min-h-20 min-w-0 flex-col justify-start rounded-xl bg-page/55 p-3">
-      <p className="text-xs text-subtle">{label}</p>
+    <div className="flex min-h-20 min-w-0 flex-col justify-start rounded-xl bg-background/55 p-3">
+      <p className="text-xs text-muted-foreground">{label}</p>
       <p
         className={[
-          'mt-1 font-semibold text-fg',
+          'mt-1 font-semibold text-foreground',
           wrap ? 'line-clamp-2 break-words leading-snug' : 'truncate',
         ].join(' ')}
         title={title ?? value}
       >
         {value}
       </p>
-      {subValue && <p className="mt-1 truncate text-xs text-muted">{subValue}</p>}
+      {subValue && <p className="mt-1 truncate text-xs text-muted-foreground">{subValue}</p>}
     </div>
   )
 }
@@ -73,11 +73,11 @@ export function ManagerGateLogCard({ session }: ManagerGateLogCardProps) {
     session.status === 'completed' && session.exitTime ? `Ra ${formatDateTime(session.exitTime)}` : undefined
 
   return (
-    <article className="rounded-2xl border border-theme bg-badge p-3 shadow-sm transition-all hover:-translate-y-0.5 hover:bg-ghost hover:shadow-lg">
+    <article className="rounded-2xl border border-border bg-card p-3 shadow-sm transition-all hover:-translate-y-0.5 hover:bg-muted hover:shadow-lg">
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-6 xl:items-stretch">
-        <div className="flex min-h-20 min-w-0 flex-col justify-start rounded-xl bg-page/55 p-3">
-          <p className="text-xs text-subtle">Biển số xe</p>
-          <p className="truncate text-lg font-black tracking-[0.06em] text-fg">{session.licensePlate}</p>
+        <div className="flex min-h-20 min-w-0 flex-col justify-start rounded-xl bg-background/55 p-3">
+          <p className="text-xs text-muted-foreground">Biển số xe</p>
+          <p className="truncate text-lg font-black tracking-[0.06em] text-foreground">{session.licensePlate}</p>
         </div>
 
         <InfoCell
@@ -89,18 +89,20 @@ export function ManagerGateLogCard({ session }: ManagerGateLogCardProps) {
         <InfoCell label="Nhân viên ghi nhận" value={getStaffName(session.staffId)} />
         <InfoCell label="Thời gian vào" value={formatDateTime(session.entryTime)} subValue={exitTimeLabel} />
 
-        <div className="flex min-h-20 min-w-0 flex-col items-start justify-start rounded-xl bg-page/55 p-3 text-left">
-          <p className="text-xs text-subtle">Trạng thái</p>
+        <div className="flex min-h-20 min-w-0 flex-col items-start justify-start rounded-xl bg-background/55 p-3 text-left">
+          <p className="text-xs text-muted-foreground">Trạng thái</p>
           <div className="mt-1">
             <ManagerStatusBadge status={badge.status} label={badge.label} />
           </div>
-          <p className="mt-1 w-full truncate text-xs leading-5 text-muted">
+          <p className="mt-1 w-full truncate text-xs leading-5 text-muted-foreground">
             {durationLabel} {formatDuration(session.entryTime, session.exitTime)}
           </p>
         </div>
       </div>
 
-      {session.note && <p className="mt-3 border-t border-theme pt-3 text-xs text-muted">{session.note}</p>}
+      {session.note && <p className="mt-3 border-t border-border pt-3 text-xs text-muted-foreground">{session.note}</p>}
     </article>
   )
 }
+
+

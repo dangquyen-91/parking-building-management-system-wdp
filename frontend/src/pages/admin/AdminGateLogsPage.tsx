@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+﻿import { useEffect, useMemo, useState } from 'react'
 import {
   AdminGateLogFilters,
   AdminGateLogList,
@@ -9,6 +9,8 @@ import {
 } from '../../components/admin'
 import { adminApi, type AdminDashboardReport } from '../../services/adminApi'
 import type { GateSession } from '../../services/staffGateApi'
+import { Button } from '../../components/ui/button'
+import { Alert, AlertDescription } from '../../components/ui/alert'
 
 export function AdminGateLogsPage() {
   const [sessions, setSessions] = useState<GateSession[]>([])
@@ -72,20 +74,17 @@ export function AdminGateLogsPage() {
       <AdminGateLogStats dashboard={dashboard} isLoading={isLoading} />
 
       {error && (
-        <div className="mb-5 flex items-center justify-between gap-3 rounded-2xl border border-rose-500/25 bg-rose-500/10 p-4 text-sm text-rose-700 dark:text-rose-200">
-          <span>{error}</span>
-          <button type="button" className="font-semibold hover:underline" onClick={() => void loadGateLogs()}>
+        <Alert variant="destructive" className="mb-5 flex items-center justify-between"><AlertDescription>{error}</AlertDescription>
+          <Button type="button" variant="link" className="h-auto p-0" onClick={() => void loadGateLogs()}>
             Thử lại
-          </button>
-        </div>
+          </Button>
+        </Alert>
       )}
 
-      <div className="mb-5 flex items-start gap-3 rounded-2xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-xs leading-5 text-emerald-800 dark:text-emerald-200">
-        <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-emerald-500 text-xs font-black text-white">●</span>
-        <span>Danh sách chi tiết hiện hiển thị các xe đang trong bãi. Số lượt xe ra hôm nay được tổng hợp từ báo cáo hệ thống.</span>
-      </div>
+      <Alert className="mb-5"><AlertDescription>Danh sách chi tiết hiện hiển thị các xe đang trong bãi. Số lượt xe ra hôm nay được tổng hợp từ báo cáo hệ thống.</AlertDescription></Alert>
 
       <AdminGateLogList sessions={filteredSessions} isLoading={isLoading} />
     </AdminPageShell>
   )
 }
+

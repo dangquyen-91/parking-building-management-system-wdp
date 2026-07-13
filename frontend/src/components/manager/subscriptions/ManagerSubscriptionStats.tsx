@@ -1,4 +1,4 @@
-import type { ManagerSubscription } from '../../../services/managerSubscriptionsApi'
+﻿import type { ManagerSubscription } from '../../../services/managerSubscriptionsApi'
 import { isSubscriptionExpiringSoon } from '../../../utils/managerSubscriptionUi'
 import { ManagerStatCard } from '../common/ManagerStatCard'
 
@@ -36,3 +36,5 @@ export function ManagerSubscriptionStats({
     </div>
   )
 }
+
+

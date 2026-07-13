@@ -1,3 +1,4 @@
+﻿import { Button } from '@/components/ui/button'
 import { useEffect, useMemo, useState } from 'react'
 import {
   ManagerPageHeader,
@@ -75,11 +76,11 @@ export function ManagerStaffPage() {
       <ManagerStaffStats staff={staff} sessions={sessions} isLoading={isLoading} />
 
       {error && (
-        <div className="mb-5 flex items-center justify-between gap-3 rounded-lg border border-theme bg-rose-500/10 p-4 text-sm text-rose-200">
+        <div className="mb-5 flex items-center justify-between gap-3 rounded-lg border border-border bg-rose-500/10 p-4 text-sm text-rose-200">
           <span>{error}</span>
-          <button type="button" className="font-semibold hover:underline" onClick={() => void loadStaffData()}>
+          <Button type="button" className="font-semibold hover:underline" onClick={() => void loadStaffData()}>
             Thử lại
-          </button>
+          </Button>
         </div>
       )}
 
@@ -87,3 +88,6 @@ export function ManagerStaffPage() {
     </div>
   )
 }
+
+
+

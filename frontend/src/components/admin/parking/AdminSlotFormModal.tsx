@@ -1,8 +1,12 @@
-import { useEffect, useState } from 'react'
+﻿import { useEffect, useState } from 'react'
 import type { Floor } from '../../../services/managerBuildingsApi'
 import type { SlotBulkCreatePayload, SlotCreatePayload, SlotStatus, SlotUpdatePayload } from '../../../services/managerParkingSlotApi'
 import { formatFloorLabel } from '../../../utils/floorLabel'
-import { AdminField, AdminModal, AdminModalActions, adminInputClass } from '../common/AdminFormPrimitives'
+import { AdminField, AdminModal, AdminModalActions } from '../common/AdminFormPrimitives'
+import { Input } from '../../ui/input'
+import { NativeSelect, NativeSelectOption } from '../../ui/native-select'
+import { Tabs, TabsList, TabsTrigger } from '../../ui/tabs'
+import { Textarea } from '../../ui/textarea'
 
 type AdminSlotFormModalProps = {
   open: boolean
@@ -37,6 +41,7 @@ export function AdminSlotFormModal({
 
   useEffect(() => {
     if (open) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setFloorId(initialValues?.floorId ?? defaultFloor)
       setCreateType('single')
       setSlotCode(initialValues?.slotCode ?? '')
@@ -82,42 +87,26 @@ export function AdminSlotFormModal({
     <AdminModal eyebrow="Admin // Ô đỗ" title={mode === 'create' ? 'Tạo ô đỗ ô tô' : 'Chỉnh sửa ô đỗ'} error={error} onClose={onClose}>
       <form className="grid gap-4" onSubmit={handleSubmit}>
         <AdminField label="Tầng / Khu">
-          <select className={adminInputClass} value={floorId} disabled={mode === 'edit'} onChange={(event) => setFloorId(event.target.value)}>
+          <NativeSelect value={floorId} disabled={mode === 'edit'} onChange={(event) => setFloorId(event.target.value)}>
             {floors.map((floor) => (
-              <option key={floor._id} value={floor._id}>
+              <NativeSelectOption key={floor._id} value={floor._id}>
                 {formatFloorLabel(floor)}
-              </option>
+              </NativeSelectOption>
             ))}
-          </select>
+          </NativeSelect>
         </AdminField>
 
         {mode === 'create' && (
-          <div className="grid grid-cols-2 gap-2 rounded-xl border border-theme bg-badge p-1">
-            <button
-              type="button"
-              className={`rounded-lg px-3 py-2 text-sm font-bold transition ${createType === 'single' ? 'bg-page text-fg shadow-sm' : 'text-muted hover:text-fg'}`}
-              onClick={() => setCreateType('single')}
-            >
-              Tạo 1 ô
-            </button>
-            <button
-              type="button"
-              className={`rounded-lg px-3 py-2 text-sm font-bold transition ${createType === 'bulk' ? 'bg-page text-fg shadow-sm' : 'text-muted hover:text-fg'}`}
-              onClick={() => setCreateType('bulk')}
-            >
-              Tạo nhiều ô
-            </button>
-          </div>
+          <Tabs value={createType} onValueChange={(value) => setCreateType(value as 'single' | 'bulk')}><TabsList className="grid w-full grid-cols-2"><TabsTrigger value="single">Tạo 1 ô</TabsTrigger><TabsTrigger value="bulk">Tạo nhiều ô</TabsTrigger></TabsList></Tabs>
         )}
 
         {isBulkCreate ? (
           <div className="grid gap-4 sm:grid-cols-3">
             <AdminField label="Tiền tố mã ô">
-              <input className={adminInputClass} value={prefix} onChange={(event) => setPrefix(event.target.value)} placeholder="VD: A-" />
+              <Input value={prefix} onChange={(event) => setPrefix(event.target.value)} placeholder="VD: A-" />
             </AdminField>
             <AdminField label="Bắt đầu từ">
-              <input
-                className={adminInputClass}
+              <Input
                 type="number"
                 min={0}
                 value={startFrom}
@@ -125,8 +114,7 @@ export function AdminSlotFormModal({
               />
             </AdminField>
             <AdminField label="Số lượng">
-              <input
-                className={adminInputClass}
+              <Input
                 type="number"
                 min={1}
                 value={quantity}
@@ -137,24 +125,19 @@ export function AdminSlotFormModal({
           </div>
         ) : (
           <AdminField label="Mã ô đỗ">
-            <input className={adminInputClass} value={slotCode} onChange={(event) => setSlotCode(event.target.value)} required />
+            <Input value={slotCode} onChange={(event) => setSlotCode(event.target.value)} required />
           </AdminField>
         )}
 
         {mode === 'edit' && (
           <AdminField label="Trạng thái">
-            <select className={adminInputClass} value={status} onChange={(event) => setStatus(event.target.value as SlotStatus)}>
-              <option value="empty">Trống</option>
-              <option value="occupied">Đang dùng</option>
-              <option value="reserved">Đã đặt</option>
-              <option value="maintenance">Bảo trì</option>
-            </select>
+            <NativeSelect value={status} onChange={(event) => setStatus(event.target.value as SlotStatus)}><NativeSelectOption value="empty">Trống</NativeSelectOption><NativeSelectOption value="occupied">Đang dùng</NativeSelectOption><NativeSelectOption value="reserved">Đã đặt</NativeSelectOption><NativeSelectOption value="maintenance">Bảo trì</NativeSelectOption></NativeSelect>
           </AdminField>
         )}
 
         {!isBulkCreate && (
           <AdminField label="Ghi chú">
-            <textarea className="min-h-20 rounded-lg border border-theme bg-page p-3 text-sm text-fg" value={note} onChange={(event) => setNote(event.target.value)} />
+            <Textarea className="min-h-20" value={note} onChange={(event) => setNote(event.target.value)} />
           </AdminField>
         )}
 
@@ -163,3 +146,4 @@ export function AdminSlotFormModal({
     </AdminModal>
   )
 }
+

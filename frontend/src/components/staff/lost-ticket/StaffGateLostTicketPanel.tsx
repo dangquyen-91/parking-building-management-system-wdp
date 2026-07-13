@@ -1,5 +1,9 @@
 import { useState } from 'react'
 import type { GateSession } from '../../../services/staffGateApi'
+import { Button } from '../../ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../ui/card'
+import { Label } from '../../ui/label'
+import { Textarea } from '../../ui/textarea'
 import { formatStaffCurrency } from '../data/staffGateUi'
 
 type LostTicketMethod = 'cash' | 'transfer'
@@ -30,46 +34,37 @@ export function StaffGateLostTicketPanel({
   }
 
   return (
-    <section className="rounded-xl border border-rose-400/30 bg-rose-500/10">
-      <button
-        type="button"
-        onClick={() => setExpanded((value) => !value)}
-        className="flex w-full items-center justify-between gap-3 p-4 text-left"
-      >
+    <Card>
+      <CardHeader className="gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <p className="text-[10px] font-black uppercase tracking-[0.16em] text-rose-600 dark:text-rose-300">
-            Ngoại lệ
-          </p>
-          <h3 className="mt-1 text-sm font-bold text-fg">Khách mất vé / mất QR</h3>
-          <p className="mt-1 text-xs text-muted">
+          <CardDescription>Ngoại lệ</CardDescription>
+          <CardTitle>Khách mất vé / mất QR</CardTitle>
+          <CardDescription>
             Dùng khi khách vãng lai không còn vé QR. Cần đối chiếu giấy tờ xe trước khi xử lý.
-          </p>
+          </CardDescription>
         </div>
-        <span className="rounded-full border border-rose-400/40 bg-page px-3 py-1 text-xs font-bold text-rose-700 dark:text-rose-200">
+        <Button type="button" variant="outline" onClick={() => setExpanded((value) => !value)}>
           {expanded ? 'Ẩn' : 'Xử lý'}
-        </span>
-      </button>
+        </Button>
+      </CardHeader>
 
       {expanded && (
-        <div className="grid gap-4 border-t border-rose-400/20 p-4">
-          <div className="grid gap-3 rounded-xl border border-theme bg-page p-4 sm:grid-cols-3">
+        <CardContent className="grid gap-4">
+          <div className="grid gap-3 rounded-lg border bg-muted/30 p-4 sm:grid-cols-3">
             <Info label="Biển số" value={session.licensePlate} />
             <Info label="Phí phạt mất vé" value={formatStaffCurrency(LOST_TICKET_FINE)} />
             <Info label="Loại khách" value="Khách vãng lai" />
           </div>
 
-          <label className="grid gap-2 text-sm">
-            <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-subtle">
-              Ghi chú xử lý
-            </span>
-            <textarea
+          <Label className="grid gap-2 text-sm">
+            Ghi chú xử lý
+            <Textarea
               value={note}
               onChange={(event) => setNote(event.target.value)}
               rows={3}
               placeholder="VD: Khách báo mất vé, đã đối chiếu giấy tờ xe và biển số."
-              className="auth-input min-h-24 rounded-xl border px-4 py-3 text-sm text-fg"
             />
-          </label>
+          </Label>
 
           <div className="grid gap-3 sm:grid-cols-2">
             <MethodButton
@@ -86,7 +81,7 @@ export function StaffGateLostTicketPanel({
             />
           </div>
 
-          <label className="flex items-start gap-3 rounded-xl border border-amber-400/30 bg-amber-500/10 p-3 text-xs text-amber-800 dark:text-amber-100">
+          <Label className="flex items-start gap-3 rounded-lg border bg-muted/30 p-3 text-xs">
             <input
               type="checkbox"
               checked={confirmed}
@@ -96,31 +91,26 @@ export function StaffGateLostTicketPanel({
             <span>
               Tôi đã đối chiếu giấy tờ xe, biển số camera và xác nhận đúng chủ xe trước khi xử lý mất vé.
             </span>
-          </label>
+          </Label>
 
-          <button
-            type="button"
-            onClick={handleSubmit}
-            disabled={isSubmitting || !confirmed}
-            className="h-12 rounded-xl bg-rose-600 px-4 text-sm font-bold text-white shadow-lg shadow-rose-600/20 transition-transform hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60"
-          >
+          <Button type="button" onClick={handleSubmit} disabled={isSubmitting || !confirmed}>
             {isSubmitting
               ? 'Đang xử lý...'
               : method === 'cash'
                 ? 'Xác nhận mất vé và thu tiền mặt'
                 : 'Tạo QR thanh toán mất vé'}
-          </button>
-        </div>
+          </Button>
+        </CardContent>
       )}
-    </section>
+    </Card>
   )
 }
 
 function Info({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-subtle">{label}</p>
-      <p className="mt-1 text-sm font-bold text-fg">{value}</p>
+      <p className="text-xs text-muted-foreground">{label}</p>
+      <p className="mt-1 text-sm font-semibold">{value}</p>
     </div>
   )
 }
@@ -137,19 +127,17 @@ function MethodButton({
   onClick: () => void
 }) {
   return (
-    <button
+    <Button
       type="button"
+      variant={active ? 'default' : 'outline'}
       onClick={onClick}
-      className={[
-        'rounded-xl border p-4 text-left transition-all',
-        active
-          ? 'border-rose-500 bg-rose-500/10 shadow-lg shadow-rose-500/10'
-          : 'border-theme bg-page hover:border-rose-400/40',
-      ].join(' ')}
+      className="h-auto justify-start px-4 py-4 text-left"
     >
-      <p className="text-sm font-bold text-fg">{label}</p>
-      <p className="mt-1 text-xs text-muted">{detail}</p>
-    </button>
+      <span>
+        <span className="block text-sm font-semibold">{label}</span>
+        <span className="mt-1 block text-xs opacity-75">{detail}</span>
+      </span>
+    </Button>
   )
 }
 

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { Floor } from '../../../services/managerBuildingsApi'
 import type { GateCheckoutPreview, GateSession } from '../../../services/staffGateApi'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../ui/card'
 import { StaffGateQrVerifier } from '../scanner/StaffGateQrVerifier'
 import { StaffGateCheckoutActions, type CheckoutMethod } from './StaffGateCheckoutActions'
 import { StaffGateCheckoutConfirmDialog } from './StaffGateCheckoutConfirmDialog'
@@ -38,9 +39,7 @@ export function StaffGateCheckoutPanel({
   const [verifiedSessionId, setVerifiedSessionId] = useState('')
   const [verifiedQrValue, setVerifiedQrValue] = useState('')
   const amountToCollect = preview?.toCollect ?? session?.fee ?? 0
-  const checkoutVerified = Boolean(
-    session && verifiedSessionId === session._id && verifiedQrValue,
-  )
+  const checkoutVerified = Boolean(session && verifiedSessionId === session._id && verifiedQrValue)
 
   function handleConfirmCheckout() {
     if (!session || !confirmMethod || !verifiedQrValue) return
@@ -56,21 +55,15 @@ export function StaffGateCheckoutPanel({
 
   return (
     <>
-      <section className="liquid-glass-card overflow-hidden rounded-2xl">
-        <div className="border-b border-theme bg-gradient-to-r from-amber-500/15 via-transparent to-transparent p-5 md:p-6">
-          <div className="flex items-start gap-4">
-            <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-amber-500 text-lg font-black text-white shadow-lg shadow-amber-500/20">
-              OUT
-            </span>
-            <div>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-amber-600 dark:text-amber-300">Quy trình xe ra</p>
-              <h2 className="mt-1 text-xl font-bold text-fg">Thanh toán và trả xe</h2>
-              <p className="mt-1 text-sm text-muted">Tìm xe đang gửi, kiểm tra chi phí và xác nhận phương tiện rời bãi.</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="grid gap-5 p-5 md:p-6">
+      <Card className="overflow-hidden border-emerald-500/20 bg-gradient-to-br from-background via-background to-emerald-500/5">
+        <CardHeader>
+          <CardDescription>Quy trình xe ra</CardDescription>
+          <CardTitle>Thanh toán và trả xe</CardTitle>
+          <CardDescription>
+            Tìm xe đang gửi, kiểm tra chi phí và xác nhận phương tiện rời bãi.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="grid gap-5">
           <StaffGateCheckoutLookup query={query} onQueryChange={onQueryChange} />
 
           <StaffGateQrVerifier
@@ -103,8 +96,8 @@ export function StaffGateCheckoutPanel({
               />
             ) : null}
           />
-        </div>
-      </section>
+        </CardContent>
+      </Card>
 
       {session && confirmMethod && (
         <StaffGateCheckoutConfirmDialog

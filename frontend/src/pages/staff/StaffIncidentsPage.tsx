@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from 'react'
+import { RefreshCw } from 'lucide-react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   StaffGateToast,
   StaffIncidentCard,
@@ -6,8 +7,11 @@ import {
   StaffIncidentStats,
   StaffPageHeader,
 } from '../../components/staff'
-import { complaintsApi, type Complaint, type ComplaintStatus } from '../../services/complaintsApi'
 import { getComplaintResolutionNote, INCIDENT_STATUS_LABELS } from '../../components/staff/incidents/staffIncidentUtils'
+import { Button } from '../../components/ui/button'
+import { Card, CardDescription, CardHeader, CardTitle } from '../../components/ui/card'
+import { Skeleton } from '../../components/ui/skeleton'
+import { complaintsApi, type Complaint, type ComplaintStatus } from '../../services/complaintsApi'
 
 export function StaffIncidentsPage() {
   const [complaints, setComplaints] = useState<Complaint[]>([])
@@ -15,7 +19,6 @@ export function StaffIncidentsPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [updatingId, setUpdatingId] = useState('')
   const [message, setMessage] = useState<string | null>(null)
-  const [toastMessage, setToastMessage] = useState<string | null>(null)
 
   const stats = useMemo(
     () => ({
@@ -26,18 +29,7 @@ export function StaffIncidentsPage() {
     [complaints],
   )
 
-  useEffect(() => {
-    void loadComplaints()
-  }, [statusFilter])
-
-  useEffect(() => {
-    if (!message) return
-    setToastMessage(message)
-    const timeoutId = window.setTimeout(() => setToastMessage(null), 6000)
-    return () => window.clearTimeout(timeoutId)
-  }, [message])
-
-  async function loadComplaints() {
+  const loadComplaints = useCallback(async () => {
     setIsLoading(true)
     setMessage(null)
 
@@ -52,7 +44,18 @@ export function StaffIncidentsPage() {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [statusFilter])
+
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => void loadComplaints(), 0)
+    return () => window.clearTimeout(timeoutId)
+  }, [loadComplaints])
+
+  useEffect(() => {
+    if (!message) return undefined
+    const timeoutId = window.setTimeout(() => setMessage(null), 6000)
+    return () => window.clearTimeout(timeoutId)
+  }, [message])
 
   async function handleUpdateStatus(complaint: Complaint, status: ComplaintStatus) {
     setUpdatingId(complaint._id)
@@ -81,34 +84,27 @@ export function StaffIncidentsPage() {
         title="Khiếu nại đậu sai chỗ"
         description="Theo dõi xe đậu sai ô, gọi đúng chủ xe và cập nhật trạng thái xử lý trong ca trực."
         actions={
-          <button
-            type="button"
-            onClick={() => void loadComplaints()}
-            className="h-11 rounded-xl border border-theme bg-badge px-4 text-sm font-bold text-fg transition hover:bg-ghost"
-          >
+          <Button type="button" variant="outline" onClick={() => void loadComplaints()}>
+            <RefreshCw className="size-4" />
             Tải lại
-          </button>
+          </Button>
         }
       />
 
       <StaffIncidentStats stats={stats} />
-
       <StaffIncidentFilters statusFilter={statusFilter} onStatusFilterChange={setStatusFilter} />
 
       {isLoading ? (
-        <div className="rounded-3xl border border-theme bg-badge p-8 text-center text-sm font-semibold text-muted">
-          Đang tải danh sách khiếu nại...
-        </div>
+        <Skeleton className="h-40 rounded-xl" />
       ) : complaints.length === 0 ? (
-        <div className="rounded-3xl border border-dashed border-theme bg-badge p-12 text-center">
-          <p className="mx-auto grid h-14 w-14 place-items-center rounded-2xl border border-theme bg-page text-2xl font-black text-fg">
-            ✓
-          </p>
-          <h2 className="mt-4 text-xl font-black text-fg">Chưa có khiếu nại phù hợp</h2>
-          <p className="mx-auto mt-2 max-w-md text-sm text-muted">
-            Khi cư dân báo xe đậu sai chỗ, thông tin biển số, ô bị chiếm và số điện thoại liên hệ sẽ xuất hiện ở đây.
-          </p>
-        </div>
+        <Card className="border-dashed">
+          <CardHeader className="text-center">
+            <CardTitle>Chưa có khiếu nại phù hợp</CardTitle>
+            <CardDescription>
+              Khi cư dân báo xe đậu sai chỗ, thông tin biển số, ô bị chiếm và số điện thoại liên hệ sẽ xuất hiện ở đây.
+            </CardDescription>
+          </CardHeader>
+        </Card>
       ) : (
         <section className="grid gap-4">
           {complaints.map((complaint) => (
@@ -122,7 +118,7 @@ export function StaffIncidentsPage() {
         </section>
       )}
 
-      {toastMessage && <StaffGateToast message={toastMessage} onClose={() => setToastMessage(null)} />}
+      {message && <StaffGateToast message={message} onClose={() => setMessage(null)} />}
     </div>
   )
 }

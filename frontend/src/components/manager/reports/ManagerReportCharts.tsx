@@ -1,4 +1,4 @@
-import {
+﻿import {
   Bar,
   BarChart,
   CartesianGrid,
@@ -47,7 +47,7 @@ function compactCurrency(value: number) {
 }
 
 function EmptyChart() {
-  return <p className="flex h-64 items-center justify-center text-sm text-subtle">Chưa có dữ liệu trong khoảng này.</p>
+  return <p className="flex h-64 items-center justify-center text-sm text-muted-foreground">Chưa có dữ liệu trong khoảng này.</p>
 }
 
 export function ManagerRevenueChart({ report }: { report: ManagerRevenueReport }) {
@@ -62,10 +62,10 @@ export function ManagerRevenueChart({ report }: { report: ManagerRevenueReport }
   }))
 
   return (
-    <section className="liquid-glass-card rounded-lg p-4 md:p-5">
-      <p className="text-[10px] uppercase tracking-[0.18em] text-subtle">Doanh thu</p>
-      <h2 className="mt-1 text-base font-semibold text-fg">Doanh thu theo ngày</h2>
-      <p className="mt-1 text-xs text-muted">Hiển thị tối đa 14 ngày gần nhất và từng nguồn doanh thu.</p>
+    <section className="bg-card text-card-foreground ring-1 ring-border rounded-lg p-4 md:p-5">
+      <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Doanh thu</p>
+      <h2 className="mt-1 text-base font-semibold text-foreground">Doanh thu theo ngày</h2>
+      <p className="mt-1 text-xs text-muted-foreground">Hiển thị tối đa 14 ngày gần nhất và từng nguồn doanh thu.</p>
 
       {rows.length === 0 ? (
         <EmptyChart />
@@ -105,10 +105,10 @@ export function ManagerRevenueByVehicleChart({ report }: { report: ManagerRevenu
   }))
 
   return (
-    <section className="liquid-glass-card rounded-lg p-4 md:p-5">
-      <p className="text-[10px] uppercase tracking-[0.18em] text-subtle">Phân loại</p>
-      <h2 className="mt-1 text-base font-semibold text-fg">Doanh thu xe máy & ô tô</h2>
-      <p className="mt-1 text-xs text-muted">So sánh doanh thu theo loại xe trong khoảng ngày đã chọn.</p>
+    <section className="bg-card text-card-foreground ring-1 ring-border rounded-lg p-4 md:p-5">
+      <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Phân loại</p>
+      <h2 className="mt-1 text-base font-semibold text-foreground">Doanh thu xe máy & ô tô</h2>
+      <p className="mt-1 text-xs text-muted-foreground">So sánh doanh thu theo loại xe trong khoảng ngày đã chọn.</p>
 
       {rows.length === 0 ? (
         <EmptyChart />
@@ -145,10 +145,10 @@ export function ManagerSessionChart({ report }: { report: ManagerSessionReport }
   }))
 
   return (
-    <section className="liquid-glass-card rounded-lg p-4 md:p-5">
-      <p className="text-[10px] uppercase tracking-[0.18em] text-subtle">Lượt xe</p>
-      <h2 className="mt-1 text-base font-semibold text-fg">Lượt xe vào theo ngày</h2>
-      <p className="mt-1 text-xs text-muted">
+    <section className="bg-card text-card-foreground ring-1 ring-border rounded-lg p-4 md:p-5">
+      <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Lượt xe</p>
+      <h2 className="mt-1 text-base font-semibold text-foreground">Lượt xe vào theo ngày</h2>
+      <p className="mt-1 text-xs text-muted-foreground">
         Xe máy: {report.byVehicleType?.motorcycle ?? 0} · Ô tô: {report.byVehicleType?.car ?? 0}
       </p>
 
@@ -208,10 +208,10 @@ export function ManagerPeakHoursChart({ report }: { report: ManagerPeakHoursRepo
   const peakHour = report.peakHour ?? { hour: 0, count: 0 }
 
   return (
-    <section className="liquid-glass-card rounded-lg p-4 md:p-5">
-      <p className="text-[10px] uppercase tracking-[0.18em] text-subtle">Vận hành</p>
-      <h2 className="mt-1 text-base font-semibold text-fg">Giờ xe vào cao điểm</h2>
-      <p className="mt-1 text-xs text-muted">
+    <section className="bg-card text-card-foreground ring-1 ring-border rounded-lg p-4 md:p-5">
+      <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Vận hành</p>
+      <h2 className="mt-1 text-base font-semibold text-foreground">Giờ xe vào cao điểm</h2>
+      <p className="mt-1 text-xs text-muted-foreground">
         Cao nhất lúc {String(peakHour.hour).padStart(2, '0')}:00 với {peakHour.count} lượt trong {report.days ?? 0} ngày.
       </p>
 
@@ -245,3 +245,5 @@ export function ManagerPeakHoursChart({ report }: { report: ManagerPeakHoursRepo
     </section>
   )
 }
+
+

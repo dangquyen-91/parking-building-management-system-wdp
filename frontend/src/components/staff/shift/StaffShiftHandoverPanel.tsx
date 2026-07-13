@@ -1,3 +1,4 @@
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../ui/card'
 import { formatStaffCurrency } from '../data/staffGateUi'
 
 type StaffShiftHandoverPanelProps = {
@@ -15,24 +16,29 @@ export function StaffShiftHandoverPanel({
 }: StaffShiftHandoverPanelProps) {
   return (
     <aside className="grid gap-5">
-      <section className="rounded-[1.75rem] border border-theme bg-badge p-5 shadow-sm">
-        <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-subtle">Tóm tắt nhanh</p>
-        <dl className="mt-4 grid gap-3 text-sm">
-          <SummaryLine label="Nhân viên đối soát" value={lastStaffName} />
-          <SummaryLine label="Tiền mặt" value={formatStaffCurrency(cashRevenue)} />
-          <SummaryLine label="Chuyển khoản" value={formatStaffCurrency(transferRevenue)} />
-          <SummaryLine label="Xe cần bàn giao" value={`${activeCount} xe`} />
-        </dl>
-      </section>
+      <Card>
+        <CardHeader>
+          <CardDescription>Bàn giao</CardDescription>
+          <CardTitle>Tóm tắt nhanh</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <dl className="grid gap-3 text-sm">
+            <SummaryLine label="Nhân viên đối soát" value={lastStaffName} />
+            <SummaryLine label="Tiền mặt" value={formatStaffCurrency(cashRevenue)} />
+            <SummaryLine label="Chuyển khoản" value={formatStaffCurrency(transferRevenue)} />
+            <SummaryLine label="Xe cần bàn giao" value={`${activeCount} xe`} />
+          </dl>
+        </CardContent>
+      </Card>
     </aside>
   )
 }
 
 function SummaryLine({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex items-center justify-between gap-3 rounded-2xl border border-theme bg-page px-4 py-3">
-      <dt className="text-xs text-muted">{label}</dt>
-      <dd className="text-right text-sm font-black text-fg">{value}</dd>
+    <div className="flex items-center justify-between gap-3 rounded-lg border bg-muted/30 px-4 py-3">
+      <dt className="text-xs text-muted-foreground">{label}</dt>
+      <dd className="text-right text-sm font-semibold">{value}</dd>
     </div>
   )
 }

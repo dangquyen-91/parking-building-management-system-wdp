@@ -1,5 +1,9 @@
+import { Search } from 'lucide-react'
 import type { Floor } from '../../../services/managerBuildingsApi'
 import type { GateSession } from '../../../services/staffGateApi'
+import { Alert, AlertDescription } from '../../ui/alert'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../ui/card'
+import { Skeleton } from '../../ui/skeleton'
 import { StaffVehicleCard } from './StaffVehicleCard'
 
 type StaffVehicleListProps = {
@@ -19,31 +23,35 @@ export function StaffVehicleList({
 }: StaffVehicleListProps) {
   if (error) {
     return (
-      <p className="rounded-2xl border border-rose-500/40 bg-rose-500/10 p-4 text-sm text-rose-700 dark:text-rose-200">
-        {error}
-      </p>
+      <Alert variant="destructive">
+        <AlertDescription>{error}</AlertDescription>
+      </Alert>
     )
   }
 
   if (isLoading) {
-    return <p className="rounded-2xl border border-theme bg-page p-6 text-center text-sm text-muted">Đang tải danh sách xe đang gửi...</p>
+    return <Skeleton className="h-40 rounded-xl" />
   }
 
   if (sessions.length === 0) {
     return (
-      <div className="flex min-h-56 flex-col items-center justify-center rounded-2xl border border-dashed border-theme bg-page p-6 text-center">
-        <span className="flex size-14 items-center justify-center rounded-full bg-ghost text-xl text-muted">⌕</span>
-        <p className="mt-3 text-sm font-bold text-fg">Không tìm thấy xe phù hợp</p>
-        <p className="mt-1 text-xs text-muted">Thử thay đổi biển số hoặc bộ lọc đang chọn.</p>
-      </div>
+      <Card className="border-dashed">
+        <CardHeader className="items-center text-center">
+          <span className="flex size-12 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+            <Search className="size-5" />
+          </span>
+          <CardTitle>Không tìm thấy xe phù hợp</CardTitle>
+          <CardDescription>Thử thay đổi biển số hoặc bộ lọc đang chọn.</CardDescription>
+        </CardHeader>
+      </Card>
     )
   }
 
   return (
-    <div className="grid gap-3">
+    <CardContent className="grid gap-3 p-0">
       {sessions.map((session) => (
         <StaffVehicleCard key={session._id} session={session} floorMap={floorMap} onCheckout={onCheckout} />
       ))}
-    </div>
+    </CardContent>
   )
 }

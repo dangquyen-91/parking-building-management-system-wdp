@@ -1,8 +1,11 @@
-import { useEffect, useState } from 'react'
+﻿import { useEffect, useState } from 'react'
 import type { Floor } from '../../../services/managerBuildingsApi'
 import type { RowCreatePayload, RowUpdatePayload } from '../../../services/managerParkingRowApi'
 import { formatFloorLabel } from '../../../utils/floorLabel'
-import { AdminField, AdminModal, AdminModalActions, adminInputClass } from '../common/AdminFormPrimitives'
+import { AdminField, AdminModal, AdminModalActions } from '../common/AdminFormPrimitives'
+import { Input } from '../../ui/input'
+import { NativeSelect, NativeSelectOption } from '../../ui/native-select'
+import { Textarea } from '../../ui/textarea'
 
 type AdminRowFormModalProps = {
   open: boolean
@@ -33,6 +36,7 @@ export function AdminRowFormModal({
 
   useEffect(() => {
     if (open) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setFloorId(initialValues?.floorId ?? defaultFloor)
       setRowCode(initialValues?.rowCode ?? '')
       setCapacity(initialValues ? String(initialValues.capacity) : '')
@@ -46,19 +50,20 @@ export function AdminRowFormModal({
     <AdminModal eyebrow="Admin // Hàng xe máy" title={mode === 'create' ? 'Tạo hàng xe máy' : 'Chỉnh sửa hàng xe máy'} error={error} onClose={onClose}>
       <form className="grid gap-4" onSubmit={(event) => { event.preventDefault(); const base = { rowCode: rowCode.trim(), capacity: Number(capacity), note: note.trim() || null }; onSubmit(mode === 'create' ? { floorId, ...base } : base) }}>
         <AdminField label="Tầng / Khu">
-          <select className={adminInputClass} value={floorId} disabled={mode === 'edit'} onChange={(event) => setFloorId(event.target.value)}>
+          <NativeSelect value={floorId} disabled={mode === 'edit'} onChange={(event) => setFloorId(event.target.value)}>
             {floors.map((floor) => (
-              <option key={floor._id} value={floor._id}>{formatFloorLabel(floor)}</option>
+              <NativeSelectOption key={floor._id} value={floor._id}>{formatFloorLabel(floor)}</NativeSelectOption>
             ))}
-          </select>
+          </NativeSelect>
         </AdminField>
         <div className="grid gap-3 sm:grid-cols-2">
-          <AdminField label="Mã hàng"><input className={adminInputClass} value={rowCode} onChange={(event) => setRowCode(event.target.value)} /></AdminField>
-          <AdminField label="Sức chứa"><input className={adminInputClass} type="number" min="1" value={capacity} onChange={(event) => setCapacity(event.target.value)} /></AdminField>
+          <AdminField label="Mã hàng"><Input value={rowCode} onChange={(event) => setRowCode(event.target.value)} /></AdminField>
+          <AdminField label="Sức chứa"><Input type="number" min="1" value={capacity} onChange={(event) => setCapacity(event.target.value)} /></AdminField>
         </div>
-        <AdminField label="Ghi chú"><textarea className="min-h-20 rounded-lg border border-theme bg-page p-3 text-sm text-fg" value={note} onChange={(event) => setNote(event.target.value)} /></AdminField>
+        <AdminField label="Ghi chú"><Textarea className="min-h-20" value={note} onChange={(event) => setNote(event.target.value)} /></AdminField>
         <AdminModalActions disabled={!floorId || !rowCode.trim() || Number(capacity) < 1 || isSubmitting} loading={isSubmitting} onClose={onClose} />
       </form>
     </AdminModal>
   )
 }
+

@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { Label } from '../../ui/label'
 
 type StaffGateFieldProps = {
   label: string
@@ -7,10 +8,9 @@ type StaffGateFieldProps = {
 
 export function StaffGateField({ label, children }: StaffGateFieldProps) {
   return (
-    <label className="flex flex-col gap-2">
-      <span className="text-xs font-medium uppercase tracking-[0.14em] text-subtle">{label}</span>
+    <Label className="grid gap-2 text-xs font-medium text-muted-foreground">
+      {label}
       {children}
-    </label>
+    </Label>
   )
 }
-

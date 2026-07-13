@@ -1,19 +1,21 @@
+import { Card, CardDescription, CardHeader, CardTitle } from '../../ui/card'
 import type { ShiftStat } from './staffShiftUtils'
 
-export function StaffShiftStatCard({ stat }: { stat: ShiftStat }) {
-  const toneClass = {
-    sky: 'from-sky-500/15 text-sky-700 dark:text-sky-200',
-    emerald: 'from-emerald-500/15 text-emerald-700 dark:text-emerald-200',
-    amber: 'from-amber-500/15 text-amber-700 dark:text-amber-200',
-    violet: 'from-violet-500/15 text-violet-700 dark:text-violet-200',
-  }[stat.tone]
+const SHIFT_TONE_CLASS: Record<ShiftStat['tone'], string> = {
+  sky: 'border-sky-500/25 bg-sky-500/10 text-sky-700 dark:text-sky-300',
+  emerald: 'border-emerald-500/25 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300',
+  amber: 'border-amber-500/25 bg-amber-500/10 text-amber-700 dark:text-amber-300',
+  violet: 'border-violet-500/25 bg-violet-500/10 text-violet-700 dark:text-violet-300',
+}
 
+export function StaffShiftStatCard({ stat }: { stat: ShiftStat }) {
   return (
-    <article className="rounded-2xl border border-theme bg-badge p-4 shadow-sm">
-      <div className={`mb-3 h-1.5 w-16 rounded-full bg-gradient-to-r ${toneClass} to-transparent`} />
-      <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-subtle">{stat.label}</p>
-      <p className="mt-3 text-2xl font-black text-fg">{stat.value}</p>
-      <p className="mt-1 text-xs text-muted">{stat.detail}</p>
-    </article>
+    <Card className={SHIFT_TONE_CLASS[stat.tone]}>
+      <CardHeader>
+        <CardDescription className="text-current/75">{stat.label}</CardDescription>
+        <CardTitle className="text-2xl">{stat.value}</CardTitle>
+        <p className="text-xs text-current/70">{stat.detail}</p>
+      </CardHeader>
+    </Card>
   )
 }

@@ -1,4 +1,6 @@
 import type { ReactNode } from 'react'
+import { Badge } from '../../ui/badge'
+import { Card, CardContent } from '../../ui/card'
 
 type StaffPageHeaderProps = {
   eyebrow: string
@@ -9,21 +11,19 @@ type StaffPageHeaderProps = {
 
 export function StaffPageHeader({ eyebrow, title, description, actions }: StaffPageHeaderProps) {
   return (
-    <div className="mb-6 overflow-hidden rounded-[2rem] border border-theme bg-badge shadow-sm">
-      <div className="relative p-5 md:p-7">
-        <div className="pointer-events-none absolute inset-y-0 right-0 w-1/2 bg-gradient-to-l from-sky-500/10 to-transparent" />
-        <div className="relative flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
+    <Card className="mb-6 overflow-hidden border-sky-500/20 bg-gradient-to-br from-white via-sky-50/80 to-emerald-50/80 shadow-sm dark:from-slate-950 dark:via-sky-950/30 dark:to-emerald-950/20">
+      <CardContent className="p-5 md:p-7">
+        <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
           <div>
-            <div className="mb-3 flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-subtle">
-              <span className="size-2 rounded-full bg-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.9)]" />
+            <Badge className="mb-3 border-0 bg-sky-600 text-white shadow-sm shadow-sky-500/20">
               {eyebrow}
-            </div>
-            <h1 className="text-3xl font-black tracking-tight text-fg md:text-4xl">{title}</h1>
-            <p className="mt-3 max-w-3xl text-sm leading-6 text-muted">{description}</p>
+            </Badge>
+            <h1 className="text-3xl font-bold tracking-tight text-slate-950 md:text-4xl dark:text-white">{title}</h1>
+            <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">{description}</p>
           </div>
           {actions}
         </div>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   )
 }

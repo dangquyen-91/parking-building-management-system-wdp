@@ -1,3 +1,5 @@
+import { Card, CardHeader, CardDescription, CardTitle } from '../../ui/card'
+
 type StaffGateSummaryProps = {
   activeCount: number
   completedCount: number
@@ -10,27 +12,38 @@ export function StaffGateSummary({
   availableCount,
 }: StaffGateSummaryProps) {
   const stats = [
-    { label: 'Trong bãi', value: activeCount, tone: 'from-sky-500/20', dot: 'bg-sky-500', hint: 'xe' },
-    { label: 'Đã ra ca này', value: completedCount, tone: 'from-emerald-500/20', dot: 'bg-emerald-500', hint: 'xe' },
-    { label: 'Còn trống', value: availableCount, tone: 'from-amber-500/20', dot: 'bg-amber-500', hint: 'chỗ' },
+    {
+      label: 'Trong bãi',
+      value: activeCount,
+      hint: 'xe',
+      className: 'border-sky-500/25 bg-sky-500/10 text-sky-700 dark:text-sky-300',
+    },
+    {
+      label: 'Đã ra ca này',
+      value: completedCount,
+      hint: 'xe',
+      className: 'border-emerald-500/25 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300',
+    },
+    {
+      label: 'Còn trống',
+      value: availableCount,
+      hint: 'chỗ',
+      className: 'border-amber-500/25 bg-amber-500/10 text-amber-700 dark:text-amber-300',
+    },
   ]
 
   return (
     <div className="grid gap-3 sm:grid-cols-3 xl:min-w-[38rem]">
       {stats.map((stat) => (
-        <div
-          key={stat.label}
-          className={`relative overflow-hidden rounded-2xl border border-theme bg-gradient-to-br ${stat.tone} via-badge to-badge p-4 shadow-sm`}
-        >
-          <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.14em] text-subtle">
-            <span className={`size-2 rounded-full ${stat.dot}`} />
-            {stat.label}
-          </div>
-          <p className="mt-2 text-3xl font-black tracking-tight text-fg">
-            {stat.value}
-            <span className="ml-1 text-xs font-semibold text-muted">{stat.hint}</span>
-          </p>
-        </div>
+        <Card key={stat.label} size="sm" className={stat.className}>
+          <CardHeader>
+            <CardDescription className="text-current/75">{stat.label}</CardDescription>
+            <CardTitle className="text-3xl">
+              {stat.value}
+              <span className="ml-1 text-xs font-medium text-current/65">{stat.hint}</span>
+            </CardTitle>
+          </CardHeader>
+        </Card>
       ))}
     </div>
   )
