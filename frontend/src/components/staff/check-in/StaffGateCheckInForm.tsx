@@ -1,18 +1,16 @@
 import { useEffect, useRef, useState } from 'react'
+import { Bike, CarFront, LogIn, ShieldCheck, Ticket } from 'lucide-react'
 import QRCode from 'qrcode'
 import type {
-  GateCustomerType,
   GateLookupResult,
   GateVehicleType,
 } from '../../../services/staffGateApi'
-import type { StaffGateFloorOption } from '../../../utils/staffGateAllocation'
 import { Badge } from '../../ui/badge'
 import { Button } from '../../ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../ui/card'
 import { Input } from '../../ui/input'
 import { Textarea } from '../../ui/textarea'
 import { StaffGateField } from '../common/StaffGateField'
-import { StaffAssignedParking } from '../parking/StaffAssignedParking'
 import { StaffGateCameraScanner } from '../scanner/StaffGateCameraScanner'
 import { StaffGateQrScanner } from '../scanner/StaffGateQrScanner'
 import {
@@ -33,9 +31,6 @@ type StaffGateCheckInFormProps = {
   note: string
   lookupResult: GateLookupResult | null
   lookupMatchesPlate: boolean
-  checkInCustomerType?: GateCustomerType
-  floorOptions: StaffGateFloorOption[]
-  selectedFloorId: string
   isLookupLoading: boolean
   isSubmitting: boolean
   canCheckIn: boolean
@@ -44,7 +39,6 @@ type StaffGateCheckInFormProps = {
   issuedWalkInQrValue: string
   onPlateChange: (value: string) => void
   onVehicleTypeChange: (value: GateVehicleType) => void
-  onFloorChange: (value: string) => void
   onNoteChange: (value: string) => void
   onLookup: () => void
   onIssueWalkInQr: () => void
@@ -58,9 +52,6 @@ export function StaffGateCheckInForm({
   note,
   lookupResult,
   lookupMatchesPlate,
-  checkInCustomerType,
-  floorOptions,
-  selectedFloorId,
   isLookupLoading,
   isSubmitting,
   canCheckIn,
@@ -69,7 +60,6 @@ export function StaffGateCheckInForm({
   issuedWalkInQrValue,
   onPlateChange,
   onVehicleTypeChange,
-  onFloorChange,
   onNoteChange,
   onLookup,
   onIssueWalkInQr,
@@ -77,7 +67,6 @@ export function StaffGateCheckInForm({
   onCheckIn,
 }: StaffGateCheckInFormProps) {
   const previousLookupMatchesRef = useRef(false)
-  const previousEntryQrValueRef = useRef('')
   const [step, setStep] = useState<CheckInStep>(1)
   const [walkInQrDataUrl, setWalkInQrDataUrl] = useState('')
   const isVehicleTypeLocked =
@@ -122,23 +111,15 @@ export function StaffGateCheckInForm({
     return undefined
   }, [lookupMatchesPlate])
 
-  useEffect(() => {
-    const justVerifiedQr = Boolean(entryQrValue) && entryQrValue !== previousEntryQrValueRef.current
-    previousEntryQrValueRef.current = entryQrValue
-
-    if (justVerifiedQr && step === 3) setStep(4)
-  }, [entryQrValue, step])
-
   function canOpenStep(targetStep: CheckInStep) {
     if (targetStep === 1) return true
     if (targetStep === 2) return lookupMatchesPlate && Boolean(lookupResult)
     if (targetStep === 3) return lookupMatchesPlate && Boolean(lookupResult)
-    if (targetStep === 4) return isWalkIn ? Boolean(issuedWalkInQrValue) : Boolean(entryQrValue)
     return false
   }
 
   function goNext() {
-    if (step < 4) setStep((step + 1) as CheckInStep)
+    if (step < 3) setStep((step + 1) as CheckInStep)
   }
 
   function goPrevious() {
@@ -146,17 +127,17 @@ export function StaffGateCheckInForm({
   }
 
   return (
-    <Card className="overflow-hidden border-sky-500/20 bg-gradient-to-br from-background via-background to-sky-500/5">
-      <CardHeader>
+    <Card className="overflow-hidden rounded-2xl border-sky-500/20 bg-background shadow-xl shadow-slate-950/5">
+      <CardHeader className="border-b border-white/15 bg-gradient-to-r from-sky-700 via-sky-600 to-cyan-500 p-5 text-white md:p-6">
         <div className="flex items-start gap-4">
-          <span className="flex size-11 shrink-0 items-center justify-center rounded-lg bg-sky-600 text-lg font-bold text-white shadow-lg shadow-sky-500/20">
-            IN
+          <span className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-white/15 shadow-inner ring-1 ring-white/25">
+            <LogIn className="size-6" />
           </span>
           <div>
-            <CardDescription>Quy trình xe vào</CardDescription>
-            <CardTitle>Tiếp nhận phương tiện</CardTitle>
-            <CardDescription>
-              Làm theo từng bước để camera, QR và vị trí không bị lẫn thao tác.
+            <CardDescription className="font-semibold uppercase tracking-[0.16em] text-white/70">Quy trình xe vào</CardDescription>
+            <CardTitle className="mt-1 text-xl font-bold text-white">Tiếp nhận phương tiện</CardTitle>
+            <CardDescription className="mt-1 text-white/75">
+              Làm theo từng bước để camera, thông tin xe và QR không bị lẫn thao tác.
             </CardDescription>
           </div>
         </div>
@@ -164,7 +145,7 @@ export function StaffGateCheckInForm({
 
       <CheckInStepHeader step={step} canOpenStep={canOpenStep} onStepChange={setStep} />
 
-      <CardContent className="grid gap-6 p-5 md:p-6">
+      <CardContent className="grid gap-6 bg-gradient-to-b from-sky-500/[0.025] to-transparent p-5 md:p-6">
         {step === 1 && (
           <>
             <StepIntro
@@ -202,12 +183,12 @@ export function StaffGateCheckInForm({
               description="Đối chiếu loại khách, chủ xe, gói cư dân hoặc booking trước khi xác minh QR."
             />
 
-            <Card size="sm">
+            <Card size="sm" className="border-sky-500/20 bg-sky-500/5 shadow-sm">
               <CardContent className="p-5 text-sm">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                   <div>
-                    <p className="text-xs text-muted-foreground">Biển số xe</p>
-                    <p className="mt-1 text-2xl font-bold tracking-[0.08em]">{lookupResult.licensePlate}</p>
+                    <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Biển số xe</p>
+                    <p className="mt-1 text-3xl font-black tracking-[0.1em]">{lookupResult.licensePlate}</p>
                     <p className="mt-2 text-muted-foreground">
                       {lookupResult.booking ? 'Khách đặt trước' : formatCustomerType(lookupResult.customerType)}
                       {lookupResult.subscription?.owner?.fullName ? ` / ${lookupResult.subscription.owner.fullName}` : ''}
@@ -230,6 +211,37 @@ export function StaffGateCheckInForm({
                 </CardHeader>
               </Card>
             )}
+
+            <StaffGateField label="Loại xe">
+              <div className="grid gap-3 sm:grid-cols-2">
+                {(['motorcycle', 'car'] as const).map((type) => (
+                  <Button
+                    key={type}
+                    type="button"
+                    variant={vehicleType === type ? 'default' : 'outline'}
+                    onClick={() => onVehicleTypeChange(type)}
+                    disabled={isVehicleTypeLocked}
+                    className="h-auto min-h-24 justify-start rounded-xl px-4 text-left shadow-sm"
+                  >
+                    <span className="flex items-center gap-3">
+                      <span className="flex size-10 items-center justify-center rounded-xl bg-background/80 shadow-sm">
+                        {type === 'car' ? <CarFront className="size-5" /> : <Bike className="size-5" />}
+                      </span>
+                      <span className="block text-sm font-semibold">{formatVehicleType(type)}</span>
+                    </span>
+                  </Button>
+                ))}
+              </div>
+            </StaffGateField>
+
+            <StaffGateField label="Ghi chú (không bắt buộc)">
+              <Textarea
+                value={note}
+                onChange={(event) => onNoteChange(event.target.value)}
+                rows={3}
+                placeholder="VD: thẻ tạm, tình trạng xe, hướng dẫn đặc biệt..."
+              />
+            </StaffGateField>
           </>
         )}
 
@@ -240,13 +252,16 @@ export function StaffGateCheckInForm({
               description={isResident ? 'Cư dân đưa QR gói đã mua để đối chiếu với biển số camera.' : 'Khách vãng lai chỉ cần cấp vé QR, không cần quét lại ngay lúc xe vào.'}
             />
 
-            <Card size="sm">
+            <Card size="sm" className="border-emerald-500/20 bg-gradient-to-br from-emerald-500/5 to-transparent shadow-sm">
               <CardContent className="grid gap-4 p-4">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                   <div>
                     <p className="text-xs text-muted-foreground">Xác minh QR cổng vào</p>
                     <h3 className="mt-1 text-base font-bold">
-                      {isResident ? 'Quét QR gói cư dân' : 'Cấp vé QR vãng lai'}
+                      <span className="inline-flex items-center gap-2">
+                        {isResident ? <ShieldCheck className="size-4 text-emerald-600" /> : <Ticket className="size-4 text-sky-600" />}
+                        {isResident ? 'Quét QR gói cư dân' : 'Cấp vé QR vãng lai'}
+                      </span>
                     </h3>
                     <p className="mt-1 text-xs text-muted-foreground">
                       {isResident
@@ -303,54 +318,6 @@ export function StaffGateCheckInForm({
           </>
         )}
 
-        {step === 4 && (
-          <>
-            <StepIntro
-              title="Bước 4: Chọn loại xe và vị trí"
-              description="Hệ thống tự chọn hàng còn chỗ hoặc giữ vị trí theo gói cư dân."
-            />
-
-            <StaffGateField label="Loại xe">
-              <div className="grid gap-3 sm:grid-cols-2">
-                {(['motorcycle', 'car'] as const).map((type) => (
-                  <Button
-                    key={type}
-                    type="button"
-                    variant={vehicleType === type ? 'default' : 'outline'}
-                    onClick={() => onVehicleTypeChange(type)}
-                    disabled={isVehicleTypeLocked}
-                    className="h-auto min-h-20 justify-start px-4 text-left"
-                  >
-                    <span>
-                      <span className="block text-sm font-semibold">{formatVehicleType(type)}</span>
-                      <span className="mt-1 block text-xs opacity-75">
-                        {type === 'car' ? 'Vãng lai theo tầng, cư dân giữ ô riêng' : 'Tự chọn hàng còn chỗ'}
-                      </span>
-                    </span>
-                  </Button>
-                ))}
-              </div>
-            </StaffGateField>
-
-            <StaffAssignedParking
-              vehicleType={vehicleType}
-              customerType={checkInCustomerType}
-              floorOptions={floorOptions}
-              selectedFloorId={selectedFloorId}
-              onFloorChange={onFloorChange}
-            />
-
-            <StaffGateField label="Ghi chú">
-              <Textarea
-                value={note}
-                onChange={(event) => onNoteChange(event.target.value)}
-                rows={3}
-                placeholder="VD: thẻ tạm, tình trạng xe, hướng dẫn đặc biệt..."
-              />
-            </StaffGateField>
-          </>
-        )}
-
         <CheckInWizardActions
           step={step}
           canNext={
@@ -361,7 +328,7 @@ export function StaffGateCheckInForm({
           canCheckIn={canCheckIn}
           isSubmitting={isSubmitting}
           onPrevious={step > 1 ? goPrevious : undefined}
-          onNext={step < 4 ? goNext : undefined}
+          onNext={step < 3 ? goNext : undefined}
           onCheckIn={onCheckIn}
         />
       </CardContent>

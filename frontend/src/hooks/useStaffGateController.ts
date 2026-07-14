@@ -35,7 +35,6 @@ export function useStaffGateController() {
 
   const [plate, setPlate] = useState('')
   const [vehicleType, setVehicleType] = useState<GateVehicleType>('motorcycle')
-  const [selectedFloorId, setSelectedFloorId] = useState('')
   const [note, setNote] = useState('')
   const [lookupResult, setLookupResult] = useState<GateLookupResult | null>(null)
   const [isLookupLoading, setIsLookupLoading] = useState(false)
@@ -58,7 +57,6 @@ export function useStaffGateController() {
   const checkInCustomerType = lookupMatchesPlate ? lookupResult.customerType : undefined
 
   const {
-    floorOptions,
     autoAssignedRow,
     availableCount,
   } = useMemo(
@@ -70,9 +68,9 @@ export function useStaffGateController() {
         lookupMatchesPlate,
         customerType: checkInCustomerType,
         vehicleType,
-        selectedFloorId,
+        selectedFloorId: '',
       }),
-    [rows, slots, floorMap, lookupMatchesPlate, checkInCustomerType, vehicleType, selectedFloorId],
+    [rows, slots, floorMap, lookupMatchesPlate, checkInCustomerType, vehicleType],
   )
 
   const selectedCheckoutSession = useMemo(() => {
@@ -235,7 +233,6 @@ export function useStaffGateController() {
     try {
       const result = await staffGateApi.lookup(plateToLookup)
       setLookupResult(result)
-      setSelectedFloorId('')
       setEntryQrValue('')
       setEntryQrError(undefined)
       setIssuedWalkInQrValue('')
@@ -384,7 +381,6 @@ export function useStaffGateController() {
 
   function resetCheckInForm() {
     setPlate('')
-    setSelectedFloorId('')
     setNote('')
     setLookupResult(null)
     setEntryQrValue('')
@@ -395,7 +391,6 @@ export function useStaffGateController() {
   function handlePlateChange(value: string) {
     setPlate(value)
     setLookupResult(null)
-    setSelectedFloorId('')
     setEntryQrValue('')
     setEntryQrError(undefined)
     setIssuedWalkInQrValue('')
@@ -403,7 +398,6 @@ export function useStaffGateController() {
 
   function handleVehicleTypeChange(value: GateVehicleType) {
     setVehicleType(value)
-    setSelectedFloorId('')
   }
 
   async function handleIssueWalkInQr() {
@@ -471,8 +465,6 @@ export function useStaffGateController() {
     lookupResult,
     lookupMatchesPlate,
     checkInCustomerType,
-    floorOptions,
-    selectedFloorId,
     isLookupLoading,
     isSubmitting,
     canCheckIn,
@@ -481,7 +473,6 @@ export function useStaffGateController() {
     issuedWalkInQrValue,
     handlePlateChange,
     handleVehicleTypeChange,
-    setSelectedFloorId,
     setNote,
     handleLookup,
     handleIssueWalkInQr,

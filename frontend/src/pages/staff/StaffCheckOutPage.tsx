@@ -8,6 +8,7 @@ import {
 import { Alert, AlertDescription } from '../../components/ui/alert'
 import { Skeleton } from '../../components/ui/skeleton'
 import { useStaffGateController } from '../../hooks/useStaffGateController'
+import { LogOut } from 'lucide-react'
 
 export function StaffCheckOutPage() {
   const gate = useStaffGateController()
@@ -18,6 +19,8 @@ export function StaffCheckOutPage() {
         eyebrow="Cổng đang hoạt động"
         title="Thanh toán xe ra"
         description="Tìm xe đang gửi, xác minh QR, tính phí và hoàn tất xe rời bãi."
+        icon={<LogOut className="size-7" />}
+        tone="emerald"
         actions={
           <StaffGateSummary
             activeCount={gate.activeSessions.length}
@@ -42,7 +45,7 @@ export function StaffCheckOutPage() {
       {gate.isLoading ? (
         <Skeleton className="h-80 rounded-xl" />
       ) : (
-        <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_24rem]">
+        <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_24rem]">
           <StaffGateCheckoutPanel
             query={gate.checkoutQuery}
             session={gate.selectedCheckoutSession}
