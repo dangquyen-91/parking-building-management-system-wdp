@@ -1,4 +1,3 @@
-import { RefreshCw } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   StaffGateToast,
@@ -8,25 +7,35 @@ import {
   StaffPageHeader,
 } from '../../components/staff'
 import { getComplaintResolutionNote, INCIDENT_STATUS_LABELS } from '../../components/staff/incidents/staffIncidentUtils'
-import { Button } from '../../components/ui/button'
 import { Card, CardDescription, CardHeader, CardTitle } from '../../components/ui/card'
 import { Skeleton } from '../../components/ui/skeleton'
 import { complaintsApi, type Complaint, type ComplaintStatus } from '../../services/complaintsApi'
 
+function normalizePlate(value: string) {
+  return value.toUpperCase().replace(/[^A-Z0-9]/g, '')
+}
+
 export function StaffIncidentsPage() {
   const [complaints, setComplaints] = useState<Complaint[]>([])
+  const [query, setQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState<ComplaintStatus | 'all'>('all')
   const [isLoading, setIsLoading] = useState(true)
   const [updatingId, setUpdatingId] = useState('')
   const [message, setMessage] = useState<string | null>(null)
 
+  const filteredComplaints = useMemo(() => {
+    const normalizedQuery = normalizePlate(query)
+    if (!normalizedQuery) return complaints
+    return complaints.filter((item) => normalizePlate(item.offendingPlate).includes(normalizedQuery))
+  }, [complaints, query])
+
   const stats = useMemo(
     () => ({
-      open: complaints.filter((item) => item.status === 'open').length,
-      inProgress: complaints.filter((item) => item.status === 'in_progress').length,
-      resolved: complaints.filter((item) => item.status === 'resolved').length,
+      open: filteredComplaints.filter((item) => item.status === 'open').length,
+      inProgress: filteredComplaints.filter((item) => item.status === 'in_progress').length,
+      resolved: filteredComplaints.filter((item) => item.status === 'resolved').length,
     }),
-    [complaints],
+    [filteredComplaints],
   )
 
   const loadComplaints = useCallback(async () => {
@@ -84,19 +93,20 @@ export function StaffIncidentsPage() {
         title="Khiếu nại đậu sai chỗ"
         description="Theo dõi xe đậu sai ô, gọi đúng chủ xe và cập nhật trạng thái xử lý trong ca trực."
         actions={
-          <Button type="button" variant="outline" onClick={() => void loadComplaints()}>
-            <RefreshCw className="size-4" />
-            Tải lại
-          </Button>
+          <StaffIncidentFilters
+            query={query}
+            statusFilter={statusFilter}
+            onQueryChange={setQuery}
+            onStatusFilterChange={setStatusFilter}
+          />
         }
       />
 
       <StaffIncidentStats stats={stats} />
-      <StaffIncidentFilters statusFilter={statusFilter} onStatusFilterChange={setStatusFilter} />
 
       {isLoading ? (
         <Skeleton className="h-40 rounded-xl" />
-      ) : complaints.length === 0 ? (
+      ) : filteredComplaints.length === 0 ? (
         <Card className="border-dashed">
           <CardHeader className="text-center">
             <CardTitle>Chưa có khiếu nại phù hợp</CardTitle>
@@ -107,7 +117,7 @@ export function StaffIncidentsPage() {
         </Card>
       ) : (
         <section className="grid gap-4">
-          {complaints.map((complaint) => (
+          {filteredComplaints.map((complaint) => (
             <StaffIncidentCard
               key={complaint._id}
               complaint={complaint}
