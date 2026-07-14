@@ -366,10 +366,6 @@ function WrongSlotComplaintDialog({
               className="auth-input min-h-28 rounded-xl border px-4 py-3 text-sm text-fg"
             />
           </label>
-
-          <p className="rounded-xl border border-amber-400/30 bg-amber-500/10 p-3 text-xs text-amber-800 dark:text-amber-100">
-            Nếu xe đậu sai là xe cư dân trong hệ thống, backend sẽ tự gửi email cảnh báo cho chủ xe đó.
-          </p>
         </div>
 
         <div className="grid gap-3 border-t border-theme p-5 sm:grid-cols-2">
