@@ -114,6 +114,16 @@ export function Header() {
                           </Link>
                         </Button>
                         <Button variant="ghost" className="justify-start" asChild>
+                          <Link to="/my-subscriptions" onClick={() => setMenuOpen(false)}>
+                            Gói của tôi
+                          </Link>
+                        </Button>
+                        <Button variant="ghost" className="justify-start text-rose-600 dark:text-rose-300" asChild>
+                          <Link to="/my-subscriptions#wrong-slot-report" onClick={() => setMenuOpen(false)}>
+                            Báo xe đậu sai chỗ
+                          </Link>
+                        </Button>
+                        <Button variant="ghost" className="justify-start" asChild>
                           <Link to="/profile" onClick={() => setMenuOpen(false)}>
                             Hồ sơ
                           </Link>

@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
 import { BrandLink, SkipLink, ThemeToggle, UserMenu } from '../../common'
 import { authApi, getStoredAuthUser, type AuthUser } from '../../../services/authApi'
 
@@ -47,18 +46,6 @@ export function ResidentSubscriptionTopNav({ activeItem }: ResidentSubscriptionT
         <div className="liquid-glass nav-glass mx-auto flex h-14 max-w-7xl items-center justify-between gap-3 rounded-full px-4 md:px-6">
           <BrandLink className="flex shrink-0 items-center gap-2 text-sm font-medium text-fg hover:text-fg" />
           <div className="flex min-w-0 shrink-0 items-center gap-2">
-            <Link
-              to="/my-subscriptions"
-              className={[
-                'hidden rounded-full px-3 py-1.5 text-xs font-semibold transition-colors sm:inline-flex',
-                activeItem === 'my-subscriptions'
-                  ? 'bg-btn-primary text-btn-primary-fg'
-                  : 'text-muted hover:bg-ghost hover:text-fg',
-              ].join(' ')}
-            >
-              Gói của tôi
-            </Link>
-
             {authUser && (
               <UserMenu
                 user={authUser}
