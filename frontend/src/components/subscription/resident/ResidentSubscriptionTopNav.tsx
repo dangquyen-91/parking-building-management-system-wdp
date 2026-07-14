@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { BrandLink, SkipLink, ThemeToggle, UserMenu } from '../../common'
 import { authApi, getStoredAuthUser, type AuthUser } from '../../../services/authApi'
 
@@ -7,6 +8,7 @@ type ResidentSubscriptionTopNavProps = {
 }
 
 export function ResidentSubscriptionTopNav({ activeItem }: ResidentSubscriptionTopNavProps) {
+  const navigate = useNavigate()
   const [authUser, setAuthUser] = useState<AuthUser>()
   const [logoutStatus, setLogoutStatus] = useState<'idle' | 'loading'>('idle')
 
@@ -36,6 +38,7 @@ export function ResidentSubscriptionTopNav({ activeItem }: ResidentSubscriptionT
     } finally {
       setAuthUser(undefined)
       setLogoutStatus('idle')
+      navigate('/login', { replace: true })
     }
   }
 

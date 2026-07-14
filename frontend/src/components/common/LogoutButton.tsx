@@ -13,11 +13,11 @@ export function LogoutButton() {
 
     try {
       await authApi.logout()
-      navigate('/login', { replace: true })
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Đăng xuất thất bại')
     } finally {
       setStatus('idle')
+      navigate('/login', { replace: true })
     }
   }
 
