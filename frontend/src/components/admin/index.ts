@@ -1,6 +1,7 @@
 ﻿export { AdminPageShell } from './common/AdminPageShell'
 export { AdminStatCard } from './common/AdminStatCard'
 export { AdminStatusBadge } from './common/AdminStatusBadge'
+export { AdminTableShell } from './common/AdminTableShell'
 export { AdminSidebar } from './layout/AdminSidebar'
 export {
   AdminBookingFilters,

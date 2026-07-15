@@ -2,14 +2,16 @@
 import type { ManagerPlan, ManagerPlanUpdatePayload } from '../../../services/managerPlansApi'
 import { AdminStatCard } from '../common/AdminStatCard'
 import { AdminStatusBadge } from '../common/AdminStatusBadge'
+import { AdminTableShell } from '../common/AdminTableShell'
 import { formatAdminCurrency } from '../adminData'
 import { OperationEmpty, OperationField } from '../operations/AdminOperationPrimitives'
 import { Button } from '../../ui/button'
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '../../ui/card'
+import { Card, CardContent } from '../../ui/card'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../../ui/dialog'
 import { Input } from '../../ui/input'
 import { NativeSelect, NativeSelectOption } from '../../ui/native-select'
 import { Textarea } from '../../ui/textarea'
+import { TableCell, TableRow } from '../../ui/table'
 
 export type AdminPlanVehicleFilter = 'all' | ManagerPlan['vehicleType']
 export type AdminPlanStatusFilter = 'all' | 'active' | 'inactive'
@@ -25,32 +27,7 @@ export function AdminPlanStats({ plans, isLoading }: { plans: ManagerPlan[]; isL
 export function AdminPlanList({ plans, isLoading, updatingId, onEdit, onToggle }: { plans: ManagerPlan[]; isLoading: boolean; updatingId: string | null; onEdit: (plan: ManagerPlan) => void; onToggle: (plan: ManagerPlan) => void }) {
   if (isLoading) return <OperationEmpty text="Đang tải danh sách gói..." />
   if (!plans.length) return <OperationEmpty text="Không có gói phù hợp." />
-  return (
-    <section className="grid items-stretch gap-4 md:grid-cols-2 xl:grid-cols-3">
-      {plans.map((plan) => (
-        <Card key={plan._id} className="h-full min-h-72 transition-shadow hover:shadow-md">
-          <CardHeader className="flex-row items-start justify-between">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{plan.code}</p>
-              <CardTitle className="mt-2">{plan.name}</CardTitle>
-            </div>
-            <AdminStatusBadge status={plan.isActive ? 'active' : 'inactive'} />
-          </CardHeader>
-          <CardContent className="flex flex-1 flex-col">
-            <p className="text-3xl font-bold">{formatAdminCurrency(plan.price)}</p>
-            <p className="mt-1 text-xs text-muted-foreground">{plan.durationDays} ngày · {plan.vehicleType === 'car' ? 'Ô tô' : 'Xe máy'}</p>
-            <p className="mt-4 min-h-12 flex-1 text-sm leading-6 text-muted-foreground">{plan.description || 'Không có mô tả.'}</p>
-          </CardContent>
-          <CardFooter className="grid gap-2 sm:grid-cols-2">
-            <Button variant="outline" onClick={() => onEdit(plan)}>Chỉnh sửa</Button>
-            <Button variant={plan.isActive ? 'destructive' : 'default'} disabled={updatingId === plan._id} onClick={() => onToggle(plan)}>
-              {updatingId === plan._id ? 'Đang lưu...' : plan.isActive ? 'Tạm dừng' : 'Kích hoạt'}
-            </Button>
-          </CardFooter>
-        </Card>
-      ))}
-    </section>
-  )
+  return <AdminTableShell eyebrow="Danh sách gói" title="Gói gửi xe" countLabel={`${plans.length} gói`} minWidth="1050px" columns={[{ label: 'Gói', className: 'w-[26%]' }, { label: 'Loại xe', className: 'w-[12%]' }, { label: 'Thời hạn', className: 'w-[12%]' }, { label: 'Giá', className: 'w-[15%]' }, { label: 'Trạng thái', className: 'w-[14%]' }, { label: 'Thao tác', className: 'w-[21%] text-right' }]}>{plans.map((plan) => <TableRow key={plan._id}><TableCell className="px-4 py-4"><p className="font-bold">{plan.name}</p><p className="mt-1 truncate text-xs text-muted-foreground" title={plan.description || plan.code}>{plan.code} · {plan.description || 'Không có mô tả'}</p></TableCell><TableCell className="px-4 py-4">{plan.vehicleType === 'car' ? 'Ô tô' : 'Xe máy'}</TableCell><TableCell className="px-4 py-4">{plan.durationDays} ngày</TableCell><TableCell className="px-4 py-4 font-bold">{formatAdminCurrency(plan.price)}</TableCell><TableCell className="px-4 py-4"><AdminStatusBadge status={plan.isActive ? 'active' : 'inactive'} /></TableCell><TableCell className="px-4 py-4"><div className="flex justify-end gap-2"><Button size="sm" variant="outline" onClick={() => onEdit(plan)}>Chỉnh sửa</Button><Button size="sm" variant={plan.isActive ? 'destructive' : 'default'} disabled={updatingId === plan._id} onClick={() => onToggle(plan)}>{updatingId === plan._id ? 'Đang lưu...' : plan.isActive ? 'Tạm dừng' : 'Kích hoạt'}</Button></div></TableCell></TableRow>)}</AdminTableShell>
 }
 
 export function AdminPlanFormModal({ plan, isSubmitting, error, onClose, onSubmit }: { plan: ManagerPlan | null; isSubmitting: boolean; error: string | null; onClose: () => void; onSubmit: (payload: ManagerPlanUpdatePayload) => void }) {

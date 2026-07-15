@@ -1,12 +1,14 @@
-﻿import type { AdminBooking } from '../../../services/adminApi'
-import { AdminStatusBadge } from '../common/AdminStatusBadge'
+import type { AdminBooking } from '../../../services/adminApi'
+import { TableCell, TableRow } from '../../ui/table'
 import { formatAdminCurrency } from '../adminData'
-import { formatOperationDateTime, OperationEmpty, OperationInfoCell, OperationListShell } from '../operations/AdminOperationPrimitives'
-import { Card, CardContent } from '../../ui/card'
+import { AdminStatusBadge } from '../common/AdminStatusBadge'
+import { AdminTableShell } from '../common/AdminTableShell'
+import { formatOperationDateTime, OperationEmpty } from '../operations/AdminOperationPrimitives'
 
 export function AdminBookingList({ bookings, isLoading }: { bookings: AdminBooking[]; isLoading: boolean }) {
   if (isLoading) return <OperationEmpty text="Đang tải danh sách booking..." />
   if (!bookings.length) return <OperationEmpty text="Không có booking phù hợp." />
-  return <OperationListShell eyebrow="Danh sách đặt chỗ" title="Booking gần đây" count={`${bookings.length} booking`} tone="booking">{bookings.map((booking) => { const customer = booking.userId && typeof booking.userId !== 'string' ? booking.userId : null; return <Card key={booking._id}><CardContent className="grid gap-4 p-4 sm:grid-cols-2 xl:grid-cols-6 xl:items-center"><p className="font-semibold">{booking.licensePlate}</p><OperationInfoCell label="Khách hàng" value={customer?.fullName ?? customer?.email ?? 'Khách vãng lai'} detail={booking.phoneNumber} /><OperationInfoCell label="Thời gian đến" value={formatOperationDateTime(booking.expectedArrivalTime)} /><OperationInfoCell label="Thời gian rời" value={formatOperationDateTime(booking.expectedExitTime)} detail={`${booking.durationHours} giờ`} /><OperationInfoCell label="Số tiền" value={formatAdminCurrency(booking.amount)} strong /><AdminStatusBadge status={booking.status} /></CardContent></Card> })}</OperationListShell>
+  return <AdminTableShell eyebrow="Danh sách đặt chỗ" title="Booking gần đây" countLabel={`${bookings.length} booking`} minWidth="1050px" columns={[
+    { label: 'Biển số', className: 'w-[15%]' }, { label: 'Khách hàng', className: 'w-[21%]' }, { label: 'Thời gian đến', className: 'w-[18%]' }, { label: 'Thời gian rời', className: 'w-[18%]' }, { label: 'Số tiền', className: 'w-[14%]' }, { label: 'Trạng thái', className: 'w-[14%]' },
+  ]}>{bookings.map((booking) => { const customer = booking.userId && typeof booking.userId !== 'string' ? booking.userId : null; return <TableRow key={booking._id}><TableCell className="px-4 py-4 font-black tracking-[0.06em]">{booking.licensePlate}</TableCell><TableCell className="px-4 py-4"><p className="truncate font-semibold">{customer?.fullName ?? customer?.email ?? 'Khách vãng lai'}</p><p className="mt-1 text-xs text-muted-foreground">{booking.phoneNumber}</p></TableCell><TableCell className="px-4 py-4">{formatOperationDateTime(booking.expectedArrivalTime)}</TableCell><TableCell className="px-4 py-4"><p>{formatOperationDateTime(booking.expectedExitTime)}</p><p className="mt-1 text-xs text-muted-foreground">{booking.durationHours} giờ</p></TableCell><TableCell className="px-4 py-4 font-bold">{formatAdminCurrency(booking.amount)}</TableCell><TableCell className="px-4 py-4"><AdminStatusBadge status={booking.status} /></TableCell></TableRow> })}</AdminTableShell>
 }
-

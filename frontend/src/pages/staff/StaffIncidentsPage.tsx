@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   StaffGateToast,
-  StaffIncidentCard,
+  StaffIncidentList,
   StaffIncidentFilters,
   StaffIncidentStats,
   StaffPageHeader,
@@ -116,16 +116,11 @@ export function StaffIncidentsPage() {
           </CardHeader>
         </Card>
       ) : (
-        <section className="grid gap-4">
-          {filteredComplaints.map((complaint) => (
-            <StaffIncidentCard
-              key={complaint._id}
-              complaint={complaint}
-              isUpdating={updatingId === complaint._id}
-              onUpdateStatus={handleUpdateStatus}
-            />
-          ))}
-        </section>
+        <StaffIncidentList
+          complaints={filteredComplaints}
+          updatingId={updatingId}
+          onUpdateStatus={handleUpdateStatus}
+        />
       )}
 
       {message && <StaffGateToast message={message} onClose={() => setMessage(null)} />}

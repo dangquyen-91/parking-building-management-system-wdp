@@ -80,8 +80,8 @@ export function ManagerBookingsPage() {
   return (
     <div className="relative mx-auto max-w-[118rem] p-4 md:p-8 lg:p-10">
       <ManagerPageHeader
-        eyebrow="Quản lý // Booking"
-        title="Quản lý booking"
+        eyebrow="Quản lý // Lịch đặt"
+        title="Quản lý lịch đặt"
         description="Theo dõi lịch đặt chỗ ô tô, trạng thái thanh toán, thời gian dự kiến và thông tin khách hàng."
         actions={
           <ManagerBookingFilters
