@@ -76,7 +76,7 @@ export function ManagerSubscriptionsPage() {
             type="button"
             disabled={loading}
             onClick={() => void loadSubscriptions()}
-            className="h-10 rounded-lg border border-border px-4 text-sm font-semibold text-foreground hover:bg-muted disabled:opacity-50"
+            className="h-10 rounded-lg border border-neutral-950 bg-neutral-950 px-4 text-sm font-semibold text-white shadow-sm hover:bg-neutral-800 disabled:opacity-60 dark:border-white/15 dark:bg-white dark:text-neutral-950 dark:hover:bg-white/90"
           >
             {loading ? 'Đang tải...' : 'Làm mới'}
           </Button>

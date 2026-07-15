@@ -32,14 +32,19 @@ const sevenDaysAgo = toDateInput(new Date(Date.now() - 6 * 24 * 60 * 60 * 1000))
 type ReportFilters = {
   from: string
   to: string
-  peakDays: number
+}
+
+function getDateRangeDays(from: string, to: string) {
+  const start = new Date(`${from}T00:00:00`).getTime()
+  const end = new Date(`${to}T00:00:00`).getTime()
+  if (!Number.isFinite(start) || !Number.isFinite(end) || end < start) return 7
+  return Math.max(1, Math.floor((end - start) / 86_400_000) + 1)
 }
 
 export function ManagerReportsPage() {
   const [from, setFrom] = useState(sevenDaysAgo)
   const [to, setTo] = useState(today)
-  const [peakDays, setPeakDays] = useState(7)
-  const [filters, setFilters] = useState<ReportFilters>({ from: sevenDaysAgo, to: today, peakDays: 7 })
+  const [filters, setFilters] = useState<ReportFilters>({ from: sevenDaysAgo, to: today })
   const [dashboard, setDashboard] = useState<ManagerDashboardReport | null>(null)
   const [revenue, setRevenue] = useState<ManagerRevenueReport | null>(null)
   const [revenueByVehicle, setRevenueByVehicle] = useState<ManagerRevenueByVehicleReport | null>(null)
@@ -60,7 +65,7 @@ export function ManagerReportsPage() {
         managerReportsApi.getRevenueByVehicle({ from: filters.from, to: filters.to }),
         managerReportsApi.getSessions({ from: filters.from, to: filters.to }),
         managerReportsApi.getOccupancy(),
-        managerReportsApi.getPeakHours(filters.peakDays),
+        managerReportsApi.getPeakHours(getDateRangeDays(filters.from, filters.to)),
       ])
 
       setDashboard(dashboardData)
@@ -83,13 +88,8 @@ export function ManagerReportsPage() {
 
   const applyFilters = () => {
     if (from && to && from <= to) {
-      setFilters({ from, to, peakDays })
+      setFilters({ from, to })
     }
-  }
-
-  const handlePeakDaysChange = (value: number) => {
-    setPeakDays(value)
-    setFilters((current) => ({ ...current, peakDays: value }))
   }
 
   return (
@@ -103,11 +103,9 @@ export function ManagerReportsPage() {
       <ManagerReportFilters
         from={from}
         to={to}
-        peakDays={peakDays}
         loading={loading}
         onFromChange={setFrom}
         onToChange={setTo}
-        onPeakDaysChange={handlePeakDaysChange}
         onApply={applyFilters}
       />
 

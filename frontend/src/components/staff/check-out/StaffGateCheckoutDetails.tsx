@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { Search } from 'lucide-react'
+import { Banknote, CarFront, Clock3, MapPin, Search, ShieldCheck, UserRound } from 'lucide-react'
 import type { Floor } from '../../../services/managerBuildingsApi'
 import type { GateCheckoutPreview, GateSession } from '../../../services/staffGateApi'
 import { Badge } from '../../ui/badge'
@@ -27,14 +27,14 @@ export function StaffGateCheckoutDetails({
 }: StaffGateCheckoutDetailsProps) {
   if (!session) {
     return (
-      <Card className="border-dashed">
+      <Card className="border-dashed bg-muted/20 shadow-none">
         <CardHeader className="items-center text-center">
           <span className="flex size-12 items-center justify-center rounded-lg bg-muted text-muted-foreground">
             <Search className="size-5" />
           </span>
           <CardTitle>Chưa tìm thấy xe đang gửi</CardTitle>
           <CardDescription>
-            Nhập biển số hoặc mã phiên để xem thông tin và thực hiện thanh toán.
+            Nhập biển số để xem thông tin và thực hiện thanh toán.
           </CardDescription>
         </CardHeader>
       </Card>
@@ -44,27 +44,30 @@ export function StaffGateCheckoutDetails({
   const hasPrepaidBooking = Boolean(preview?.bookingId)
 
   return (
-    <Card>
-      <CardHeader>
+    <Card className="border-emerald-500/15 shadow-none">
+      <CardHeader className="border-b bg-gradient-to-r from-emerald-500/10 to-transparent pb-4">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <CardTitle className="text-2xl tracking-[0.08em]">{session.licensePlate}</CardTitle>
-            <CardDescription>Mã phiên: {session._id}</CardDescription>
+            <CardDescription className="font-semibold uppercase tracking-[0.14em]">Biển số xe</CardDescription>
+            <CardTitle className="mt-1 text-3xl font-black tracking-[0.1em]">{session.licensePlate}</CardTitle>
           </div>
           <Badge variant="secondary">Đang gửi</Badge>
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
         <dl className="grid gap-3 sm:grid-cols-2">
-          <Detail label="Loại khách" value={formatCustomerType(session.customerType)} />
-          <Detail label="Loại xe" value={formatVehicleType(session.vehicleType)} />
-          <Detail label="Vị trí" value={formatSessionSpot(session, floorMap)} />
-          <Detail label="Giờ vào" value={formatGateTime(session.entryTime)} />
+          <Detail icon={<UserRound className="size-4" />} label="Loại khách" value={formatCustomerType(session.customerType)} />
+          <Detail icon={<CarFront className="size-4" />} label="Loại xe" value={formatVehicleType(session.vehicleType)} />
+          <Detail icon={<MapPin className="size-4" />} label="Vị trí" value={formatSessionSpot(session, floorMap)} />
+          <Detail icon={<Clock3 className="size-4" />} label="Giờ vào" value={formatGateTime(session.entryTime)} />
           <Detail
+            icon={<Banknote className="size-4" />}
             label="Thu thêm tiền"
             value={isPreviewLoading ? 'Đang tính...' : formatStaffCurrency(amountToCollect)}
+            emphasis
           />
           <Detail
+            icon={<ShieldCheck className="size-4" />}
             label="Trạng thái"
             value={amountToCollect === 0 ? 'Không cần thu thêm' : 'Chờ thanh toán'}
           />
@@ -92,11 +95,11 @@ export function StaffGateCheckoutDetails({
   )
 }
 
-function Detail({ label, value }: { label: string; value: string }) {
+function Detail({ label, value, icon, emphasis = false }: { label: string; value: string; icon?: ReactNode; emphasis?: boolean }) {
   return (
-    <div className="rounded-lg border bg-muted/30 p-4">
-      <dt className="text-xs text-muted-foreground">{label}</dt>
-      <dd className="mt-1.5 font-medium">{value}</dd>
+    <div className={`rounded-xl border p-4 ${emphasis ? 'border-emerald-500/25 bg-emerald-500/10' : 'bg-muted/25'}`}>
+      <dt className="flex items-center gap-2 text-xs text-muted-foreground">{icon}{label}</dt>
+      <dd className={`mt-1.5 ${emphasis ? 'text-lg font-bold text-emerald-700 dark:text-emerald-300' : 'font-semibold'}`}>{value}</dd>
     </div>
   )
 }

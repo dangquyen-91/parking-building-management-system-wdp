@@ -6,6 +6,20 @@ export const LOST_TICKET_VEHICLE_LABELS: Record<GateVehicleType, string> = {
   car: 'Ô tô',
 }
 
+export type ManagerLostTicketStatus = 'pending' | 'completed' | 'recorded'
+
+export const LOST_TICKET_STATUS_LABELS: Record<ManagerLostTicketStatus, string> = {
+  pending: 'Chờ thanh toán',
+  completed: 'Đã xử lý',
+  recorded: 'Đã ghi nhận',
+}
+
+export const LOST_TICKET_STATUS_TONES: Record<ManagerLostTicketStatus, string> = {
+  pending: 'border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300',
+  completed: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300',
+  recorded: 'border-sky-500/30 bg-sky-500/10 text-sky-700 dark:text-sky-300',
+}
+
 export function formatLostTicketCurrency(value: number) {
   return `${value.toLocaleString('vi-VN')} VND`
 }
@@ -33,6 +47,12 @@ export function getIncidentSession(incident: ManagerIncident) {
 export function getIncidentVehicleType(incident: ManagerIncident) {
   const session = getIncidentSession(incident)
   return incident.vehicleType ?? session?.vehicleType
+}
+
+export function getLostTicketStatus(incident: ManagerIncident): ManagerLostTicketStatus {
+  const session = getIncidentSession(incident)
+  if (!session) return 'recorded'
+  return session.exitTime ? 'completed' : 'pending'
 }
 
 

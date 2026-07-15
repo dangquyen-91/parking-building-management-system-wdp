@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { ResidentSubscriptionTopNav, SubscriptionCredentialQr } from '../../components/subscription'
 import { complaintsApi } from '../../services/complaintsApi'
 import { userSubscriptionApi, type Subscription } from '../../services/userSubscriptionApi'
@@ -11,6 +11,7 @@ import {
 } from '../../utils/subscriptionUi'
 
 export function MySubscriptionsPage() {
+  const location = useLocation()
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -27,6 +28,11 @@ export function MySubscriptionsPage() {
       total: subscriptions.length,
     }
   }, [subscriptions])
+
+  const reportableSubscriptions = useMemo(
+    () => subscriptions.filter((item) => item.status === 'active' && item.slotId?._id),
+    [subscriptions],
+  )
 
   const loadSubscriptions = useCallback(async () => {
     setIsLoading(true)
@@ -46,6 +52,16 @@ export function MySubscriptionsPage() {
     const timeoutId = window.setTimeout(() => void loadSubscriptions(), 0)
     return () => window.clearTimeout(timeoutId)
   }, [loadSubscriptions])
+
+  useEffect(() => {
+    if (location.hash !== '#wrong-slot-report') return
+
+    const timeoutId = window.setTimeout(() => {
+      document.getElementById('wrong-slot-report')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }, 50)
+
+    return () => window.clearTimeout(timeoutId)
+  }, [isLoading, location.hash])
 
   async function handleCancel(subscription: Subscription) {
     if (!window.confirm(`Hủy đơn chờ thanh toán của biển số ${subscription.licensePlate}?`)) return
@@ -127,6 +143,45 @@ export function MySubscriptionsPage() {
           </div>
         )}
 
+        <section
+          id="wrong-slot-report"
+          className="mb-6 scroll-mt-24 overflow-hidden rounded-2xl border border-rose-500/25 bg-badge shadow-sm"
+        >
+          <div className="grid gap-5 bg-gradient-to-r from-rose-500/12 via-transparent to-amber-500/10 p-5 md:grid-cols-[minmax(0,1fr)_auto] md:items-center md:p-6">
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-[0.18em] text-rose-600 dark:text-rose-300">
+                Hỗ trợ tại bãi
+              </p>
+              <h2 className="mt-2 text-xl font-black text-fg">Báo xe đậu sai chỗ</h2>
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">
+                Chọn đúng ô đỗ cư dân đang bị chiếm. Sau đó nhập biển số xe vi phạm để nhân viên kiểm tra và liên hệ chủ xe.
+              </p>
+            </div>
+
+            <div className="flex min-w-0 flex-col gap-2 md:min-w-64">
+              {isLoading ? (
+                <p className="rounded-xl border border-theme bg-page px-4 py-3 text-sm text-muted">Đang kiểm tra ô đỗ...</p>
+              ) : reportableSubscriptions.length > 0 ? (
+                reportableSubscriptions.map((subscription) => (
+                  <button
+                    key={subscription._id}
+                    type="button"
+                    onClick={() => setComplaintTarget(subscription)}
+                    className="flex min-h-11 items-center justify-between gap-3 rounded-xl border border-rose-500/25 bg-page px-4 py-3 text-left text-sm font-bold text-fg transition hover:border-rose-500/50 hover:bg-rose-500/10"
+                  >
+                    <span className="truncate">Ô {subscription.slotId?.slotCode ?? '-'}</span>
+                    <span className="shrink-0 text-xs text-muted">{subscription.licensePlate} →</span>
+                  </button>
+                ))
+              ) : (
+                <p className="rounded-xl border border-theme bg-page px-4 py-3 text-sm leading-5 text-muted">
+                  Chưa có gói đang hiệu lực kèm ô đỗ riêng để gửi báo cáo.
+                </p>
+              )}
+            </div>
+          </div>
+        </section>
+
         {isLoading ? (
           <div className="rounded-xl border border-theme bg-badge p-6 text-center text-sm text-muted">Đang tải danh sách gói...</div>
         ) : subscriptions.length === 0 ? (
@@ -165,7 +220,6 @@ export function MySubscriptionsPage() {
                   key={subscription._id}
                   subscription={subscription}
                   onCancel={handleCancel}
-                  onReportWrongSlot={setComplaintTarget}
                 />
               ))}
             </div>
@@ -218,10 +272,9 @@ function StatBox({ label, value, tone }: StatBoxProps) {
 type SubscriptionCardProps = {
   subscription: Subscription
   onCancel: (subscription: Subscription) => void
-  onReportWrongSlot: (subscription: Subscription) => void
 }
 
-function SubscriptionCard({ subscription, onCancel, onReportWrongSlot }: SubscriptionCardProps) {
+function SubscriptionCard({ subscription, onCancel }: SubscriptionCardProps) {
   const floorLabel = subscription.slotId?.floorId?.floorNumber
     ? `Tầng ${subscription.slotId.floorId.floorNumber}`
     : subscription.vehicleType === 'motorcycle'
@@ -252,15 +305,6 @@ function SubscriptionCard({ subscription, onCancel, onReportWrongSlot }: Subscri
           <div className="grid gap-4 md:grid-cols-[12rem_minmax(0,1fr)] md:items-center">
             <div className="grid gap-3">
               <SubscriptionCredentialQr subscription={subscription} compact />
-              {subscription.slotId?._id && (
-                <button
-                  type="button"
-                  onClick={() => onReportWrongSlot(subscription)}
-                  className="h-10 rounded-xl border border-rose-500/30 bg-rose-500/10 px-4 text-xs font-bold text-rose-700 transition-colors hover:bg-rose-500/15 dark:text-rose-200"
-                >
-                  Báo xe đậu sai chỗ
-                </button>
-              )}
             </div>
             <div>
               <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-subtle">Thẻ cư dân QR</p>
@@ -366,10 +410,6 @@ function WrongSlotComplaintDialog({
               className="auth-input min-h-28 rounded-xl border px-4 py-3 text-sm text-fg"
             />
           </label>
-
-          <p className="rounded-xl border border-amber-400/30 bg-amber-500/10 p-3 text-xs text-amber-800 dark:text-amber-100">
-            Nếu xe đậu sai là xe cư dân trong hệ thống, backend sẽ tự gửi email cảnh báo cho chủ xe đó.
-          </p>
         </div>
 
         <div className="grid gap-3 border-t border-theme p-5 sm:grid-cols-2">

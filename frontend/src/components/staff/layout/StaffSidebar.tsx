@@ -11,7 +11,6 @@ import { NavLink } from 'react-router-dom'
 import { ThemeToggle } from '../../common'
 import { LogoIcon } from '../../common/icons'
 import { LogoutButton } from '../../common/LogoutButton'
-import { Badge } from '../../ui/badge'
 import { Card, CardContent } from '../../ui/card'
 
 const STAFF_NAV_ITEMS = [
@@ -95,9 +94,6 @@ export function StaffSidebar({ onNavigate }: StaffSidebarProps) {
       </nav>
 
       <div className="border-t p-4">
-        <Badge variant="secondary" className="mb-3 w-full justify-center">
-          Staff Console
-        </Badge>
         <LogoutButton />
       </div>
     </aside>

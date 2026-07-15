@@ -19,21 +19,21 @@ export function ManagerLostTicketFilters({
   onVehicleFilterChange,
 }: ManagerLostTicketFiltersProps) {
   return (
-    <div className="grid w-full gap-3 md:grid-cols-2 xl:w-auto xl:min-w-[34rem]">
-      <Label className="grid gap-1 text-xs font-medium text-muted-foreground">
+    <div className="grid w-full min-w-0 gap-3 sm:grid-cols-2 xl:w-auto xl:min-w-[32rem]">
+      <Label className="grid min-w-0 gap-2 text-xs font-medium text-muted-foreground">
         Tìm biển số
         <Input
-          className="h-10 rounded-lg border border-border bg-background px-3 text-sm text-foreground outline-none focus:border-ring"
+          className="h-10"
           value={query}
           onChange={(event) => onQueryChange(event.target.value)}
           placeholder="Ví dụ: 61K-424.94"
         />
       </Label>
 
-      <Label className="grid gap-1 text-xs font-medium text-muted-foreground">
+      <Label className="grid min-w-0 gap-2 text-xs font-medium text-muted-foreground">
         Loại xe
         <NativeSelect
-          className="h-10 rounded-lg border border-border bg-background px-3 text-sm text-foreground"
+          className="w-full [&_[data-slot=native-select]]:h-10"
           value={vehicleFilter}
           onChange={(event) => onVehicleFilterChange(event.target.value as ManagerLostTicketVehicleFilter)}
         >

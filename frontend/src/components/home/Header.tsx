@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { MenuIcon } from 'lucide-react'
 import { BrandLink, ThemeToggle, UserMenu } from '../common'
 import { Button } from '../ui/button'
@@ -20,6 +20,7 @@ const NAV_LINKS = [
 ] as const
 
 export function Header() {
+  const navigate = useNavigate()
   const [menuOpen, setMenuOpen] = useState(false)
   const [authUser, setAuthUser] = useState<AuthUser | undefined>(() => getStoredAuthUser())
   const [logoutStatus, setLogoutStatus] = useState<'idle' | 'loading'>('idle')
@@ -49,6 +50,7 @@ export function Header() {
       setAuthUser(undefined)
       setMenuOpen(false)
       setLogoutStatus('idle')
+      navigate('/login', { replace: true })
     }
   }
 
@@ -111,6 +113,16 @@ export function Header() {
                         <Button variant="ghost" className="justify-start" asChild>
                           <Link to="/my-bookings" onClick={() => setMenuOpen(false)}>
                             Đặt chỗ của tôi
+                          </Link>
+                        </Button>
+                        <Button variant="ghost" className="justify-start" asChild>
+                          <Link to="/my-subscriptions" onClick={() => setMenuOpen(false)}>
+                            Gói của tôi
+                          </Link>
+                        </Button>
+                        <Button variant="ghost" className="justify-start text-rose-600 dark:text-rose-300" asChild>
+                          <Link to="/my-subscriptions#wrong-slot-report" onClick={() => setMenuOpen(false)}>
+                            Báo xe đậu sai chỗ
                           </Link>
                         </Button>
                         <Button variant="ghost" className="justify-start" asChild>

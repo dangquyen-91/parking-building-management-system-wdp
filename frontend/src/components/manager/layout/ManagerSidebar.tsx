@@ -8,7 +8,7 @@ const MANAGER_NAV_ITEMS = [
   { to: '/manager', label: 'Tổng quan', detail: 'Bức tranh vận hành', icon: 'grid' },
   { to: '/manager/buildings', label: 'Tòa nhà', detail: 'Khu, tầng, sức chứa', icon: 'building' },
   { to: '/manager/slots', label: 'Chỗ đỗ', detail: 'Slot và hàng xe', icon: 'slots' },
-  { to: '/manager/bookings', label: 'Booking', detail: 'Đặt chỗ trả trước', icon: 'calendar' },
+  { to: '/manager/bookings', label: 'Lịch đặt', detail: 'Đặt chỗ trả trước', icon: 'calendar' },
   { to: '/manager/gate-logs', label: 'Hoạt động cổng', detail: 'Xe vào, xe ra', icon: 'gate' },
   { to: '/manager/lost-tickets', label: 'Mất vé', detail: 'Phạt và đối soát', icon: 'ticket' },
   { to: '/manager/complaints', label: 'Khiếu nại', detail: 'Đậu sai chỗ', icon: 'complaint' },

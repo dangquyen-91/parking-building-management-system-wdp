@@ -29,8 +29,8 @@ export function ManagerGateLogFilters({
   onCustomerFilterChange,
 }: ManagerGateLogFiltersProps) {
   return (
-    <div className="grid w-full gap-3 md:grid-cols-2 xl:w-auto xl:min-w-[58rem] xl:grid-cols-4">
-      <Label className="grid gap-1 text-xs text-muted-foreground">
+    <div className="grid w-full min-w-0 gap-3 md:grid-cols-2 xl:grid-cols-4">
+      <Label className="grid min-w-0 gap-2 text-xs font-medium text-muted-foreground">
         Tìm biển số
         <Input
           className="h-10"
@@ -40,7 +40,7 @@ export function ManagerGateLogFilters({
         />
       </Label>
 
-      <Label className="grid gap-1 text-xs text-muted-foreground">
+      <Label className="grid min-w-0 gap-2 text-xs font-medium text-muted-foreground">
         Trạng thái
         <NativeSelect
           className="w-full"
@@ -52,7 +52,7 @@ export function ManagerGateLogFilters({
         </NativeSelect>
       </Label>
 
-      <Label className="grid gap-1 text-xs text-muted-foreground">
+      <Label className="grid min-w-0 gap-2 text-xs font-medium text-muted-foreground">
         Loại xe
         <NativeSelect
           className="w-full"
@@ -65,7 +65,7 @@ export function ManagerGateLogFilters({
         </NativeSelect>
       </Label>
 
-      <Label className="grid gap-1 text-xs text-muted-foreground">
+      <Label className="grid min-w-0 gap-2 text-xs font-medium text-muted-foreground">
         Loại khách
         <NativeSelect
           className="w-full"

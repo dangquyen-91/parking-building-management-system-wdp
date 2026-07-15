@@ -1,6 +1,6 @@
-﻿import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Search } from 'lucide-react'
-import { AdminPageShell, AdminStatCard, AdminStatusBadge } from '../../components/admin'
+import { AdminPageShell, AdminStatCard, AdminStatusBadge, AdminTableShell } from '../../components/admin'
 import { adminApi, type AdminUser } from '../../services/adminApi'
 import { Badge } from '../../components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card'
@@ -8,7 +8,7 @@ import { Input } from '../../components/ui/input'
 import { Label } from '../../components/ui/label'
 import { NativeSelect, NativeSelectOption } from '../../components/ui/native-select'
 import { Skeleton } from '../../components/ui/skeleton'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table'
+import { TableCell, TableRow } from '../../components/ui/table'
 
 const roleLabels: Record<AdminUser['role'], string> = { admin: 'Admin', manager: 'Manager', staff: 'Nhân viên', user: 'Người dùng' }
 const roleDetails: Record<AdminUser['role'], string> = { admin: 'Toàn quyền quản trị và cấu hình hệ thống', manager: 'Quản lý bãi xe, nhân viên và báo cáo', staff: 'Vận hành cổng và xử lý xe vào, ra', user: 'Đặt chỗ và sử dụng gói gửi xe' }
@@ -23,9 +23,8 @@ export function UserManagementPage() {
     {error && <Card className="mb-5 border-destructive/40"><CardContent className="p-4 text-sm text-destructive">{error}</CardContent></Card>}
     <div className="grid gap-3 md:grid-cols-3"><AdminStatCard label="Tất cả tài khoản" value={isLoading ? '-' : total} detail="Người dùng, nhân viên, quản lý và admin" tone="violet" /><AdminStatCard label="Đội vận hành" value={isLoading ? '-' : operations} detail="Tài khoản quản lý và nhân viên" tone="sky" /><AdminStatCard label="Đang hoạt động" value={isLoading ? '-' : active} detail="Có thể truy cập hệ thống" tone="emerald" /></div>
     <div className="mt-5 grid gap-5 xl:grid-cols-[minmax(0,1fr)_23rem]">
-      <Card><CardHeader className="flex-row items-center justify-between"><CardTitle>Danh sách người dùng</CardTitle><Badge variant="secondary">{filtered.length} tài khoản</Badge></CardHeader><CardContent>{isLoading ? <div className="space-y-3">{Array.from({ length: 6 }, (_, i) => <Skeleton key={i} className="h-14 w-full" />)}</div> : <Table><TableHeader><TableRow><TableHead>Người dùng</TableHead><TableHead>Vai trò</TableHead><TableHead>Điện thoại</TableHead><TableHead>Ngày tạo</TableHead><TableHead>Trạng thái</TableHead></TableRow></TableHeader><TableBody>{!filtered.length ? <TableRow><TableCell colSpan={5} className="h-24 text-center text-muted-foreground">Không tìm thấy người dùng.</TableCell></TableRow> : filtered.map((user) => <TableRow key={user._id}><TableCell><div className="font-medium">{user.fullName}</div><div className="text-xs text-muted-foreground">{user.email}</div></TableCell><TableCell><Badge variant="outline">{roleLabels[user.role]}</Badge></TableCell><TableCell>{user.phone ?? '-'}</TableCell><TableCell>{user.createdAt ? new Date(user.createdAt).toLocaleString('vi-VN') : '-'}</TableCell><TableCell><AdminStatusBadge status={user.isActive ? 'active' : 'inactive'} /></TableCell></TableRow>)}</TableBody></Table>}</CardContent></Card>
+      {isLoading ? <Card><CardContent className="space-y-3 p-5">{Array.from({ length: 6 }, (_, i) => <Skeleton key={i} className="h-14 w-full" />)}</CardContent></Card> : !filtered.length ? <Card className="border-dashed"><CardContent className="p-10 text-center text-sm text-muted-foreground">Không tìm thấy người dùng.</CardContent></Card> : <AdminTableShell eyebrow="Tài khoản hệ thống" title="Danh sách người dùng" countLabel={`${filtered.length} tài khoản`} minWidth="900px" columns={[{ label: 'Người dùng', className: 'w-[30%]' }, { label: 'Vai trò', className: 'w-[15%]' }, { label: 'Điện thoại', className: 'w-[17%]' }, { label: 'Ngày tạo', className: 'w-[22%]' }, { label: 'Trạng thái', className: 'w-[16%]' }]}>{filtered.map((user) => <TableRow key={user._id}><TableCell className="px-4 py-4"><p className="font-bold">{user.fullName}</p><p className="mt-1 truncate text-xs text-muted-foreground">{user.email}</p></TableCell><TableCell className="px-4 py-4"><Badge variant="outline">{roleLabels[user.role]}</Badge></TableCell><TableCell className="px-4 py-4">{user.phone ?? '-'}</TableCell><TableCell className="px-4 py-4">{user.createdAt ? new Date(user.createdAt).toLocaleString('vi-VN') : '-'}</TableCell><TableCell className="px-4 py-4"><AdminStatusBadge status={user.isActive ? 'active' : 'inactive'} /></TableCell></TableRow>)}</AdminTableShell>}
       <Card><CardHeader><CardTitle>Ma trận vai trò</CardTitle></CardHeader><CardContent className="grid gap-3">{roles.map(({ role, users: count }) => <Card key={role} className="shadow-none"><CardContent className="flex items-start justify-between gap-3 p-4"><div><p className="font-medium">{roleLabels[role]}</p><p className="mt-1 text-xs leading-5 text-muted-foreground">{roleDetails[role]}</p></div><Badge>{count}</Badge></CardContent></Card>)}</CardContent></Card>
     </div>
   </AdminPageShell>
 }
-

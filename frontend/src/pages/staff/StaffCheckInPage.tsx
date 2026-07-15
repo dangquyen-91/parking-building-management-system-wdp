@@ -9,6 +9,7 @@ import {
 import { Alert, AlertDescription } from '../../components/ui/alert'
 import { Skeleton } from '../../components/ui/skeleton'
 import { useStaffGateController } from '../../hooks/useStaffGateController'
+import { LogIn } from 'lucide-react'
 
 export function StaffCheckInPage() {
   const gate = useStaffGateController()
@@ -18,7 +19,9 @@ export function StaffCheckInPage() {
       <StaffPageHeader
         eyebrow="Cổng đang hoạt động"
         title="Tiếp nhận xe vào"
-        description="Thực hiện theo từng bước: camera, tra cứu, xác minh QR và xác nhận xe vào bãi."
+        description="Thực hiện theo từng bước: camera, kiểm tra thông tin, xác minh QR và cho xe vào bãi. Vị trí được hệ thống tự phân bổ."
+        icon={<LogIn className="size-7" />}
+        tone="sky"
         actions={
           <StaffGateSummary
             activeCount={gate.activeSessions.length}
@@ -43,16 +46,13 @@ export function StaffCheckInPage() {
       {gate.isLoading ? (
         <Skeleton className="h-80 rounded-xl" />
       ) : (
-        <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_24rem]">
+        <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_24rem]">
           <StaffGateCheckInForm
             plate={gate.plate}
             vehicleType={gate.vehicleType}
             note={gate.note}
             lookupResult={gate.lookupResult}
             lookupMatchesPlate={gate.lookupMatchesPlate}
-            checkInCustomerType={gate.checkInCustomerType}
-            floorOptions={gate.floorOptions}
-            selectedFloorId={gate.selectedFloorId}
             isLookupLoading={gate.isLookupLoading}
             isSubmitting={gate.isSubmitting}
             canCheckIn={gate.canCheckIn}
@@ -61,7 +61,6 @@ export function StaffCheckInPage() {
             issuedWalkInQrValue={gate.issuedWalkInQrValue}
             onPlateChange={gate.handlePlateChange}
             onVehicleTypeChange={gate.handleVehicleTypeChange}
-            onFloorChange={gate.setSelectedFloorId}
             onNoteChange={gate.setNote}
             onLookup={gate.handleLookup}
             onIssueWalkInQr={gate.handleIssueWalkInQr}

@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { BrandLink, SkipLink, ThemeToggle, UserMenu } from '../../common'
 import { authApi, getStoredAuthUser, type AuthUser } from '../../../services/authApi'
 
 export function BookingTopNav() {
+  const navigate = useNavigate()
   const [authUser, setAuthUser] = useState<AuthUser | undefined>(() => getStoredAuthUser())
   const [logoutStatus, setLogoutStatus] = useState<'idle' | 'loading'>('idle')
 
@@ -31,6 +32,7 @@ export function BookingTopNav() {
     } finally {
       setAuthUser(undefined)
       setLogoutStatus('idle')
+      navigate('/login', { replace: true })
     }
   }
 

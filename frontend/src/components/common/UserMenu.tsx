@@ -70,6 +70,22 @@ export function UserMenu({
                 Đặt chỗ của tôi
               </Link>
               <Link
+                to="/my-subscriptions"
+                className="block border-t border-theme px-4 py-3 text-sm font-medium text-muted transition-colors hover:bg-sky-500/10 hover:text-sky-700 dark:hover:text-sky-100"
+                role="menuitem"
+                onClick={() => setIsOpen(false)}
+              >
+                Gói của tôi
+              </Link>
+              <Link
+                to="/my-subscriptions#wrong-slot-report"
+                className="block border-t border-theme px-4 py-3 text-sm font-medium text-muted transition-colors hover:bg-rose-500/10 hover:text-rose-700 dark:hover:text-rose-200"
+                role="menuitem"
+                onClick={() => setIsOpen(false)}
+              >
+                Báo xe đậu sai chỗ
+              </Link>
+              <Link
                 to="/profile"
                 className={[
                   'block border-t border-theme px-4 py-3 text-sm font-medium transition-colors hover:bg-sky-500/10 hover:text-sky-700 dark:hover:text-sky-100',

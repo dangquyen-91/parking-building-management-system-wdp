@@ -1,4 +1,5 @@
 import type { GateSession } from '../../../services/staffGateApi'
+import { Activity, ArrowDownLeft, ArrowUpRight } from 'lucide-react'
 import { Badge } from '../../ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../ui/card'
 import { Separator } from '../../ui/separator'
@@ -11,11 +12,11 @@ type StaffGateSessionActivityProps = {
 
 export function StaffGateSessionActivity({ sessions }: StaffGateSessionActivityProps) {
   return (
-    <Card className="border-indigo-500/15 bg-gradient-to-br from-background to-indigo-500/5">
-      <CardHeader>
-        <CardDescription>Log ca trực</CardDescription>
+    <Card className="overflow-hidden rounded-2xl border-indigo-500/15 bg-gradient-to-br from-background to-indigo-500/5 shadow-lg shadow-slate-950/5">
+      <CardHeader className="border-b bg-indigo-500/5 pb-4">
+        <CardDescription className="flex items-center gap-2 font-semibold uppercase tracking-[0.14em]"><Activity className="size-4" /> Hoạt động gần đây</CardDescription>
         <div className="flex items-end justify-between gap-3">
-          <CardTitle>Hoạt động gần đây</CardTitle>
+          <CardTitle>Tổng</CardTitle>
           <Badge variant="secondary">{sessions.length} lượt</Badge>
         </div>
       </CardHeader>
@@ -27,13 +28,15 @@ export function StaffGateSessionActivity({ sessions }: StaffGateSessionActivityP
             return (
               <div key={session._id}>
                 {index > 0 && <Separator />}
-                <div className="p-4 transition-colors hover:bg-sky-500/5">
+                <div className="relative p-4 pl-5 transition-colors hover:bg-sky-500/5">
+                  <span className={`absolute bottom-4 left-0 top-4 w-1 rounded-r-full ${isActive ? 'bg-sky-500' : 'bg-emerald-500'}`} />
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
                       <p className="truncate text-lg font-bold tracking-[0.04em]">{session.licensePlate}</p>
                       <p className="mt-1 text-xs text-muted-foreground">{formatCustomerType(session.customerType)}</p>
                     </div>
                     <Badge className={isActive ? 'border-0 bg-sky-600 text-white' : 'border-0 bg-emerald-600 text-white'}>
+                      {isActive ? <ArrowDownLeft className="size-3" /> : <ArrowUpRight className="size-3" />}
                       {isActive ? 'Xe vào' : 'Xe ra'}
                     </Badge>
                   </div>

@@ -1,37 +1,57 @@
-﻿import type { GateSession } from '../../../services/staffGateApi'
-import { ManagerGateLogCard } from './ManagerGateLogCard'
+import type { GateSession, GateSessionStatus, GateUser } from '../../../services/staffGateApi'
+import { formatCustomerType, formatSessionSpot, formatVehicleType } from '../../staff/data/staffGateUtils'
+import { TableCell, TableRow } from '@/components/ui/table'
+import { ManagerStatusBadge } from '../common/ManagerStatusBadge'
+import { ManagerTableShell } from '../common/ManagerTableShell'
 
-type ManagerGateLogListProps = {
-  sessions: GateSession[]
-  isLoading: boolean
+function formatDateTime(value: string) {
+  return new Intl.DateTimeFormat('vi-VN', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric' }).format(new Date(value))
 }
+
+function formatDuration(entryTime: string, exitTime?: string) {
+  const end = exitTime ? new Date(exitTime).getTime() : Date.now()
+  const minutes = Math.max(0, Math.floor((end - new Date(entryTime).getTime()) / 60_000))
+  const hours = Math.floor(minutes / 60)
+  return hours > 0 ? `${hours} giờ ${minutes % 60} phút` : `${minutes} phút`
+}
+
+function getStaffName(staff?: GateUser | string | null) {
+  if (!staff) return 'Không xác định'
+  return typeof staff === 'string' ? staff : staff.fullName || staff.email || 'Không xác định'
+}
+
+const STATUS_BADGE: Record<GateSessionStatus, { status: 'active' | 'checkout' | 'cancelled'; label: string }> = {
+  active: { status: 'active', label: 'Đang trong bãi' }, completed: { status: 'checkout', label: 'Đã ra' }, cancelled: { status: 'cancelled', label: 'Đã hủy' },
+}
+
+type ManagerGateLogListProps = { sessions: GateSession[]; isLoading: boolean }
 
 export function ManagerGateLogList({ sessions, isLoading }: ManagerGateLogListProps) {
-  if (isLoading) {
-    return <div className="bg-card text-card-foreground ring-1 ring-border rounded-lg p-4 text-sm text-muted-foreground">Đang tải hoạt động cổng...</div>
-  }
-
-  if (sessions.length === 0) {
-    return <div className="bg-card text-card-foreground ring-1 ring-border rounded-lg p-4 text-sm text-muted-foreground">Không có phiên gửi xe phù hợp.</div>
-  }
+  if (isLoading) return <div className="rounded-lg bg-card p-4 text-sm text-muted-foreground ring-1 ring-border">Đang tải hoạt động cổng...</div>
+  if (sessions.length === 0) return <div className="rounded-lg bg-card p-4 text-sm text-muted-foreground ring-1 ring-border">Không có phiên gửi xe phù hợp.</div>
 
   return (
-    <section className="bg-card text-card-foreground ring-1 ring-border rounded-2xl border border-border p-4 md:p-5">
-      <div className="mb-4 flex items-center justify-between gap-3">
-        <div>
-          <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Giám sát trực tiếp</p>
-          <h2 className="mt-1 text-base font-semibold text-foreground">Xe đang trong bãi</h2>
-        </div>
-        <span className="rounded-full border border-border px-3 py-1 text-xs font-semibold text-muted-foreground">
-          {sessions.length} xe
-        </span>
-      </div>
-
-      <div className="grid gap-3">
-        {sessions.map((session) => <ManagerGateLogCard key={session._id} session={session} />)}
-      </div>
-    </section>
+    <ManagerTableShell
+      eyebrow="Giám sát trực tiếp" title="Hoạt động cổng" countLabel={`${sessions.length} xe`} minWidth="1120px"
+      columns={[
+        { label: 'Biển số', className: 'w-[14%]' }, { label: 'Phân loại', className: 'w-[15%]' },
+        { label: 'Vị trí', className: 'w-[20%]' }, { label: 'Nhân viên', className: 'w-[15%]' },
+        { label: 'Thời gian', className: 'w-[20%]' }, { label: 'Trạng thái', className: 'w-[16%]' },
+      ]}
+    >
+      {sessions.map((session) => {
+        const badge = STATUS_BADGE[session.status]
+        return (
+          <TableRow key={session._id}>
+            <TableCell className="px-4 py-4"><p className="truncate font-black tracking-[0.06em] text-foreground">{session.licensePlate}</p>{session.note && <p className="mt-1 truncate text-xs text-muted-foreground" title={session.note}>{session.note}</p>}</TableCell>
+            <TableCell className="px-4 py-4"><p className="font-semibold text-foreground">{formatVehicleType(session.vehicleType)}</p><p className="mt-1 text-xs text-muted-foreground">{formatCustomerType(session.customerType)}</p></TableCell>
+            <TableCell className="px-4 py-4"><p className="line-clamp-2 whitespace-normal font-medium text-foreground" title={formatSessionSpot(session)}>{formatSessionSpot(session)}</p></TableCell>
+            <TableCell className="px-4 py-4 font-medium text-foreground">{getStaffName(session.staffId)}</TableCell>
+            <TableCell className="px-4 py-4"><p className="font-medium text-foreground">Vào {formatDateTime(session.entryTime)}</p>{session.exitTime && <p className="mt-1 text-xs text-muted-foreground">Ra {formatDateTime(session.exitTime)}</p>}</TableCell>
+            <TableCell className="px-4 py-4"><ManagerStatusBadge status={badge.status} label={badge.label} /><p className="mt-1 text-xs text-muted-foreground">{formatDuration(session.entryTime, session.exitTime)}</p></TableCell>
+          </TableRow>
+        )
+      })}
+    </ManagerTableShell>
   )
 }
-
-

@@ -31,7 +31,7 @@ export function StaffVehicleFilters({
         <Input
           value={query}
           onChange={(event) => onQueryChange(event.target.value)}
-          placeholder="Biển số, mã phiên hoặc vị trí"
+          placeholder="Biển số"
           className="uppercase tracking-wide"
         />
       </Label>

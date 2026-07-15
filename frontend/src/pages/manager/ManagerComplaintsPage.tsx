@@ -1,4 +1,3 @@
-﻿import { Button } from '@/components/ui/button'
 import { useEffect, useMemo, useState } from 'react'
 import {
   ManagerComplaintFilters,
@@ -86,13 +85,12 @@ export function ManagerComplaintsPage() {
         title="Khiếu nại đậu sai chỗ"
         description="Theo dõi phản ánh của cư dân, xem xe đang chiếm ô, liên hệ chủ xe và cập nhật tiến độ xử lý."
         actions={
-          <Button
-            type="button"
-            onClick={() => void loadComplaints()}
-            className="h-11 rounded-xl border border-border bg-card px-4 text-sm font-bold text-foreground transition hover:bg-muted"
-          >
-            Tải lại
-          </Button>
+          <ManagerComplaintFilters
+            query={query}
+            statusFilter={statusFilter}
+            onQueryChange={setQuery}
+            onStatusFilterChange={setStatusFilter}
+          />
         }
       />
 
@@ -104,13 +102,6 @@ export function ManagerComplaintsPage() {
 
       <ManagerComplaintStats stats={stats} />
 
-      <ManagerComplaintFilters
-        query={query}
-        statusFilter={statusFilter}
-        onQueryChange={setQuery}
-        onStatusFilterChange={setStatusFilter}
-      />
-
       <ManagerComplaintList
         complaints={filteredComplaints}
         isLoading={isLoading}
@@ -120,6 +111,3 @@ export function ManagerComplaintsPage() {
     </div>
   )
 }
-
-
-

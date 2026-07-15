@@ -146,7 +146,8 @@ export function ManagerBuildingCard({ building, onEdit, onEditFloor }: ManagerBu
                   <section key={group.floorNumber} className="overflow-hidden rounded-2xl border border-border bg-card/80">
                     <Button
                       type="button"
-                      className="flex w-full items-center justify-between gap-4 px-4 py-4 text-left transition hover:bg-background/50"
+                      variant="ghost"
+                      className="flex h-auto w-full items-center justify-between gap-4 rounded-none bg-transparent px-4 py-4 text-left text-foreground hover:bg-background/50 hover:text-foreground"
                       aria-expanded={isFloorOpen}
                       onClick={() => toggleFloor(group.floorNumber)}
                     >

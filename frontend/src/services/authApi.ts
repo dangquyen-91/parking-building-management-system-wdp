@@ -109,6 +109,7 @@ export function clearAuthSession() {
   localStorage.removeItem(AUTH_STORAGE_KEYS.user)
   localStorage.removeItem('token')
   localStorage.removeItem('parking_access_token')
+  window.dispatchEvent(new Event('auth-user-updated'))
 }
 
 export function getStoredAuthUser() {

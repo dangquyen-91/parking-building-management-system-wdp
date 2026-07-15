@@ -132,54 +132,44 @@ export function ManagerBuildingsPage() {
         title="Tổng quan tòa nhà"
         description="Xem chi tiết tòa nhà, danh sách tầng và tổng sức chứa."
         actions={
-          <div className="grid w-full gap-3 lg:min-w-[36rem] lg:max-w-[42rem]">
-            <div className="flex flex-col gap-3 rounded-lg border border-border bg-card/60 p-3 sm:flex-row sm:items-end sm:justify-between">
-              <div className="grid flex-1 gap-3 sm:grid-cols-2">
-                <Label className="grid gap-1 text-xs font-medium text-muted-foreground">
-                  Trạng thái
-                  <NativeSelect
-                    className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm text-foreground outline-none transition focus:border-ring"
-                    value={statusFilter}
-                    onChange={(event) => setStatusFilter(event.target.value as typeof statusFilter)}
-                  >
-                    <option value="all">Tất cả</option>
-                    <option value="active">Đang hoạt động</option>
-                    <option value="inactive">Ngừng hoạt động</option>
-                  </NativeSelect>
-                </Label>
-                <Label className="grid gap-1 text-xs font-medium text-muted-foreground">
-                  Tên tòa nhà
-                  <NativeSelect
-                    className="h-10 w-full rounded-lg border border-border bg-background px-3 text-sm text-foreground outline-none transition focus:border-ring"
-                    value={buildingFilter}
-                    onChange={(event) => setBuildingFilter(event.target.value)}
-                  >
-                    <option value="all">Tất cả</option>
-                    {summaries.map((building) => (
-                      <option key={building.id} value={building.id}>
-                        {building.name}
-                      </option>
-                    ))}
-                  </NativeSelect>
-                </Label>
-              </div>
+          <div className="w-full xl:min-w-[36rem] xl:max-w-[42rem]">
+            <div className="grid gap-3 md:grid-cols-2">
+              <Label className="grid gap-2 text-xs font-medium text-muted-foreground">
+                Trạng thái
+                <NativeSelect
+                  className="w-full"
+                  value={statusFilter}
+                  onChange={(event) => setStatusFilter(event.target.value as typeof statusFilter)}
+                >
+                  <option value="all">Tất cả</option>
+                  <option value="active">Đang hoạt động</option>
+                  <option value="inactive">Ngừng hoạt động</option>
+                </NativeSelect>
+              </Label>
+              <Label className="grid gap-2 text-xs font-medium text-muted-foreground">
+                Tên tòa nhà
+                <NativeSelect
+                  className="w-full"
+                  value={buildingFilter}
+                  onChange={(event) => setBuildingFilter(event.target.value)}
+                >
+                  <option value="all">Tất cả</option>
+                  {summaries.map((building) => (
+                    <option key={building.id} value={building.id}>
+                      {building.name}
+                    </option>
+                  ))}
+                </NativeSelect>
+              </Label>
+            </div>
 
-              <div className="flex flex-col gap-2 sm:flex-row">
-                <Button
-                  type="button"
-                  className="h-10 rounded-lg bg-primary px-4 text-sm font-semibold text-primary-foreground transition hover:opacity-90"
-                  onClick={handleOpenCreate}
-                >
-                  Tạo tòa nhà
-                </Button>
-                <Button
-                  type="button"
-                  className="h-10 rounded-lg border border-border px-4 text-sm font-semibold text-foreground transition hover:bg-card"
-                  onClick={handleOpenCreateFloor}
-                >
-                  Tạo tầng
-                </Button>
-              </div>
+            <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:justify-end">
+              <Button type="button" size="lg" onClick={handleOpenCreate}>
+                Tạo tòa nhà
+              </Button>
+              <Button type="button" variant="outline" size="lg" onClick={handleOpenCreateFloor}>
+                Tạo tầng
+              </Button>
             </div>
           </div>
         }
