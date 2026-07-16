@@ -1,5 +1,5 @@
 import type { GateSession, GateSessionStatus, GateUser } from '../../../services/staffGateApi'
-import { formatCustomerType, formatSessionSpot, formatVehicleType } from '../../staff/data/staffGateUtils'
+import { formatSessionCustomer, formatSessionSpot, formatVehicleType } from '../../staff/data/staffGateUtils'
 import { TableCell, TableRow } from '@/components/ui/table'
 import { ManagerStatusBadge } from '../common/ManagerStatusBadge'
 import { ManagerTableShell } from '../common/ManagerTableShell'
@@ -44,7 +44,7 @@ export function ManagerGateLogList({ sessions, isLoading }: ManagerGateLogListPr
         return (
           <TableRow key={session._id}>
             <TableCell className="px-4 py-4"><p className="truncate font-black tracking-[0.06em] text-foreground">{session.licensePlate}</p>{session.note && <p className="mt-1 truncate text-xs text-muted-foreground" title={session.note}>{session.note}</p>}</TableCell>
-            <TableCell className="px-4 py-4"><p className="font-semibold text-foreground">{formatVehicleType(session.vehicleType)}</p><p className="mt-1 text-xs text-muted-foreground">{formatCustomerType(session.customerType)}</p></TableCell>
+            <TableCell className="px-4 py-4"><p className="font-semibold text-foreground">{formatVehicleType(session.vehicleType)}</p><p className="mt-1 text-xs text-muted-foreground">{formatSessionCustomer(session)}</p></TableCell>
             <TableCell className="px-4 py-4"><p className="line-clamp-2 whitespace-normal font-medium text-foreground" title={formatSessionSpot(session)}>{formatSessionSpot(session)}</p></TableCell>
             <TableCell className="px-4 py-4 font-medium text-foreground">{getStaffName(session.staffId)}</TableCell>
             <TableCell className="px-4 py-4"><p className="font-medium text-foreground">Vào {formatDateTime(session.entryTime)}</p>{session.exitTime && <p className="mt-1 text-xs text-muted-foreground">Ra {formatDateTime(session.exitTime)}</p>}</TableCell>

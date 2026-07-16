@@ -5,7 +5,7 @@ import { Skeleton } from '../../ui/skeleton'
 import { TableCell, TableRow } from '../../ui/table'
 import { StaffTableShell } from '../common/StaffTableShell'
 import { formatGateTime, formatStaffCurrency } from '../data/staffGateUi'
-import { formatCustomerType, formatVehicleType } from '../data/staffGateUtils'
+import { formatSessionCustomer, formatVehicleType } from '../data/staffGateUtils'
 import { formatShiftPaymentMethod } from './staffShiftUtils'
 
 type StaffShiftCheckoutListProps = { sessions: GateSession[]; isLoading: boolean }
@@ -19,7 +19,7 @@ export function StaffShiftCheckoutList({ sessions, isLoading }: StaffShiftChecko
   ]}>
     {sessions.map((session) => <TableRow key={session._id}>
       <TableCell className="px-4 py-4 text-lg font-bold tracking-[0.06em] text-foreground">{session.licensePlate}</TableCell>
-      <TableCell className="px-4 py-4 font-medium text-foreground">{formatVehicleType(session.vehicleType)} · {formatCustomerType(session.customerType)}</TableCell>
+      <TableCell className="px-4 py-4 font-medium text-foreground">{formatVehicleType(session.vehicleType)} · {formatSessionCustomer(session)}</TableCell>
       <TableCell className="px-4 py-4 font-medium text-foreground">{formatGateTime(session.exitTime || session.entryTime)}</TableCell>
       <TableCell className="px-4 py-4 font-medium text-foreground">{formatShiftPaymentMethod(session)}</TableCell>
       <TableCell className="px-4 py-4 text-right text-base font-bold text-foreground">{formatStaffCurrency(session.fee || 0)}</TableCell>

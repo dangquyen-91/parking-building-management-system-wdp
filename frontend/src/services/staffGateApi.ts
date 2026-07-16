@@ -68,9 +68,13 @@ export type GateSession = {
   _id: string
   slotId: GateSlot | string | null
   rowId: GateRow | string | null
+  floorId?: { _id: string } | string | null
   licensePlate: string
   vehicleType: GateVehicleType
   customerType: GateCustomerType
+  bookingId?: string | null
+  prepaidHours?: number
+  prepaidAmount?: number
   entryTime: string
   exitTime?: string
   fee: number

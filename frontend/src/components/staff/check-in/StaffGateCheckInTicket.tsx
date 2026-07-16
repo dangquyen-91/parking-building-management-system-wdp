@@ -12,7 +12,7 @@ import {
   DialogTitle,
 } from '../../ui/dialog'
 import { formatGateTime } from '../data/staffGateUi'
-import { formatCustomerType, formatVehicleType } from '../data/staffGateUtils'
+import { formatSessionCustomer, formatVehicleType } from '../data/staffGateUtils'
 
 type StaffGateCheckInTicketProps = {
   session: GateSession
@@ -91,7 +91,7 @@ export function StaffGateCheckInTicket({ session, qrValue, onClose }: StaffGateC
             <dl className="mt-4 grid gap-3 sm:grid-cols-2">
               <TicketDetail icon={<Clock3 className="size-4" />} label="Thời gian vào" value={formatGateTime(session.entryTime)} />
               <TicketDetail icon={<CarFront className="size-4" />} label="Loại xe" value={formatVehicleType(session.vehicleType)} />
-              <TicketDetail icon={<UserRound className="size-4" />} label="Loại khách" value={formatCustomerType(session.customerType)} />
+              <TicketDetail icon={<UserRound className="size-4" />} label="Loại khách" value={formatSessionCustomer(session)} />
               <TicketDetail icon={<Hash className="size-4" />} label="Mã phiên" value={session._id} compact />
             </dl>
           </div>

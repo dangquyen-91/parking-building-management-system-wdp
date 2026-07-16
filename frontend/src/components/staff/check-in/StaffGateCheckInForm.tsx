@@ -73,6 +73,11 @@ export function StaffGateCheckInForm({
     lookupMatchesPlate && Boolean(lookupResult?.subscription?.vehicleType || lookupResult?.booking)
   const isResident = lookupMatchesPlate && lookupResult?.customerType === 'resident'
   const isWalkIn = lookupMatchesPlate && lookupResult?.customerType === 'walk_in'
+  const hasBooking = lookupMatchesPlate && Boolean(lookupResult?.booking)
+  // Residents and booking customers scan an existing QR (subscription / email);
+  // only plain walk-ins need a freshly issued gate ticket.
+  const useScanQr = isResident || hasBooking
+  const needIssueTicket = isWalkIn && !hasBooking
 
   useEffect(() => {
     let ignore = false
@@ -249,7 +254,13 @@ export function StaffGateCheckInForm({
           <>
             <StepIntro
               title="Bước 3: Xác minh QR"
-              description={isResident ? 'Cư dân đưa QR gói đã mua để đối chiếu với biển số camera.' : 'Khách vãng lai chỉ cần cấp vé QR, không cần quét lại ngay lúc xe vào.'}
+              description={
+                isResident
+                  ? 'Cư dân đưa QR gói đã mua để đối chiếu với biển số camera.'
+                  : hasBooking
+                    ? 'Khách đặt chỗ đưa QR trong email xác nhận để đối chiếu với biển số camera.'
+                    : 'Khách vãng lai chỉ cần cấp vé QR, không cần quét lại ngay lúc xe vào.'
+              }
             />
 
             <Card size="sm" className="border-emerald-500/20 bg-gradient-to-br from-emerald-500/5 to-transparent shadow-sm">
@@ -259,18 +270,18 @@ export function StaffGateCheckInForm({
                     <p className="text-xs text-muted-foreground">Xác minh QR cổng vào</p>
                     <h3 className="mt-1 text-base font-bold">
                       <span className="inline-flex items-center gap-2">
-                        {isResident ? <ShieldCheck className="size-4 text-emerald-600" /> : <Ticket className="size-4 text-sky-600" />}
-                        {isResident ? 'Quét QR gói cư dân' : 'Cấp vé QR vãng lai'}
+                        {useScanQr ? <ShieldCheck className="size-4 text-emerald-600" /> : <Ticket className="size-4 text-sky-600" />}
+                        {isResident ? 'Quét QR gói cư dân' : hasBooking ? 'Quét QR đặt chỗ (email)' : 'Cấp vé QR vãng lai'}
                       </span>
                     </h3>
                     <p className="mt-1 text-xs text-muted-foreground">
-                      {isResident
+                      {useScanQr
                         ? `QR phải khớp biển số camera ${lookupResult.licensePlate}. Sau khi xác minh mới cho xe vào.`
                         : `Vé QR được gắn với biển số ${lookupResult.licensePlate} và dùng để đối chiếu khi xe ra.`}
                     </p>
                   </div>
-                  <Badge variant={(isWalkIn ? issuedWalkInQrValue : entryQrValue) ? 'default' : 'secondary'}>
-                    {isWalkIn
+                  <Badge variant={(needIssueTicket ? issuedWalkInQrValue : entryQrValue) ? 'default' : 'secondary'}>
+                    {needIssueTicket
                       ? issuedWalkInQrValue
                         ? 'Đã cấp vé'
                         : 'Chưa cấp vé'
@@ -280,7 +291,7 @@ export function StaffGateCheckInForm({
                   </Badge>
                 </div>
 
-                {isWalkIn && (
+                {needIssueTicket && (
                   <div className="grid gap-3 md:grid-cols-[12rem_minmax(0,1fr)]">
                     <div className="flex min-h-44 items-center justify-center rounded-lg border bg-white p-3">
                       {issuedWalkInQrValue && walkInQrDataUrl ? (
@@ -300,10 +311,14 @@ export function StaffGateCheckInForm({
                   </div>
                 )}
 
-                {isResident && (
+                {useScanQr && (
                   <StaffGateQrScanner
-                    title="QR gói cư dân"
-                    description="Cư dân đưa QR gói đã mua để đối chiếu với biển số camera."
+                    title={isResident ? 'QR gói cư dân' : 'QR đặt chỗ (trong email)'}
+                    description={
+                      isResident
+                        ? 'Cư dân đưa QR gói đã mua để đối chiếu với biển số camera.'
+                        : 'Khách đưa QR trong email xác nhận đặt chỗ để đối chiếu với biển số camera.'
+                    }
                     verified={Boolean(entryQrValue)}
                     onScan={onEntryQrScanned}
                   />
@@ -323,7 +338,7 @@ export function StaffGateCheckInForm({
           canNext={
             (step === 1 && lookupMatchesPlate && Boolean(lookupResult))
             || (step === 2 && lookupMatchesPlate && Boolean(lookupResult))
-            || (step === 3 && (isWalkIn ? Boolean(issuedWalkInQrValue) : Boolean(entryQrValue)))
+            || (step === 3 && (needIssueTicket ? Boolean(issuedWalkInQrValue) : Boolean(entryQrValue)))
           }
           canCheckIn={canCheckIn}
           isSubmitting={isSubmitting}

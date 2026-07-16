@@ -5,7 +5,7 @@ import type { GateCheckoutPreview, GateSession } from '../../../services/staffGa
 import { Badge } from '../../ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../ui/card'
 import { formatGateTime, formatStaffCurrency } from '../data/staffGateUi'
-import { formatCustomerType, formatSessionSpot, formatVehicleType } from '../data/staffGateUtils'
+import { formatSessionCustomer, formatSessionSpot, formatVehicleType } from '../data/staffGateUtils'
 import { StaffGateCheckoutPricing } from './StaffGateCheckoutPricing'
 
 type StaffGateCheckoutDetailsProps = {
@@ -56,7 +56,7 @@ export function StaffGateCheckoutDetails({
       </CardHeader>
       <CardContent className="space-y-4">
         <dl className="grid gap-3 sm:grid-cols-2">
-          <Detail icon={<UserRound className="size-4" />} label="Loại khách" value={formatCustomerType(session.customerType)} />
+          <Detail icon={<UserRound className="size-4" />} label="Loại khách" value={formatSessionCustomer(session)} />
           <Detail icon={<CarFront className="size-4" />} label="Loại xe" value={formatVehicleType(session.vehicleType)} />
           <Detail icon={<MapPin className="size-4" />} label="Vị trí" value={formatSessionSpot(session, floorMap)} />
           <Detail icon={<Clock3 className="size-4" />} label="Giờ vào" value={formatGateTime(session.entryTime)} />
