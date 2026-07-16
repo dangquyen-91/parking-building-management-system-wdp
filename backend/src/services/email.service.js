@@ -1,8 +1,11 @@
-﻿// Brevo (Sendinblue) transactional email over HTTPS — works on hosts that
+﻿import QRCode from 'qrcode';
+
+// Brevo (Sendinblue) transactional email over HTTPS — works on hosts that
 // block outbound SMTP ports (e.g. Render free tier blocks 465/587).
 const BREVO_ENDPOINT = 'https://api.brevo.com/v3/smtp/email';
 
-const sendEmail = async ({ to, subject, htmlContent }) => {
+// attachments: [{ content: <base64 no prefix>, name: 'file.png' }]
+const sendEmail = async ({ to, subject, htmlContent, attachments }) => {
   const { BREVO_API_KEY, BREVO_SENDER_EMAIL, BREVO_SENDER_NAME } = process.env;
   if (!BREVO_API_KEY || !BREVO_SENDER_EMAIL) {
     console.warn('Email not configured (BREVO_API_KEY/BREVO_SENDER_EMAIL missing) — emails skipped');
@@ -21,6 +24,7 @@ const sendEmail = async ({ to, subject, htmlContent }) => {
       to: [{ email: to }],
       subject,
       htmlContent,
+      ...(attachments?.length ? { attachment: attachments } : {}),
     }),
   });
 
@@ -109,6 +113,10 @@ const buildHtml = (booking) => `
       <tr><td style="padding: 8px;"><b>Mã booking</b></td>
           <td style="padding: 8px;">${booking._id}</td></tr>
     </table>
+    <div style="margin-top: 16px; padding: 12px 16px; background: #e8f5e9; border-radius: 8px;">
+      <b style="color:#2e7d32;">📎 Mã QR check-in/check-out đã đính kèm email này (file qr-checkin-*.png).</b><br/>
+      <span style="color:#555;">Xuất trình mã QR này cho nhân viên khi <b>vào bãi</b> và khi <b>ra bãi</b> — dùng chung một mã cho cả lượt gửi, không cần lấy vé cổng.</span>
+    </div>
     <p style="margin-top: 16px; color: #666;">
       ⚠️ Vui lòng đến đúng giờ. Chỗ được giữ đến hết giờ ra dự kiến.
       Nếu đậu quá giờ, phụ phí sẽ thu thêm khi xe ra.
@@ -151,10 +159,17 @@ export const sendWrongSlotAlert = async ({ email, name, plate, occupiedSlot, cor
 export const sendBookingConfirmation = async (booking) => {
   if (!booking?.email) return;
   try {
+    let attachments;
+    if (booking.qrToken) {
+      const dataUrl = await QRCode.toDataURL(booking.qrToken, { errorCorrectionLevel: 'M', width: 300, margin: 2 });
+      const base64 = dataUrl.replace(/^data:image\/png;base64,/, '');
+      attachments = [{ content: base64, name: `qr-checkin-${booking.licensePlate}.png` }];
+    }
     await sendEmail({
       to: booking.email,
       subject: `Xác nhận đặt chỗ gửi xe — ${booking.licensePlate}`,
       htmlContent: buildHtml(booking),
+      attachments,
     });
     console.log('Booking confirmation email sent', { email: booking.email, bookingId: booking._id });
   } catch (err) {
