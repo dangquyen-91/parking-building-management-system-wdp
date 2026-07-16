@@ -5,11 +5,13 @@ import Floor from '../models/floor.model.js';
 import * as payosService from './payos.service.js';
 import * as emailService from './email.service.js';
 import * as pricingService from './pricing.service.js';
+import { signBookingQRToken } from '../utils/qrToken.js';
 import AppError from '../utils/appError.js';
 
 const HOUR_MS = 60 * 60 * 1000;
 const MAX_FUTURE_MS = 24 * HOUR_MS;
-const MIN_DURATION_HOURS = 1;
+const BLOCK_HOURS = 4; // bookings are sold in 4-hour blocks only
+const MIN_DURATION_HOURS = BLOCK_HOURS;
 const MAX_DURATION_HOURS = 24;
 
 const BOOKING_POPULATE = [
@@ -71,7 +73,12 @@ export const create = async ({ email, licensePlate, expectedArrivalTime, expecte
   if (exit <= arrival) {
     throw new AppError('expectedExitTime must be after expectedArrivalTime', 400);
   }
-  const durationHours = Math.ceil((exit.getTime() - arrival.getTime()) / HOUR_MS);
+  const diffMs = exit.getTime() - arrival.getTime();
+  // Only whole 4-hour blocks are allowed (4, 8, 12, 16, 20, 24h).
+  if (diffMs % (BLOCK_HOURS * HOUR_MS) !== 0) {
+    throw new AppError(`Thời lượng đặt chỗ phải là bội số của ${BLOCK_HOURS} giờ (4, 8, 12, ...).`, 400);
+  }
+  const durationHours = diffMs / HOUR_MS;
   if (durationHours < MIN_DURATION_HOURS) {
     throw new AppError(`Booking duration must be at least ${MIN_DURATION_HOURS} hour(s)`, 400);
   }
@@ -335,7 +342,12 @@ export const activateBookingFromWebhook = async (paymentId) => {
     return { alreadyProcessed: true };
   }
 
-  // Fire-and-forget confirmation email (does not block or throw)
+  // Mint a booking QR (reused at check-in + check-out, valid until exit time)
+  // so the customer can check in/out straight from the confirmation email.
+  booking.qrToken = signBookingQRToken(booking._id, booking.licensePlate);
+  await booking.save();
+
+  // Fire-and-forget confirmation email with the QR attached (does not block/throw)
   emailService.sendBookingConfirmation(booking);
 
   return { activated: true, bookingId: booking._id };

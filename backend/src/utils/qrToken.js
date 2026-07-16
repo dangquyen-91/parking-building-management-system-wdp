@@ -31,6 +31,18 @@ export const signWalkInTicket = (licensePlate) => {
   });
 };
 
+// Booking QR: minted when a booking is paid, emailed to the customer, and
+// reused at both check-in and check-out for the whole visit (valid until the
+// booking's expectedExitTime — enforced against the DB, not encoded here).
+export const signBookingQRToken = (bookingId, licensePlate) => {
+  return sign({
+    type: 'booking_entry',
+    bookingId: bookingId.toString(),
+    plate: licensePlate.toUpperCase().replace(/\s/g, ''),
+    iat: Date.now(),
+  });
+};
+
 export const verifyQRToken = (token) => {
   if (!token || typeof token !== 'string') return { valid: false, reason: 'missing_token' };
 
