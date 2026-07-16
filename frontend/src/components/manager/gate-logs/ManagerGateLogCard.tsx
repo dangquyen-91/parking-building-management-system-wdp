@@ -1,5 +1,5 @@
 ﻿import type { GateSession, GateSessionStatus, GateUser } from '../../../services/staffGateApi'
-import { formatCustomerType, formatSessionSpot, formatVehicleType } from '../../staff/data/staffGateUtils'
+import { formatSessionCustomer, formatSessionSpot, formatVehicleType } from '../../staff/data/staffGateUtils'
 import { ManagerStatusBadge } from '../common/ManagerStatusBadge'
 
 function formatDateTime(value: string) {
@@ -83,7 +83,7 @@ export function ManagerGateLogCard({ session }: ManagerGateLogCardProps) {
         <InfoCell
           label="Phân loại"
           value={formatVehicleType(session.vehicleType)}
-          subValue={formatCustomerType(session.customerType)}
+          subValue={formatSessionCustomer(session)}
         />
         <InfoCell label="Vị trí" value={spotLabel} title={spotLabel} wrap />
         <InfoCell label="Nhân viên ghi nhận" value={getStaffName(session.staffId)} />

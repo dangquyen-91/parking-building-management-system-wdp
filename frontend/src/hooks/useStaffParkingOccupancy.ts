@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { managerBuildingsApi, type Floor } from '../services/managerBuildingsApi'
-import { staffGateApi, type GateRow, type GateSlot, type GateVehicleType } from '../services/staffGateApi'
+import { staffGateApi, type GateRow, type GateSession, type GateSlot, type GateVehicleType } from '../services/staffGateApi'
 
 export type StaffParkingOccupancyItem = {
   key: string
@@ -19,6 +19,7 @@ export function useStaffParkingOccupancy() {
   const [floors, setFloors] = useState<Floor[]>([])
   const [rows, setRows] = useState<GateRow[]>([])
   const [slots, setSlots] = useState<GateSlot[]>([])
+  const [sessions, setSessions] = useState<GateSession[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const isMountedRef = useRef(true)
@@ -55,6 +56,16 @@ export function useStaffParkingOccupancy() {
       rowGroups.set(floorId, current)
     })
 
+    // Walk-in cars are counter-based on the floor (no fixed slot) → count active
+    // car sessions by floorId so visitor car floors show real occupancy.
+    const walkInCarByFloor = new Map<string, number>()
+    sessions.forEach((session) => {
+      if (session.status !== 'active' || session.vehicleType !== 'car') return
+      const floorId = getRefId(session.floorId)
+      if (!floorId) return
+      walkInCarByFloor.set(floorId, (walkInCarByFloor.get(floorId) ?? 0) + 1)
+    })
+
     return floors
       .map((floor) => {
         const building = typeof floor.buildingId === 'string' ? undefined : floor.buildingId
@@ -67,11 +78,8 @@ export function useStaffParkingOccupancy() {
         const occupied =
           floor.vehicleType === 'motorcycle'
             ? rowStats?.occupied ?? 0
-            : slotStats?.occupied ?? 0
-        const available =
-          floor.vehicleType === 'motorcycle'
-            ? Math.max(0, total - occupied)
-            : slotStats?.available ?? Math.max(0, total - occupied)
+            : (slotStats?.occupied ?? 0) + (walkInCarByFloor.get(floor._id) ?? 0)
+        const available = Math.max(0, total - occupied)
 
         return {
           key: floor._id,
@@ -93,7 +101,7 @@ export function useStaffParkingOccupancy() {
         || (a.section || '').localeCompare(b.section || '')
         || a.vehicleType.localeCompare(b.vehicleType),
       )
-  }, [floors, rows, slots])
+  }, [floors, rows, slots, sessions])
 
   const totals = useMemo(
     () => ({
@@ -109,16 +117,18 @@ export function useStaffParkingOccupancy() {
     setError(null)
 
     try {
-      const [floorResponse, rowResponse, slotResponse] = await Promise.all([
+      const [floorResponse, rowResponse, slotResponse, sessionResponse] = await Promise.all([
         managerBuildingsApi.getFloors({ limit: 300, sort: 'floorNumber', order: 'asc' }),
         staffGateApi.getRows({ limit: 500 }),
         staffGateApi.getSlots({ limit: 500 }),
+        staffGateApi.getActiveSessions({ limit: 500 }),
       ])
 
       if (!isMountedRef.current) return
       setFloors(floorResponse.floors ?? [])
       setRows(rowResponse.rows ?? [])
       setSlots(slotResponse.slots ?? [])
+      setSessions(sessionResponse.sessions ?? [])
     } catch (err) {
       if (!isMountedRef.current) return
       setError(err instanceof Error ? err.message : 'Không tải được dữ liệu sức chứa bãi xe.')

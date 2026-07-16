@@ -6,7 +6,7 @@ import { formatStaffVehicleDateTime, formatStaffVehicleDuration } from '../../..
 import { Badge } from '../../ui/badge'
 import { Button } from '../../ui/button'
 import { Card, CardContent } from '../../ui/card'
-import { formatCustomerType, formatSessionSpot, formatVehicleType } from '../data/staffGateUtils'
+import { formatSessionCustomer, formatSessionSpot, formatVehicleType, isSessionBookingOvertime } from '../data/staffGateUtils'
 
 type StaffVehicleCardProps = {
   session: GateSession
@@ -35,9 +35,20 @@ export function StaffVehicleCard({ session, floorMap, onCheckout }: StaffVehicle
         <InfoBlock label="Phân loại">
           <div className="flex flex-wrap gap-1.5">
             <Badge variant="secondary">{formatVehicleType(session.vehicleType)}</Badge>
-            <Badge variant={session.customerType === 'resident' ? 'default' : 'outline'}>
-              {formatCustomerType(session.customerType)}
+            <Badge
+              variant={
+                session.customerType === 'resident'
+                  ? 'default'
+                  : session.bookingId
+                    ? 'secondary'
+                    : 'outline'
+              }
+            >
+              {formatSessionCustomer(session)}
             </Badge>
+            {isSessionBookingOvertime(session) && (
+              <Badge variant="destructive">Quá giờ · vãng lai</Badge>
+            )}
           </div>
         </InfoBlock>
 
