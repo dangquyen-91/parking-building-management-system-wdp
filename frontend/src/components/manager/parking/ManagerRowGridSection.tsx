@@ -68,7 +68,7 @@ export function ManagerRowGridSection({
         </div>
       </div>
 
-      <div className="grid gap-3 p-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+      <div className="grid gap-3 p-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
         {rows.map((row) => {
           const availableCount = Math.max(0, row.capacity - row.occupiedCount)
           const percent = row.capacity > 0 ? Math.min(100, Math.round((row.occupiedCount / row.capacity) * 100)) : 0
@@ -76,11 +76,11 @@ export function ManagerRowGridSection({
           return (
             <article
               key={row._id}
-              className="group flex min-h-44 flex-col rounded-xl border border-border bg-background/70 p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+              className="group flex min-h-36 flex-col rounded-xl border border-border bg-background/70 p-3 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
             >
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <p className="text-lg font-black text-foreground">{row.rowCode}</p>
+                  <p className="text-base font-black text-foreground">{row.rowCode}</p>
                   <p className="mt-1 text-xs font-semibold text-muted-foreground">
                     {row.occupiedCount}/{row.capacity} đang dùng
                   </p>
@@ -88,24 +88,24 @@ export function ManagerRowGridSection({
                 <ManagerStatusBadge status={row.status} label={ROW_STATUS_LABELS[row.status]} />
               </div>
 
-              <div className="mt-4">
-                <div className="h-3 overflow-hidden rounded-full bg-card">
+              <div className="mt-3">
+                <div className="h-2 overflow-hidden rounded-full bg-card">
                   <div className="h-full rounded-full bg-gradient-to-r from-primary to-cyan-400" style={{ width: `${percent}%` }} />
                 </div>
                 <p className="mt-2 text-[11px] font-semibold text-muted-foreground">{ROW_STATUS_DETAILS[row.status]}</p>
               </div>
 
-              <div className="mt-4 grid grid-cols-2 gap-2 text-xs text-muted-foreground">
+              <div className="mt-3 grid grid-cols-2 gap-x-2 gap-y-1 text-xs text-muted-foreground">
                 <span>Còn trống</span>
                 <span className="text-right font-black text-foreground">{availableCount}</span>
                 <span>Sức chứa</span>
                 <span className="text-right font-black text-foreground">{row.capacity}</span>
               </div>
 
-              {row.note && <p className="mt-3 text-xs leading-relaxed text-muted-foreground">{row.note}</p>}
+              {row.note && <p className="mt-2 line-clamp-2 text-xs leading-relaxed text-muted-foreground">{row.note}</p>}
 
-              <div className="mt-auto flex items-center justify-end border-t border-border pt-3 text-xs">
-                <Button type="button" variant="outline" size="sm" onClick={() => onEdit(row)}>
+              <div className="mt-2 flex items-center justify-end border-t border-border pt-2 text-xs">
+                <Button type="button" variant="outline" size="sm" className="h-8 px-3" onClick={() => onEdit(row)}>
                   Sửa
                 </Button>
               </div>

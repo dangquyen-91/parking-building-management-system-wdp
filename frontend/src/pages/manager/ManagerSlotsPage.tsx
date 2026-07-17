@@ -246,7 +246,8 @@ export function ManagerSlotsPage() {
             <div className="flex flex-col-reverse gap-3 p-5 sm:flex-row sm:justify-end">
               <Button
                 type="button"
-                className="h-11 rounded-xl border border-border px-5 text-sm font-bold text-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-60"
+                variant="outline"
+                className="h-11 rounded-xl px-5 text-sm font-bold text-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-60"
                 onClick={() => setSlotPendingDelete(null)}
                 disabled={isDeletingSlot}
               >

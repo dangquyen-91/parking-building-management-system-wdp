@@ -13,6 +13,19 @@ export type StaffParkingOccupancyItem = {
   occupied: number
   available: number
   utilizationPercent: number
+  slotDetails: Array<{
+    id: string
+    code: string
+    status: GateSlot['status']
+    licensePlate?: string
+  }>
+  rowDetails: Array<{
+    id: string
+    code: string
+    status: GateRow['status']
+    capacity: number
+    occupied: number
+  }>
 }
 
 export function useStaffParkingOccupancy() {
@@ -59,8 +72,12 @@ export function useStaffParkingOccupancy() {
     // Walk-in cars are counter-based on the floor (no fixed slot) → count active
     // car sessions by floorId so visitor car floors show real occupancy.
     const walkInCarByFloor = new Map<string, number>()
+    const activeSessionBySlot = new Map<string, GateSession>()
     sessions.forEach((session) => {
-      if (session.status !== 'active' || session.vehicleType !== 'car') return
+      if (session.status !== 'active') return
+      const slotId = getRefId(session.slotId)
+      if (slotId) activeSessionBySlot.set(slotId, session)
+      if (session.vehicleType !== 'car') return
       const floorId = getRefId(session.floorId)
       if (!floorId) return
       walkInCarByFloor.set(floorId, (walkInCarByFloor.get(floorId) ?? 0) + 1)
@@ -92,6 +109,29 @@ export function useStaffParkingOccupancy() {
           occupied,
           available,
           utilizationPercent: total > 0 ? Math.round((occupied / total) * 100) : 0,
+          slotDetails:
+            floor.vehicleType === 'car' && floor.floorType === 'resident'
+              ? slots
+                  .filter((slot) => getRefId(slot.floorId) === floor._id)
+                  .map((slot) => ({
+                    id: slot._id,
+                    code: slot.slotCode,
+                    status: slot.status,
+                    licensePlate: activeSessionBySlot.get(slot._id)?.licensePlate,
+                  }))
+              : [],
+          rowDetails:
+            floor.vehicleType === 'motorcycle'
+              ? rows
+                  .filter((row) => getRefId(row.floorId) === floor._id)
+                  .map((row) => ({
+                    id: row._id,
+                    code: row.rowCode,
+                    status: row.status,
+                    capacity: row.capacity,
+                    occupied: row.occupiedCount,
+                  }))
+              : [],
         }
       })
       .filter((item) => item.total > 0)
