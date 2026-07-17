@@ -40,6 +40,15 @@ export type LoginPayload = {
   password: string;
 };
 
+export type VerifyEmailPayload = {
+  email: string;
+  otp: string;
+};
+
+export type ResendVerificationPayload = {
+  email: string;
+};
+
 export type RegisterPayload = {
   fullName: string;
   email: string;

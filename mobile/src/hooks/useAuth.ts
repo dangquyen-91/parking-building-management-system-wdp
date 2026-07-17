@@ -8,7 +8,9 @@ import {
   logout,
   removeMyVehicle,
   register,
+  resendVerification,
   updateMyProfile,
+  verifyEmail,
 } from "@/lib/auth";
 
 export const useCurrentUserQuery = () =>
@@ -33,6 +35,16 @@ export const useRegisterMutation = () =>
     mutationFn: register,
   });
 
+export const useVerifyEmailMutation = () =>
+  useMutation({
+    mutationFn: verifyEmail,
+  });
+
+export const useResendVerificationMutation = () =>
+  useMutation({
+    mutationFn: resendVerification,
+  });
+
 export const useLogoutMutation = () => {
   const queryClient = useQueryClient();
 
@@ -41,6 +53,7 @@ export const useLogoutMutation = () => {
     onSettled: () => {
       queryClient.setQueryData(authKeys.currentUser, null);
       queryClient.removeQueries({ queryKey: ["bookings"] });
+      queryClient.removeQueries({ queryKey: ["complaints"] });
       queryClient.removeQueries({ queryKey: ["subscriptions"] });
     },
   });

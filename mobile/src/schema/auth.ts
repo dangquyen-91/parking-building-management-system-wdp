@@ -31,6 +31,26 @@ export const loginPayloadSchema = z.object({
   password: z.string().min(1, "Mật khẩu là bắt buộc."),
 });
 
+export const verifyEmailPayloadSchema = z.object({
+  email: z
+    .string()
+    .trim()
+    .min(1, "Email là bắt buộc.")
+    .email("Vui lòng nhập địa chỉ email hợp lệ."),
+  otp: z
+    .string()
+    .trim()
+    .regex(/^\d{6}$/, "Mã OTP phải gồm đúng 6 chữ số."),
+});
+
+export const resendVerificationPayloadSchema = z.object({
+  email: z
+    .string()
+    .trim()
+    .min(1, "Email là bắt buộc.")
+    .email("Vui lòng nhập địa chỉ email hợp lệ."),
+});
+
 export const registerPayloadSchema = z.object({
   fullName: z.string().trim().min(1, "Họ và tên là bắt buộc."),
   email: z

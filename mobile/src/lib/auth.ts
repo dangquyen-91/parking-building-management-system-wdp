@@ -10,8 +10,10 @@ import type {
   AuthSession,
   LoginPayload,
   RegisterPayload,
+  ResendVerificationPayload,
   UpdateProfilePayload,
   User,
+  VerifyEmailPayload,
 } from "@/types/auth";
 
 export const authKeys = {
@@ -50,6 +52,18 @@ export const login = async (payload: LoginPayload) => {
 
 export const register = (payload: RegisterPayload) =>
   apiRequest<{ user: User }>("/auth/register", {
+    method: "POST",
+    data: payload,
+  });
+
+export const verifyEmail = (payload: VerifyEmailPayload) =>
+  apiRequest<null>("/auth/verify-email", {
+    method: "POST",
+    data: payload,
+  });
+
+export const resendVerification = (payload: ResendVerificationPayload) =>
+  apiRequest<null>("/auth/resend-verification", {
     method: "POST",
     data: payload,
   });

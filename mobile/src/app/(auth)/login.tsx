@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Ionicons from "react-native-vector-icons/Ionicons";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { toast } from "sonner-native";
 import { AppRefreshControl } from "@/components/common/refresh-control";
 import { useLoginMutation } from "@/hooks/useAuth";
+import { ApiError } from "@/lib/api";
+import { getHomeRouteForRole } from "@/lib/role-navigation";
 import { loginPayloadSchema } from "@/schema";
 import { getFieldErrors } from "@/utils/validation";
 import {
@@ -18,17 +20,45 @@ import {
 
 type LoginField = "email" | "password";
 
+type LoginParams = {
+  email?: string | string[];
+};
+
+const getSingleParam = (value?: string | string[]) =>
+  typeof value === "string" ? value : "";
+
+const isEmailVerificationRequiredError = (error: unknown) => {
+  if (!(error instanceof ApiError) || error.status !== 403) {
+    return false;
+  }
+
+  const normalizedMessage = error.message.toLowerCase();
+  return (
+    normalizedMessage.includes("xác thực") ||
+    normalizedMessage.includes("verify") ||
+    normalizedMessage.includes("otp")
+  );
+};
+
 export default function Login() {
   const { iconMuted, iconPrimary, placeholder } = useThemeColors();
-  const [email, setEmail] = useState("");
+  const params = useLocalSearchParams<LoginParams>();
+  const routeEmail = getSingleParam(params.email).trim();
+  const [email, setEmail] = useState(routeEmail);
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState<Partial<Record<LoginField, string>>>({});
   const loginMutation = useLoginMutation();
   const [isRefreshing, setIsRefreshing] = useState(false);
 
+  useEffect(() => {
+    if (routeEmail) {
+      setEmail(routeEmail);
+    }
+  }, [routeEmail]);
+
   const resetFormState = () => {
-    setEmail("");
+    setEmail(routeEmail);
     setPassword("");
     setShowPassword(false);
     setErrors({});
@@ -45,12 +75,23 @@ export default function Login() {
     setErrors({});
 
     try {
-      await loginMutation.mutateAsync(validation.data);
+      const session = await loginMutation.mutateAsync(validation.data);
       toast.success("Đăng nhập thành công", {
         description: "Chào mừng bạn quay trở lại.",
       });
-      router.replace("/(tabs)/home");
+      router.replace(getHomeRouteForRole(session.user.role));
     } catch (error) {
+      if (isEmailVerificationRequiredError(error)) {
+        toast.info("Email chưa được xác thực", {
+          description: "Nhập mã OTP để hoàn tất xác thực rồi đăng nhập lại.",
+        });
+        router.push({
+          pathname: "/(auth)/verify-email",
+          params: { email: validation.data.email },
+        });
+        return;
+      }
+
       toast.error("Đăng nhập thất bại", {
         description: error instanceof Error ? error.message : "Vui lòng thử lại.",
       });
