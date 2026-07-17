@@ -85,7 +85,7 @@ export function useStaffGateController() {
   // Walk-ins WITHOUT a booking need a fresh gate ticket; residents and booking
   // customers instead scan an existing QR (subscription / booking email).
   const needsIssuedTicket =
-    Boolean(lookupResult) && lookupResult.customerType === 'walk_in' && !lookupResult.booking
+    lookupResult !== null && lookupResult.customerType === 'walk_in' && !lookupResult.booking
 
   const canCheckIn =
     lookupMatchesPlate &&

@@ -122,7 +122,12 @@ export function ManagerRowFormModal({
             </h2>
             <p className="mt-2 text-xs text-muted-foreground">Quản lý mã hàng, sức chứa và ghi chú.</p>
           </div>
-          <Button type="button" className="text-xs text-muted-foreground hover:text-foreground" onClick={onClose}>
+          <Button
+            type="button"
+            variant="outline"
+            className="h-10 rounded-xl px-4 text-sm font-semibold text-foreground"
+            onClick={onClose}
+          >
             Đóng
           </Button>
         </div>
@@ -188,7 +193,8 @@ export function ManagerRowFormModal({
           <div className="flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-end">
             <Button
               type="button"
-              className="h-10 rounded-lg border border-border px-4 text-sm text-muted-foreground hover:text-foreground"
+              variant="outline"
+              className="h-10 rounded-lg px-5 text-sm font-semibold text-foreground"
               onClick={onClose}
             >
               Hủy

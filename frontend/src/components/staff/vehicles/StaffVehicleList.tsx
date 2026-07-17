@@ -22,7 +22,7 @@ export function StaffVehicleList({ sessions, floorMap, isLoading, error, onCheck
     { label: 'Biển số', className: 'w-[18%]' }, { label: 'Phân loại', className: 'w-[19%]' }, { label: 'Vị trí hiện tại', className: 'w-[27%]' }, { label: 'Thời gian gửi', className: 'w-[22%]' }, { label: 'Thao tác', className: 'w-[14%] text-right' },
   ]}>
     {sessions.map((session) => <TableRow key={session._id}>
-      <TableCell className="px-4 py-4 text-lg font-black tracking-[0.06em] text-sky-700 dark:text-sky-300">{session.licensePlate}</TableCell>
+      <TableCell className="px-4 py-4 text-lg font-black tracking-[0.06em] text-foreground">{session.licensePlate}</TableCell>
       <TableCell className="px-4 py-4"><div className="flex flex-wrap gap-1.5"><Badge variant="secondary">{formatVehicleType(session.vehicleType)}</Badge><Badge variant={session.customerType === 'resident' ? 'default' : session.bookingId ? 'secondary' : 'outline'}>{formatSessionCustomer(session)}</Badge>{isSessionBookingOvertime(session) && <Badge variant="destructive">Quá giờ · vãng lai</Badge>}</div></TableCell>
       <TableCell className="px-4 py-4"><p className="line-clamp-2 whitespace-normal font-medium text-foreground" title={formatSessionSpot(session, floorMap)}>{formatSessionSpot(session, floorMap)}</p></TableCell>
       <TableCell className="px-4 py-4"><p className="font-medium text-foreground">{formatStaffVehicleDateTime(session.entryTime)}</p><p className="mt-1 text-xs text-muted-foreground">Đã gửi {formatStaffVehicleDuration(session.entryTime)}</p></TableCell>
