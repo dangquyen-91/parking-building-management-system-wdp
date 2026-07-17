@@ -32,6 +32,13 @@ const FEATURES = [
   },
 ] as const
 
+const CARD_TONES = [
+  'from-sky-500/34 ring-sky-500/45 hover:ring-sky-600/70 hover:shadow-sky-500/30',
+  'from-violet-500/34 ring-violet-500/45 hover:ring-violet-600/70 hover:shadow-violet-500/30',
+  'from-emerald-500/34 ring-emerald-500/45 hover:ring-emerald-600/70 hover:shadow-emerald-500/30',
+  'from-amber-500/34 ring-amber-500/45 hover:ring-amber-600/70 hover:shadow-amber-500/30',
+] as const
+
 export function FeaturesSection() {
   const ref = useRef<HTMLDivElement>(null)
   const inView = useInView(ref, { once: true, margin: '-10% 0px' })
@@ -59,7 +66,8 @@ export function FeaturesSection() {
             variants={reduceMotion ? undefined : scaleIn}
             className={feature.size}
           >
-            <Card className="h-full min-h-56 transition-shadow hover:shadow-md">
+            <Card className={`relative h-full min-h-56 rounded-2xl bg-gradient-to-br via-card to-card shadow-lg shadow-transparent ring-1 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl ${CARD_TONES[index]}`}>
+              <span className="absolute right-5 top-5 size-16 rounded-full bg-current opacity-[0.04] blur-xl" aria-hidden="true" />
               <CardHeader>
                 <Badge className="w-fit" variant="secondary">{feature.tag}</Badge>
                 <CardTitle className="text-2xl">{feature.title}</CardTitle>

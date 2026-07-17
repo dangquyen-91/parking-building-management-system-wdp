@@ -2,7 +2,10 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
-@custom-variant dark (&:is(.dark *));
+/* ThemeProvider toggles data-theme on <html>, so Tailwind's dark: variant
+   must follow that same source of truth. Keep .dark support for third-party
+   components that may still add the conventional class. */
+@custom-variant dark (&:where(.dark, .dark *, [data-theme="dark"], [data-theme="dark"] *));
 
 @theme {
   --font-sans: "Inter", "Helvetica Neue", Arial, sans-serif;
@@ -19,6 +22,7 @@
 :root,
 [data-theme="dark"] {
   color-scheme: dark;
+  --radius: 0.625rem;
   --page-bg: #121212;
   --surface: #161616;
   --surface-alt: #1c1c1c;
@@ -74,6 +78,7 @@
 
 [data-theme="light"] {
   color-scheme: light;
+  --radius: 0.625rem;
   --page-bg: #e4e4e7;
   --surface: #ededf0;
   --surface-alt: #e8e8eb;

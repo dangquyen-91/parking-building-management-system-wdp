@@ -34,7 +34,7 @@ export function HomePage() {
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen bg-white text-slate-950 dark:bg-[linear-gradient(145deg,#150f2b_0%,#111a32_48%,#082a2a_100%)] dark:text-foreground">
       <SkipLink />
       <Header />
       <main id="main" tabIndex={-1}>

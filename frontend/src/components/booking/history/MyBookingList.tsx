@@ -33,7 +33,7 @@ export function MyBookingList({ bookings }: { bookings: Booking[] }) {
   return (
     <section className="overflow-hidden rounded-[1.75rem] border border-white/70 bg-white/80 p-4 shadow-[0_24px_60px_-35px_rgba(30,64,175,0.55)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/65 md:p-5">
       <div className="hidden grid-cols-[1.1fr_1fr_1.1fr_0.8fr_0.8fr] gap-4 border-b border-violet-100 px-4 pb-4 text-xs font-bold uppercase tracking-[0.14em] text-violet-500 dark:border-violet-900/60 dark:text-violet-300 lg:grid">
-        <span>Đặt chỗ</span>
+        <span>Liên hệ</span>
         <span>Xe</span>
         <span>Lịch</span>
         <span>Số tiền</span>
@@ -48,10 +48,7 @@ export function MyBookingList({ bookings }: { bookings: Booking[] }) {
           >
             <span className={`absolute inset-y-0 left-0 w-1.5 ${STATUS_STRIPES[booking.status]}`} />
             <div>
-              <p className="break-all text-xs font-bold text-violet-700 dark:text-violet-300">
-                #{booking._id.slice(-8).toUpperCase()}
-              </p>
-              <p className="mt-1 text-xs text-subtle">{booking.phoneNumber}</p>
+              <p className="text-sm font-semibold text-fg">{booking.phoneNumber}</p>
             </div>
 
             <div>

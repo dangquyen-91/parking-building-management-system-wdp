@@ -1,4 +1,5 @@
-import { Link } from 'react-router-dom'
+import { ChevronDown } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
 import type { UserVehicle } from '../../../services/authApi'
 import type { VehicleType } from '../../../services/userSubscriptionApi'
 import { VEHICLE_LABELS } from '../../../utils/subscriptionUi'
@@ -22,8 +23,22 @@ export function ResidentSubscriptionForm({
   lockedVehicleType = false,
   selectedPlanName,
 }: ResidentSubscriptionFormProps) {
+  const [isVehicleListOpen, setIsVehicleListOpen] = useState(false)
+  const comboboxRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    function closeOnOutsideClick(event: MouseEvent) {
+      if (!comboboxRef.current?.contains(event.target as Node)) {
+        setIsVehicleListOpen(false)
+      }
+    }
+
+    document.addEventListener('mousedown', closeOnOutsideClick)
+    return () => document.removeEventListener('mousedown', closeOnOutsideClick)
+  }, [])
+
   return (
-    <section className="liquid-glass-card overflow-hidden rounded-2xl">
+    <section className="liquid-glass-card !overflow-visible rounded-2xl">
       <div className="border-b border-theme bg-gradient-to-r from-sky-500/15 via-transparent to-transparent p-5 md:p-6">
         <div className="flex items-center gap-3">
           <span className="flex size-11 items-center justify-center rounded-xl bg-sky-500 text-sm font-black text-white shadow-lg shadow-sky-500/20">
@@ -38,8 +53,8 @@ export function ResidentSubscriptionForm({
         </div>
         <p className="mt-2 text-sm text-muted">
           {lockedVehicleType
-            ? 'Gói và loại xe đã được chọn sẵn. Chọn một biển số đã lưu trong hồ sơ để tiếp tục.'
-            : 'Chọn loại phương tiện và biển số đã lưu để xem các gói cư dân phù hợp.'}
+            ? 'Gói và loại xe đã được chọn sẵn. Nhập biển số mới hoặc chọn một biển số đã lưu để tiếp tục.'
+            : 'Chọn loại phương tiện, sau đó nhập hoặc chọn biển số để xem các gói cư dân phù hợp.'}
         </p>
       </div>
 
@@ -73,40 +88,68 @@ export function ResidentSubscriptionForm({
           </div>
         )}
 
-        {registeredVehicles.length > 0 ? (
-          <label className="grid gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-subtle">
-            Biển số xe đã đăng ký
-            <select
-              className="auth-input h-14 rounded-xl border px-4 text-base font-black uppercase tracking-[0.08em] text-fg"
+        <div className="grid gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-subtle">
+          <label htmlFor="subscription-license-plate">Biển số xe</label>
+          <div ref={comboboxRef} className="relative">
+            <input
+              id="subscription-license-plate"
+              type="text"
+              role="combobox"
+              aria-autocomplete="list"
+              aria-expanded={isVehicleListOpen}
+              aria-controls="registered-license-plates"
+              className="auth-input h-14 w-full rounded-xl border px-4 pr-14 text-base font-black uppercase tracking-[0.08em] text-fg placeholder:font-semibold placeholder:tracking-normal placeholder:text-subtle"
               value={licensePlate}
-              onChange={(event) => onLicensePlateChange(event.target.value)}
+              onChange={(event) => onLicensePlateChange(event.target.value.toUpperCase())}
+              onKeyDown={(event) => {
+                if (event.key === 'ArrowDown') setIsVehicleListOpen(true)
+                if (event.key === 'Escape') setIsVehicleListOpen(false)
+              }}
+              placeholder="Nhập hoặc chọn biển số xe"
+              autoComplete="off"
               required
+            />
+            <button
+              type="button"
+              aria-label="Mở danh sách biển số đã lưu"
+              aria-expanded={isVehicleListOpen}
+              onClick={() => setIsVehicleListOpen((open) => !open)}
+              className="absolute inset-y-0 right-0 flex w-14 items-center justify-center rounded-r-xl text-muted transition-colors hover:bg-ghost hover:text-fg"
             >
-              <option value="">Chọn biển số xe</option>
-              {registeredVehicles.map((vehicle) => (
-                <option key={vehicle._id} value={vehicle.licensePlate}>
-                  {vehicle.licensePlate} — {VEHICLE_LABELS[vehicle.vehicleType]}
-                </option>
-              ))}
-            </select>
-            <span className="text-[11px] font-normal normal-case tracking-normal text-muted">
-              Chỉ hiển thị phương tiện phù hợp với loại gói đang chọn.
-            </span>
-          </label>
-        ) : (
-          <div className="rounded-xl border border-dashed border-amber-500/40 bg-amber-500/10 p-5">
-            <p className="text-sm font-bold text-fg">Chưa có biển số {VEHICLE_LABELS[vehicleType].toLowerCase()}</p>
-            <p className="mt-1 text-xs leading-5 text-muted">
-              Bạn cần thêm biển số phù hợp vào hồ sơ trước khi đăng ký gói này.
-            </p>
-            <Link
-              to="/profile"
-              className="mt-4 inline-flex h-10 items-center justify-center rounded-lg bg-amber-600 px-4 text-sm font-bold text-white transition hover:bg-amber-700"
-            >
-              Thêm biển số tại hồ sơ
-            </Link>
+              <ChevronDown className={`size-5 transition-transform ${isVehicleListOpen ? 'rotate-180' : ''}`} aria-hidden="true" />
+            </button>
+
+            {isVehicleListOpen && (
+              <div
+                id="registered-license-plates"
+                role="listbox"
+                className="absolute top-full z-30 mt-2 max-h-60 w-full overflow-y-auto rounded-xl border border-theme-strong bg-surface p-1.5 text-fg shadow-2xl"
+              >
+                {registeredVehicles.length > 0 ? registeredVehicles.map((vehicle) => (
+                  <button
+                    key={vehicle._id}
+                    type="button"
+                    role="option"
+                    aria-selected={licensePlate === vehicle.licensePlate}
+                    onClick={() => {
+                      onLicensePlateChange(vehicle.licensePlate)
+                      setIsVehicleListOpen(false)
+                    }}
+                    className="flex w-full items-center justify-between rounded-lg px-4 py-3 text-left text-sm transition-colors hover:bg-ghost"
+                  >
+                    <span className="font-black uppercase tracking-[0.08em]">{vehicle.licensePlate}</span>
+                    <span className="text-xs font-normal normal-case tracking-normal text-muted">{VEHICLE_LABELS[vehicle.vehicleType]}</span>
+                  </button>
+                )) : (
+                  <p className="px-4 py-3 text-xs font-normal normal-case tracking-normal text-muted">Chưa có biển số phù hợp đã lưu.</p>
+                )}
+              </div>
+            )}
           </div>
-        )}
+          <span className="text-[11px] font-normal normal-case tracking-normal text-muted">
+            Nhập biển số mới hoặc chọn một biển số {VEHICLE_LABELS[vehicleType].toLowerCase()} đã lưu từ danh sách gợi ý.
+          </span>
+        </div>
       </div>
     </section>
   )
