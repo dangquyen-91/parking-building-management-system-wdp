@@ -7,6 +7,7 @@ import {
   BookingPaymentPanel,
   BookingSummary,
   BookingTopNav,
+  CAR_BLOCK_HOURS,
   computeBookingAmount,
   normalizeBookingPlate,
   toDateTimeLocalValue,
@@ -28,7 +29,7 @@ export function BookingPage() {
   const [phoneNumber, setPhoneNumber] = useState('')
   const [licensePlate, setLicensePlate] = useState('')
   const [expectedArrivalTime, setExpectedArrivalTime] = useState(defaultArrival)
-  const [durationHours, setDurationHours] = useState(2)
+  const [durationHours, setDurationHours] = useState(CAR_BLOCK_HOURS)
   const [createdBooking, setCreatedBooking] = useState<Booking | null>(null)
   const [payment, setPayment] = useState<BookingPayment | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)

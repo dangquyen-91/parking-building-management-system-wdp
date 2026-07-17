@@ -6,6 +6,7 @@ import Subscription from '../models/subscription.model.js';
 import Payment from '../models/payment.model.js';
 import User from '../models/user.model.js';
 import Incident from '../models/incident.model.js';
+import Booking from '../models/booking.model.js';
 import * as pricingService from './pricing.service.js';
 import * as payosService from './payos.service.js';
 import * as bookingService from './booking.service.js';
@@ -104,6 +105,21 @@ export const checkIn = async ({ slotId, rowId, licensePlate, vehicleType, staffI
         `Biển số trên QR (${payload.plate}) không khớp biển số camera (${normalizedPlate}).`,
         400
       );
+    }
+  } else if (payload.type === 'booking_entry') {
+    // Walk-in with a prepaid booking presents the QR from their email.
+    if (payload.plate !== normalizedPlate) {
+      throw new AppError(
+        `Biển số trên QR booking (${payload.plate}) không khớp biển số camera (${normalizedPlate}).`,
+        400
+      );
+    }
+    const booking = await Booking.findOne({ _id: payload.bookingId, status: 'paid' }).select('+qrToken');
+    if (!booking || booking.qrToken !== qrToken) {
+      throw new AppError('QR booking không hợp lệ hoặc không khớp đặt chỗ đã thanh toán.', 400);
+    }
+    if (booking.expectedExitTime <= new Date()) {
+      throw new AppError('Đặt chỗ đã quá giờ ra dự kiến, QR hết hiệu lực.', 400);
     }
   } else {
     if (payload.type !== 'walkin_ticket') {
@@ -467,7 +483,8 @@ const assertExitQRMatches = async (session, qrToken, scannedPlate) => {
     if (!sub || sub.qrToken !== qrToken) {
       throw new AppError('QR gói đăng ký không khớp phiên đỗ xe đang check-out.', 400);
     }
-  } else if (payload.type === 'walkin_ticket') {
+  } else if (payload.type === 'walkin_ticket' || payload.type === 'booking_entry') {
+    // Walk-in ticket and booking QR are both stored verbatim on the session.
     if (session.qrToken !== qrToken) {
       throw new AppError('QR không khớp phiên đỗ xe đang check-out.', 400);
     }
@@ -907,9 +924,9 @@ export const verifyQR = async ({ qrToken, scannedPlate }) => {
   if (!valid) throw new AppError(`QR không hợp lệ: ${reason}`, 400);
 
   let session;
-  if (payload.type === 'walkin_ticket') {
-    // The walk-in ticket is stored verbatim on the session at check-in —
-    // look the session up by that exact token rather than decoding an id.
+  if (payload.type === 'walkin_ticket' || payload.type === 'booking_entry') {
+    // The walk-in ticket / booking QR is stored verbatim on the session at
+    // check-in — look the session up by that exact token.
     session = await ParkingSession.findOne({ qrToken, status: 'active' }).populate(SESSION_POPULATE);
     if (!session) throw new AppError('Không tìm thấy phiên đỗ xe đang active cho vé này', 404);
   } else if (payload.type === 'subscription_entry') {

@@ -14,6 +14,8 @@ export { BookingTopNav } from './layout/BookingTopNav'
 export { BookingDetailPanel } from './payment/BookingDetailPanel'
 export { BookingPaymentPanel } from './payment/BookingPaymentPanel'
 export {
+  CAR_BLOCK_HOURS,
+  MAX_DURATION_HOURS,
   computeBookingAmount,
   formatBookingCurrency,
   formatBookingDateTime,

@@ -116,6 +116,10 @@ function isWalkInQr(payload: StaffGateQrPayload) {
   return payload.type === 'walkin-ticket' || payload.type === 'walkin_ticket'
 }
 
+function isBookingQr(payload: StaffGateQrPayload) {
+  return payload.type === 'booking_entry'
+}
+
 function isWalkInExpired(payload: StaffGateQrPayload) {
   if (payload.expiresAt) return Date.now() > payload.expiresAt
   if (payload.iat) return Date.now() - payload.iat > WALKIN_TICKET_TTL_MS
@@ -149,6 +153,12 @@ export function validateEntryQr({
     return null
   }
 
+  // Walk-in with a paid booking presents the QR from their confirmation email.
+  if (lookupResult.booking) {
+    if (!isBookingQr(payload)) return 'QR này không phải QR đặt chỗ (booking) trong email của khách.'
+    return null
+  }
+
   if (!isWalkInQr(payload)) return 'QR này không phải vé QR vãng lai.'
   if (isWalkInExpired(payload)) return 'Vé QR vãng lai đã quá 5 phút, hãy cấp vé mới.'
 
@@ -176,6 +186,9 @@ export function validateExitQr({
     if (payload.credential && payload.credential.status !== 'active') return 'QR gói cư dân chưa active.'
     return null
   }
+
+  // Booking QR (from email) is reused at exit; backend re-checks it matches the session.
+  if (isBookingQr(payload)) return null
 
   if (!isWalkInQr(payload)) return 'Khách vãng lai phải đưa lại vé QR lúc vào.'
 

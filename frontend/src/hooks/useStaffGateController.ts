@@ -82,11 +82,16 @@ export function useStaffGateController() {
     })
   }, [activeSessions, checkoutQuery])
 
+  // Walk-ins WITHOUT a booking need a fresh gate ticket; residents and booking
+  // customers instead scan an existing QR (subscription / booking email).
+  const needsIssuedTicket =
+    Boolean(lookupResult) && lookupResult.customerType === 'walk_in' && !lookupResult.booking
+
   const canCheckIn =
     lookupMatchesPlate &&
     lookupResult.status !== 'already_active' &&
     normalizedPlate.length >= 4 &&
-    (lookupResult.customerType === 'walk_in' ? Boolean(issuedWalkInQrValue) : Boolean(entryQrValue))
+    (needsIssuedTicket ? Boolean(issuedWalkInQrValue) : Boolean(entryQrValue))
 
   async function resolveQrTokenForApi(qrValue: string) {
     const payload = parseGateQr(qrValue)
@@ -260,7 +265,7 @@ export function useStaffGateController() {
     setActionMessage(null)
 
     try {
-      const checkInQrValue = lookupResult?.customerType === 'walk_in' ? issuedWalkInQrValue : entryQrValue
+      const checkInQrValue = needsIssuedTicket ? issuedWalkInQrValue : entryQrValue
       const apiQrToken = await resolveQrTokenForApi(checkInQrValue)
       const response = await staffGateApi.checkIn({
         vehicleType,
@@ -401,7 +406,7 @@ export function useStaffGateController() {
   }
 
   async function handleIssueWalkInQr() {
-    if (!normalizedPlate || !lookupResult || lookupResult.customerType !== 'walk_in') return
+    if (!normalizedPlate || !lookupResult || lookupResult.customerType !== 'walk_in' || lookupResult.booking) return
 
     try {
       const ticket = await staffGateApi.requestEntryQr(normalizedPlate)

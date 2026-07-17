@@ -16,6 +16,33 @@ export function formatCustomerType(value: GateCustomerType) {
   return value === 'resident' ? 'Cư dân' : 'Khách vãng lai'
 }
 
+const HOUR_MS = 60 * 60 * 1000
+
+// A booking is stored as a walk_in session with a bookingId. Distinguish it as
+// "đặt trước", and flag "quá giờ" once the vehicle has parked longer than the
+// prepaid hours (from there it accrues walk-in overtime charges).
+export type SessionCustomerKind = 'resident' | 'booking' | 'booking_overtime' | 'walk_in'
+
+export function getSessionCustomerKind(session: GateSession): SessionCustomerKind {
+  if (session.customerType === 'resident') return 'resident'
+  if (session.bookingId) {
+    const elapsedHours = (Date.now() - new Date(session.entryTime).getTime()) / HOUR_MS
+    return elapsedHours > (session.prepaidHours ?? 0) ? 'booking_overtime' : 'booking'
+  }
+  return 'walk_in'
+}
+
+export function formatSessionCustomer(session: GateSession) {
+  const kind = getSessionCustomerKind(session)
+  if (kind === 'resident') return 'Cư dân'
+  if (kind === 'booking' || kind === 'booking_overtime') return 'Khách đặt trước'
+  return 'Khách vãng lai'
+}
+
+export function isSessionBookingOvertime(session: GateSession) {
+  return getSessionCustomerKind(session) === 'booking_overtime'
+}
+
 export function formatVehicleType(value: GateVehicleType) {
   return value === 'car' ? 'Ô tô' : 'Xe máy'
 }

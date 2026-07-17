@@ -4,7 +4,7 @@ import { Badge } from '../../ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../ui/card'
 import { Separator } from '../../ui/separator'
 import { formatGateTime } from '../data/staffGateUi'
-import { formatCustomerType, formatSessionSpot } from '../data/staffGateUtils'
+import { formatSessionCustomer, formatSessionSpot, isSessionBookingOvertime } from '../data/staffGateUtils'
 
 type StaffGateSessionActivityProps = {
   sessions: GateSession[]
@@ -33,7 +33,10 @@ export function StaffGateSessionActivity({ sessions }: StaffGateSessionActivityP
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
                       <p className="truncate text-lg font-bold tracking-[0.04em]">{session.licensePlate}</p>
-                      <p className="mt-1 text-xs text-muted-foreground">{formatCustomerType(session.customerType)}</p>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        {formatSessionCustomer(session)}
+                        {isSessionBookingOvertime(session) && ' · quá giờ (vãng lai)'}
+                      </p>
                     </div>
                     <Badge className={isActive ? 'border-0 bg-sky-600 text-white' : 'border-0 bg-emerald-600 text-white'}>
                       {isActive ? <ArrowDownLeft className="size-3" /> : <ArrowUpRight className="size-3" />}
