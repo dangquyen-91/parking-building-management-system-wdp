@@ -5,7 +5,16 @@ import {
   saveAuthTokens,
   saveStoredUser,
 } from "./auth-storage";
-import type { AuthSession, LoginPayload, RegisterPayload, User } from "@/types/auth";
+import type {
+  AddVehiclePayload,
+  AuthSession,
+  LoginPayload,
+  RegisterPayload,
+  ResendVerificationPayload,
+  UpdateProfilePayload,
+  User,
+  VerifyEmailPayload,
+} from "@/types/auth";
 
 export const authKeys = {
   currentUser: ["auth", "currentUser"] as const,
@@ -47,6 +56,18 @@ export const register = (payload: RegisterPayload) =>
     data: payload,
   });
 
+export const verifyEmail = (payload: VerifyEmailPayload) =>
+  apiRequest<null>("/auth/verify-email", {
+    method: "POST",
+    data: payload,
+  });
+
+export const resendVerification = (payload: ResendVerificationPayload) =>
+  apiRequest<null>("/auth/resend-verification", {
+    method: "POST",
+    data: payload,
+  });
+
 export const logout = async () => {
   try {
     await apiRequest<null>("/auth/logout", {
@@ -55,4 +76,36 @@ export const logout = async () => {
   } finally {
     await clearAuthTokens();
   }
+};
+
+export const updateMyProfile = async (payload: UpdateProfilePayload) => {
+  const { user } = await apiRequest<{ user: User }>("/users/me", {
+    method: "PATCH",
+    data: payload,
+  });
+
+  await saveStoredUser(user);
+  return user;
+};
+
+export const addMyVehicle = async (payload: AddVehiclePayload) => {
+  const { user } = await apiRequest<{ user: User }>("/users/me/vehicles", {
+    method: "POST",
+    data: {
+      ...payload,
+      licensePlate: payload.licensePlate.trim().toUpperCase(),
+    },
+  });
+
+  await saveStoredUser(user);
+  return user;
+};
+
+export const removeMyVehicle = async (vehicleId: string) => {
+  const { user } = await apiRequest<{ user: User }>(`/users/me/vehicles/${vehicleId}`, {
+    method: "DELETE",
+  });
+
+  await saveStoredUser(user);
+  return user;
 };

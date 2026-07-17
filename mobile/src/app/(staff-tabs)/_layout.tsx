@@ -4,9 +4,9 @@ import Ionicons from "react-native-vector-icons/Ionicons";
 import { useCurrentUserQuery } from "@/hooks/useAuth";
 import { isStaffRole } from "@/lib/role-navigation";
 import { getFloatingTabScreenOptions } from "@/lib/tab-navigation";
-import { useThemeColors } from "../../tw";
+import { useThemeColors } from "@/tw";
 
-const TabsLayout = () => {
+const StaffTabsLayout = () => {
   const { data: currentUser, isLoading } = useCurrentUserQuery();
   const { borderStrong, fg, tabBar, tabInactive } = useThemeColors();
 
@@ -14,14 +14,18 @@ const TabsLayout = () => {
     return null;
   }
 
-  if (isStaffRole(currentUser?.role)) {
-    return <Redirect href="/(staff-tabs)/staff-home" />;
+  if (!currentUser) {
+    return <Redirect href="/(auth)/login" />;
+  }
+
+  if (!isStaffRole(currentUser.role)) {
+    return <Redirect href="/(tabs)/home" />;
   }
 
   return (
     <Tabs screenOptions={getFloatingTabScreenOptions({ borderStrong, fg, tabBar, tabInactive })}>
       <Tabs.Screen
-        name="home"
+        name="staff-home"
         options={{
           tabBarIcon: ({ color }) => <Ionicons name="home" color={color} size={24} />,
           tabBarLabel: "Trang chủ",
@@ -29,29 +33,11 @@ const TabsLayout = () => {
         }}
       />
       <Tabs.Screen
-        name="booking"
-        options={{
-          tabBarIcon: ({ color }) => <Ionicons name="calendar" color={color} size={24} />,
-          tabBarLabel: "Đặt chỗ",
-          title: "Đặt chỗ",
-        }}
-      />
-      <Tabs.Screen
-        name="subscription"
-        options={{
-          tabBarIcon: ({ color, focused }) => (
-            <Ionicons name={focused ? "card" : "card-outline"} color={color} size={24} />
-          ),
-          tabBarLabel: "Gói tháng",
-          title: "Gói tháng",
-        }}
-      />
-      <Tabs.Screen
-        name="complaints"
+        name="staff-operations"
         options={{
           tabBarIcon: ({ color, focused }) => (
             <Ionicons
-              name={focused ? "warning" : "warning-outline"}
+              name={focused ? "chatbubble-ellipses" : "chatbubble-ellipses-outline"}
               color={color}
               size={24}
             />
@@ -61,7 +47,7 @@ const TabsLayout = () => {
         }}
       />
       <Tabs.Screen
-        name="profile"
+        name="staff-profile"
         options={{
           tabBarIcon: ({ color }) => <Ionicons name="person" color={color} size={24} />,
           tabBarLabel: "Hồ sơ",
@@ -72,4 +58,4 @@ const TabsLayout = () => {
   );
 };
 
-export default TabsLayout;
+export default StaffTabsLayout;

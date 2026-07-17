@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Ionicons from "react-native-vector-icons/Ionicons";
 
 import { GlassCard, Label } from "@/components/parking-ui";
@@ -34,6 +35,7 @@ const buildSeatRows = (slots: CarSubscriptionAvailabilityResult["floors"][number
 export default function ResidentSlotPickerScreen() {
   const router = useRouter();
   const { btnPrimaryFg, iconMuted, iconPrimary } = useThemeColors();
+  const insets = useSafeAreaInsets();
   const params = useLocalSearchParams<SlotPickerParams>();
   const selectedPlanId = getSingleParam(params.selectedPlanId);
   const licensePlate = getSingleParam(params.licensePlate);
@@ -83,7 +85,11 @@ export default function ResidentSlotPickerScreen() {
       <View className="flex-1 bg-page">
         <ScrollView
           contentInsetAdjustmentBehavior="automatic"
-          contentContainerClassName="gap-4 px-5 pb-[120px]"
+          contentContainerClassName="gap-4 px-5"
+          contentContainerStyle={{
+            paddingTop: insets.top + 20,
+            paddingBottom: insets.bottom + 120,
+          }}
         >
           <GlassCard className="gap-4">
             <View className="flex-row items-center gap-3">
@@ -239,7 +245,10 @@ export default function ResidentSlotPickerScreen() {
           })}
         </ScrollView>
 
-        <View className="border-t border-border-theme bg-page px-5 pb-8 pt-4">
+        <View
+          className="border-t border-border-theme bg-page px-5 pt-4"
+          style={{ paddingBottom: insets.bottom + 12 }}
+        >
           <GlassCard className="gap-3">
             <View className="flex-row items-center justify-between gap-3">
               <View className="flex-1 gap-1">

@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { Text, View } from "../tw";
 
@@ -13,9 +14,11 @@ export function Page({
   title: string;
   subtitle?: string;
 }) {
+  const insets = useSafeAreaInsets();
+
   return (
     <View className="flex-1 bg-page">
-      <View className="gap-2 px-5 pb-[18px] pt-16">
+      <View className="gap-2 px-5 pb-[18px]" style={{ paddingTop: insets.top + 40 }}>
         {eyebrow ? (
           <Text className="font-sans text-xs font-bold uppercase text-faint">
             {eyebrow}

@@ -5,6 +5,7 @@ import { StatusBar } from "expo-status-bar";
 import { Stack } from "expo-router";
 import { useState } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 import { Toaster } from "sonner-native";
 import { ThemeProvider, useAppTheme } from "../providers/theme-provider";
 
@@ -45,9 +46,11 @@ export default function RootLayout() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <ThemeProvider>
-        <AppShell queryClient={queryClient} />
-      </ThemeProvider>
+      <SafeAreaProvider>
+        <ThemeProvider>
+          <AppShell queryClient={queryClient} />
+        </ThemeProvider>
+      </SafeAreaProvider>
     </GestureHandlerRootView>
   );
 }
