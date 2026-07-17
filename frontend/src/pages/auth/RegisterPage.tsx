@@ -1,4 +1,3 @@
-import { Link } from 'react-router-dom'
 import { AuthLayout, RegisterForm } from '../../components/auth'
 
 export function RegisterPage() {
@@ -14,14 +13,6 @@ export function RegisterPage() {
         { value: '18', label: 'Làn xe được hỗ trợ' },
         { value: '+1 (312) 847-1928', label: 'Đường dây hỗ trợ cài đặt' },
       ]}
-      footer={
-        <>
-          Đã có tài khoản?{' '}
-          <Link to="/login" className="text-fg hover:text-fg transition-colors">
-            Đăng nhập
-          </Link>
-        </>
-      }
     >
       <RegisterForm />
     </AuthLayout>
