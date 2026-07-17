@@ -11,7 +11,7 @@ type AuthLayoutProps = {
   title: string
   subtitle: string
   children: ReactNode
-  footer: ReactNode
+  footer?: ReactNode
   panelEyebrow: string
   panelHeading: string
   panelBody: string
@@ -72,13 +72,15 @@ export function AuthLayout({
               {children}
             </motion.div>
 
-            <motion.div
-              className="mt-8 text-sm text-faint"
-              variants={reduceMotion ? undefined : fadeUp}
-              custom={0.16}
-            >
-              {footer}
-            </motion.div>
+            {footer && (
+              <motion.div
+                className="mt-8 text-sm text-faint"
+                variants={reduceMotion ? undefined : fadeUp}
+                custom={0.16}
+              >
+                {footer}
+              </motion.div>
+            )}
           </motion.div>
 
           <p className="mt-auto pt-10 text-[11px] text-faint">
