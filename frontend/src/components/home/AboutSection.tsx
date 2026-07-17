@@ -26,6 +26,12 @@ const HIGHLIGHTS = [
   },
 ] as const
 
+const CARD_TONES = [
+  'from-violet-500/32 via-violet-100/70 to-card ring-violet-500/45 hover:ring-violet-600/70 hover:shadow-violet-500/30 dark:via-violet-950/35',
+  'from-sky-500/32 via-sky-100/70 to-card ring-sky-500/45 hover:ring-sky-600/70 hover:shadow-sky-500/30 dark:via-sky-950/35',
+  'from-emerald-500/32 via-emerald-100/70 to-card ring-emerald-500/45 hover:ring-emerald-600/70 hover:shadow-emerald-500/30 dark:via-emerald-950/35',
+] as const
+
 export function AboutSection() {
   const gridRef = useRef<HTMLDivElement>(null)
   const inView = useInView(gridRef, { once: true, margin: '-10% 0px' })
@@ -51,7 +57,8 @@ export function AboutSection() {
             custom={index * 0.08}
             variants={reduceMotion ? undefined : fadeUp}
           >
-            <Card className="h-full transition-shadow hover:shadow-md">
+            <Card className={`relative h-full rounded-2xl bg-gradient-to-br shadow-lg shadow-transparent ring-1 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl ${CARD_TONES[index]}`}>
+              <span className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-violet-500 via-sky-500 to-emerald-500" aria-hidden="true" />
               <CardHeader>
                 <Badge className="w-fit" variant="secondary">{item.number}</Badge>
                 <CardTitle>{item.value}</CardTitle>

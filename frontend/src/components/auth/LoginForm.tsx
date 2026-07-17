@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion'
+import { Eye, EyeOff } from 'lucide-react'
 import { type FormEvent, useMemo, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useStaggerFormMotion } from '../../hooks/useStaggerFormMotion'
@@ -41,6 +42,7 @@ export function LoginForm() {
   const [errors, setErrors] = useState<LoginErrors>({})
   const [status, setStatus] = useState<'idle' | 'loading' | 'success'>('idle')
   const [remember, setRemember] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
 
   const clearError = (field: keyof LoginValues) => {
     if (errors[field] || errors.form) {
@@ -99,7 +101,7 @@ export function LoginForm() {
           <AuthField
             id="login-password"
             label="Mật khẩu"
-            type="password"
+            type={showPassword ? 'text' : 'password'}
             name="password"
             autoComplete="current-password"
             placeholder="Nhập mật khẩu"
@@ -110,6 +112,18 @@ export function LoginForm() {
               clearError('password')
             }}
             error={errors.password}
+            trailingAction={
+              <button
+                type="button"
+                onClick={() => setShowPassword((visible) => !visible)}
+                disabled={status === 'loading'}
+                aria-label={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
+                aria-pressed={showPassword}
+                className="rounded-md p-1 text-muted transition-colors hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--focus-ring)] disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {showPassword ? <EyeOff aria-hidden="true" size={18} /> : <Eye aria-hidden="true" size={18} />}
+              </button>
+            }
           />
         </motion.div>
       </motion.div>

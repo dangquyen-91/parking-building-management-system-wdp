@@ -39,7 +39,7 @@ export function Hero() {
       }
 
   return (
-    <section className="relative flex min-h-[92svh] flex-col overflow-hidden bg-background">
+    <section className="relative flex min-h-[92svh] flex-col overflow-hidden bg-gradient-to-br from-violet-50 via-background to-sky-50 dark:from-violet-950/40 dark:via-background dark:to-sky-950/35">
       <motion.div
         className="absolute inset-0"
         variants={reduceMotion ? undefined : heroBg}
@@ -58,8 +58,11 @@ export function Hero() {
             draggable={false}
           />
         </picture>
-        <div className="absolute inset-0 bg-background/75 backdrop-blur-[1px] dark:bg-background/55" aria-hidden="true" />
+        <div className="absolute inset-0 bg-gradient-to-r from-white/42 via-white/18 to-sky-100/6 dark:from-background/75 dark:via-background/52 dark:to-violet-950/35" aria-hidden="true" />
+        <div className="absolute inset-y-0 left-0 w-[68%] bg-gradient-to-r from-white/28 via-white/8 to-transparent dark:from-black/22 dark:via-black/8" aria-hidden="true" />
       </motion.div>
+      <div className="pointer-events-none absolute -left-36 top-20 size-[28rem] rounded-full bg-violet-400/15 blur-3xl" aria-hidden="true" />
+      <div className="pointer-events-none absolute -right-40 bottom-0 size-[32rem] rounded-full bg-sky-400/15 blur-3xl" aria-hidden="true" />
 
       <div className="relative z-10 flex flex-1 flex-col justify-end px-6 pb-10 pt-28 md:px-12 lg:px-16 lg:pb-14">
         <motion.div
@@ -80,7 +83,7 @@ export function Hero() {
                 <Badge variant="secondary" className="mb-3">
                   {content.eyebrow}
                 </Badge>
-                <h1 className="mb-4 max-w-4xl text-5xl font-bold uppercase leading-none text-foreground md:text-6xl lg:text-7xl">
+                <h1 className="mb-4 max-w-4xl text-5xl font-bold uppercase leading-none text-slate-950 dark:bg-gradient-to-r dark:from-violet-200 dark:via-white dark:to-sky-200 dark:bg-clip-text dark:text-transparent md:text-6xl lg:text-7xl">
                   {content.headingLines.map((line, index) => (
                     <span key={`${activeTab}-${line}`}>
                       {line}
@@ -88,7 +91,7 @@ export function Hero() {
                     </span>
                   ))}
                 </h1>
-                <p className="mb-6 max-w-lg text-sm leading-7 text-muted-foreground md:text-base">
+                <p className="mb-6 max-w-lg text-sm leading-7 text-slate-800 dark:text-muted-foreground md:text-base">
                   {content.subheading}
                 </p>
               </motion.div>
@@ -127,7 +130,7 @@ export function Hero() {
                 className="hidden w-80 shrink-0 lg:block"
                 aria-live="polite"
               >
-                <Card className="bg-card/90 backdrop-blur">
+                <Card className="border-violet-200/70 bg-card/80 shadow-xl shadow-violet-500/10 backdrop-blur-xl dark:border-violet-800/45">
                   <CardContent className="p-5">
                     <p className="text-sm leading-7 text-muted-foreground">
                       {content.card.body}

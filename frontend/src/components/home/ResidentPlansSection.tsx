@@ -8,7 +8,7 @@ import { formatSubscriptionCurrency, VEHICLE_LABELS } from '../../utils/subscrip
 import { Alert, AlertDescription } from '../ui/alert'
 import { Badge } from '../ui/badge'
 import { Button } from '../ui/button'
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../ui/card'
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '../ui/card'
 import { Skeleton } from '../ui/skeleton'
 import { SectionShell } from './SectionShell'
 
@@ -109,14 +109,13 @@ export function ResidentPlansSection() {
                 custom={index * 0.1}
                 variants={reduceMotion ? undefined : scaleIn}
               >
-                <Card className="h-full">
+                <Card className="h-full rounded-2xl bg-gradient-to-br from-violet-500/30 via-card to-sky-500/22 shadow-lg shadow-transparent ring-1 ring-violet-500/45 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-violet-500/30 hover:ring-violet-600/70">
                   <CardHeader>
                     <div className="flex flex-wrap items-center justify-between gap-3">
                       <Badge variant="secondary">{VEHICLE_LABELS[plan.vehicleType]}</Badge>
                       <Badge variant="outline">{plan.durationDays} ngày</Badge>
                     </div>
                     <CardTitle>{plan.name}</CardTitle>
-                    <CardDescription>Mã gói: {plan.code}</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-3">
                     <p className="text-3xl font-bold">{formatSubscriptionCurrency(plan.price)}</p>

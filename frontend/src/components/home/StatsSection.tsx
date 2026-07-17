@@ -19,6 +19,13 @@ const STATS = [
   { label: 'Thời gian xử lý TB', value: 2, suffix: 's' },
 ] as const
 
+const STAT_TONES = [
+  'from-violet-500/38 ring-violet-500/50 text-violet-800 dark:text-violet-100',
+  'from-sky-500/38 ring-sky-500/50 text-sky-800 dark:text-sky-100',
+  'from-emerald-500/38 ring-emerald-500/50 text-emerald-800 dark:text-emerald-100',
+  'from-amber-500/38 ring-amber-500/50 text-amber-800 dark:text-amber-100',
+] as const
+
 function AnimatedNumber({ value, suffix, inView }: { value: number; suffix: string; inView: boolean }) {
   const reduceMotion = useReducedMotion()
   const motionValue = useMotionValue(0)
@@ -74,14 +81,14 @@ export function StatsSection() {
             custom={index * 0.08}
             variants={reduceMotion ? undefined : fadeUp}
           >
-            <Card className="h-full text-center">
+            <Card className={`h-full rounded-2xl bg-gradient-to-br via-card to-card text-center shadow-lg shadow-transparent ring-1 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl ${STAT_TONES[index]}`}>
               <CardHeader>
                 <CardTitle className="text-3xl font-bold md:text-4xl">
                   <AnimatedNumber value={stat.value} suffix={stat.suffix} inView={inView} />
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <CardDescription>{stat.label}</CardDescription>
+                <CardDescription className="text-foreground/65">{stat.label}</CardDescription>
               </CardContent>
             </Card>
           </motion.div>

@@ -23,6 +23,12 @@ const STEPS = [
   },
 ] as const
 
+const STEP_TONES = [
+  'from-violet-500/32 ring-violet-500/45 hover:ring-violet-600/70 hover:shadow-violet-500/30',
+  'from-sky-500/32 ring-sky-500/45 hover:ring-sky-600/70 hover:shadow-sky-500/30',
+  'from-emerald-500/32 ring-emerald-500/45 hover:ring-emerald-600/70 hover:shadow-emerald-500/30',
+] as const
+
 export function HowItWorksSection() {
   const ref = useRef<HTMLDivElement>(null)
   const inView = useInView(ref, { once: true, margin: '-10% 0px' })
@@ -49,7 +55,8 @@ export function HowItWorksSection() {
             custom={index * 0.12}
             variants={reduceMotion ? undefined : fadeUp}
           >
-            <Card className="h-full min-h-60">
+            <Card className={`relative h-full min-h-60 rounded-2xl bg-gradient-to-br via-card to-card shadow-lg shadow-transparent ring-1 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl ${STEP_TONES[index]}`}>
+              <div className="absolute bottom-0 left-0 top-0 w-1 bg-gradient-to-b from-violet-500 via-sky-500 to-emerald-500" aria-hidden="true" />
               <CardHeader>
                 <Badge className="w-fit" variant="secondary">{item.step}</Badge>
                 <CardTitle>{item.title}</CardTitle>
