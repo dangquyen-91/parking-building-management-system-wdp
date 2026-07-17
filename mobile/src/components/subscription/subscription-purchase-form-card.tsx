@@ -1,10 +1,12 @@
 import { GlassCard, Label } from "@/components/parking-ui";
+import type { UserVehicle } from "@/types/auth";
 import type {
   CarSubscriptionAvailabilityResult,
   MotorcycleSubscriptionAvailabilityResult,
   Plan,
 } from "@/types/subscriptions";
 import { formatMoney, formatVehicleType } from "@/utils/format";
+import { useMemo, useState } from "react";
 import { Pressable, Text, TextInput, View, useThemeColors } from "@/tw";
 import Ionicons from "react-native-vector-icons/Ionicons";
 
@@ -13,8 +15,14 @@ type AvailableCarSlot = {
   slot: CarSubscriptionAvailabilityResult["floors"][number]["slots"][number];
 };
 
+const inputStyle = {
+  paddingHorizontal: 16,
+  paddingVertical: 14,
+};
+
 type SubscriptionPurchaseFormCardProps = {
   availableCarSlots: AvailableCarSlot[];
+  availableVehicles: UserVehicle[];
   availabilityLoading: boolean;
   licensePlate: string;
   motorcycleAvailability?: MotorcycleSubscriptionAvailabilityResult;
@@ -33,6 +41,7 @@ const findSelectedCarSlot = (availableCarSlots: AvailableCarSlot[], selectedSlot
 
 export function SubscriptionPurchaseFormCard({
   availableCarSlots,
+  availableVehicles,
   availabilityLoading,
   licensePlate,
   motorcycleAvailability,
@@ -46,7 +55,22 @@ export function SubscriptionPurchaseFormCard({
   selectedSlotId,
 }: SubscriptionPurchaseFormCardProps) {
   const { btnPrimaryFg, placeholder } = useThemeColors();
+  const [isVehicleOptionsOpen, setIsVehicleOptionsOpen] = useState(false);
   const selectedCarSlot = findSelectedCarSlot(availableCarSlots, selectedSlotId);
+  const hasAvailableVehicles = availableVehicles.length > 0;
+  const selectedVehicle =
+    availableVehicles.find((vehicle) => vehicle.licensePlate === licensePlate) ?? null;
+  const filteredVehicles = useMemo(() => {
+    const normalizedPlate = licensePlate.trim().toLowerCase();
+
+    if (!normalizedPlate) {
+      return availableVehicles;
+    }
+
+    return availableVehicles.filter((vehicle) =>
+      vehicle.licensePlate.toLowerCase().includes(normalizedPlate),
+    );
+  }, [availableVehicles, licensePlate]);
 
   return (
     <GlassCard className="gap-4">
@@ -67,14 +91,106 @@ export function SubscriptionPurchaseFormCard({
       <View className="gap-3">
         <View className="gap-2">
           <Label>Biển số xe</Label>
-          <TextInput
-            autoCapitalize="characters"
-            onChangeText={onChangeLicensePlate}
-            placeholder="59-A24872"
-            placeholderTextColor={placeholder}
-            value={licensePlate}
-            className="rounded-[14px] border border-border-theme bg-input px-4 py-3.5 font-sans text-base text-fg"
-          />
+          {hasAvailableVehicles ? (
+            <View className="gap-2">
+              <View className="rounded-[14px] border border-border-theme bg-input">
+                <View className="flex-row items-center">
+                  <TextInput
+                    autoCapitalize="characters"
+                    className="flex-1 rounded-[14px] font-sans text-base text-fg"
+                    onChangeText={(value) => {
+                      onChangeLicensePlate(value);
+                      if (!isVehicleOptionsOpen) {
+                        setIsVehicleOptionsOpen(true);
+                      }
+                    }}
+                    onFocus={() => setIsVehicleOptionsOpen(true)}
+                    placeholder="59-A24872"
+                    placeholderTextColor={placeholder}
+                    style={inputStyle}
+                    value={licensePlate}
+                  />
+                  <Pressable
+                    className="px-4 py-3.5"
+                    onPress={() => setIsVehicleOptionsOpen((current) => !current)}
+                  >
+                    <Ionicons
+                      name={isVehicleOptionsOpen ? "chevron-up" : "chevron-down"}
+                      color={placeholder}
+                      size={18}
+                    />
+                  </Pressable>
+                </View>
+
+                <View className="px-4 pb-3">
+                  <Text className="font-sans text-xs text-subtle">
+                    {selectedVehicle
+                      ? formatVehicleType(selectedVehicle.vehicleType)
+                      : `${availableVehicles.length} biển số đã đăng ký`}
+                  </Text>
+                </View>
+              </View>
+
+              {isVehicleOptionsOpen ? (
+                <GlassCard className="gap-2 p-2">
+                  {filteredVehicles.length > 0 ? (
+                    filteredVehicles.map((vehicle) => {
+                      const isSelected = vehicle.licensePlate === licensePlate;
+
+                      return (
+                        <Pressable
+                          key={vehicle._id ?? vehicle.licensePlate}
+                          className={`flex-row items-center justify-between rounded-[14px] px-3 py-3 ${
+                            isSelected ? "bg-btn-primary" : "bg-badge"
+                          }`}
+                          onPress={() => {
+                            onChangeLicensePlate(vehicle.licensePlate);
+                            setIsVehicleOptionsOpen(false);
+                          }}
+                        >
+                          <View className="gap-1">
+                            <Text
+                              className={`font-sans text-base font-extrabold ${
+                                isSelected ? "text-btn-primary-fg" : "text-fg"
+                              }`}
+                            >
+                              {vehicle.licensePlate}
+                            </Text>
+                            <Text
+                              className={`font-sans text-xs ${
+                                isSelected ? "text-btn-primary-fg" : "text-subtle"
+                              }`}
+                            >
+                              {formatVehicleType(vehicle.vehicleType)}
+                            </Text>
+                          </View>
+                          {isSelected ? (
+                            <Ionicons name="checkmark" color={btnPrimaryFg} size={18} />
+                          ) : null}
+                        </Pressable>
+                      );
+                    })
+                  ) : (
+                    <View className="rounded-[14px] bg-badge px-3 py-3">
+                      <Text className="font-sans text-sm text-subtle">
+                        Không tìm thấy biển số phù hợp trong danh sách đã đăng ký.
+                      </Text>
+                    </View>
+                  )}
+                </GlassCard>
+              ) : null}
+            </View>
+          ) : (
+            <TextInput
+              autoCapitalize="characters"
+              onChangeText={onChangeLicensePlate}
+              placeholder="59-A24872"
+              placeholderTextColor={placeholder}
+              style={inputStyle}
+              value={licensePlate}
+              className="rounded-[14px] border border-border-theme bg-input px-4 py-3.5 font-sans text-base text-fg"
+            />
+          )}
         </View>
 
         <View className="gap-2">

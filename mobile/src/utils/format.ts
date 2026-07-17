@@ -85,6 +85,19 @@ export const formatBookingStatus = (value?: string | null) => {
   }
 };
 
+export const formatComplaintStatus = (value?: string | null) => {
+  switch (value) {
+    case "open":
+      return "Mới gửi";
+    case "in_progress":
+      return "Đang xử lý";
+    case "resolved":
+      return "Đã xử lý";
+    default:
+      return "Không xác định";
+  }
+};
+
 export const formatSlotStatus = (value?: string | null) => {
   switch (value) {
     case "empty":

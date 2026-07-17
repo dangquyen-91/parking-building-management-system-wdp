@@ -1,4 +1,5 @@
 import { Linking, Modal } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import type { WebViewNavigation } from "react-native-webview/lib/WebViewTypes";
 import { WebView } from "react-native-webview";
 import Ionicons from "react-native-vector-icons/Ionicons";
@@ -17,6 +18,7 @@ export function BookingPaymentModal({
   paymentUrl,
 }: BookingPaymentModalProps) {
   const { iconPrimary } = useThemeColors();
+  const insets = useSafeAreaInsets();
 
   return (
     <Modal
@@ -26,7 +28,10 @@ export function BookingPaymentModal({
       visible={Boolean(paymentUrl)}
     >
       <View className="flex-1 bg-page">
-        <View className="flex-row items-center justify-between border-b border-border-theme bg-glass-card px-4 pb-3 pt-14">
+        <View
+          className="flex-row items-center justify-between border-b border-border-theme bg-glass-card px-4 pb-3"
+          style={{ paddingTop: insets.top + 8 }}
+        >
           <Pressable
             className="h-10 w-10 items-center justify-center rounded-full bg-badge"
             onPress={onClose}

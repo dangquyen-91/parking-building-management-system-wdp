@@ -61,9 +61,12 @@ export default function Register() {
         phone: validation.data.phone || undefined,
       });
       toast.success("Tạo tài khoản thành công", {
-        description: "Vui lòng đăng nhập bằng tài khoản mới.",
+        description: "Mã OTP đã được gửi tới email của bạn.",
       });
-      router.replace("/(auth)/login");
+      router.replace({
+        pathname: "/(auth)/verify-email",
+        params: { email: validation.data.email },
+      });
     } catch (error) {
       toast.error("Đăng ký thất bại", {
         description: error instanceof Error ? error.message : "Vui lòng thử lại.",

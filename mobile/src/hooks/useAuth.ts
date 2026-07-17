@@ -1,6 +1,17 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { authKeys, getCurrentUser, login, logout, register } from "@/lib/auth";
+import {
+  addMyVehicle,
+  authKeys,
+  getCurrentUser,
+  login,
+  logout,
+  removeMyVehicle,
+  register,
+  resendVerification,
+  updateMyProfile,
+  verifyEmail,
+} from "@/lib/auth";
 
 export const useCurrentUserQuery = () =>
   useQuery({
@@ -24,6 +35,16 @@ export const useRegisterMutation = () =>
     mutationFn: register,
   });
 
+export const useVerifyEmailMutation = () =>
+  useMutation({
+    mutationFn: verifyEmail,
+  });
+
+export const useResendVerificationMutation = () =>
+  useMutation({
+    mutationFn: resendVerification,
+  });
+
 export const useLogoutMutation = () => {
   const queryClient = useQueryClient();
 
@@ -32,7 +53,41 @@ export const useLogoutMutation = () => {
     onSettled: () => {
       queryClient.setQueryData(authKeys.currentUser, null);
       queryClient.removeQueries({ queryKey: ["bookings"] });
+      queryClient.removeQueries({ queryKey: ["complaints"] });
       queryClient.removeQueries({ queryKey: ["subscriptions"] });
+    },
+  });
+};
+
+export const useUpdateProfileMutation = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: updateMyProfile,
+    onSuccess: (user) => {
+      queryClient.setQueryData(authKeys.currentUser, user);
+    },
+  });
+};
+
+export const useAddVehicleMutation = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: addMyVehicle,
+    onSuccess: (user) => {
+      queryClient.setQueryData(authKeys.currentUser, user);
+    },
+  });
+};
+
+export const useRemoveVehicleMutation = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: removeMyVehicle,
+    onSuccess: (user) => {
+      queryClient.setQueryData(authKeys.currentUser, user);
     },
   });
 };
