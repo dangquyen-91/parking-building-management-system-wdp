@@ -210,6 +210,12 @@ export type GateEntryQr = {
   expiresInSeconds?: number
 }
 
+export type GatePlateRecognition = {
+  plate: string
+  confidence: number
+  region: string | null
+}
+
 const staffHttp = axios.create({
   baseURL: API_BASE_URL,
   headers: {
@@ -242,6 +248,18 @@ function getApiError(error: unknown) {
 }
 
 export const staffGateApi = {
+  async scanPlate(image: string) {
+    try {
+      const response = await staffHttp.post<ApiEnvelope<{ result: GatePlateRecognition | null }>>(
+        '/sessions/scan-plate',
+        { image },
+      )
+      return response.data.data.result
+    } catch (error) {
+      throw getApiError(error)
+    }
+  },
+
   async lookup(licensePlate: string) {
     try {
       const response = await staffHttp.get<ApiEnvelope<GateLookupResult>>('/sessions/lookup', {
