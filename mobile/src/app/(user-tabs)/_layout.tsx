@@ -1,20 +1,32 @@
 import { Redirect, Tabs } from "expo-router";
+import { ActivityIndicator } from "react-native";
 import Ionicons from "react-native-vector-icons/Ionicons";
 
 import { useCurrentUserQuery } from "@/hooks/useAuth";
 import { isStaffRole } from "@/lib/role-navigation";
 import { getFloatingTabScreenOptions } from "@/lib/tab-navigation";
-import { useThemeColors } from "../../tw";
+import { Text, View, useThemeColors } from "@/tw";
 
-const TabsLayout = () => {
-  const { data: currentUser, isLoading } = useCurrentUserQuery();
+const UserTabsLayout = () => {
+  const { data: currentUser, isError, isLoading } = useCurrentUserQuery();
   const { borderStrong, fg, tabBar, tabInactive } = useThemeColors();
 
   if (isLoading) {
-    return null;
+    return (
+      <View className="flex-1 items-center justify-center bg-page px-6">
+        <ActivityIndicator />
+        <Text className="mt-3 text-center font-sans text-sm font-bold text-subtle">
+          Đang kiểm tra phiên đăng nhập...
+        </Text>
+      </View>
+    );
   }
 
-  if (isStaffRole(currentUser?.role)) {
+  if (isError || !currentUser) {
+    return <Redirect href="/(auth)/login" />;
+  }
+
+  if (isStaffRole(currentUser.role)) {
     return <Redirect href="/(staff-tabs)/staff-home" />;
   }
 
@@ -29,21 +41,20 @@ const TabsLayout = () => {
         }}
       />
       <Tabs.Screen
-        name="booking"
-        options={{
-          tabBarIcon: ({ color }) => <Ionicons name="calendar" color={color} size={24} />,
-          tabBarLabel: "Đặt chỗ",
-          title: "Đặt chỗ",
-        }}
-      />
-      <Tabs.Screen
         name="subscription"
         options={{
           tabBarIcon: ({ color, focused }) => (
             <Ionicons name={focused ? "card" : "card-outline"} color={color} size={24} />
           ),
-          tabBarLabel: "Gói tháng",
-          title: "Gói tháng",
+          tabBarLabel: "Gói gửi xe",
+          title: "Gói gửi xe",
+        }}
+      />
+      <Tabs.Screen
+        name="booking"
+        options={{
+          href: null,
+          title: "Đặt chỗ",
         }}
       />
       <Tabs.Screen
@@ -72,4 +83,4 @@ const TabsLayout = () => {
   );
 };
 
-export default TabsLayout;
+export default UserTabsLayout;

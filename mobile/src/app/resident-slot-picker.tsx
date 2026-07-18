@@ -32,6 +32,12 @@ const buildSeatRows = (slots: CarSubscriptionAvailabilityResult["floors"][number
   }));
 };
 
+const getBuildingKey = (entry: CarSubscriptionAvailabilityResult["floors"][number]) =>
+  entry.floor.building?._id ?? `floor-${entry.floor._id}`;
+
+const getBuildingName = (entry: CarSubscriptionAvailabilityResult["floors"][number]) =>
+  entry.floor.building?.name ?? "Khu gửi xe cư dân";
+
 export default function ResidentSlotPickerScreen() {
   const router = useRouter();
   const { btnPrimaryFg, iconMuted, iconPrimary } = useThemeColors();
@@ -39,8 +45,8 @@ export default function ResidentSlotPickerScreen() {
   const params = useLocalSearchParams<SlotPickerParams>();
   const selectedPlanId = getSingleParam(params.selectedPlanId);
   const licensePlate = getSingleParam(params.licensePlate);
-  const routeSelectedSlotId = getSingleParam(params.selectedSlotId);
-  const [selectedSlotId, setSelectedSlotId] = useState<string | null>(routeSelectedSlotId);
+  const [selectedBuildingId, setSelectedBuildingId] = useState<string | null>(null);
+  const [selectedSlotId, setSelectedSlotId] = useState<string | null>(null);
 
   const availabilityQuery = useAvailableSubscriptionSlotsQuery("car", true);
 
@@ -48,13 +54,60 @@ export default function ResidentSlotPickerScreen() {
     ? availabilityQuery.data
     : undefined;
 
+  const buildings = useMemo(() => {
+    const buildingMap = new Map<
+      string,
+      {
+        id: string;
+        name: string;
+        floorCount: number;
+        totalSlots: number;
+        availableCount: number;
+      }
+    >();
+
+    for (const entry of availability?.floors ?? []) {
+      const id = getBuildingKey(entry);
+      const current = buildingMap.get(id);
+
+      if (current) {
+        current.floorCount += 1;
+        current.totalSlots += entry.floor.totalSlots;
+        current.availableCount += entry.availableCount;
+      } else {
+        buildingMap.set(id, {
+          id,
+          name: getBuildingName(entry),
+          floorCount: 1,
+          totalSlots: entry.floor.totalSlots,
+          availableCount: entry.availableCount,
+        });
+      }
+    }
+
+    return Array.from(buildingMap.values());
+  }, [availability?.floors]);
+
+  const selectedBuildingFloors = useMemo(
+    () =>
+      (availability?.floors ?? []).filter((entry) => getBuildingKey(entry) === selectedBuildingId),
+    [availability?.floors, selectedBuildingId],
+  );
+
   const selectedSlot = useMemo(
     () =>
-      availability?.floors
+      selectedBuildingFloors
         .flatMap((entry) => entry.slots.map((slot) => ({ floor: entry.floor, slot })))
         .find(({ slot }) => slot._id === selectedSlotId) ?? null,
-    [availability?.floors, selectedSlotId],
+    [selectedBuildingFloors, selectedSlotId],
   );
+
+  const handleSelectBuilding = (buildingId: string) => {
+    setSelectedBuildingId((currentBuildingId) =>
+      currentBuildingId === buildingId ? null : buildingId,
+    );
+    setSelectedSlotId(null);
+  };
 
   const handleApplySlot = () => {
     if (!selectedPlanId || !selectedSlotId) {
@@ -63,7 +116,7 @@ export default function ResidentSlotPickerScreen() {
     }
 
     router.replace({
-      pathname: "/(tabs)/subscription",
+      pathname: "/(user-tabs)/subscription",
       params: {
         licensePlate: licensePlate ?? undefined,
         selectedPlanId,
@@ -85,13 +138,13 @@ export default function ResidentSlotPickerScreen() {
       <View className="flex-1 bg-page">
         <ScrollView
           contentInsetAdjustmentBehavior="automatic"
-          contentContainerClassName="gap-4 px-5"
+          contentContainerClassName="px-5"
           contentContainerStyle={{
-            paddingTop: insets.top + 20,
-            paddingBottom: insets.bottom + 120,
+            paddingTop: insets.top + 24,
+            paddingBottom: insets.bottom + 160,
           }}
         >
-          <GlassCard className="gap-4">
+          <GlassCard className="mb-6 gap-5">
             <View className="flex-row items-center gap-3">
               <View className="h-11 w-11 items-center justify-center rounded-[14px] bg-btn-primary">
                 <Ionicons name="car-sport" color={btnPrimaryFg} size={22} />
@@ -132,7 +185,7 @@ export default function ResidentSlotPickerScreen() {
           </GlassCard>
 
           {availabilityQuery.isLoading ? (
-            <GlassCard className="gap-1">
+            <GlassCard className="mb-6 gap-1">
               <Text className="font-sans text-base font-extrabold text-fg">
                 Đang tải sơ đồ chỗ đỗ...
               </Text>
@@ -143,7 +196,7 @@ export default function ResidentSlotPickerScreen() {
           ) : null}
 
           {!availabilityQuery.isLoading && !availability?.floors.length ? (
-            <GlassCard className="gap-1">
+            <GlassCard className="mb-6 gap-1">
               <Text className="font-sans text-base font-extrabold text-fg">
                 Hiện không còn chỗ ô tô cư dân
               </Text>
@@ -153,11 +206,87 @@ export default function ResidentSlotPickerScreen() {
             </GlassCard>
           ) : null}
 
-          {availability?.floors.map((entry) => {
+          {!availabilityQuery.isLoading && buildings.length ? (
+            <GlassCard className="mb-6 gap-6">
+              <View className="gap-1">
+                <Label>Chọn tòa</Label>
+                <Text className="font-sans text-sm leading-5 text-subtle">
+                  Chọn tòa nhà trước để xem sơ đồ các chỗ đỗ còn trống trong tòa đó.
+                </Text>
+              </View>
+
+              <View className="gap-4">
+                {buildings.map((building) => {
+                  const isSelected = building.id === selectedBuildingId;
+
+                  return (
+                    <Pressable
+                      key={building.id}
+                      className={`flex-row items-center gap-4 rounded-[18px] border px-4 py-4 ${
+                        isSelected
+                          ? "border-btn-primary bg-btn-primary"
+                          : "border-border-theme bg-glass-card"
+                      }`}
+                      onPress={() => handleSelectBuilding(building.id)}
+                    >
+                      <View
+                        className={`h-10 w-10 items-center justify-center rounded-full ${
+                          isSelected ? "bg-btn-primary-fg/20" : "bg-badge"
+                        }`}
+                      >
+                        <Ionicons
+                          name="business-outline"
+                          color={isSelected ? btnPrimaryFg : iconPrimary}
+                          size={20}
+                        />
+                      </View>
+                      <View className="flex-1 gap-0.5">
+                        <Text
+                          className={`font-sans text-base font-extrabold ${
+                            isSelected ? "text-btn-primary-fg" : "text-fg"
+                          }`}
+                        >
+                          {building.name}
+                        </Text>
+                        <Text
+                          className={`font-sans text-xs font-bold uppercase ${
+                            isSelected ? "text-btn-primary-fg" : "text-subtle"
+                          }`}
+                        >
+                          {building.floorCount} tầng • {building.availableCount}/{building.totalSlots} chỗ trống
+                        </Text>
+                      </View>
+                      <Ionicons
+                        name={isSelected ? "checkmark-circle" : "chevron-forward"}
+                        color={isSelected ? btnPrimaryFg : iconMuted}
+                        size={22}
+                      />
+                    </Pressable>
+                  );
+                })}
+              </View>
+            </GlassCard>
+          ) : null}
+
+          {!availabilityQuery.isLoading && buildings.length && !selectedBuildingId ? (
+            <GlassCard className="mb-6 gap-4">
+              <View className="h-11 w-11 items-center justify-center rounded-[14px] bg-badge">
+                <Ionicons name="business-outline" color={iconPrimary} size={22} />
+              </View>
+              <Text className="font-sans text-base font-extrabold text-fg">
+                Vui lòng chọn tòa nhà
+              </Text>
+              <Text className="font-sans text-sm leading-5 text-subtle">
+                Sơ đồ chỗ đỗ sẽ hiện sau khi bạn chọn tòa muốn đăng ký.
+              </Text>
+            </GlassCard>
+          ) : null}
+
+          {selectedBuildingFloors.map((entry) => {
             const rows = buildSeatRows(entry.slots);
 
             return (
-              <GlassCard key={entry.floor._id} className="gap-4">
+              <GlassCard key={entry.floor._id} className="mb-6 gap-6">
                 <View className="flex-row items-start justify-between gap-3">
                   <View className="flex-1 gap-1">
                     <Label>Tầng {entry.floor.floorNumber}</Label>
@@ -181,9 +310,9 @@ export default function ResidentSlotPickerScreen() {
                   </Text>
                 </View>
 
-                <View className="gap-3">
+                <View className="gap-4">
                   {rows.map((row, index) => (
-                    <View key={`${entry.floor._id}-${index}`} className="flex-row items-center gap-3">
+                    <View key={`${entry.floor._id}-${index}`} className="flex-row items-center gap-4">
                       {[row.left, row.right].map((slot, columnIndex) => {
                         if (!slot) {
                           return <View key={`empty-${columnIndex}`} className="flex-1" />;
@@ -195,7 +324,7 @@ export default function ResidentSlotPickerScreen() {
                         return (
                           <Pressable
                             key={slot._id}
-                            className={`flex-1 rounded-[18px] border px-3 py-4 ${
+                            className={`flex-1 rounded-[18px] border px-3 py-5 ${
                               isSelected
                                 ? "border-btn-primary bg-btn-primary"
                                 : isAvailable
@@ -246,7 +375,7 @@ export default function ResidentSlotPickerScreen() {
         </ScrollView>
 
         <View
-          className="border-t border-border-theme bg-page px-5 pt-4"
+          className="border-t border-border-theme bg-page px-5 pt-6"
           style={{ paddingBottom: insets.bottom + 12 }}
         >
           <GlassCard className="gap-3">

@@ -121,7 +121,7 @@ export default function Login() {
       >
         <View className="gap-8">
           <View className="flex-row items-center justify-between">
-            <Link href="/(tabs)/home" asChild>
+            <Link href="/(guest-tabs)/home" asChild>
               <Pressable className="h-11 w-11 items-center justify-center rounded-full border border-border-theme bg-badge">
                 <Ionicons name="chevron-back" color={iconPrimary} size={22} />
               </Pressable>
@@ -206,10 +206,20 @@ export default function Login() {
               ) : null}
             </View>
 
-            <View className="flex-row items-center justify-between">
-              <Text className="font-sans text-sm font-bold text-fg">
-                Quên mật khẩu
-              </Text>
+            <View className="flex-row items-center justify-end">
+              <Link
+                href={{
+                  pathname: "/(auth)/forgot-password",
+                  params: { email: email || undefined },
+                }}
+                asChild
+              >
+                <Pressable>
+                  <Text className="font-sans text-sm font-bold text-fg">
+                    Quên mật khẩu?
+                  </Text>
+                </Pressable>
+              </Link>
             </View>
 
             <Pressable

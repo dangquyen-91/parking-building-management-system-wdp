@@ -3,12 +3,14 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   addMyVehicle,
   authKeys,
+  forgotPassword,
   getCurrentUser,
   login,
   logout,
   removeMyVehicle,
   register,
   resendVerification,
+  resetPassword,
   updateMyProfile,
   verifyEmail,
 } from "@/lib/auth";
@@ -43,6 +45,16 @@ export const useVerifyEmailMutation = () =>
 export const useResendVerificationMutation = () =>
   useMutation({
     mutationFn: resendVerification,
+  });
+
+export const useForgotPasswordMutation = () =>
+  useMutation({
+    mutationFn: forgotPassword,
+  });
+
+export const useResetPasswordMutation = () =>
+  useMutation({
+    mutationFn: resetPassword,
   });
 
 export const useLogoutMutation = () => {

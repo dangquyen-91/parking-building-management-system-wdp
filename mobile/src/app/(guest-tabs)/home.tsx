@@ -112,7 +112,7 @@ export default function Home() {
           </View>
 
           <View className="gap-3">
-            <Link href="/(tabs)/booking" asChild>
+            <Link href={currentUser ? "/(user-tabs)/booking" : "/(guest-tabs)/booking"} asChild>
               <Pressable className="items-center rounded-full bg-btn-primary py-4">
                 <Text className="font-sans text-base font-extrabold text-btn-primary-fg">
                   Đặt chỗ gửi xe
@@ -120,7 +120,7 @@ export default function Home() {
               </Pressable>
             </Link>
 
-            <Link href="/(tabs)/subscription" asChild>
+            <Link href="/(user-tabs)/subscription" asChild>
               <Pressable className="items-center rounded-full border border-border-strong bg-badge py-4">
                 <Text className="font-sans text-base font-extrabold text-fg">
                   Gói gửi xe cư dân
@@ -128,7 +128,7 @@ export default function Home() {
               </Pressable>
             </Link>
 
-            <Link href="/(tabs)/profile" asChild>
+            <Link href="/(user-tabs)/profile" asChild>
               <Pressable className="items-center rounded-full border border-border-strong bg-badge py-4">
                 <Text className="font-sans text-base font-extrabold text-fg">
                   Xem hồ sơ gửi xe
