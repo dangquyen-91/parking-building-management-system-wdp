@@ -64,7 +64,7 @@ export default function StaffHome() {
           <View className="gap-1">
             <Label>Lối tắt</Label>
             <Text className="font-sans text-2xl font-black text-fg">
-              Các khu vực staff cần nhất
+              Các thao tác nhanh
             </Text>
           </View>
 

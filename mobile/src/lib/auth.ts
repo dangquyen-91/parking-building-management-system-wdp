@@ -8,9 +8,11 @@ import {
 import type {
   AddVehiclePayload,
   AuthSession,
+  ForgotPasswordPayload,
   LoginPayload,
   RegisterPayload,
   ResendVerificationPayload,
+  ResetPasswordPayload,
   UpdateProfilePayload,
   User,
   VerifyEmailPayload,
@@ -64,6 +66,18 @@ export const verifyEmail = (payload: VerifyEmailPayload) =>
 
 export const resendVerification = (payload: ResendVerificationPayload) =>
   apiRequest<null>("/auth/resend-verification", {
+    method: "POST",
+    data: payload,
+  });
+
+export const forgotPassword = (payload: ForgotPasswordPayload) =>
+  apiRequest<null>("/auth/forgot-password", {
+    method: "POST",
+    data: payload,
+  });
+
+export const resetPassword = (payload: ResetPasswordPayload) =>
+  apiRequest<null>("/auth/reset-password", {
     method: "POST",
     data: payload,
   });

@@ -1,17 +1,29 @@
 import { Redirect, Tabs } from "expo-router";
+import { ActivityIndicator } from "react-native";
 import Ionicons from "react-native-vector-icons/Ionicons";
 
 import { useCurrentUserQuery } from "@/hooks/useAuth";
 import { isStaffRole } from "@/lib/role-navigation";
 import { getFloatingTabScreenOptions } from "@/lib/tab-navigation";
-import { useThemeColors } from "@/tw";
+import { Text, View, useThemeColors } from "@/tw";
 
 const StaffTabsLayout = () => {
-  const { data: currentUser, isLoading } = useCurrentUserQuery();
+  const { data: currentUser, isError, isLoading } = useCurrentUserQuery();
   const { borderStrong, fg, tabBar, tabInactive } = useThemeColors();
 
   if (isLoading) {
-    return null;
+    return (
+      <View className="flex-1 items-center justify-center bg-page px-6">
+        <ActivityIndicator />
+        <Text className="mt-3 text-center font-sans text-sm font-bold text-subtle">
+          Dang kiem tra quyen nhan vien...
+        </Text>
+      </View>
+    );
+  }
+
+  if (isError) {
+    return <Redirect href="/(auth)/login" />;
   }
 
   if (!currentUser) {
@@ -19,7 +31,7 @@ const StaffTabsLayout = () => {
   }
 
   if (!isStaffRole(currentUser.role)) {
-    return <Redirect href="/(tabs)/home" />;
+    return <Redirect href="/(user-tabs)/home" />;
   }
 
   return (

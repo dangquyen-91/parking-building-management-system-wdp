@@ -103,7 +103,7 @@ export default function Register() {
           }
         >
           <View className="flex-row items-center justify-between">
-            <Link href="/(tabs)/home" asChild>
+            <Link href="/(guest-tabs)/home" asChild>
               <Pressable className="h-11 w-11 items-center justify-center rounded-full border border-border-theme bg-badge">
                 <Ionicons name="chevron-back" color={iconPrimary} size={22} />
               </Pressable>

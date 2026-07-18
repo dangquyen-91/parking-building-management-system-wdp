@@ -30,10 +30,19 @@ const statusFilters: Array<{
   { label: "Đã xử lý", value: "resolved" },
 ];
 
-const statusToneClassNames: Record<ComplaintStatus, string> = {
-  open: "border border-amber-400/40 bg-amber-500/15 text-amber-200",
-  in_progress: "border border-sky-400/40 bg-sky-500/15 text-sky-200",
-  resolved: "border border-emerald-400/40 bg-emerald-500/15 text-emerald-200",
+const statusToneClassNames: Record<ComplaintStatus, { container: string; text: string }> = {
+  open: {
+    container: "border border-amber-400/40 bg-amber-500/15",
+    text: "text-amber-700 dark:text-amber-200",
+  },
+  in_progress: {
+    container: "border border-sky-400/40 bg-sky-500/15",
+    text: "text-sky-700 dark:text-sky-200",
+  },
+  resolved: {
+    container: "border border-emerald-400/40 bg-emerald-500/15",
+    text: "text-emerald-700 dark:text-emerald-200",
+  },
 };
 
 const inputStyle = {
@@ -461,9 +470,11 @@ export function ComplaintScreen() {
                 </View>
 
                 <View
-                  className={`rounded-full px-3 py-1.5 ${statusToneClassNames[complaint.status]}`}
+                  className={`rounded-full px-3 py-1.5 ${statusToneClassNames[complaint.status].container}`}
                 >
-                  <Text className="font-sans text-xs font-bold uppercase">
+                  <Text
+                    className={`font-sans text-xs font-bold uppercase ${statusToneClassNames[complaint.status].text}`}
+                  >
                     {formatComplaintStatus(complaint.status)}
                   </Text>
                 </View>

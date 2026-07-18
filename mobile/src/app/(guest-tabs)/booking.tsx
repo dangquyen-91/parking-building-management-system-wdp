@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { Platform } from "react-native";
 import type { WebViewNavigation } from "react-native-webview/lib/WebViewTypes";
 import Ionicons from "react-native-vector-icons/Ionicons";
@@ -69,6 +69,8 @@ export default function BookingScreen() {
   const [durationModalVisible, setDurationModalVisible] = useState(false);
   const [errors, setErrors] = useState<Partial<Record<BookingField, string>>>({});
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const paymentSyncHandledRef = useRef<string | null>(null);
+  const paymentSyncInFlightRef = useRef(false);
 
   const { data: currentUser } = useCurrentUserQuery();
   const createBookingMutation = useCreateBookingMutation();
@@ -179,6 +181,8 @@ export default function BookingScreen() {
         email: validation.data.email.toLowerCase(),
       });
       setCreatedBooking(result);
+      paymentSyncHandledRef.current = null;
+      paymentSyncInFlightRef.current = false;
       if (!currentUser) {
         await saveGuestBookingMutation.mutateAsync(result);
       }
@@ -239,6 +243,13 @@ export default function BookingScreen() {
       return;
     }
 
+    const syncKey = `${createdBooking.booking._id}:${nextAction}`;
+    if (paymentSyncInFlightRef.current || paymentSyncHandledRef.current === syncKey) {
+      return;
+    }
+
+    paymentSyncInFlightRef.current = true;
+
     try {
       const payload = {
         id: createdBooking.booking._id,
@@ -254,6 +265,7 @@ export default function BookingScreen() {
       setCreatedBooking((current) => (current ? { ...current, booking: nextBooking } : current));
       await syncGuestBooking(nextBooking);
       setPaymentUrl(null);
+      paymentSyncHandledRef.current = syncKey;
 
       toast.success(
         nextAction === "confirm" ? "Đã đồng bộ thanh toán" : "Đã cập nhật đặt chỗ",
@@ -268,6 +280,8 @@ export default function BookingScreen() {
       toast.error("Không thể đồng bộ đặt chỗ", {
         description: error instanceof Error ? error.message : "Vui lòng thử lại sau.",
       });
+    } finally {
+      paymentSyncInFlightRef.current = false;
     }
   };
 
@@ -299,6 +313,8 @@ export default function BookingScreen() {
     setSelectedDurationHours(null);
     setCreatedBooking(null);
     setPaymentUrl(null);
+    paymentSyncHandledRef.current = null;
+    paymentSyncInFlightRef.current = false;
     setPickerField(null);
     setDurationModalVisible(false);
     setErrors({});

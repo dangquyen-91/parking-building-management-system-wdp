@@ -49,6 +49,16 @@ export type ResendVerificationPayload = {
   email: string;
 };
 
+export type ForgotPasswordPayload = {
+  email: string;
+};
+
+export type ResetPasswordPayload = {
+  email: string;
+  otp: string;
+  newPassword: string;
+};
+
 export type RegisterPayload = {
   fullName: string;
   email: string;

@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 import { toast } from "sonner-native";
 import Ionicons from "react-native-vector-icons/Ionicons";
 
+import { AppRefreshControl } from "@/components/common/refresh-control";
 import { GlassCard, Label, Page, Stat } from "@/components/parking-ui";
 import { useCurrentUserQuery } from "@/hooks/useAuth";
 import {
@@ -34,10 +35,19 @@ const statusLabels: Record<ComplaintStatus, string> = {
   resolved: "Đã xử lý",
 };
 
-const statusToneClassNames: Record<ComplaintStatus, string> = {
-  open: "border border-amber-400/40 bg-amber-500/15 text-amber-200",
-  in_progress: "border border-sky-400/40 bg-sky-500/15 text-sky-200",
-  resolved: "border border-emerald-400/40 bg-emerald-500/15 text-emerald-200",
+const statusToneClassNames: Record<ComplaintStatus, { container: string; text: string }> = {
+  open: {
+    container: "border border-amber-400/40 bg-amber-500/15",
+    text: "text-amber-700 dark:text-amber-200",
+  },
+  in_progress: {
+    container: "border border-sky-400/40 bg-sky-500/15",
+    text: "text-sky-700 dark:text-sky-200",
+  },
+  resolved: {
+    container: "border border-emerald-400/40 bg-emerald-500/15",
+    text: "text-emerald-700 dark:text-emerald-200",
+  },
 };
 
 const getComplaintUserName = (value?: ComplaintUser | string | null) => {
@@ -92,6 +102,7 @@ export default function StaffOperations() {
   const { btnPrimaryFg } = useThemeColors();
   const { data: currentUser } = useCurrentUserQuery();
   const [statusFilter, setStatusFilter] = useState<ComplaintStatus | "all">("all");
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const complaintsQuery = useAllComplaintsQuery(statusFilter, isStaffRole(currentUser?.role));
   const updateStatusMutation = useUpdateComplaintStatusMutation();
 
@@ -109,7 +120,11 @@ export default function StaffOperations() {
   );
 
   const handleRefresh = async () => {
-    const result = await complaintsQuery.refetch();
+    setIsRefreshing(true);
+
+    const result = await complaintsQuery.refetch().finally(() => {
+      setIsRefreshing(false);
+    });
 
     if (result.error) {
       toast.error("Không thể làm mới", {
@@ -177,6 +192,9 @@ export default function StaffOperations() {
       <ScrollView
         contentInsetAdjustmentBehavior="automatic"
         contentContainerClassName="gap-4 px-5 pb-[120px]"
+        refreshControl={
+          <AppRefreshControl onRefresh={handleRefresh} refreshing={isRefreshing} />
+        }
       >
         <View className="flex-row gap-3">
           <Stat label="Mới gửi" value={stats.open} />
@@ -185,7 +203,7 @@ export default function StaffOperations() {
         </View>
 
         <GlassCard className="gap-4">
-          <View className="flex-row items-start justify-between gap-3">
+          <View className="flex-row items-start gap-3">
             <View className="flex-1 gap-1">
               <Label>Bộ lọc ca trực</Label>
               <Text className="font-sans text-lg font-extrabold text-fg">
@@ -196,15 +214,6 @@ export default function StaffOperations() {
               </Text>
             </View>
 
-            <Pressable
-              className="rounded-full bg-btn-primary px-4 py-2.5"
-              disabled={complaintsQuery.isFetching}
-              onPress={() => void handleRefresh()}
-            >
-              <Text className="font-sans text-sm font-bold text-btn-primary-fg">
-                {complaintsQuery.isFetching ? "Đang tải..." : "Tải lại"}
-              </Text>
-            </Pressable>
           </View>
 
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
@@ -242,7 +251,7 @@ export default function StaffOperations() {
               <Ionicons name="sync-outline" color={btnPrimaryFg} size={22} />
             </View>
             <Text className="font-sans text-base font-extrabold text-fg">
-              Đang tải khiếu nại...
+              Đang tải các đơn khiếu nại...
             </Text>
             <Text className="font-sans text-sm leading-5 text-subtle">
               Danh sách complaint sẽ xuất hiện ngay khi máy chủ phản hồi.
@@ -293,9 +302,11 @@ export default function StaffOperations() {
                   </View>
 
                   <View
-                    className={`rounded-full px-3 py-1.5 ${statusToneClassNames[complaint.status]}`}
+                    className={`rounded-full px-3 py-1.5 ${statusToneClassNames[complaint.status].container}`}
                   >
-                    <Text className="font-sans text-xs font-bold uppercase">
+                    <Text
+                      className={`font-sans text-xs font-bold uppercase ${statusToneClassNames[complaint.status].text}`}
+                    >
                       {statusLabels[complaint.status]}
                     </Text>
                   </View>
