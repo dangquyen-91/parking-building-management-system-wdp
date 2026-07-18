@@ -11,6 +11,7 @@ const bookingSchema = new mongoose.Schema(
     expectedExitTime: { type: Date, required: true },
     durationHours: { type: Number, required: true, min: 1 },
     amount: { type: Number, required: true, min: 0 },
+    feeBreakdown: { type: mongoose.Schema.Types.Mixed, default: {} },
     status: { type: String, enum: BOOKING_STATUSES, default: 'pending' },
     paymentId: { type: mongoose.Schema.Types.ObjectId, ref: 'Payment', default: null },
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },

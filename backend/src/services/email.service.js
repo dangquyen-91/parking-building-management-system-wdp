@@ -93,6 +93,24 @@ const formatDateTime = (date) =>
 
 const formatVND = (amount) => `${(amount || 0).toLocaleString('vi-VN')}đ`;
 
+// Day/night line items for the fee (only when the hourly breakdown is present).
+const buildFeeRows = (bd) => {
+  if (!bd || bd.dayHours == null) return '';
+  let rows = '';
+  if (bd.dayHours > 0) {
+    rows += `<tr><td style="padding: 8px; border-bottom: 1px solid #eee;">☀️ Ban ngày (${bd.dayHours} giờ × ${formatVND(bd.hourlyRate)})</td>
+        <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: right;">${formatVND(bd.dayHours * bd.hourlyRate)}</td></tr>`;
+  }
+  if (bd.nightHours > 0) {
+    rows += `<tr><td style="padding: 8px; border-bottom: 1px solid #eee; color: #b45309;">🌙 Ban đêm 22h–5h (${bd.nightHours} giờ × ${formatVND(bd.nightHourlyRate)})</td>
+        <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: right; color: #b45309;"><b>${formatVND(bd.nightHours * bd.nightHourlyRate)}</b></td></tr>`;
+  }
+  if (bd.capped) {
+    rows += `<tr><td colspan="2" style="padding: 4px 8px; border-bottom: 1px solid #eee; color: #b45309; font-size: 12px;">Đã áp trần ${formatVND(bd.dailyCap)}/ngày</td></tr>`;
+  }
+  return rows;
+};
+
 const buildHtml = (booking) => `
   <div style="font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto;">
     <h2 style="color: #2e7d32;">✅ Đặt chỗ thành công!</h2>
@@ -108,8 +126,9 @@ const buildHtml = (booking) => `
           <td style="padding: 8px; border-bottom: 1px solid #eee;">${formatDateTime(booking.expectedExitTime)}</td></tr>
       <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><b>Thời lượng</b></td>
           <td style="padding: 8px; border-bottom: 1px solid #eee;">${booking.durationHours} giờ</td></tr>
-      <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><b>Đã thanh toán</b></td>
-          <td style="padding: 8px; border-bottom: 1px solid #eee; color: #2e7d32;"><b>${formatVND(booking.amount)}</b></td></tr>
+      ${buildFeeRows(booking.feeBreakdown)}
+      <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><b>Tổng đã thanh toán</b></td>
+          <td style="padding: 8px; border-bottom: 1px solid #eee; color: #2e7d32; font-size: 16px;"><b>${formatVND(booking.amount)}</b></td></tr>
       <tr><td style="padding: 8px;"><b>Mã booking</b></td>
           <td style="padding: 8px;">${booking._id}</td></tr>
     </table>

@@ -7,7 +7,6 @@ import {
   BookingPaymentPanel,
   BookingSummary,
   BookingTopNav,
-  CAR_BLOCK_HOURS,
   computeBookingAmount,
   normalizeBookingPlate,
   toDateTimeLocalValue,
@@ -29,7 +28,7 @@ export function BookingPage() {
   const [phoneNumber, setPhoneNumber] = useState('')
   const [licensePlate, setLicensePlate] = useState('')
   const [expectedArrivalTime, setExpectedArrivalTime] = useState(defaultArrival)
-  const [durationHours, setDurationHours] = useState(CAR_BLOCK_HOURS)
+  const [durationHours, setDurationHours] = useState(2)
   const [createdBooking, setCreatedBooking] = useState<Booking | null>(null)
   const [payment, setPayment] = useState<BookingPayment | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -39,7 +38,7 @@ export function BookingPage() {
   const expectedExitTime = Number.isNaN(arrival.getTime())
     ? ''
     : toDateTimeLocalValue(new Date(arrival.getTime() + durationHours * 60 * 60 * 1000))
-  const estimatedFee = computeBookingAmount(durationHours)
+  const estimatedFee = Number.isNaN(arrival.getTime()) ? 0 : computeBookingAmount(arrival, durationHours)
   const canSubmit =
     isValidEmail(email) && normalizeBookingPlate(licensePlate).length >= 4 && expectedArrivalTime
 

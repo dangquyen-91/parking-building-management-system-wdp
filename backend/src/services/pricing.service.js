@@ -2,6 +2,7 @@ import Pricing from '../models/pricing.model.js';
 import AppError from '../utils/appError.js';
 
 const HOUR_MS = 60 * 60 * 1000;
+const vnHour = (date) => (date.getUTCHours() + 7) % 24; // Vietnam = UTC+7 (no DST)
 
 export const getActivePricing = async (vehicleType) => {
   const pricing = await Pricing.findOne({ vehicleType, isActive: true });
@@ -71,6 +72,54 @@ const calcTimeBlock = (entry, exit, pricing) => {
   };
 };
 
+// hourly: per-hour rate rounded up. Hours whose start falls in the night window
+// (VN time, wraps midnight) cost `nightHourlyRate`. Optional `dailyCap` per 24h.
+const calcHourly = (entry, exit, pricing) => {
+  const totalHours = Math.max(1, Math.ceil((exit.getTime() - entry.getTime()) / HOUR_MS));
+  const { hourlyRate, nightHourlyRate, nightStartHour, nightEndHour, dailyCap } = pricing;
+  const nightRate = nightHourlyRate ?? hourlyRate;
+
+  const isNightHour = (h) =>
+    nightStartHour > nightEndHour
+      ? h >= nightStartHour || h < nightEndHour // wraps midnight, e.g. 22..5
+      : h >= nightStartHour && h < nightEndHour;
+
+  let dayHours = 0;
+  let nightHours = 0;
+  for (let i = 0; i < totalHours; i += 1) {
+    if (isNightHour(vnHour(new Date(entry.getTime() + i * HOUR_MS)))) nightHours += 1;
+    else dayHours += 1;
+  }
+
+  let total = dayHours * hourlyRate + nightHours * nightRate;
+  let capped = false;
+  if (dailyCap && dailyCap > 0) {
+    const cap = dailyCap * Math.ceil(totalHours / 24);
+    if (total > cap) {
+      total = cap;
+      capped = true;
+    }
+  }
+
+  return {
+    total,
+    breakdown: {
+      durationMs: Math.max(0, exit.getTime() - entry.getTime()),
+      totalHours,
+      dayHours,
+      nightHours,
+      hourlyRate,
+      nightHourlyRate: nightRate,
+      dailyCap: dailyCap || null,
+      capped,
+      detail:
+        `${dayHours}h ngày x ${hourlyRate}đ` +
+        (nightHours > 0 ? ` + ${nightHours}h đêm x ${nightRate}đ` : '') +
+        (capped ? ` (áp trần ${dailyCap}đ/ngày)` : ''),
+    },
+  };
+};
+
 export const calculateFee = async ({ vehicleType, entryTime, exitTime }) => {
   const pricing = await getActivePricing(vehicleType);
 
@@ -83,6 +132,8 @@ export const calculateFee = async ({ vehicleType, entryTime, exitTime }) => {
     result = calcFixedBlock(durationMs, pricing);
   } else if (pricing.mode === 'time_block') {
     result = calcTimeBlock(entry, exit, pricing);
+  } else if (pricing.mode === 'hourly') {
+    result = calcHourly(entry, exit, pricing);
   } else {
     throw new AppError(`Unsupported pricing mode "${pricing.mode}" for ${vehicleType}`, 500);
   }
@@ -96,6 +147,11 @@ export const calculateFee = async ({ vehicleType, entryTime, exitTime }) => {
       blockHours: pricing.blockHours,
       blockFee: pricing.blockFee,
       timeBlocks: pricing.timeBlocks,
+      hourlyRate: pricing.hourlyRate,
+      nightHourlyRate: pricing.nightHourlyRate,
+      nightStartHour: pricing.nightStartHour,
+      nightEndHour: pricing.nightEndHour,
+      dailyCap: pricing.dailyCap,
     },
   };
 };
