@@ -143,12 +143,24 @@ export type GateCheckoutPreview = {
     nights?: number
     prepaidAmount?: number
     fullStayFee?: number
+    totalHours?: number
+    dayHours?: number
+    nightHours?: number
+    hourlyRate?: number
+    nightHourlyRate?: number
+    dailyCap?: number | null
+    capped?: boolean
   } | null
   pricing?: {
     vehicleType: GateVehicleType
-    mode: 'time_block' | 'fixed_block'
+    mode: 'time_block' | 'fixed_block' | 'hourly'
     blockHours?: number | null
     blockFee?: number | null
+    hourlyRate?: number | null
+    nightHourlyRate?: number | null
+    nightStartHour?: number | null
+    nightEndHour?: number | null
+    dailyCap?: number | null
     timeBlocks?: Array<{
       startHour: number
       endHour: number

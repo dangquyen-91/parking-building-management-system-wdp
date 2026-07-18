@@ -10,8 +10,7 @@ import AppError from '../utils/appError.js';
 
 const HOUR_MS = 60 * 60 * 1000;
 const MAX_FUTURE_MS = 24 * HOUR_MS;
-const BLOCK_HOURS = 4; // bookings are sold in 4-hour blocks only
-const MIN_DURATION_HOURS = BLOCK_HOURS;
+const MIN_DURATION_HOURS = 1; // bookings are by the hour
 const MAX_DURATION_HOURS = 24;
 
 const BOOKING_POPULATE = [
@@ -73,12 +72,8 @@ export const create = async ({ email, licensePlate, expectedArrivalTime, expecte
   if (exit <= arrival) {
     throw new AppError('expectedExitTime must be after expectedArrivalTime', 400);
   }
-  const diffMs = exit.getTime() - arrival.getTime();
-  // Only whole 4-hour blocks are allowed (4, 8, 12, 16, 20, 24h).
-  if (diffMs % (BLOCK_HOURS * HOUR_MS) !== 0) {
-    throw new AppError(`Thời lượng đặt chỗ phải là bội số của ${BLOCK_HOURS} giờ (4, 8, 12, ...).`, 400);
-  }
-  const durationHours = diffMs / HOUR_MS;
+  // Booked by the hour; a partial hour rounds up (matches hourly pricing).
+  const durationHours = Math.ceil((exit.getTime() - arrival.getTime()) / HOUR_MS);
   if (durationHours < MIN_DURATION_HOURS) {
     throw new AppError(`Booking duration must be at least ${MIN_DURATION_HOURS} hour(s)`, 400);
   }
@@ -126,7 +121,7 @@ export const create = async ({ email, licensePlate, expectedArrivalTime, expecte
     );
   }
 
-  const { total: amount } = await pricingService.calculateFee({
+  const { total: amount, breakdown: feeBreakdown } = await pricingService.calculateFee({
     vehicleType: 'car',
     entryTime: arrival,
     exitTime: exit,
@@ -140,6 +135,7 @@ export const create = async ({ email, licensePlate, expectedArrivalTime, expecte
     expectedExitTime: exit,
     durationHours,
     amount,
+    feeBreakdown,
     status: 'pending',
     userId: userId || null,
   });

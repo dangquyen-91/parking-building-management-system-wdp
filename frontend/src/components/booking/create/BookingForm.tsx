@@ -1,5 +1,5 @@
 import type { FormEvent, ReactNode } from 'react'
-import { CAR_BLOCK_HOURS, MAX_DURATION_HOURS } from '../bookingUtils'
+import { MAX_DURATION_HOURS, MIN_DURATION_HOURS } from '../bookingUtils'
 import { BookingPolicyNotice } from './BookingPolicyNotice'
 
 type BookingFormProps = {
@@ -115,7 +115,7 @@ export function BookingForm({
             <button
               type="button"
               className="h-8 w-8 rounded-lg bg-white font-bold text-violet-700 shadow-sm hover:bg-violet-100 dark:bg-white/10 dark:text-violet-200"
-              onClick={() => onDurationHoursChange((value) => Math.max(CAR_BLOCK_HOURS, value - CAR_BLOCK_HOURS))}
+              onClick={() => onDurationHoursChange((value) => Math.max(MIN_DURATION_HOURS, value - 1))}
               aria-label="Giảm thời lượng"
             >
               -
@@ -124,7 +124,7 @@ export function BookingForm({
             <button
               type="button"
               className="h-8 w-8 rounded-lg bg-violet-600 font-bold text-white shadow-sm hover:bg-violet-700"
-              onClick={() => onDurationHoursChange((value) => Math.min(MAX_DURATION_HOURS, value + CAR_BLOCK_HOURS))}
+              onClick={() => onDurationHoursChange((value) => Math.min(MAX_DURATION_HOURS, value + 1))}
               aria-label="Tăng thời lượng"
             >
               +
