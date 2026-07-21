@@ -1,6 +1,12 @@
 import type { FormEvent, ReactNode } from 'react'
+import { isValidEmail, isValidLicensePlate, isValidVNPhone } from '../../../utils/validation'
 import { MAX_DURATION_HOURS, MIN_DURATION_HOURS } from '../bookingUtils'
 import { BookingPolicyNotice } from './BookingPolicyNotice'
+
+function FieldError({ show, children }: { show: boolean; children: ReactNode }) {
+  if (!show) return null
+  return <p className="text-xs font-medium text-red-500">{children}</p>
+}
 
 type BookingFormProps = {
   email: string
@@ -66,6 +72,7 @@ export function BookingForm({
             className="auth-input h-12 rounded-xl border px-4 text-sm text-fg shadow-sm read-only:opacity-80"
             placeholder="guest@example.com"
           />
+          <FieldError show={Boolean(email) && !isValidEmail(email)}>Email không hợp lệ.</FieldError>
           <p className="text-xs text-subtle">
             Email này sẽ nhận thông tin booking sau khi chuyển khoản thành công.
           </p>
@@ -77,11 +84,14 @@ export function BookingForm({
             type="tel"
             value={phoneNumber}
             onChange={(event) => onPhoneNumberChange(event.target.value)}
-            minLength={8}
-            maxLength={15}
+            inputMode="numeric"
+            maxLength={10}
             className="auth-input h-12 rounded-xl border px-4 text-sm text-fg shadow-sm"
             placeholder="0912345678"
           />
+          <FieldError show={Boolean(phoneNumber) && !isValidVNPhone(phoneNumber)}>
+            Số điện thoại không hợp lệ (10 số, bắt đầu bằng 0).
+          </FieldError>
         </div>
 
         <div className="flex flex-col gap-2">
@@ -96,6 +106,9 @@ export function BookingForm({
             className="auth-input h-12 rounded-xl border px-4 text-sm font-bold uppercase tracking-wide text-fg shadow-sm"
             placeholder="51F-12345"
           />
+          <FieldError show={Boolean(licensePlate) && !isValidLicensePlate(licensePlate)}>
+            Biển số không hợp lệ (ví dụ: 51F-12345).
+          </FieldError>
         </div>
 
         <div className="flex flex-col gap-2">

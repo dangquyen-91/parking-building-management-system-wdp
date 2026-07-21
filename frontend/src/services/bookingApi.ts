@@ -42,6 +42,7 @@ export type BookingPayment = {
 
 export type CreateBookingPayload = {
   email: string
+  phone: string
   licensePlate: string
   expectedArrivalTime: string
   expectedExitTime: string

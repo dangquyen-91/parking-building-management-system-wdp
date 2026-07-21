@@ -53,9 +53,10 @@ const countCurrentVisitorCarSessions = async () => {
   });
 };
 
-export const create = async ({ email, licensePlate, expectedArrivalTime, expectedExitTime, userId }) => {
+export const create = async ({ email, phone, licensePlate, expectedArrivalTime, expectedExitTime, userId }) => {
   const normalizedPlate = licensePlate.toUpperCase().replace(/\s/g, '');
   const normalizedEmail = email.trim().toLowerCase();
+  const normalizedPhone = phone?.trim() || null;
   const arrival = new Date(expectedArrivalTime);
   const exit = new Date(expectedExitTime);
   const now = new Date();
@@ -129,6 +130,7 @@ export const create = async ({ email, licensePlate, expectedArrivalTime, expecte
 
   const booking = await Booking.create({
     email: normalizedEmail,
+    phone: normalizedPhone,
     licensePlate: normalizedPlate,
     vehicleType: 'car',
     expectedArrivalTime: arrival,
@@ -150,6 +152,7 @@ export const create = async ({ email, licensePlate, expectedArrivalTime, expecte
       items: [{ name: `Car parking ${durationHours}h`, quantity: 1, price: amount }],
       buyerName: 'Booking Customer',
       buyerEmail: normalizedEmail,
+      buyerPhone: normalizedPhone || undefined,
     });
   } catch (err) {
     await Booking.findByIdAndDelete(booking._id);

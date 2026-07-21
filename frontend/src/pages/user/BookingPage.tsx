@@ -13,7 +13,7 @@ import {
 } from '../../components/booking'
 import { getStoredAuthUser } from '../../services/authApi'
 import { bookingApi, type Booking, type BookingPayment } from '../../services/bookingApi'
-import { isValidEmail } from '../../utils/validation'
+import { isValidEmail, isValidLicensePlate, isValidVNPhone } from '../../utils/validation'
 
 export function BookingPage() {
   const storedUser = useMemo(() => getStoredAuthUser(), [])
@@ -40,7 +40,10 @@ export function BookingPage() {
     : toDateTimeLocalValue(new Date(arrival.getTime() + durationHours * 60 * 60 * 1000))
   const estimatedFee = Number.isNaN(arrival.getTime()) ? 0 : computeBookingAmount(arrival, durationHours)
   const canSubmit =
-    isValidEmail(email) && normalizeBookingPlate(licensePlate).length >= 4 && expectedArrivalTime
+    isValidEmail(email) &&
+    isValidVNPhone(phoneNumber) &&
+    isValidLicensePlate(licensePlate) &&
+    Boolean(expectedArrivalTime)
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -54,6 +57,7 @@ export function BookingPage() {
     try {
       const result = await bookingApi.createBooking({
         email: email.trim().toLowerCase(),
+        phone: phoneNumber.trim(),
         licensePlate: normalizeBookingPlate(licensePlate),
         expectedArrivalTime: new Date(expectedArrivalTime).toISOString(),
         expectedExitTime: new Date(expectedExitTime).toISOString(),
