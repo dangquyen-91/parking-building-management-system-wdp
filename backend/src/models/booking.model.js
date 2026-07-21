@@ -5,6 +5,7 @@ export const BOOKING_STATUSES = ['pending', 'paid', 'used', 'expired', 'cancelle
 const bookingSchema = new mongoose.Schema(
   {
     email: { type: String, required: true, trim: true, lowercase: true },
+    phone: { type: String, trim: true },
     licensePlate: { type: String, required: true, trim: true, uppercase: true },
     vehicleType: { type: String, enum: ['car'], default: 'car', required: true },
     expectedArrivalTime: { type: Date, required: true },
