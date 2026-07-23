@@ -49,7 +49,7 @@ export function ManagerBookingCard({ booking }: ManagerBookingCardProps) {
           <div className="min-w-0">
             <p className="text-xs text-muted-foreground">Khách hàng</p>
             <p className="mt-1 truncate font-medium text-foreground">{getCustomerName(booking)}</p>
-            <p className="mt-1 truncate text-xs text-muted-foreground">{booking.phoneNumber}</p>
+            <p className="mt-1 truncate text-xs text-muted-foreground">{booking.phone}</p>
           </div>
           <div>
             <p className="text-xs text-muted-foreground">Thời gian đến</p>

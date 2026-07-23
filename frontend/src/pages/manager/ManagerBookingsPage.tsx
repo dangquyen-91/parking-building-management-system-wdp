@@ -27,7 +27,7 @@ function getBookingSearchText(booking: ManagerBooking) {
   return [
     booking._id,
     booking.licensePlate,
-    booking.phoneNumber,
+    booking.phone ?? '',
     booking.status,
     booking.amount,
     booking.durationHours,

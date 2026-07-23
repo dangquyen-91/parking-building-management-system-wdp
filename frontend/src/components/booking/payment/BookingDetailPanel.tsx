@@ -29,7 +29,7 @@ export function BookingDetailPanel({ booking, onCreateAnother }: BookingDetailPa
         </div>
         <div className="flex items-center justify-between gap-4">
           <dt className="text-subtle">Số điện thoại</dt>
-          <dd className="font-medium text-fg">{booking.phoneNumber ?? '-'}</dd>
+          <dd className="font-medium text-fg">{booking.phone ?? '-'}</dd>
         </div>
         <div className="flex items-center justify-between gap-4">
           <dt className="text-subtle">Giờ đến</dt>

@@ -12,7 +12,7 @@ export type ManagerBookingStatus = 'pending' | 'paid' | 'used' | 'expired' | 'ca
 
 export type ManagerBooking = {
   _id: string
-  phoneNumber: string
+  phone?: string
   licensePlate: string
   vehicleType: 'car'
   expectedArrivalTime: string

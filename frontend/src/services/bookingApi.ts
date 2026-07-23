@@ -13,7 +13,7 @@ export type BookingStatus = 'pending' | 'paid' | 'used' | 'expired' | 'cancelled
 export type Booking = {
   _id: string
   email: string
-  phoneNumber?: string
+  phone?: string
   licensePlate: string
   vehicleType: 'car'
   expectedArrivalTime: string

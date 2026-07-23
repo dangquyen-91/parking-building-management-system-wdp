@@ -35,7 +35,7 @@ export type AdminBookingStatus = 'pending' | 'paid' | 'used' | 'expired' | 'canc
 
 export type AdminBooking = {
   _id: string
-  phoneNumber: string
+  phone?: string
   licensePlate: string
   vehicleType: 'car'
   expectedArrivalTime: string
