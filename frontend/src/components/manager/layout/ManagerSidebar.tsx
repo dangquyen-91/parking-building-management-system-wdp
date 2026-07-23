@@ -1,0 +1,215 @@
+﻿import { forwardRef } from 'react'
+import { NavLink } from 'react-router-dom'
+import { ThemeToggle } from '../../common'
+import { LogoIcon } from '../../common/icons'
+import { LogoutButton } from '../../common/LogoutButton'
+
+const MANAGER_NAV_ITEMS = [
+  { to: '/manager', label: 'Tổng quan', detail: 'Bức tranh vận hành', icon: 'grid' },
+  { to: '/manager/buildings', label: 'Tòa nhà', detail: 'Khu, tầng, sức chứa', icon: 'building' },
+  { to: '/manager/slots', label: 'Chỗ đỗ', detail: 'Slot và hàng xe', icon: 'slots' },
+  { to: '/manager/bookings', label: 'Lịch đặt', detail: 'Đặt chỗ trả trước', icon: 'calendar' },
+  { to: '/manager/gate-logs', label: 'Hoạt động cổng', detail: 'Xe vào, xe ra', icon: 'gate' },
+  { to: '/manager/lost-tickets', label: 'Mất vé', detail: 'Phạt và đối soát', icon: 'ticket' },
+  { to: '/manager/complaints', label: 'Khiếu nại', detail: 'Đậu sai chỗ', icon: 'complaint' },
+  { to: '/manager/staff', label: 'Nhân viên', detail: 'Tài khoản staff', icon: 'staff' },
+  { to: '/manager/plans', label: 'Gói gửi xe', detail: 'Giá và trạng thái', icon: 'plan' },
+  { to: '/manager/subscriptions', label: 'Người dùng gói', detail: 'Cư dân đã mua gói', icon: 'plan' },
+  { to: '/manager/reports', label: 'Báo cáo', detail: 'Doanh thu, vận hành', icon: 'report' },
+] as const
+
+const MANAGER_ICON_TONES = {
+  grid: 'bg-sky-500/15 text-sky-700 ring-sky-500/20 dark:text-sky-300',
+  building: 'bg-indigo-500/15 text-indigo-700 ring-indigo-500/20 dark:text-indigo-300',
+  slots: 'bg-cyan-500/15 text-cyan-700 ring-cyan-500/20 dark:text-cyan-300',
+  calendar: 'bg-emerald-500/15 text-emerald-700 ring-emerald-500/20 dark:text-emerald-300',
+  gate: 'bg-blue-500/15 text-blue-700 ring-blue-500/20 dark:text-blue-300',
+  ticket: 'bg-amber-500/15 text-amber-700 ring-amber-500/20 dark:text-amber-300',
+  complaint: 'bg-rose-500/15 text-rose-700 ring-rose-500/20 dark:text-rose-300',
+  staff: 'bg-violet-500/15 text-violet-700 ring-violet-500/20 dark:text-violet-300',
+  plan: 'bg-teal-500/15 text-teal-700 ring-teal-500/20 dark:text-teal-300',
+  report: 'bg-fuchsia-500/15 text-fuchsia-700 ring-fuchsia-500/20 dark:text-fuchsia-300',
+} as const
+
+function ManagerIcon({ name }: { name: (typeof MANAGER_NAV_ITEMS)[number]['icon'] }) {
+  if (name === 'grid') {
+    return (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <rect x="3" y="3" width="8" height="8" rx="1.5" stroke="currentColor" strokeWidth="1.5" />
+        <rect x="13" y="3" width="8" height="8" rx="1.5" stroke="currentColor" strokeWidth="1.5" />
+        <rect x="3" y="13" width="8" height="8" rx="1.5" stroke="currentColor" strokeWidth="1.5" />
+        <rect x="13" y="13" width="8" height="8" rx="1.5" stroke="currentColor" strokeWidth="1.5" />
+      </svg>
+    )
+  }
+
+  if (name === 'staff') {
+    return (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <circle cx="8" cy="8" r="3" stroke="currentColor" strokeWidth="1.5" />
+        <path d="M3 19c0-2.8 2.2-5 5-5s5 2.2 5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+        <path d="M16 7h5M16 12h5M16 17h5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      </svg>
+    )
+  }
+
+  if (name === 'calendar') {
+    return (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <rect x="4" y="5" width="16" height="15" rx="2" stroke="currentColor" strokeWidth="1.5" />
+        <path d="M8 3v4M16 3v4M4 10h16" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      </svg>
+    )
+  }
+  if (name === 'ticket') {
+    return (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path
+          d="M5 7.5A2.5 2.5 0 0 1 7.5 5h9A2.5 2.5 0 0 1 19 7.5v2a2.5 2.5 0 0 0 0 5v2A2.5 2.5 0 0 1 16.5 19h-9A2.5 2.5 0 0 1 5 16.5v-2a2.5 2.5 0 0 0 0-5v-2Z"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinejoin="round"
+        />
+        <path d="M10 8h4M10 12h4M10 16h3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      </svg>
+    )
+  }
+
+  if (name === 'complaint') {
+    return (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M12 4 3.5 19h17L12 4Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+        <path d="M12 9v4M12 16.5h.01" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+      </svg>
+    )
+  }
+
+
+  if (name === 'report') {
+    return (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M6 20V4h9l3 3v13H6Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+        <path d="M9 15h6M9 11h6M9 7h3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      </svg>
+    )
+  }
+
+  if (name === 'plan') {
+    return (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M5 5.5A1.5 1.5 0 0 1 6.5 4h11A1.5 1.5 0 0 1 19 5.5v13a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 5 18.5v-13Z" stroke="currentColor" strokeWidth="1.5" />
+        <path d="M8 8h8M8 12h8M8 16h5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      </svg>
+    )
+  }
+
+  if (name === 'building') {
+    return (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M4 20V5.5A1.5 1.5 0 0 1 5.5 4H14l4 4v12H4Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+        <path d="M8 9h2M8 13h2M8 17h2M14 13h2M14 17h2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      </svg>
+    )
+  }
+
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M4 18V8.5A2.5 2.5 0 0 1 6.5 6h11A2.5 2.5 0 0 1 20 8.5V18" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      <path d="M7 18v-6h10v6M9 10h6M3 18h18" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+function linkClassName({ isActive }: { isActive: boolean }) {
+  return [
+    'group flex items-center gap-3 rounded-2xl border px-3 py-3 text-sm transition-all duration-200',
+    isActive
+      ? 'border-emerald-400/40 bg-gradient-to-r from-sky-600 to-emerald-500 text-white shadow-lg shadow-sky-500/20'
+      : 'border-transparent text-muted-foreground hover:border-emerald-500/20 hover:bg-white/80 hover:text-foreground dark:hover:bg-white/10',
+  ].join(' ')
+}
+
+type ManagerSidebarProps = {
+  isOpen: boolean
+  onNavigate?: () => void
+}
+
+export const ManagerSidebar = forwardRef<HTMLElement, ManagerSidebarProps>(function ManagerSidebar(
+  { isOpen, onNavigate },
+  ref,
+) {
+  return (
+    <aside
+      ref={ref}
+      id="manager-sidebar"
+      className={[
+        'flex flex-col border-r border-emerald-200/60 bg-background/92 shadow-2xl backdrop-blur-xl dark:border-emerald-900/50',
+        'max-lg:fixed max-lg:inset-y-0 max-lg:left-0 max-lg:z-50',
+        'max-lg:w-[min(19rem,86vw)] max-lg:max-h-screen max-lg:overscroll-contain',
+        'lg:fixed lg:inset-y-0 lg:left-0 lg:z-30 lg:h-screen lg:w-72 lg:translate-x-0 lg:visible lg:pointer-events-auto',
+        'transition-transform duration-300 ease-out lg:transition-none',
+        isOpen
+          ? 'max-lg:translate-x-0 max-lg:visible max-lg:pointer-events-auto'
+          : 'max-lg:-translate-x-full max-lg:invisible max-lg:pointer-events-none',
+      ].join(' ')}
+    >
+      <div className="border-b border-emerald-200/60 bg-gradient-to-br from-sky-500/10 via-background to-emerald-500/10 p-5 dark:border-emerald-900/50">
+        <div className="flex items-center justify-between gap-3">
+        <NavLink
+          to="/manager"
+          className="flex min-w-0 items-center gap-3 text-foreground"
+          aria-label="Khu quản lý bãi xe"
+          onClick={onNavigate}
+        >
+          <span className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-500 to-emerald-500 text-white shadow-lg shadow-sky-500/20">
+            <LogoIcon size={22} />
+          </span>
+          <span className="min-w-0 leading-tight">
+            <span className="block truncate text-base font-black">Quản lý bãi xe</span>
+            <span className="mt-1 block truncate text-[11px] font-black uppercase tracking-[0.24em] text-muted-foreground">
+              Control Center
+            </span>
+          </span>
+        </NavLink>
+        <ThemeToggle className="shrink-0 border border-emerald-500/20 bg-card shadow-sm" />
+        </div>
+
+        <div className="mt-5 rounded-2xl border border-sky-500/25 bg-sky-500/10 p-3">
+          <div className="flex items-center gap-2 text-xs font-bold text-sky-700 dark:text-sky-200">
+            <span className="size-2 rounded-full bg-sky-500 shadow-[0_0_12px_rgba(14,165,233,0.9)]" />
+            Dữ liệu vận hành trực tiếp
+          </div>
+          <p className="mt-1 text-[11px] text-muted-foreground">Theo dõi bãi xe, nhân viên và doanh thu</p>
+        </div>
+      </div>
+
+      <nav className="flex flex-1 flex-col gap-1 overflow-y-auto px-3 py-4" aria-label="Điều hướng quản lý">
+        {MANAGER_NAV_ITEMS.map(({ to, label, detail, icon }) => (
+          <NavLink key={to} to={to} className={linkClassName} end onClick={onNavigate}>
+            <span className={`flex size-10 shrink-0 items-center justify-center rounded-xl ring-1 group-[.active]:bg-white/20 group-[.active]:text-white group-[.active]:ring-white/20 ${MANAGER_ICON_TONES[icon]}`}>
+              <ManagerIcon name={icon} />
+            </span>
+            <span className="min-w-0">
+              <span className="block truncate font-bold">{label}</span>
+              <span className="mt-0.5 block truncate text-[11px] opacity-70">{detail}</span>
+            </span>
+          </NavLink>
+        ))}
+      </nav>
+
+      <div className="border-t border-border p-4">
+        <div className="hidden">
+          <div>
+            <p className="text-xs font-bold text-foreground">Giao diện</p>
+            <p className="text-[11px] text-muted-foreground">Sáng / tối</p>
+          </div>
+          <ThemeToggle className="border border-border bg-background shadow-sm" />
+        </div>
+        <LogoutButton />
+      </div>
+    </aside>
+  )
+})
+
+
+

@@ -1,0 +1,76 @@
+import { motion, useInView, useReducedMotion } from 'framer-motion'
+import { useRef } from 'react'
+import { fadeUp, staggerContainer } from '../../assets/motion/variants'
+import { Badge } from '../ui/badge'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card'
+import { SectionShell } from './SectionShell'
+
+const HIGHLIGHTS = [
+  {
+    label: 'Chỗ trống trực tiếp',
+    value: 'Thời gian thực',
+    detail: 'Biết chính xác khu vực nào còn chỗ.',
+    number: '01',
+  },
+  {
+    label: 'Kiểm soát ra vào',
+    value: 'Hợp nhất',
+    detail: 'Cổng, biển số và quyền cư dân trên một màn hình.',
+    number: '02',
+  },
+  {
+    label: 'Luồng khách',
+    value: 'Tự động',
+    detail: 'Không vé giấy, ít thao tác và ít hàng chờ.',
+    number: '03',
+  },
+] as const
+
+const CARD_TONES = [
+  'from-violet-500/32 via-violet-100/70 to-card ring-violet-500/45 hover:ring-violet-600/70 hover:shadow-violet-500/30 dark:via-violet-950/35',
+  'from-sky-500/32 via-sky-100/70 to-card ring-sky-500/45 hover:ring-sky-600/70 hover:shadow-sky-500/30 dark:via-sky-950/35',
+  'from-emerald-500/32 via-emerald-100/70 to-card ring-emerald-500/45 hover:ring-emerald-600/70 hover:shadow-emerald-500/30 dark:via-emerald-950/35',
+] as const
+
+export function AboutSection() {
+  const gridRef = useRef<HTMLDivElement>(null)
+  const inView = useInView(gridRef, { once: true, margin: '-10% 0px' })
+  const reduceMotion = useReducedMotion()
+
+  return (
+    <SectionShell
+      id="about"
+      eyebrow="Hệ thống // Giới thiệu"
+      title="Mọi hoạt động bãi xe, trong một góc nhìn"
+      description="Giám sát, kiểm soát ra vào và báo cáo mà không phải thay toàn bộ hạ tầng hiện có."
+    >
+      <motion.div
+        ref={gridRef}
+        className="grid gap-4 md:grid-cols-3"
+        variants={reduceMotion ? undefined : staggerContainer}
+        initial="hidden"
+        animate={inView ? 'visible' : 'hidden'}
+      >
+        {HIGHLIGHTS.map((item, index) => (
+          <motion.div
+            key={item.label}
+            custom={index * 0.08}
+            variants={reduceMotion ? undefined : fadeUp}
+          >
+            <Card className={`relative h-full rounded-2xl bg-gradient-to-br shadow-lg shadow-transparent ring-1 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl ${CARD_TONES[index]}`}>
+              <span className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-violet-500 via-sky-500 to-emerald-500" aria-hidden="true" />
+              <CardHeader>
+                <Badge className="w-fit" variant="secondary">{item.number}</Badge>
+                <CardTitle>{item.value}</CardTitle>
+                <CardDescription>{item.label}</CardDescription>
+              </CardHeader>
+              <CardContent className="text-sm leading-6 text-muted-foreground">
+                {item.detail}
+              </CardContent>
+            </Card>
+          </motion.div>
+        ))}
+      </motion.div>
+    </SectionShell>
+  )
+}

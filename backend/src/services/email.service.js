@@ -1,0 +1,197 @@
+﻿import QRCode from 'qrcode';
+
+// Brevo (Sendinblue) transactional email over HTTPS — works on hosts that
+// block outbound SMTP ports (e.g. Render free tier blocks 465/587).
+const BREVO_ENDPOINT = 'https://api.brevo.com/v3/smtp/email';
+
+// attachments: [{ content: <base64 no prefix>, name: 'file.png' }]
+const sendEmail = async ({ to, subject, htmlContent, attachments }) => {
+  const { BREVO_API_KEY, BREVO_SENDER_EMAIL, BREVO_SENDER_NAME } = process.env;
+  if (!BREVO_API_KEY || !BREVO_SENDER_EMAIL) {
+    console.warn('Email not configured (BREVO_API_KEY/BREVO_SENDER_EMAIL missing) — emails skipped');
+    return;
+  }
+
+  const res = await fetch(BREVO_ENDPOINT, {
+    method: 'POST',
+    headers: {
+      'api-key': BREVO_API_KEY,
+      'Content-Type': 'application/json',
+      accept: 'application/json',
+    },
+    body: JSON.stringify({
+      sender: { name: BREVO_SENDER_NAME || 'Parking Building', email: BREVO_SENDER_EMAIL },
+      to: [{ email: to }],
+      subject,
+      htmlContent,
+      ...(attachments?.length ? { attachment: attachments } : {}),
+    }),
+  });
+
+  if (!res.ok) {
+    const body = await res.text();
+    throw new Error(`Brevo API error ${res.status}: ${body}`);
+  }
+};
+
+const buildVerificationHtml = (otp) => `
+  <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; padding: 24px; border: 1px solid #e0e0e0; border-radius: 8px;">
+    <h2 style="color: #1565c0; margin-bottom: 8px;">Xác thực địa chỉ email</h2>
+    <p style="color: #555;">Chào mừng bạn đến với <b>Parking Building Management System</b>!</p>
+    <p style="color: #555;">Nhập mã OTP dưới đây để hoàn tất đăng ký. Mã có hiệu lực trong <b>10 phút</b>.</p>
+    <div style="text-align: center; margin: 32px 0;">
+      <span style="font-size: 40px; font-weight: bold; letter-spacing: 12px; color: #1565c0; background: #e3f2fd; padding: 16px 24px; border-radius: 8px;">${otp}</span>
+    </div>
+    <p style="color: #888; font-size: 13px;">Nếu bạn không tạo tài khoản này, hãy bỏ qua email này.</p>
+    <hr style="border: none; border-top: 1px solid #eee; margin: 24px 0;">
+    <p style="color: #bbb; font-size: 12px; text-align: center;">Parking Building Management System</p>
+  </div>
+`;
+
+const buildPasswordResetHtml = (otp) => `
+  <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; padding: 24px; border: 1px solid #e0e0e0; border-radius: 8px;">
+    <h2 style="color: #c62828; margin-bottom: 8px;">Đặt lại mật khẩu</h2>
+    <p style="color: #555;">Chúng tôi nhận được yêu cầu đặt lại mật khẩu cho tài khoản của bạn.</p>
+    <p style="color: #555;">Nhập mã OTP dưới đây để xác nhận. Mã có hiệu lực trong <b>10 phút</b>.</p>
+    <div style="text-align: center; margin: 32px 0;">
+      <span style="font-size: 40px; font-weight: bold; letter-spacing: 12px; color: #c62828; background: #ffebee; padding: 16px 24px; border-radius: 8px;">${otp}</span>
+    </div>
+    <p style="color: #888; font-size: 13px;">Nếu bạn không yêu cầu đặt lại mật khẩu, hãy bỏ qua email này. Mật khẩu sẽ không thay đổi.</p>
+    <hr style="border: none; border-top: 1px solid #eee; margin: 24px 0;">
+    <p style="color: #bbb; font-size: 12px; text-align: center;">Parking Building Management System</p>
+  </div>
+`;
+
+export const sendPasswordResetEmail = async ({ email, otp }) => {
+  try {
+    await sendEmail({
+      to: email,
+      subject: 'Mã OTP đặt lại mật khẩu',
+      htmlContent: buildPasswordResetHtml(otp),
+    });
+    console.log('Password reset email sent', { email });
+  } catch (err) {
+    console.error('Failed to send password reset email', { error: err.message, email });
+  }
+};
+
+export const sendVerificationEmail = async ({ email, otp }) => {
+  try {
+    await sendEmail({
+      to: email,
+      subject: 'Mã xác thực đăng ký tài khoản',
+      htmlContent: buildVerificationHtml(otp),
+    });
+    console.log('Verification email sent', { email });
+  } catch (err) {
+    console.error('Failed to send verification email', { error: err.message, email });
+  }
+};
+
+const formatDateTime = (date) =>
+  new Date(date).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' });
+
+const formatVND = (amount) => `${(amount || 0).toLocaleString('vi-VN')}đ`;
+
+// Day/night line items for the fee (only when the hourly breakdown is present).
+const buildFeeRows = (bd) => {
+  if (!bd || bd.dayHours == null) return '';
+  let rows = '';
+  if (bd.dayHours > 0) {
+    rows += `<tr><td style="padding: 8px; border-bottom: 1px solid #eee;">☀️ Ban ngày (${bd.dayHours} giờ × ${formatVND(bd.hourlyRate)})</td>
+        <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: right;">${formatVND(bd.dayHours * bd.hourlyRate)}</td></tr>`;
+  }
+  if (bd.nightHours > 0) {
+    rows += `<tr><td style="padding: 8px; border-bottom: 1px solid #eee; color: #b45309;">🌙 Ban đêm 22h–5h (${bd.nightHours} giờ × ${formatVND(bd.nightHourlyRate)})</td>
+        <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: right; color: #b45309;"><b>${formatVND(bd.nightHours * bd.nightHourlyRate)}</b></td></tr>`;
+  }
+  if (bd.capped) {
+    rows += `<tr><td colspan="2" style="padding: 4px 8px; border-bottom: 1px solid #eee; color: #b45309; font-size: 12px;">Đã áp trần ${formatVND(bd.dailyCap)}/ngày</td></tr>`;
+  }
+  return rows;
+};
+
+const buildHtml = (booking) => `
+  <div style="font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto;">
+    <h2 style="color: #2e7d32;">✅ Đặt chỗ thành công!</h2>
+    <p>Cảm ơn bạn đã đặt chỗ gửi xe. Chi tiết booking:</p>
+    <table style="width: 100%; border-collapse: collapse;">
+      <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><b>Biển số xe</b></td>
+          <td style="padding: 8px; border-bottom: 1px solid #eee;">${booking.licensePlate}</td></tr>
+      <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><b>Loại xe</b></td>
+          <td style="padding: 8px; border-bottom: 1px solid #eee;">Ô tô</td></tr>
+      <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><b>Giờ vào dự kiến</b></td>
+          <td style="padding: 8px; border-bottom: 1px solid #eee;">${formatDateTime(booking.expectedArrivalTime)}</td></tr>
+      <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><b>Giờ ra dự kiến</b></td>
+          <td style="padding: 8px; border-bottom: 1px solid #eee;">${formatDateTime(booking.expectedExitTime)}</td></tr>
+      <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><b>Thời lượng</b></td>
+          <td style="padding: 8px; border-bottom: 1px solid #eee;">${booking.durationHours} giờ</td></tr>
+      ${buildFeeRows(booking.feeBreakdown)}
+      <tr><td style="padding: 8px; border-bottom: 1px solid #eee;"><b>Tổng đã thanh toán</b></td>
+          <td style="padding: 8px; border-bottom: 1px solid #eee; color: #2e7d32; font-size: 16px;"><b>${formatVND(booking.amount)}</b></td></tr>
+      <tr><td style="padding: 8px;"><b>Mã booking</b></td>
+          <td style="padding: 8px;">${booking._id}</td></tr>
+    </table>
+    <div style="margin-top: 16px; padding: 12px 16px; background: #e8f5e9; border-radius: 8px;">
+      <b style="color:#2e7d32;">📎 Mã QR check-in/check-out đã đính kèm email này (file qr-checkin-*.png).</b><br/>
+      <span style="color:#555;">Xuất trình mã QR này cho nhân viên khi <b>vào bãi</b> và khi <b>ra bãi</b> — dùng chung một mã cho cả lượt gửi, không cần lấy vé cổng.</span>
+    </div>
+    <p style="margin-top: 16px; color: #666;">
+      ⚠️ Vui lòng đến đúng giờ. Chỗ được giữ đến hết giờ ra dự kiến.
+      Nếu đậu quá giờ, phụ phí sẽ thu thêm khi xe ra.
+    </p>
+    <p style="color: #999; font-size: 12px;">Parking Building Management System</p>
+  </div>
+`;
+
+const buildWrongSlotHtml = ({ name, plate, occupiedSlot, correctSlot }) => `
+  <div style="font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto; padding: 24px; border: 1px solid #e0e0e0; border-radius: 8px;">
+    <h2 style="color: #c62828;">⚠️ Xe của bạn đang đỗ sai chỗ</h2>
+    <p>Chào ${name || 'quý cư dân'},</p>
+    <p>Hệ thống ghi nhận xe biển số <b>${plate}</b> của bạn đang đỗ tại vị trí
+       <b>${occupiedSlot || '(không xác định)'}</b> — <b>không phải</b> chỗ đỗ của bạn.</p>
+    ${correctSlot
+      ? `<p>Vui lòng di chuyển xe về đúng chỗ của bạn: <b style="color:#2e7d32;">${correctSlot}</b>.</p>`
+      : `<p>Vui lòng di chuyển xe về đúng chỗ đỗ đã đăng ký của bạn.</p>`}
+    <p style="color:#c62828;"><b>Nhân viên bãi xe sẽ liên hệ trực tiếp với bạn ngay.</b> Mong bạn hợp tác di chuyển sớm để tránh ảnh hưởng cư dân khác.</p>
+    <hr style="border: none; border-top: 1px solid #eee; margin: 24px 0;">
+    <p style="color: #bbb; font-size: 12px; text-align: center;">Parking Building Management System</p>
+  </div>
+`;
+
+// Fire-and-forget — never throws, never blocks the main flow.
+export const sendWrongSlotAlert = async ({ email, name, plate, occupiedSlot, correctSlot }) => {
+  if (!email) return;
+  try {
+    await sendEmail({
+      to: email,
+      subject: `Cảnh báo: xe ${plate} đang đỗ sai chỗ — vui lòng di chuyển`,
+      htmlContent: buildWrongSlotHtml({ name, plate, occupiedSlot, correctSlot }),
+    });
+    console.log('Wrong-slot alert email sent', { email, plate });
+  } catch (err) {
+    console.error('Failed to send wrong-slot alert email', { error: err.message, email });
+  }
+};
+
+// Fire-and-forget — never throws, never blocks the main flow.
+export const sendBookingConfirmation = async (booking) => {
+  if (!booking?.email) return;
+  try {
+    let attachments;
+    if (booking.qrToken) {
+      const dataUrl = await QRCode.toDataURL(booking.qrToken, { errorCorrectionLevel: 'M', width: 300, margin: 2 });
+      const base64 = dataUrl.replace(/^data:image\/png;base64,/, '');
+      attachments = [{ content: base64, name: `qr-checkin-${booking.licensePlate}.png` }];
+    }
+    await sendEmail({
+      to: booking.email,
+      subject: `Xác nhận đặt chỗ gửi xe — ${booking.licensePlate}`,
+      htmlContent: buildHtml(booking),
+      attachments,
+    });
+    console.log('Booking confirmation email sent', { email: booking.email, bookingId: booking._id });
+  } catch (err) {
+    console.error('Failed to send booking confirmation email', { error: err.message, email: booking.email });
+  }
+};
