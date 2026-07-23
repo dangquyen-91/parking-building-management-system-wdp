@@ -10,9 +10,12 @@ export const generateOrderCode = () => {
   return epoch * 100000 + rand;
 };
 
-export const createPaymentLink = async ({ orderCode, amount, description, items, buyerName, buyerEmail, buyerPhone }) => {
+export const createPaymentLink = async ({ orderCode, amount, description, items, buyerName, buyerEmail, buyerPhone, expiresInSeconds }) => {
   try {
-    const expiredAt = Math.floor(Date.now() / 1000) + PAYMENT_LINK_TTL_SECONDS;
+    // Expire the link no later than when the order's pending window closes, so a
+    // customer can't pay after the order was auto-cancelled (money with no order).
+    const ttl = expiresInSeconds && expiresInSeconds > 0 ? expiresInSeconds : PAYMENT_LINK_TTL_SECONDS;
+    const expiredAt = Math.floor(Date.now() / 1000) + ttl;
     const result = await payOS.paymentRequests.create({
       orderCode,
       amount,

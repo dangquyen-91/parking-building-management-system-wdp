@@ -25,6 +25,7 @@ import complaintRoutes from './routes/complaint.routes.js';
 import webhookRoutes from './routes/webhook.routes.js';
 import { startSubscriptionJobs } from './jobs/subscription.job.js';
 import { startBookingJobs } from './jobs/booking.job.js';
+import { startPaymentJobs } from './jobs/payment.job.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const swaggerDocument = YAML.load(join(__dirname, '../swagger.yaml'));
@@ -74,6 +75,7 @@ app.listen(PORT, () => {
   console.log(`Swagger UI available at http://localhost:${PORT}/api-docs`);
   startSubscriptionJobs();
   startBookingJobs();
+  startPaymentJobs();
 });
 
 export default app;
