@@ -47,7 +47,7 @@ export function AdminBookingsPage() {
       const matchesQuery =
         !normalizedQuery ||
         booking.licensePlate.toLowerCase().replace(/\s/g, '').includes(normalizedQuery) ||
-        booking.phoneNumber.toLowerCase().replace(/\s/g, '').includes(normalizedQuery) ||
+        (booking.phone ?? '').toLowerCase().replace(/\s/g, '').includes(normalizedQuery) ||
         getCustomerSearchText(booking).replace(/\s/g, '').includes(normalizedQuery)
 
       if (!matchesQuery) return false

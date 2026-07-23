@@ -50,7 +50,7 @@ export function ManagerBookingList({ bookings, isLoading }: ManagerBookingListPr
       {bookings.map((booking) => (
         <TableRow key={booking._id}>
           <TableCell className="px-4 py-4"><p className="truncate font-black tracking-[0.06em] text-foreground">{booking.licensePlate}</p></TableCell>
-          <TableCell className="px-4 py-4"><p className="truncate font-semibold text-foreground">{getCustomerName(booking)}</p><p className="mt-1 truncate text-xs text-muted-foreground">{booking.phoneNumber}</p></TableCell>
+          <TableCell className="px-4 py-4"><p className="truncate font-semibold text-foreground">{getCustomerName(booking)}</p><p className="mt-1 truncate text-xs text-muted-foreground">{booking.phone}</p></TableCell>
           <TableCell className="px-4 py-4 font-medium text-foreground">{formatDateTime(booking.expectedArrivalTime)}</TableCell>
           <TableCell className="px-4 py-4"><p className="font-medium text-foreground">{formatDateTime(booking.expectedExitTime)}</p><p className="mt-1 text-xs text-muted-foreground">{booking.durationHours} giờ</p></TableCell>
           <TableCell className="px-4 py-4 font-bold text-foreground">{booking.amount.toLocaleString('vi-VN')} VND</TableCell>

@@ -48,7 +48,7 @@ export function MyBookingList({ bookings }: { bookings: Booking[] }) {
           >
             <span className={`absolute inset-y-0 left-0 w-1.5 ${STATUS_STRIPES[booking.status]}`} />
             <div>
-              <p className="text-sm font-semibold text-fg">{booking.phoneNumber}</p>
+              <p className="text-sm font-semibold text-fg">{booking.phone}</p>
             </div>
 
             <div>
