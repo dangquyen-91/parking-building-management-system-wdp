@@ -144,6 +144,8 @@ export const purchase = async ({ userId, planId, licensePlate, slotId }) => {
       buyerName: user.fullName,
       buyerEmail: user.email,
       buyerPhone: user.phone,
+      // Match the stale-pending cancel window (subscription.job = 60 min).
+      expiresInSeconds: 60 * 60,
     });
   } catch (err) {
     await Subscription.findByIdAndDelete(subscription._id);
@@ -251,6 +253,20 @@ export const handleWebhook = async (webhookBody) => {
   const data = await payosService.verifyWebhook(webhookBody);
   // Trust only the verified payload: `data.code === '00'` means success.
   const isSuccess = data.code === '00';
+
+  // Defence-in-depth: the paid amount (verified payload) must match what we
+  // charged for this order. Never activate on an amount mismatch.
+  if (isSuccess && data.amount != null) {
+    const pending = await Payment.findOne({ orderCode: data.orderCode, status: 'pending' }).select('amount');
+    if (pending && pending.amount !== data.amount) {
+      console.error('PayOS webhook amount mismatch — not activating', {
+        orderCode: data.orderCode,
+        expected: pending.amount,
+        got: data.amount,
+      });
+      return { processed: false, reason: 'amount_mismatch', expected: pending.amount, got: data.amount };
+    }
+  }
 
   const payment = await Payment.findOneAndUpdate(
     { orderCode: data.orderCode, status: 'pending' },

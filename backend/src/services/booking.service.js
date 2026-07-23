@@ -153,6 +153,9 @@ export const create = async ({ email, phone, licensePlate, expectedArrivalTime, 
       buyerName: 'Booking Customer',
       buyerEmail: normalizedEmail,
       buyerPhone: normalizedPhone || undefined,
+      // Match the stale-pending cancel window (booking.job = 15 min) so the link
+      // dies before the order is auto-cancelled.
+      expiresInSeconds: 15 * 60,
     });
   } catch (err) {
     await Booking.findByIdAndDelete(booking._id);
