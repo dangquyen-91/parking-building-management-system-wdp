@@ -49,6 +49,12 @@
         "projectId": "abbf5f28-bc65-45f9-8d20-0d3aeaf69917"
       }
     },
-    "owner": "hoanglam1109"
+    "owner": "hoanglam1109",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/abbf5f28-bc65-45f9-8d20-0d3aeaf69917"
+    }
   }
 }
