@@ -22,6 +22,7 @@ export const bookingPaymentSchema = z.object({
 export const bookingSchema = z.object({
   _id: z.string().min(1),
   email: z.email(),
+  phone: z.string().nullable().optional(),
   licensePlate: z.string().min(1),
   vehicleType: z.literal("car"),
   expectedArrivalTime: z.string().min(1),
@@ -43,6 +44,10 @@ export const createBookingPayloadSchema = z.object({
     .trim()
     .min(1, "Email là bắt buộc.")
     .email("Vui lòng nhập địa chỉ email hợp lệ."),
+  phone: z
+    .string()
+    .trim()
+    .regex(/^0\d{9}$/, "Số điện thoại không hợp lệ (10 số, bắt đầu bằng 0)."),
   licensePlate: z.string().trim().min(1, "Biển số xe là bắt buộc."),
   expectedArrivalTime: z.string().min(1),
   expectedExitTime: z.string().min(1),

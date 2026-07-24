@@ -12,6 +12,7 @@ import {
   BookingPaymentModal,
   BookingPickerModal,
 } from "@/components/booking";
+import { computeBookingAmount } from "@/components/booking/booking-utils";
 import { AppRefreshControl } from "@/components/common/refresh-control";
 import { GlassCard, Page } from "@/components/parking-ui";
 import { useCurrentUserQuery } from "../../hooks/useAuth";
@@ -34,15 +35,10 @@ import { getFieldErrors } from "@/utils/validation";
 import { Pressable, ScrollView, Text, View, useThemeColors } from "../../tw";
 
 const HOUR_MS = 60 * 60 * 1000;
-const BOOKING_BLOCK_HOURS = 4;
-const BOOKING_BLOCK_FEE = 35000;
-
-const calculateBookingEstimate = (durationHours: number) =>
-  Math.max(1, Math.ceil(durationHours / BOOKING_BLOCK_HOURS)) * BOOKING_BLOCK_FEE;
 
 type PickerField = "arrivalDate" | "arrivalTime" | null;
 
-type BookingField = "email" | "licensePlate" | "expectedArrivalTime" | "expectedExitTime";
+type BookingField = "email" | "phone" | "licensePlate" | "expectedArrivalTime" | "expectedExitTime";
 
 const withDatePart = (source: Date, nextDate: Date) => {
   const updated = new Date(source);
@@ -60,6 +56,7 @@ export default function BookingScreen() {
   const { btnPrimaryFg } = useThemeColors();
   const now = useMemo(() => new Date(), []);
   const [guestEmail, setGuestEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [licensePlate, setLicensePlate] = useState("");
   const [arrivalTime, setArrivalTime] = useState<Date | null>(null);
   const [selectedDurationHours, setSelectedDurationHours] = useState<number | null>(null);
@@ -89,8 +86,8 @@ export default function BookingScreen() {
     [arrivalTime, selectedDurationHours],
   );
 
-  const estimatedAmount = selectedDurationHours
-    ? calculateBookingEstimate(selectedDurationHours)
+  const estimatedAmount = arrivalTime && selectedDurationHours
+    ? computeBookingAmount(arrivalTime, selectedDurationHours)
     : null;
 
   const bookingList = guestBookingsQuery.data ?? [];
@@ -128,25 +125,26 @@ export default function BookingScreen() {
       nextErrors.expectedExitTime = "Vui lòng chọn thời gian gửi xe.";
     }
 
-    if (Object.keys(nextErrors).length > 0) {
-      setErrors(nextErrors);
-      return;
-    }
-
-    if (!arrival || !exit || !hours) {
-      setErrors(nextErrors);
-      return;
-    }
-
     const validation = createBookingPayloadSchema.safeParse({
       email,
+      phone,
       licensePlate,
-      expectedArrivalTime: arrival.toISOString(),
-      expectedExitTime: exit.toISOString(),
+      expectedArrivalTime: arrival?.toISOString() ?? "",
+      expectedExitTime: exit?.toISOString() ?? "",
     });
 
-    if (!validation.success) {
-      setErrors(getFieldErrors<BookingField>(validation.error));
+    const schemaErrors = validation.success
+      ? {}
+      : getFieldErrors<BookingField>(validation.error);
+    const formErrors = { ...schemaErrors, ...nextErrors };
+
+    if (Object.keys(formErrors).length > 0) {
+      setErrors(formErrors);
+      return;
+    }
+
+    if (!arrival || !exit || !hours || !validation.success) {
+      setErrors(formErrors);
       return;
     }
 
@@ -186,8 +184,8 @@ export default function BookingScreen() {
       if (!currentUser) {
         await saveGuestBookingMutation.mutateAsync(result);
       }
-      toast.success("Đặt chỗ thành công", {
-        description: "Hãy hoàn tất thanh toán để kích hoạt lượt đặt chỗ.",
+      toast.info("Đã tạo yêu cầu thanh toán", {
+        description: "Lượt đặt chỗ đang chờ thanh toán. Hãy thanh toán để kích hoạt.",
       });
     } catch (error) {
       toast.error("Đặt chỗ thất bại", {
@@ -268,11 +266,11 @@ export default function BookingScreen() {
       paymentSyncHandledRef.current = syncKey;
 
       toast.success(
-        nextAction === "confirm" ? "Đã đồng bộ thanh toán" : "Đã cập nhật đặt chỗ",
+        nextAction === "confirm" ? "Thanh toán thành công" : "Đã cập nhật đặt chỗ",
         {
           description:
             nextAction === "confirm"
-              ? "Trạng thái đặt chỗ đã được cập nhật từ hệ thống."
+              ? "Lượt đặt chỗ đã được kích hoạt."
               : "Đặt chỗ đang chờ đã được hủy.",
         },
       );
@@ -308,6 +306,7 @@ export default function BookingScreen() {
 
   const resetFormState = () => {
     setGuestEmail("");
+    setPhone("");
     setLicensePlate("");
     setArrivalTime(null);
     setSelectedDurationHours(null);
@@ -375,13 +374,19 @@ export default function BookingScreen() {
               setLicensePlate(value);
               setErrors((current) => ({ ...current, licensePlate: undefined }));
             }}
+            onChangePhone={(value) => {
+              setPhone(value);
+              setErrors((current) => ({ ...current, phone: undefined }));
+            }}
             onOpenDurationPicker={() => setDurationModalVisible(true)}
             onOpenPicker={setPickerField}
+            phone={phone}
             selectedDurationHours={selectedDurationHours}
           />
         </GlassCard>
 
         <BookingEstimateCard
+          arrivalTime={arrivalTime}
           estimatedAmount={estimatedAmount}
           selectedDurationHours={selectedDurationHours}
         />

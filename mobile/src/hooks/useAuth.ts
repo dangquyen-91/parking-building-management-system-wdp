@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   addMyVehicle,
   authKeys,
+  fetchCurrentUser,
   forgotPassword,
   getCurrentUser,
   login,
@@ -14,12 +15,41 @@ import {
   updateMyProfile,
   verifyEmail,
 } from "@/lib/auth";
+import { ApiError } from "@/lib/api";
+import { clearAuthTokens, getAccessToken, getStoredUser } from "@/lib/auth-storage";
 
-export const useCurrentUserQuery = () =>
-  useQuery({
+export const useCurrentUserQuery = () => {
+  const queryClient = useQueryClient();
+
+  return useQuery({
     queryKey: authKeys.currentUser,
-    queryFn: getCurrentUser,
+    queryFn: async () => {
+      const [token, storedUser] = await Promise.all([getAccessToken(), getStoredUser()]);
+
+      if (!token) {
+        return null;
+      }
+
+      if (storedUser) {
+        void fetchCurrentUser()
+          .then((user) => queryClient.setQueryData(authKeys.currentUser, user))
+          .catch(async (error) => {
+            // Keep cached user through transient network errors; clear only when
+            // the server confirms the session is no longer valid.
+            if (error instanceof ApiError && [401, 403].includes(error.status)) {
+              await clearAuthTokens();
+              queryClient.setQueryData(authKeys.currentUser, null);
+            }
+          });
+
+        return storedUser;
+      }
+
+      return getCurrentUser();
+    },
+    retry: 0,
   });
+};
 
 export const useLoginMutation = () => {
   const queryClient = useQueryClient();

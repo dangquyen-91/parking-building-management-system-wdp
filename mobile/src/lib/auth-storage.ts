@@ -8,6 +8,8 @@ const USER_KEY = "parking_user";
 
 export const getAccessToken = () => SecureStore.getItemAsync(ACCESS_TOKEN_KEY);
 
+export const getRefreshToken = () => SecureStore.getItemAsync(REFRESH_TOKEN_KEY);
+
 export const getStoredUser = async () => {
   const userJson = await SecureStore.getItemAsync(USER_KEY);
 

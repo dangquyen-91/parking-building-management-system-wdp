@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import type { WebViewNavigation } from "react-native-webview/lib/WebViewTypes";
 import { toast } from "sonner-native";
@@ -58,6 +58,8 @@ export default function SubscriptionScreen() {
   const [purchaseResult, setPurchaseResult] = useState<PurchaseSubscriptionResult | null>(null);
   const [paymentUrl, setPaymentUrl] = useState<string | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const paymentSyncHandledRef = useRef<string | null>(null);
+  const paymentSyncInFlightRef = useRef(false);
 
   const { data: currentUser } = useCurrentUserQuery();
   const plansQuery = useSubscriptionPlansQuery(Boolean(currentUser));
@@ -147,6 +149,8 @@ export default function SubscriptionScreen() {
 
       setPurchaseResult(result);
       setPaymentUrl(result.payment.checkoutUrl);
+      paymentSyncHandledRef.current = null;
+      paymentSyncInFlightRef.current = false;
       toast.success("Tạo gói thành công", {
         description: "Hãy hoàn tất thanh toán để kích hoạt gói gửi xe cư dân.",
       });
@@ -162,6 +166,13 @@ export default function SubscriptionScreen() {
       return;
     }
 
+    const syncKey = `${purchaseResult.subscription._id}:${action}`;
+    if (paymentSyncInFlightRef.current || paymentSyncHandledRef.current === syncKey) {
+      return;
+    }
+
+    paymentSyncInFlightRef.current = true;
+
     try {
       const result =
         action === "confirm"
@@ -170,6 +181,7 @@ export default function SubscriptionScreen() {
 
       setPaymentUrl(null);
       setPurchaseResult(null);
+      paymentSyncHandledRef.current = syncKey;
 
       toast.success(action === "confirm" ? "Đã đồng bộ gói gửi xe" : "Đã hủy gói gửi xe", {
         description:
@@ -190,6 +202,8 @@ export default function SubscriptionScreen() {
       toast.error("Không thể đồng bộ gói gửi xe", {
         description: error instanceof Error ? error.message : "Vui lòng làm mới lại sau.",
       });
+    } finally {
+      paymentSyncInFlightRef.current = false;
     }
   };
 
