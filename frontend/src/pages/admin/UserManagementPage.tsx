@@ -1,30 +1,272 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Search } from 'lucide-react'
-import { AdminPageShell, AdminStatCard, AdminStatusBadge, AdminTableShell } from '../../components/admin'
+import {
+  AdminPageShell,
+  AdminStatCard,
+  AdminStatusBadge,
+  AdminTableShell,
+  AdminUserRoleDialog,
+} from '../../components/admin'
 import { adminApi, type AdminUser } from '../../services/adminApi'
+import { getStoredAuthUser } from '../../services/authApi'
 import { Badge } from '../../components/ui/badge'
-import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card'
+import { Button } from '../../components/ui/button'
+import { Card, CardContent } from '../../components/ui/card'
 import { Input } from '../../components/ui/input'
 import { Label } from '../../components/ui/label'
 import { NativeSelect, NativeSelectOption } from '../../components/ui/native-select'
 import { Skeleton } from '../../components/ui/skeleton'
 import { TableCell, TableRow } from '../../components/ui/table'
 
-const roleLabels: Record<AdminUser['role'], string> = { admin: 'Admin', manager: 'Manager', staff: 'Nhân viên', user: 'Người dùng' }
-const roleDetails: Record<AdminUser['role'], string> = { admin: 'Toàn quyền quản trị và cấu hình hệ thống', manager: 'Quản lý bãi xe, nhân viên và báo cáo', staff: 'Vận hành cổng và xử lý xe vào, ra', user: 'Đặt chỗ và sử dụng gói gửi xe' }
+const roleLabels: Record<AdminUser['role'], string> = {
+  admin: 'Quản trị viên',
+  manager: 'Quản lý',
+  staff: 'Nhân viên',
+  user: 'Người dùng',
+}
 
 export function UserManagementPage() {
-  const [users, setUsers] = useState<AdminUser[]>([]); const [total, setTotal] = useState(0); const [query, setQuery] = useState(''); const [roleFilter, setRoleFilter] = useState<'all' | AdminUser['role']>('all'); const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all'); const [isLoading, setIsLoading] = useState(true); const [error, setError] = useState('')
-  useEffect(() => { let ignore = false; async function load() { try { setIsLoading(true); setError(''); const response = await adminApi.getUsers({ limit: 100, sort: 'createdAt', order: 'desc' }); if (!ignore) { setUsers(response.users ?? []); setTotal(response.total ?? 0) } } catch (err) { if (!ignore) setError(err instanceof Error ? err.message : 'Không thể tải người dùng') } finally { if (!ignore) setIsLoading(false) } } void load(); return () => { ignore = true } }, [])
-  const roles = useMemo(() => (['admin', 'manager', 'staff', 'user'] as const).map((role) => ({ role, users: users.filter((u) => u.role === role).length })), [users])
-  const filtered = useMemo(() => { const q = query.trim().toLowerCase(); return users.filter((u) => (!q || u.fullName.toLowerCase().includes(q) || u.email.toLowerCase().includes(q) || u.phone?.toLowerCase().includes(q)) && (roleFilter === 'all' || u.role === roleFilter) && (statusFilter === 'all' || u.isActive === (statusFilter === 'active'))) }, [query, roleFilter, statusFilter, users])
-  const active = users.filter((u) => u.isActive).length; const operations = users.filter((u) => u.role === 'manager' || u.role === 'staff').length
-  return <AdminPageShell eyebrow="Admin // Người dùng" title="Quản lý người dùng" description="Quản lý tài khoản người dùng, nhân viên, quản lý và admin; kiểm soát vai trò trước khi cho phép truy cập hệ thống." actions={<Card className="w-full xl:min-w-[44rem]"><CardContent className="grid gap-3 p-4 sm:grid-cols-3"><Label className="grid gap-2"><span>Tìm kiếm</span><div className="relative"><Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" /><Input className="pl-9" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Tên, email hoặc số điện thoại" /></div></Label><Label className="grid gap-2"><span>Vai trò</span><NativeSelect value={roleFilter} onChange={(e) => setRoleFilter(e.target.value as typeof roleFilter)}><NativeSelectOption value="all">Tất cả vai trò</NativeSelectOption>{roles.map(({ role }) => <NativeSelectOption key={role} value={role}>{roleLabels[role]}</NativeSelectOption>)}</NativeSelect></Label><Label className="grid gap-2"><span>Trạng thái</span><NativeSelect value={statusFilter} onChange={(e) => setStatusFilter(e.target.value as typeof statusFilter)}><NativeSelectOption value="all">Tất cả</NativeSelectOption><NativeSelectOption value="active">Đang hoạt động</NativeSelectOption><NativeSelectOption value="inactive">Đã khóa</NativeSelectOption></NativeSelect></Label></CardContent></Card>}>
-    {error && <Card className="mb-5 border-destructive/40"><CardContent className="p-4 text-sm text-destructive">{error}</CardContent></Card>}
-    <div className="grid gap-3 md:grid-cols-3"><AdminStatCard label="Tất cả tài khoản" value={isLoading ? '-' : total} detail="Người dùng, nhân viên, quản lý và admin" tone="violet" /><AdminStatCard label="Đội vận hành" value={isLoading ? '-' : operations} detail="Tài khoản quản lý và nhân viên" tone="sky" /><AdminStatCard label="Đang hoạt động" value={isLoading ? '-' : active} detail="Có thể truy cập hệ thống" tone="emerald" /></div>
-    <div className="mt-5 grid gap-5 xl:grid-cols-[minmax(0,1fr)_23rem]">
-      {isLoading ? <Card><CardContent className="space-y-3 p-5">{Array.from({ length: 6 }, (_, i) => <Skeleton key={i} className="h-14 w-full" />)}</CardContent></Card> : !filtered.length ? <Card className="border-dashed"><CardContent className="p-10 text-center text-sm text-muted-foreground">Không tìm thấy người dùng.</CardContent></Card> : <AdminTableShell eyebrow="Tài khoản hệ thống" title="Danh sách người dùng" countLabel={`${filtered.length} tài khoản`} minWidth="900px" columns={[{ label: 'Người dùng', className: 'w-[30%]' }, { label: 'Vai trò', className: 'w-[15%]' }, { label: 'Điện thoại', className: 'w-[17%]' }, { label: 'Ngày tạo', className: 'w-[22%]' }, { label: 'Trạng thái', className: 'w-[16%]' }]}>{filtered.map((user) => <TableRow key={user._id}><TableCell className="px-4 py-4"><p className="font-bold">{user.fullName}</p><p className="mt-1 truncate text-xs text-muted-foreground">{user.email}</p></TableCell><TableCell className="px-4 py-4"><Badge variant="outline">{roleLabels[user.role]}</Badge></TableCell><TableCell className="px-4 py-4">{user.phone ?? '-'}</TableCell><TableCell className="px-4 py-4">{user.createdAt ? new Date(user.createdAt).toLocaleString('vi-VN') : '-'}</TableCell><TableCell className="px-4 py-4"><AdminStatusBadge status={user.isActive ? 'active' : 'inactive'} /></TableCell></TableRow>)}</AdminTableShell>}
-      <Card><CardHeader><CardTitle>Ma trận vai trò</CardTitle></CardHeader><CardContent className="grid gap-3">{roles.map(({ role, users: count }) => <Card key={role} className="shadow-none"><CardContent className="flex items-start justify-between gap-3 p-4"><div><p className="font-medium">{roleLabels[role]}</p><p className="mt-1 text-xs leading-5 text-muted-foreground">{roleDetails[role]}</p></div><Badge>{count}</Badge></CardContent></Card>)}</CardContent></Card>
-    </div>
-  </AdminPageShell>
+  const [users, setUsers] = useState<AdminUser[]>([])
+  const [query, setQuery] = useState('')
+  const [roleFilter, setRoleFilter] = useState<'all' | AdminUser['role']>('all')
+  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all')
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState('')
+  const currentUserId = getStoredAuthUser()?._id
+
+  useEffect(() => {
+    let ignore = false
+
+    async function load() {
+      try {
+        setIsLoading(true)
+        setError('')
+        const response = await adminApi.getUsers({
+          limit: 100,
+          sort: 'createdAt',
+          order: 'desc',
+        })
+
+        if (!ignore) {
+          setUsers(response.users ?? [])
+        }
+      } catch (err) {
+        if (!ignore) {
+          setError(err instanceof Error ? err.message : 'Không thể tải danh sách người dùng.')
+        }
+      } finally {
+        if (!ignore) setIsLoading(false)
+      }
+    }
+
+    void load()
+    return () => {
+      ignore = true
+    }
+  }, [])
+
+  const roles = useMemo(
+    () =>
+      (['admin', 'manager', 'staff', 'user'] as const).map((role) => ({
+        role,
+        users: users.filter((user) => user.role === role).length,
+      })),
+    [users],
+  )
+
+  const filteredUsers = useMemo(() => {
+    const normalizedQuery = query.trim().toLowerCase()
+
+    return users.filter((user) => {
+      const matchesQuery =
+        !normalizedQuery ||
+        user.fullName.toLowerCase().includes(normalizedQuery) ||
+        user.email.toLowerCase().includes(normalizedQuery) ||
+        Boolean(user.phone?.toLowerCase().includes(normalizedQuery))
+      const matchesRole = roleFilter === 'all' || user.role === roleFilter
+      const matchesStatus =
+        statusFilter === 'all' || user.isActive === (statusFilter === 'active')
+
+      return matchesQuery && matchesRole && matchesStatus
+    })
+  }, [query, roleFilter, statusFilter, users])
+
+  const activeUsers = filteredUsers.filter((user) => user.isActive).length
+  const operations = filteredUsers.filter(
+    (user) => user.role === 'manager' || user.role === 'staff',
+  ).length
+
+  function handleRoleUpdated(updatedUser: AdminUser) {
+    setUsers((items) =>
+      items.map((user) => (user._id === updatedUser._id ? updatedUser : user)),
+    )
+  }
+
+  return (
+    <AdminPageShell
+      eyebrow="Admin // Người dùng"
+      title="Quản lý người dùng"
+      description="Quản lý tài khoản, trạng thái và vai trò truy cập của người dùng trong hệ thống."
+      actions={
+        <Card className="w-full xl:min-w-[44rem]">
+          <CardContent className="grid gap-3 p-4 sm:grid-cols-3">
+            <Label className="grid gap-2">
+              <span>Tìm kiếm</span>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  className="pl-9"
+                  value={query}
+                  onChange={(event) => setQuery(event.target.value)}
+                  placeholder="Tên, email hoặc số điện thoại"
+                />
+              </div>
+            </Label>
+            <Label className="grid gap-2">
+              <span>Vai trò</span>
+              <NativeSelect
+                value={roleFilter}
+                onChange={(event) =>
+                  setRoleFilter(event.target.value as typeof roleFilter)
+                }
+              >
+                <NativeSelectOption value="all">Tất cả vai trò</NativeSelectOption>
+                {roles.map(({ role }) => (
+                  <NativeSelectOption key={role} value={role}>
+                    {roleLabels[role]}
+                  </NativeSelectOption>
+                ))}
+              </NativeSelect>
+            </Label>
+            <Label className="grid gap-2">
+              <span>Trạng thái</span>
+              <NativeSelect
+                value={statusFilter}
+                onChange={(event) =>
+                  setStatusFilter(event.target.value as typeof statusFilter)
+                }
+              >
+                <NativeSelectOption value="all">Tất cả</NativeSelectOption>
+                <NativeSelectOption value="active">Đang hoạt động</NativeSelectOption>
+                <NativeSelectOption value="inactive">Đã khóa</NativeSelectOption>
+              </NativeSelect>
+            </Label>
+          </CardContent>
+        </Card>
+      }
+    >
+      {error && (
+        <Card className="mb-5 border-destructive/40">
+          <CardContent className="p-4 text-sm text-destructive">{error}</CardContent>
+        </Card>
+      )}
+
+      <div className="grid gap-3 md:grid-cols-3">
+        <AdminStatCard
+          label="Tất cả tài khoản"
+          value={isLoading ? '-' : filteredUsers.length}
+          detail="Theo bộ lọc hiện tại"
+          tone="violet"
+        />
+        <AdminStatCard
+          label="Đội vận hành"
+          value={isLoading ? '-' : operations}
+          detail="Quản lý và nhân viên trong kết quả"
+          tone="sky"
+        />
+        <AdminStatCard
+          label="Đang hoạt động"
+          value={isLoading ? '-' : activeUsers}
+          detail="Đang hoạt động trong kết quả"
+          tone="emerald"
+        />
+      </div>
+
+      <div className="mt-5">
+        {isLoading ? (
+          <Card>
+            <CardContent className="space-y-3 p-5">
+              {Array.from({ length: 6 }, (_, index) => (
+                <Skeleton key={index} className="h-14 w-full" />
+              ))}
+            </CardContent>
+          </Card>
+        ) : filteredUsers.length === 0 ? (
+          <Card className="border-dashed">
+            <CardContent className="p-10 text-center text-sm text-muted-foreground">
+              Không tìm thấy người dùng.
+            </CardContent>
+          </Card>
+        ) : (
+          <AdminTableShell
+            eyebrow="Tài khoản hệ thống"
+            title="Danh sách người dùng"
+            countLabel={`${filteredUsers.length} tài khoản`}
+            minWidth="1040px"
+            columns={[
+              { label: 'Người dùng', className: 'w-[25%]' },
+              { label: 'Vai trò', className: 'w-[14%]' },
+              { label: 'Điện thoại', className: 'w-[15%]' },
+              { label: 'Ngày tạo', className: 'w-[20%]' },
+              { label: 'Trạng thái', className: 'w-[14%]' },
+              { label: 'Thao tác', className: 'w-[12%] text-right' },
+            ]}
+          >
+            {filteredUsers.map((user) => {
+              const isCurrentUser = user._id === currentUserId
+
+              return (
+                <TableRow key={user._id}>
+                  <TableCell className="px-4 py-4">
+                    <p className="font-bold text-foreground">{user.fullName}</p>
+                    <p className="mt-1 truncate text-xs text-muted-foreground">{user.email}</p>
+                  </TableCell>
+                  <TableCell className="px-4 py-4">
+                    <Badge variant="outline">{roleLabels[user.role]}</Badge>
+                  </TableCell>
+                  <TableCell className="px-4 py-4">{user.phone ?? '-'}</TableCell>
+                  <TableCell className="px-4 py-4">
+                    {formatDateTime(user.createdAt)}
+                  </TableCell>
+                  <TableCell className="px-4 py-4">
+                    <AdminStatusBadge status={user.isActive ? 'active' : 'inactive'} />
+                  </TableCell>
+                  <TableCell className="px-4 py-4 text-right">
+                    <AdminUserRoleDialog
+                      user={user}
+                      disabled={isCurrentUser}
+                      onUpdated={handleRoleUpdated}
+                      trigger={
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          disabled={isCurrentUser}
+                          title={
+                            isCurrentUser
+                              ? 'Không thể thay đổi vai trò của chính mình'
+                              : 'Thay đổi vai trò'
+                          }
+                        >
+                          Phân quyền
+                        </Button>
+                      }
+                    />
+                  </TableCell>
+                </TableRow>
+              )
+            })}
+          </AdminTableShell>
+        )}
+
+      </div>
+    </AdminPageShell>
+  )
+}
+
+function formatDateTime(value?: string) {
+  if (!value) return '-'
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return '-'
+  return date.toLocaleString('vi-VN')
 }

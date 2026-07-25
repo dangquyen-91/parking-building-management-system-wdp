@@ -283,4 +283,16 @@ export const adminApi = {
       throw getApiError(error)
     }
   },
+
+  async changeUserRole(id: string, role: AuthRole) {
+    try {
+      const response = await adminHttp.patch<ApiEnvelope<{ user: AdminUser }>>(
+        `/users/${id}/role`,
+        { role },
+      )
+      return response.data.data
+    } catch (error) {
+      throw getApiError(error)
+    }
+  },
 }

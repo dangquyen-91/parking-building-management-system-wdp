@@ -2,17 +2,22 @@
 import type { GateSession, GateSessionStatus } from '../../../services/staffGateApi'
 import { formatCurrency } from '../managerUi'
 import { ManagerStatCard } from '../common/ManagerStatCard'
+import type { ManagerGateStatusFilter } from './ManagerGateLogFilters'
 
 type ManagerGateLogStatsProps = {
   dashboard: ManagerGateDashboard | null
   sessions: GateSession[]
   totalSessions: number
-  statusFilter: GateSessionStatus
+  statusFilter: ManagerGateStatusFilter
   isFiltered: boolean
   isLoading: boolean
 }
 
-const statusCopy: Record<GateSessionStatus, { label: string; detail: string }> = {
+const statusCopy: Record<GateSessionStatus | 'all', { label: string; detail: string }> = {
+  all: {
+    label: 'Tất cả phiên',
+    detail: 'Toàn bộ hoạt động xe vào và ra',
+  },
   active: {
     label: 'Đang trong bãi',
     detail: 'Phiên gửi xe đang hoạt động',

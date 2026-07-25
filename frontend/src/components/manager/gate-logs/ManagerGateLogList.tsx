@@ -1,8 +1,10 @@
 import type { GateSession, GateSessionStatus, GateUser } from '../../../services/staffGateApi'
 import { formatSessionCustomer, formatSessionSpot, formatVehicleType } from '../../staff/data/staffGateUtils'
+import { Button } from '@/components/ui/button'
 import { TableCell, TableRow } from '@/components/ui/table'
 import { ManagerStatusBadge } from '../common/ManagerStatusBadge'
 import { ManagerTableShell } from '../common/ManagerTableShell'
+import { ManagerGateLogDetailsDialog } from './ManagerGateLogDetailsDialog'
 
 function formatDateTime(value: string) {
   return new Intl.DateTimeFormat('vi-VN', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric' }).format(new Date(value))
@@ -32,11 +34,12 @@ export function ManagerGateLogList({ sessions, isLoading }: ManagerGateLogListPr
 
   return (
     <ManagerTableShell
-      eyebrow="Giám sát trực tiếp" title="Hoạt động cổng" countLabel={`${sessions.length} xe`} minWidth="1120px"
+      eyebrow="Giám sát trực tiếp" title="Hoạt động cổng" countLabel={`${sessions.length} xe`} minWidth="1220px"
       columns={[
-        { label: 'Biển số', className: 'w-[14%]' }, { label: 'Phân loại', className: 'w-[15%]' },
-        { label: 'Vị trí', className: 'w-[20%]' }, { label: 'Nhân viên', className: 'w-[15%]' },
-        { label: 'Thời gian', className: 'w-[20%]' }, { label: 'Trạng thái', className: 'w-[16%]' },
+        { label: 'Biển số', className: 'w-[13%]' }, { label: 'Phân loại', className: 'w-[14%]' },
+        { label: 'Vị trí', className: 'w-[18%]' }, { label: 'Nhân viên', className: 'w-[13%]' },
+        { label: 'Thời gian', className: 'w-[18%]' }, { label: 'Trạng thái', className: 'w-[14%]' },
+        { label: 'Thao tác', className: 'w-[10%] text-right' },
       ]}
     >
       {sessions.map((session) => {
@@ -49,6 +52,12 @@ export function ManagerGateLogList({ sessions, isLoading }: ManagerGateLogListPr
             <TableCell className="px-4 py-4 font-medium text-foreground">{getStaffName(session.staffId)}</TableCell>
             <TableCell className="px-4 py-4"><p className="font-medium text-foreground">Vào {formatDateTime(session.entryTime)}</p>{session.exitTime && <p className="mt-1 text-xs text-muted-foreground">Ra {formatDateTime(session.exitTime)}</p>}</TableCell>
             <TableCell className="px-4 py-4"><ManagerStatusBadge status={badge.status} label={badge.label} /><p className="mt-1 text-xs text-muted-foreground">{formatDuration(session.entryTime, session.exitTime)}</p></TableCell>
+            <TableCell className="px-4 py-4 text-right">
+              <ManagerGateLogDetailsDialog
+                session={session}
+                trigger={<Button type="button" variant="outline" size="sm">Xem chi tiết</Button>}
+              />
+            </TableCell>
           </TableRow>
         )
       })}
