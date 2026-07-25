@@ -14,7 +14,10 @@ import { Button } from '../../components/ui/button'
 import { Card, CardContent } from '../../components/ui/card'
 import { Input } from '../../components/ui/input'
 import { Label } from '../../components/ui/label'
-import { NativeSelect, NativeSelectOption } from '../../components/ui/native-select'
+import {
+  NativeSelect,
+  NativeSelectOption,
+} from '../../components/ui/native-select'
 import { Skeleton } from '../../components/ui/skeleton'
 import { TableCell, TableRow } from '../../components/ui/table'
 
@@ -29,7 +32,9 @@ export function UserManagementPage() {
   const [users, setUsers] = useState<AdminUser[]>([])
   const [query, setQuery] = useState('')
   const [roleFilter, setRoleFilter] = useState<'all' | AdminUser['role']>('all')
-  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all')
+  const [statusFilter, setStatusFilter] = useState<
+    'all' | 'active' | 'inactive'
+  >('all')
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
   const currentUserId = getStoredAuthUser()?._id
@@ -52,7 +57,11 @@ export function UserManagementPage() {
         }
       } catch (err) {
         if (!ignore) {
-          setError(err instanceof Error ? err.message : 'Không thể tải danh sách người dùng.')
+          setError(
+            err instanceof Error
+              ? err.message
+              : 'Không thể tải danh sách người dùng.',
+          )
         }
       } finally {
         if (!ignore) setIsLoading(false)
@@ -130,7 +139,9 @@ export function UserManagementPage() {
                   setRoleFilter(event.target.value as typeof roleFilter)
                 }
               >
-                <NativeSelectOption value="all">Tất cả vai trò</NativeSelectOption>
+                <NativeSelectOption value="all">
+                  Tất cả vai trò
+                </NativeSelectOption>
                 {roles.map(({ role }) => (
                   <NativeSelectOption key={role} value={role}>
                     {roleLabels[role]}
@@ -147,8 +158,12 @@ export function UserManagementPage() {
                 }
               >
                 <NativeSelectOption value="all">Tất cả</NativeSelectOption>
-                <NativeSelectOption value="active">Đang hoạt động</NativeSelectOption>
-                <NativeSelectOption value="inactive">Đã khóa</NativeSelectOption>
+                <NativeSelectOption value="active">
+                  Đang hoạt động
+                </NativeSelectOption>
+                <NativeSelectOption value="inactive">
+                  Đã khóa
+                </NativeSelectOption>
               </NativeSelect>
             </Label>
           </CardContent>
@@ -157,7 +172,9 @@ export function UserManagementPage() {
     >
       {error && (
         <Card className="mb-5 border-destructive/40">
-          <CardContent className="p-4 text-sm text-destructive">{error}</CardContent>
+          <CardContent className="p-4 text-sm text-destructive">
+            {error}
+          </CardContent>
         </Card>
       )}
 
@@ -219,17 +236,23 @@ export function UserManagementPage() {
                 <TableRow key={user._id}>
                   <TableCell className="px-4 py-4">
                     <p className="font-bold text-foreground">{user.fullName}</p>
-                    <p className="mt-1 truncate text-xs text-muted-foreground">{user.email}</p>
+                    <p className="mt-1 truncate text-xs text-muted-foreground">
+                      {user.email}
+                    </p>
                   </TableCell>
                   <TableCell className="px-4 py-4">
                     <Badge variant="outline">{roleLabels[user.role]}</Badge>
                   </TableCell>
-                  <TableCell className="px-4 py-4">{user.phone ?? '-'}</TableCell>
+                  <TableCell className="px-4 py-4">
+                    {user.phone ?? '-'}
+                  </TableCell>
                   <TableCell className="px-4 py-4">
                     {formatDateTime(user.createdAt)}
                   </TableCell>
                   <TableCell className="px-4 py-4">
-                    <AdminStatusBadge status={user.isActive ? 'active' : 'inactive'} />
+                    <AdminStatusBadge
+                      status={user.isActive ? 'active' : 'inactive'}
+                    />
                   </TableCell>
                   <TableCell className="px-4 py-4 text-right">
                     <AdminUserRoleDialog
@@ -258,7 +281,6 @@ export function UserManagementPage() {
             })}
           </AdminTableShell>
         )}
-
       </div>
     </AdminPageShell>
   )

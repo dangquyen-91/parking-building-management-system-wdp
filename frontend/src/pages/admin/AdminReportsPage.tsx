@@ -19,7 +19,12 @@ import {
 } from '../../services/adminApi'
 import { formatFloorLabel } from '../../utils/floorLabel'
 import { Button } from '../../components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card'
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '../../components/ui/card'
 import { Progress } from '../../components/ui/progress'
 import { Alert, AlertDescription } from '../../components/ui/alert'
 
@@ -41,7 +46,11 @@ export function AdminReportsPage() {
   const [from, setFrom] = useState(sevenDaysAgo)
   const [to, setTo] = useState(today)
   const [peakDays, setPeakDays] = useState(7)
-  const [filters, setFilters] = useState<ReportFilters>({ from: sevenDaysAgo, to: today, peakDays: 7 })
+  const [filters, setFilters] = useState<ReportFilters>({
+    from: sevenDaysAgo,
+    to: today,
+    peakDays: 7,
+  })
   const [dashboard, setDashboard] = useState<AdminDashboardReport | null>(null)
   const [occupancy, setOccupancy] = useState<AdminOccupancyReport | null>(null)
   const [revenue, setRevenue] = useState<AdminRevenueReport | null>(null)
@@ -55,7 +64,13 @@ export function AdminReportsPage() {
       setIsLoading(true)
       setError('')
 
-      const [dashboardReport, occupancyReport, revenueReport, sessionReport, peakHourReport] = await Promise.all([
+      const [
+        dashboardReport,
+        occupancyReport,
+        revenueReport,
+        sessionReport,
+        peakHourReport,
+      ] = await Promise.all([
         adminApi.getDashboardReport(),
         adminApi.getOccupancyReport(),
         adminApi.getRevenueReport({ from: filters.from, to: filters.to }),
@@ -69,7 +84,11 @@ export function AdminReportsPage() {
       setSessions(sessionReport)
       setPeakHours(peakHourReport)
     } catch (loadError) {
-      setError(loadError instanceof Error ? loadError.message : 'Không thể tải báo cáo admin.')
+      setError(
+        loadError instanceof Error
+          ? loadError.message
+          : 'Không thể tải báo cáo admin.',
+      )
     } finally {
       setIsLoading(false)
     }
@@ -110,8 +129,17 @@ export function AdminReportsPage() {
       />
 
       {error && (
-        <Alert variant="destructive" className="mb-5 flex items-center justify-between"><AlertDescription>{error}</AlertDescription>
-          <Button type="button" variant="link" className="h-auto p-0" onClick={() => void loadReports()}>
+        <Alert
+          variant="destructive"
+          className="mb-5 flex items-center justify-between"
+        >
+          <AlertDescription>{error}</AlertDescription>
+          <Button
+            type="button"
+            variant="link"
+            className="h-auto p-0"
+            onClick={() => void loadReports()}
+          >
             Thử lại
           </Button>
         </Alert>
@@ -120,7 +148,13 @@ export function AdminReportsPage() {
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <AdminStatCard
           label="Doanh thu trong kỳ"
-          value={revenue ? formatAdminCurrency(revenue.totals?.total ?? 0) : isLoading ? '-' : '0 VND'}
+          value={
+            revenue
+              ? formatAdminCurrency(revenue.totals?.total ?? 0)
+              : isLoading
+                ? '-'
+                : '0 VND'
+          }
           detail={`${revenue?.totals?.transactions ?? 0} giao dịch đã thanh toán`}
           tone="amber"
         />
@@ -138,7 +172,13 @@ export function AdminReportsPage() {
         />
         <AdminStatCard
           label="Công suất sử dụng"
-          value={occupancy ? `${occupancy.overall?.utilizationPercent ?? 0}%` : isLoading ? '-' : '0%'}
+          value={
+            occupancy
+              ? `${occupancy.overall?.utilizationPercent ?? 0}%`
+              : isLoading
+                ? '-'
+                : '0%'
+          }
           detail={`${occupancy?.overall?.occupied ?? 0}/${occupancy?.overall?.totalCapacity ?? 0} vị trí đang dùng`}
           tone="violet"
         />
@@ -146,10 +186,30 @@ export function AdminReportsPage() {
 
       {revenue?.totals && (
         <section className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-          <AdminStatCard label="Doanh thu gói" value={formatAdminCurrency(revenue.totals.subscription ?? 0)} detail="Thanh toán mua gói gửi xe" tone="violet" />
-          <AdminStatCard label="Doanh thu booking" value={formatAdminCurrency(revenue.totals.booking ?? 0)} detail="Thanh toán đặt chỗ trước" tone="emerald" />
-          <AdminStatCard label="Vãng lai chuyển khoản" value={formatAdminCurrency(revenue.totals.sessionTransfer ?? 0)} detail="Phiên gửi xe thanh toán online" tone="sky" />
-          <AdminStatCard label="Vãng lai tiền mặt" value={formatAdminCurrency(revenue.totals.sessionCash ?? 0)} detail="Phiên gửi xe thu tại cổng" tone="amber" />
+          <AdminStatCard
+            label="Doanh thu gói"
+            value={formatAdminCurrency(revenue.totals.subscription ?? 0)}
+            detail="Thanh toán mua gói gửi xe"
+            tone="violet"
+          />
+          <AdminStatCard
+            label="Doanh thu booking"
+            value={formatAdminCurrency(revenue.totals.booking ?? 0)}
+            detail="Thanh toán đặt chỗ trước"
+            tone="emerald"
+          />
+          <AdminStatCard
+            label="Vãng lai chuyển khoản"
+            value={formatAdminCurrency(revenue.totals.sessionTransfer ?? 0)}
+            detail="Phiên gửi xe thanh toán online"
+            tone="sky"
+          />
+          <AdminStatCard
+            label="Vãng lai tiền mặt"
+            value={formatAdminCurrency(revenue.totals.sessionCash ?? 0)}
+            detail="Phiên gửi xe thu tại cổng"
+            tone="amber"
+          />
         </section>
       )}
 
@@ -163,31 +223,45 @@ export function AdminReportsPage() {
         {occupancy && <AdminOccupancyTable report={occupancy} />}
       </div>
 
-      <Card className="mt-5"><CardHeader>
-          <p className="text-[10px] font-black uppercase tracking-[0.18em] text-amber-600 dark:text-amber-300">Điểm nóng công suất</p>
+      <Card className="mt-5">
+        <CardHeader>
+          <p className="text-[10px] font-black uppercase tracking-[0.18em] text-amber-600 dark:text-amber-300">
+            Điểm nóng công suất
+          </p>
           <CardTitle>Tầng sử dụng cao nhất</CardTitle>
-        </CardHeader><CardContent>
-
-        {busiestFloors.length === 0 ? (
-          <p className="py-8 text-center text-sm text-muted-foreground">Chưa có dữ liệu công suất.</p>
-        ) : (
-          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-            {busiestFloors.map((floor) => (
-              <Card key={floor.floorId} className="shadow-none"><CardContent className="p-4">
-                <p className="text-sm font-black text-foreground">
-                  {floor.building?.name ?? 'Tòa nhà'} / {formatFloorLabel(floor)}
-                </p>
-                <p className="mt-1 text-xs text-muted-foreground">{floor.vehicleType === 'car' ? 'Ô tô' : 'Xe máy'}</p>
-                <Progress className="mt-4" value={Math.min(100, floor.utilizationPercent)} />
-                <p className="mt-2 text-xs text-muted-foreground">
-                  {floor.utilizationPercent}% sử dụng · còn {floor.empty} vị trí
-                </p>
-              </CardContent></Card>
-            ))}
-          </div>
-        )}
-      </CardContent></Card>
+        </CardHeader>
+        <CardContent>
+          {busiestFloors.length === 0 ? (
+            <p className="py-8 text-center text-sm text-muted-foreground">
+              Chưa có dữ liệu công suất.
+            </p>
+          ) : (
+            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+              {busiestFloors.map((floor) => (
+                <Card key={floor.floorId} className="shadow-none">
+                  <CardContent className="p-4">
+                    <p className="text-sm font-black text-foreground">
+                      {floor.building?.name ?? 'Tòa nhà'} /{' '}
+                      {formatFloorLabel(floor)}
+                    </p>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {floor.vehicleType === 'car' ? 'Ô tô' : 'Xe máy'}
+                    </p>
+                    <Progress
+                      className="mt-4"
+                      value={Math.min(100, floor.utilizationPercent)}
+                    />
+                    <p className="mt-2 text-xs text-muted-foreground">
+                      {floor.utilizationPercent}% sử dụng · còn {floor.empty} vị
+                      trí
+                    </p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </AdminPageShell>
   )
 }
-

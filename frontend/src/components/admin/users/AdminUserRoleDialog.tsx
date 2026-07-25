@@ -102,12 +102,17 @@ export function AdminUserRoleDialog({
             <p className="text-xs font-bold uppercase tracking-[0.12em] text-muted-foreground">
               Vai trò hiện tại
             </p>
-            <p className="mt-2 font-bold text-foreground">{roleLabels[user.role]}</p>
+            <p className="mt-2 font-bold text-foreground">
+              {roleLabels[user.role]}
+            </p>
           </div>
 
           <Label className="grid gap-2">
             <span>Vai trò mới</span>
-            <NativeSelect value={role} onChange={(event) => setRole(event.target.value as AuthRole)}>
+            <NativeSelect
+              value={role}
+              onChange={(event) => setRole(event.target.value as AuthRole)}
+            >
               {(Object.keys(roleLabels) as AuthRole[]).map((value) => (
                 <NativeSelectOption key={value} value={value}>
                   {roleLabels[value]}
@@ -118,7 +123,9 @@ export function AdminUserRoleDialog({
 
           <div className="rounded-2xl border border-sky-500/25 bg-sky-500/10 p-4 text-sm text-foreground">
             <p className="font-bold">{roleLabels[role]}</p>
-            <p className="mt-1 leading-6 text-muted-foreground">{roleDescriptions[role]}</p>
+            <p className="mt-1 leading-6 text-muted-foreground">
+              {roleDescriptions[role]}
+            </p>
           </div>
 
           {error && (
@@ -129,7 +136,11 @@ export function AdminUserRoleDialog({
         </div>
 
         <DialogFooter className="m-0 px-6 py-4">
-          <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => setOpen(false)}
+          >
             Hủy
           </Button>
           <Button

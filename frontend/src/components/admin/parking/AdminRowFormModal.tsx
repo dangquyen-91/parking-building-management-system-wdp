@@ -1,8 +1,15 @@
 ﻿import { useEffect, useState } from 'react'
 import type { Floor } from '../../../services/managerBuildingsApi'
-import type { RowCreatePayload, RowUpdatePayload } from '../../../services/managerParkingRowApi'
+import type {
+  RowCreatePayload,
+  RowUpdatePayload,
+} from '../../../services/managerParkingRowApi'
 import { formatFloorLabel } from '../../../utils/floorLabel'
-import { AdminField, AdminModal, AdminModalActions } from '../common/AdminFormPrimitives'
+import {
+  AdminField,
+  AdminModal,
+  AdminModalActions,
+} from '../common/AdminFormPrimitives'
 import { Input } from '../../ui/input'
 import { NativeSelect, NativeSelectOption } from '../../ui/native-select'
 import { Textarea } from '../../ui/textarea'
@@ -11,7 +18,12 @@ type AdminRowFormModalProps = {
   open: boolean
   mode: 'create' | 'edit'
   floors: Floor[]
-  initialValues?: { floorId: string; rowCode: string; capacity: number; note?: string | null }
+  initialValues?: {
+    floorId: string
+    rowCode: string
+    capacity: number
+    note?: string | null
+  }
   isSubmitting: boolean
   error?: string | null
   onClose: () => void
@@ -47,23 +59,68 @@ export function AdminRowFormModal({
   if (!open) return null
 
   return (
-    <AdminModal eyebrow="Admin // Hàng xe máy" title={mode === 'create' ? 'Tạo hàng xe máy' : 'Chỉnh sửa hàng xe máy'} error={error} onClose={onClose}>
-      <form className="grid gap-4" onSubmit={(event) => { event.preventDefault(); const base = { rowCode: rowCode.trim(), capacity: Number(capacity), note: note.trim() || null }; onSubmit(mode === 'create' ? { floorId, ...base } : base) }}>
+    <AdminModal
+      eyebrow="Admin // Hàng xe máy"
+      title={mode === 'create' ? 'Tạo hàng xe máy' : 'Chỉnh sửa hàng xe máy'}
+      error={error}
+      onClose={onClose}
+    >
+      <form
+        className="grid gap-4"
+        onSubmit={(event) => {
+          event.preventDefault()
+          const base = {
+            rowCode: rowCode.trim(),
+            capacity: Number(capacity),
+            note: note.trim() || null,
+          }
+          onSubmit(mode === 'create' ? { floorId, ...base } : base)
+        }}
+      >
         <AdminField label="Tầng / Khu">
-          <NativeSelect value={floorId} disabled={mode === 'edit'} onChange={(event) => setFloorId(event.target.value)}>
+          <NativeSelect
+            value={floorId}
+            disabled={mode === 'edit'}
+            onChange={(event) => setFloorId(event.target.value)}
+          >
             {floors.map((floor) => (
-              <NativeSelectOption key={floor._id} value={floor._id}>{formatFloorLabel(floor)}</NativeSelectOption>
+              <NativeSelectOption key={floor._id} value={floor._id}>
+                {formatFloorLabel(floor)}
+              </NativeSelectOption>
             ))}
           </NativeSelect>
         </AdminField>
         <div className="grid gap-3 sm:grid-cols-2">
-          <AdminField label="Mã hàng"><Input value={rowCode} onChange={(event) => setRowCode(event.target.value)} /></AdminField>
-          <AdminField label="Sức chứa"><Input type="number" min="1" value={capacity} onChange={(event) => setCapacity(event.target.value)} /></AdminField>
+          <AdminField label="Mã hàng">
+            <Input
+              value={rowCode}
+              onChange={(event) => setRowCode(event.target.value)}
+            />
+          </AdminField>
+          <AdminField label="Sức chứa">
+            <Input
+              type="number"
+              min="1"
+              value={capacity}
+              onChange={(event) => setCapacity(event.target.value)}
+            />
+          </AdminField>
         </div>
-        <AdminField label="Ghi chú"><Textarea className="min-h-20" value={note} onChange={(event) => setNote(event.target.value)} /></AdminField>
-        <AdminModalActions disabled={!floorId || !rowCode.trim() || Number(capacity) < 1 || isSubmitting} loading={isSubmitting} onClose={onClose} />
+        <AdminField label="Ghi chú">
+          <Textarea
+            className="min-h-20"
+            value={note}
+            onChange={(event) => setNote(event.target.value)}
+          />
+        </AdminField>
+        <AdminModalActions
+          disabled={
+            !floorId || !rowCode.trim() || Number(capacity) < 1 || isSubmitting
+          }
+          loading={isSubmitting}
+          onClose={onClose}
+        />
       </form>
     </AdminModal>
   )
 }
-

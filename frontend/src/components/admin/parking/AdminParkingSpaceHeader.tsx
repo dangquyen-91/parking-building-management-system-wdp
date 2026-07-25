@@ -36,25 +36,52 @@ export function AdminParkingSpaceHeader({
           <div className="flex min-w-0 flex-col gap-3 rounded-lg border border-violet-500/15 bg-card/90 p-3 sm:flex-row sm:items-end">
             <div className="grid min-w-0 flex-1 gap-3 sm:grid-cols-2">
               <AdminField label="Tòa nhà">
-                <NativeSelect className="w-full" value={buildingFilter} onChange={(event) => onBuildingFilterChange(event.target.value)}>
+                <NativeSelect
+                  className="w-full"
+                  value={buildingFilter}
+                  onChange={(event) =>
+                    onBuildingFilterChange(event.target.value)
+                  }
+                >
                   <NativeSelectOption value="all">Tất cả</NativeSelectOption>
                   {buildings.map((item) => (
-                    <NativeSelectOption key={item._id} value={item._id}>{item.name}</NativeSelectOption>
+                    <NativeSelectOption key={item._id} value={item._id}>
+                      {item.name}
+                    </NativeSelectOption>
                   ))}
                 </NativeSelect>
               </AdminField>
               <AdminField label="Tầng / Khu">
-                <NativeSelect className="w-full" value={floorFilter} onChange={(event) => onFloorFilterChange(event.target.value)}>
+                <NativeSelect
+                  className="w-full"
+                  value={floorFilter}
+                  onChange={(event) => onFloorFilterChange(event.target.value)}
+                >
                   <NativeSelectOption value="all">Tất cả</NativeSelectOption>
                   {floors.map((item) => (
-                    <NativeSelectOption key={item._id} value={item._id}>{formatFloorLabel(item)}</NativeSelectOption>
+                    <NativeSelectOption key={item._id} value={item._id}>
+                      {formatFloorLabel(item)}
+                    </NativeSelectOption>
                   ))}
                 </NativeSelect>
               </AdminField>
             </div>
             <div className="grid shrink-0 gap-2 sm:grid-cols-2">
-              <Button size="lg" className="whitespace-normal" onClick={onCreateSlot}>Tạo ô ô tô</Button>
-              <Button size="lg" variant="outline" className="whitespace-normal" onClick={onCreateRow}>Tạo hàng xe máy</Button>
+              <Button
+                size="lg"
+                className="whitespace-normal"
+                onClick={onCreateSlot}
+              >
+                Tạo ô ô tô
+              </Button>
+              <Button
+                size="lg"
+                variant="outline"
+                className="whitespace-normal"
+                onClick={onCreateRow}
+              >
+                Tạo hàng xe máy
+              </Button>
             </div>
           </div>
         </div>
@@ -62,4 +89,3 @@ export function AdminParkingSpaceHeader({
     />
   )
 }
-

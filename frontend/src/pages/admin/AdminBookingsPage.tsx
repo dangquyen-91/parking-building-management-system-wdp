@@ -18,7 +18,8 @@ function getCustomerSearchText(booking: AdminBooking) {
 export function AdminBookingsPage() {
   const [bookings, setBookings] = useState<AdminBooking[]>([])
   const [query, setQuery] = useState('')
-  const [statusFilter, setStatusFilter] = useState<AdminBookingStatusFilter>('all')
+  const [statusFilter, setStatusFilter] =
+    useState<AdminBookingStatusFilter>('all')
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -29,7 +30,9 @@ export function AdminBookingsPage() {
       const response = await adminApi.getBookings({ limit: 100 })
       setBookings(response.bookings ?? [])
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Không thể tải danh sách booking.')
+      setError(
+        err instanceof Error ? err.message : 'Không thể tải danh sách booking.',
+      )
     } finally {
       setIsLoading(false)
     }
@@ -46,12 +49,21 @@ export function AdminBookingsPage() {
     return bookings.filter((booking) => {
       const matchesQuery =
         !normalizedQuery ||
-        booking.licensePlate.toLowerCase().replace(/\s/g, '').includes(normalizedQuery) ||
-        (booking.phone ?? '').toLowerCase().replace(/\s/g, '').includes(normalizedQuery) ||
-        getCustomerSearchText(booking).replace(/\s/g, '').includes(normalizedQuery)
+        booking.licensePlate
+          .toLowerCase()
+          .replace(/\s/g, '')
+          .includes(normalizedQuery) ||
+        (booking.phone ?? '')
+          .toLowerCase()
+          .replace(/\s/g, '')
+          .includes(normalizedQuery) ||
+        getCustomerSearchText(booking)
+          .replace(/\s/g, '')
+          .includes(normalizedQuery)
 
       if (!matchesQuery) return false
-      if (statusFilter !== 'all' && booking.status !== statusFilter) return false
+      if (statusFilter !== 'all' && booking.status !== statusFilter)
+        return false
       return true
     })
   }, [bookings, query, statusFilter])
@@ -73,8 +85,17 @@ export function AdminBookingsPage() {
       <AdminBookingStats bookings={bookings} isLoading={isLoading} />
 
       {error && (
-        <Alert variant="destructive" className="mb-5 flex items-center justify-between"><AlertDescription>{error}</AlertDescription>
-          <Button type="button" variant="link" className="h-auto p-0" onClick={() => void loadBookings()}>
+        <Alert
+          variant="destructive"
+          className="mb-5 flex items-center justify-between"
+        >
+          <AlertDescription>{error}</AlertDescription>
+          <Button
+            type="button"
+            variant="link"
+            className="h-auto p-0"
+            onClick={() => void loadBookings()}
+          >
             Thử lại
           </Button>
         </Alert>
@@ -84,4 +105,3 @@ export function AdminBookingsPage() {
     </AdminPageShell>
   )
 }
-

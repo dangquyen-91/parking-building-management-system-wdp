@@ -28,10 +28,18 @@ export function AdminPageShell({
                 <span className="size-1.5 shrink-0 rounded-full bg-violet-500" />
                 {eyebrow}
               </div>
-              <h1 className="max-w-4xl break-words text-2xl font-bold tracking-tight text-slate-950 md:text-3xl dark:text-white">{title}</h1>
-              <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">{description}</p>
+              <h1 className="max-w-4xl break-words text-2xl font-bold tracking-tight text-slate-950 md:text-3xl dark:text-white">
+                {title}
+              </h1>
+              <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">
+                {description}
+              </p>
             </div>
-            {actions && <div className="min-w-0 w-full xl:w-auto xl:max-w-[48rem] xl:shrink-0">{actions}</div>}
+            {actions && (
+              <div className="min-w-0 w-full xl:w-auto xl:max-w-[48rem] xl:shrink-0">
+                {actions}
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
@@ -39,4 +47,3 @@ export function AdminPageShell({
     </div>
   )
 }
-
