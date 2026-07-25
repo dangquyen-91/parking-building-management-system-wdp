@@ -1,4 +1,7 @@
-import type { ManagerBooking, ManagerBookingStatus } from '../../../services/managerBookingsApi'
+import type {
+  ManagerBooking,
+  ManagerBookingStatus,
+} from '../../../services/managerBookingsApi'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -16,7 +19,8 @@ const STATUS_LABELS: Record<ManagerBookingStatus, string> = {
 }
 
 const STATUS_TONES: Record<ManagerBookingStatus, string> = {
-  pending: 'border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300',
+  pending:
+    'border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300',
   paid: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300',
   used: 'border-sky-500/30 bg-sky-500/10 text-sky-700 dark:text-sky-300',
   expired: 'border-border bg-muted text-muted-foreground',
@@ -34,7 +38,8 @@ function formatDateTime(value: string) {
 }
 
 function getCustomerName(booking: ManagerBooking) {
-  if (!booking.userId || typeof booking.userId === 'string') return 'Khách chưa đăng nhập'
+  if (!booking.userId || typeof booking.userId === 'string')
+    return 'Khách chưa đăng nhập'
   return booking.userId.fullName || booking.userId.email || 'Khách hàng'
 }
 
@@ -43,7 +48,10 @@ type ManagerBookingListProps = {
   isLoading: boolean
 }
 
-export function ManagerBookingList({ bookings, isLoading }: ManagerBookingListProps) {
+export function ManagerBookingList({
+  bookings,
+  isLoading,
+}: ManagerBookingListProps) {
   if (isLoading) {
     return (
       <Card>
@@ -90,21 +98,32 @@ export function ManagerBookingList({ bookings, isLoading }: ManagerBookingListPr
             </p>
           </TableCell>
           <TableCell className="px-4 py-4">
-            <p className="truncate font-semibold text-foreground">{getCustomerName(booking)}</p>
-            <p className="mt-1 truncate text-xs text-muted-foreground">{booking.phone}</p>
+            <p className="truncate font-semibold text-foreground">
+              {getCustomerName(booking)}
+            </p>
+            <p className="mt-1 truncate text-xs text-muted-foreground">
+              {booking.phone}
+            </p>
           </TableCell>
           <TableCell className="px-4 py-4 font-medium text-foreground">
             {formatDateTime(booking.expectedArrivalTime)}
           </TableCell>
           <TableCell className="px-4 py-4">
-            <p className="font-medium text-foreground">{formatDateTime(booking.expectedExitTime)}</p>
-            <p className="mt-1 text-xs text-muted-foreground">{booking.durationHours} giờ</p>
+            <p className="font-medium text-foreground">
+              {formatDateTime(booking.expectedExitTime)}
+            </p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {booking.durationHours} giờ
+            </p>
           </TableCell>
           <TableCell className="px-4 py-4 font-bold text-foreground">
             {booking.amount.toLocaleString('vi-VN')} VND
           </TableCell>
           <TableCell className="px-4 py-4">
-            <Badge variant="outline" className={`gap-1.5 ${STATUS_TONES[booking.status]}`}>
+            <Badge
+              variant="outline"
+              className={`gap-1.5 ${STATUS_TONES[booking.status]}`}
+            >
               <span className="h-1.5 w-1.5 rounded-full bg-current" />
               {STATUS_LABELS[booking.status]}
             </Badge>

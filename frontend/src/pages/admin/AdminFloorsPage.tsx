@@ -1,27 +1,237 @@
 ﻿import { useEffect, useMemo, useState } from 'react'
 import { ChevronDown } from 'lucide-react'
-import { AdminPageShell, AdminStatCard, AdminStatusBadge } from '../../components/admin'
+import {
+  AdminPageShell,
+  AdminStatCard,
+  AdminStatusBadge,
+} from '../../components/admin'
 import { adminApi, type AdminOccupancyReport } from '../../services/adminApi'
 import { getFloorSection } from '../../utils/floorLabel'
 import { Badge } from '../../components/ui/badge'
 import { Button } from '../../components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card'
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '../../components/ui/collapsible'
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '../../components/ui/card'
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '../../components/ui/collapsible'
 import { Progress } from '../../components/ui/progress'
 import { Skeleton } from '../../components/ui/skeleton'
 type Floor = AdminOccupancyReport['floors'][number]
-type Group = { key: string; buildingName: string; floorNumber: number; sections: Floor[]; totalCapacity: number; occupied: number; empty: number; maintenance: number; utilizationPercent: number }
-function groupFloors(floors: Floor[]) { const map = new Map<string, Group>(); floors.forEach((f) => { const key = `${f.building?._id ?? 'unknown'}:${f.floorNumber}`; const g = map.get(key) ?? { key, buildingName: f.building?.name ?? 'Tòa nhà', floorNumber: f.floorNumber, sections: [], totalCapacity: 0, occupied: 0, empty: 0, maintenance: 0, utilizationPercent: 0 }; g.sections.push(f); g.totalCapacity += f.totalCapacity ?? f.totalSlots ?? 0; g.occupied += f.occupied ?? 0; g.empty += f.empty ?? 0; g.maintenance += f.maintenance ?? 0; map.set(key, g) }); return [...map.values()].map((g) => ({ ...g, utilizationPercent: g.totalCapacity ? Math.round(g.occupied / g.totalCapacity * 100) : 0 })).sort((a, b) => a.buildingName.localeCompare(b.buildingName) || a.floorNumber - b.floorNumber) }
-export function AdminFloorsPage() {
-  const [occupancy, setOccupancy] = useState<AdminOccupancyReport | null>(null); const [isLoading, setIsLoading] = useState(true); const [error, setError] = useState('')
-  useEffect(() => { let ignore = false; async function load() { try { setIsLoading(true); setError(''); const response = await adminApi.getOccupancyReport(); if (!ignore) setOccupancy(response) } catch (e) { if (!ignore) setError(e instanceof Error ? e.message : 'Không thể tải tầng') } finally { if (!ignore) setIsLoading(false) } } void load(); return () => { ignore = true } }, [])
-  const groups = useMemo(() => groupFloors(occupancy?.floors ?? []), [occupancy])
-  return <AdminPageShell eyebrow="Admin // Tầng" title="Tổng quan tầng" description="Admin xem toàn bộ tầng, khu, tòa nhà, sức chứa và trạng thái vận hành.">
-    {error && <Card className="mb-4 border-destructive/40"><CardContent className="p-4 text-sm text-destructive">{error}</CardContent></Card>}
-    <div className="grid gap-3 md:grid-cols-4"><AdminStatCard label="Tầng" value={isLoading ? '-' : groups.length} detail="Đã gom theo số tầng" tone="violet" /><AdminStatCard label="Khu" value={isLoading ? '-' : occupancy?.floors?.length ?? 0} detail="Khu từ API" tone="amber" /><AdminStatCard label="Tổng sức chứa" value={isLoading ? '-' : occupancy?.overall.totalCapacity ?? 0} detail="Trên toàn bộ tòa nhà" tone="sky" /><AdminStatCard label="Đang dùng" value={isLoading ? '-' : occupancy?.overall.occupied ?? 0} detail={`${occupancy?.overall.utilizationPercent ?? 0}% sử dụng`} tone="emerald" /></div>
-    <Card className="mt-5"><CardHeader><CardTitle>Danh sách tầng và khu</CardTitle></CardHeader><CardContent className="grid gap-3">{isLoading ? Array.from({ length: 4 }, (_, i) => <Skeleton key={i} className="h-24 w-full" />) : !groups.length ? <p className="py-8 text-center text-sm text-muted-foreground">Không tìm thấy tầng.</p> : groups.map((group) => <FloorGroupCard key={group.key} group={group} />)}</CardContent></Card>
-  </AdminPageShell>
+type Group = {
+  key: string
+  buildingName: string
+  floorNumber: number
+  sections: Floor[]
+  totalCapacity: number
+  occupied: number
+  empty: number
+  maintenance: number
+  utilizationPercent: number
 }
-function FloorGroupCard({ group }: { group: Group }) { const [open, setOpen] = useState(false); return <Collapsible open={open} onOpenChange={setOpen}><Card className="shadow-none"><CardContent className="p-4"><CollapsibleTrigger asChild><Button variant="ghost" className="h-auto w-full justify-start p-0 text-left"><div className="grid w-full gap-4 lg:grid-cols-[minmax(0,1fr)_7rem_7rem_8rem_9rem_auto] lg:items-center"><div><p className="font-semibold">{group.buildingName} / Tầng {group.floorNumber}</p><p className="text-xs text-muted-foreground">{group.sections.length} khu · Khu {group.sections.map((f) => getFloorSection(f.section)).join(', ')}</p></div><Metric label="Trống" value={group.empty} /><Metric label="Sức chứa" value={group.totalCapacity} /><Metric label="Đang dùng" value={`${group.utilizationPercent}%`} /><AdminStatusBadge status={group.maintenance ? 'warning' : 'enabled'} /><ChevronDown className={`size-4 transition-transform ${open ? 'rotate-180' : ''}`} /></div></Button></CollapsibleTrigger><Progress className="mt-4" value={group.utilizationPercent} /><CollapsibleContent className="mt-4 grid gap-2 md:grid-cols-2">{group.sections.map((floor) => <Card key={floor.floorId} className="shadow-none"><CardContent className="flex items-start justify-between p-3"><div><p className="font-medium">Khu {getFloorSection(floor.section)}</p><p className="text-xs text-muted-foreground">{floor.vehicleType === 'car' ? 'Ô tô' : 'Xe máy'} / {floor.floorType === 'resident' ? 'Cư dân' : 'Khách vãng lai'}</p><p className="mt-2 text-xs text-muted-foreground">Trống {floor.empty} · Đang dùng {floor.occupied} · Sức chứa {floor.totalCapacity ?? floor.totalSlots ?? 0}</p></div><Badge variant="outline">{floor.utilizationPercent}%</Badge></CardContent></Card>)}</CollapsibleContent></CardContent></Card></Collapsible> }
-function Metric({ label, value }: { label: string; value: string | number }) { return <div><p className="text-xs text-muted-foreground">{label}</p><p className="font-medium">{value}</p></div> }
-
+function groupFloors(floors: Floor[]) {
+  const map = new Map<string, Group>()
+  floors.forEach((f) => {
+    const key = `${f.building?._id ?? 'unknown'}:${f.floorNumber}`
+    const g = map.get(key) ?? {
+      key,
+      buildingName: f.building?.name ?? 'Tòa nhà',
+      floorNumber: f.floorNumber,
+      sections: [],
+      totalCapacity: 0,
+      occupied: 0,
+      empty: 0,
+      maintenance: 0,
+      utilizationPercent: 0,
+    }
+    g.sections.push(f)
+    g.totalCapacity += f.totalCapacity ?? f.totalSlots ?? 0
+    g.occupied += f.occupied ?? 0
+    g.empty += f.empty ?? 0
+    g.maintenance += f.maintenance ?? 0
+    map.set(key, g)
+  })
+  return [...map.values()]
+    .map((g) => ({
+      ...g,
+      utilizationPercent: g.totalCapacity
+        ? Math.round((g.occupied / g.totalCapacity) * 100)
+        : 0,
+    }))
+    .sort(
+      (a, b) =>
+        a.buildingName.localeCompare(b.buildingName) ||
+        a.floorNumber - b.floorNumber,
+    )
+}
+export function AdminFloorsPage() {
+  const [occupancy, setOccupancy] = useState<AdminOccupancyReport | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState('')
+  useEffect(() => {
+    let ignore = false
+    async function load() {
+      try {
+        setIsLoading(true)
+        setError('')
+        const response = await adminApi.getOccupancyReport()
+        if (!ignore) setOccupancy(response)
+      } catch (e) {
+        if (!ignore)
+          setError(e instanceof Error ? e.message : 'Không thể tải tầng')
+      } finally {
+        if (!ignore) setIsLoading(false)
+      }
+    }
+    void load()
+    return () => {
+      ignore = true
+    }
+  }, [])
+  const groups = useMemo(
+    () => groupFloors(occupancy?.floors ?? []),
+    [occupancy],
+  )
+  return (
+    <AdminPageShell
+      eyebrow="Admin // Tầng"
+      title="Tổng quan tầng"
+      description="Admin xem toàn bộ tầng, khu, tòa nhà, sức chứa và trạng thái vận hành."
+    >
+      {error && (
+        <Card className="mb-4 border-destructive/40">
+          <CardContent className="p-4 text-sm text-destructive">
+            {error}
+          </CardContent>
+        </Card>
+      )}
+      <div className="grid gap-3 md:grid-cols-4">
+        <AdminStatCard
+          label="Tầng"
+          value={isLoading ? '-' : groups.length}
+          detail="Đã gom theo số tầng"
+          tone="violet"
+        />
+        <AdminStatCard
+          label="Khu"
+          value={isLoading ? '-' : (occupancy?.floors?.length ?? 0)}
+          detail="Khu từ API"
+          tone="amber"
+        />
+        <AdminStatCard
+          label="Tổng sức chứa"
+          value={isLoading ? '-' : (occupancy?.overall.totalCapacity ?? 0)}
+          detail="Trên toàn bộ tòa nhà"
+          tone="sky"
+        />
+        <AdminStatCard
+          label="Đang dùng"
+          value={isLoading ? '-' : (occupancy?.overall.occupied ?? 0)}
+          detail={`${occupancy?.overall.utilizationPercent ?? 0}% sử dụng`}
+          tone="emerald"
+        />
+      </div>
+      <Card className="mt-5">
+        <CardHeader>
+          <CardTitle>Danh sách tầng và khu</CardTitle>
+        </CardHeader>
+        <CardContent className="grid gap-3">
+          {isLoading ? (
+            Array.from({ length: 4 }, (_, i) => (
+              <Skeleton key={i} className="h-24 w-full" />
+            ))
+          ) : !groups.length ? (
+            <p className="py-8 text-center text-sm text-muted-foreground">
+              Không tìm thấy tầng.
+            </p>
+          ) : (
+            groups.map((group) => (
+              <FloorGroupCard key={group.key} group={group} />
+            ))
+          )}
+        </CardContent>
+      </Card>
+    </AdminPageShell>
+  )
+}
+function FloorGroupCard({ group }: { group: Group }) {
+  const [open, setOpen] = useState(false)
+  return (
+    <Collapsible open={open} onOpenChange={setOpen}>
+      <Card className="shadow-none">
+        <CardContent className="p-4">
+          <CollapsibleTrigger asChild>
+            <Button
+              variant="ghost"
+              className="h-auto w-full justify-start p-0 text-left"
+            >
+              <div className="grid w-full gap-4 lg:grid-cols-[minmax(0,1fr)_7rem_7rem_8rem_9rem_auto] lg:items-center">
+                <div>
+                  <p className="font-semibold">
+                    {group.buildingName} / Tầng {group.floorNumber}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {group.sections.length} khu · Khu{' '}
+                    {group.sections
+                      .map((f) => getFloorSection(f.section))
+                      .join(', ')}
+                  </p>
+                </div>
+                <Metric label="Trống" value={group.empty} />
+                <Metric label="Sức chứa" value={group.totalCapacity} />
+                <Metric
+                  label="Đang dùng"
+                  value={`${group.utilizationPercent}%`}
+                />
+                <AdminStatusBadge
+                  status={group.maintenance ? 'warning' : 'enabled'}
+                />
+                <ChevronDown
+                  className={`size-4 transition-transform ${open ? 'rotate-180' : ''}`}
+                />
+              </div>
+            </Button>
+          </CollapsibleTrigger>
+          <Progress className="mt-4" value={group.utilizationPercent} />
+          <CollapsibleContent className="mt-4 grid gap-2 md:grid-cols-2">
+            {group.sections.map((floor) => (
+              <Card key={floor.floorId} className="shadow-none">
+                <CardContent className="flex items-start justify-between p-3">
+                  <div>
+                    <p className="font-medium">
+                      Khu {getFloorSection(floor.section)}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {floor.vehicleType === 'car' ? 'Ô tô' : 'Xe máy'} /{' '}
+                      {floor.floorType === 'resident'
+                        ? 'Cư dân'
+                        : 'Khách vãng lai'}
+                    </p>
+                    <p className="mt-2 text-xs text-muted-foreground">
+                      Trống {floor.empty} · Đang dùng {floor.occupied} · Sức
+                      chứa {floor.totalCapacity ?? floor.totalSlots ?? 0}
+                    </p>
+                  </div>
+                  <Badge variant="outline">{floor.utilizationPercent}%</Badge>
+                </CardContent>
+              </Card>
+            ))}
+          </CollapsibleContent>
+        </CardContent>
+      </Card>
+    </Collapsible>
+  )
+}
+function Metric({ label, value }: { label: string; value: string | number }) {
+  return (
+    <div>
+      <p className="text-xs text-muted-foreground">{label}</p>
+      <p className="font-medium">{value}</p>
+    </div>
+  )
+}

@@ -1,18 +1,161 @@
 ﻿import { useMemo, useState } from 'react'
 import { Building2, ChevronDown } from 'lucide-react'
-import type { ManagerBuildingSummary, ManagerFloorSummary } from '../../../hooks/useManagerBuildings'
+import type {
+  ManagerBuildingSummary,
+  ManagerFloorSummary,
+} from '../../../hooks/useManagerBuildings'
 import { getFloorSection } from '../../../utils/floorLabel'
 import { AdminStatusBadge } from '../common/AdminStatusBadge'
 import { Badge } from '../../ui/badge'
 import { Button } from '../../ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '../../ui/card'
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '../../ui/collapsible'
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '../../ui/collapsible'
 
-type FloorGroup = { floorNumber: number; sections: ManagerFloorSummary[]; totalSlots: number }
-function groupFloors(floors: ManagerFloorSummary[]) { const map = new Map<number, FloorGroup>(); floors.forEach((floor) => { const group = map.get(floor.floorNumber) ?? { floorNumber: floor.floorNumber, sections: [], totalSlots: 0 }; group.sections.push(floor); group.totalSlots += floor.totalSlots; map.set(floor.floorNumber, group) }); return [...map.values()].sort((a, b) => a.floorNumber - b.floorNumber) }
-
-export function AdminBuildingCard({ building, onEdit, onEditFloor }: { building: ManagerBuildingSummary; onEdit: (building: ManagerBuildingSummary) => void; onEditFloor: (floor: ManagerFloorSummary) => void }) {
-  const [open, setOpen] = useState(false); const groups = useMemo(() => groupFloors(building.floors), [building.floors])
-  return <Card className="border-violet-500/15 bg-gradient-to-br from-card via-card to-violet-500/5 transition-shadow hover:shadow-md"><CardHeader className="flex-col gap-4 lg:flex-row lg:items-start lg:justify-between"><div className="flex min-w-0 items-start gap-3"><span className="flex size-11 shrink-0 items-center justify-center rounded-lg bg-violet-500/10 text-violet-700 dark:text-violet-300"><Building2 className="size-5" /></span><div className="min-w-0"><div className="flex flex-wrap items-center gap-2"><CardTitle className="break-words">{building.name}</CardTitle><AdminStatusBadge status={building.isActive ? 'active' : 'inactive'} /></div><p className="mt-1 break-words text-xs text-muted-foreground">{building.address}</p>{building.description && <p className="mt-2 break-words text-sm text-muted-foreground">{building.description}</p>}</div></div><div className="flex shrink-0 flex-wrap items-center gap-2"><Badge variant="secondary">{building.floorCount} tầng</Badge><Badge variant="secondary">{building.floors.length} khu</Badge><Badge variant="secondary">{building.totalSlots} chỗ</Badge><Button variant="outline" onClick={() => onEdit(building)}>Chỉnh sửa</Button></div></CardHeader><CardContent><Collapsible open={open} onOpenChange={setOpen}><CollapsibleTrigger asChild><Button variant="outline" className="h-auto min-h-10 w-full justify-between whitespace-normal text-left">{open ? 'Ẩn danh sách tầng' : 'Xem danh sách tầng'}<ChevronDown className={`size-4 shrink-0 transition-transform ${open ? 'rotate-180' : ''}`} /></Button></CollapsibleTrigger><CollapsibleContent className="mt-3 grid gap-3">{groups.length ? groups.map((group) => <Card key={group.floorNumber} className="shadow-none"><CardHeader className="flex-row items-center justify-between gap-3 py-4"><div className="min-w-0"><CardTitle className="text-base">Tầng {group.floorNumber}</CardTitle><p className="break-words text-xs text-muted-foreground">{group.sections.length} khu · {group.totalSlots} chỗ</p></div><Badge variant="outline" className="shrink-0 whitespace-normal text-center">Khu {group.sections.map((f) => getFloorSection(f.section)).join(', ')}</Badge></CardHeader><CardContent className="grid gap-2 md:grid-cols-2">{group.sections.map((floor) => <Card key={floor.id} className="shadow-none"><CardContent className="flex items-center justify-between gap-3 p-3"><div className="min-w-0"><p className="break-words font-medium">Khu {getFloorSection(floor.section)}</p><p className="break-words text-xs text-muted-foreground">{floor.floorType === 'resident' ? 'Cư dân' : 'Khách'} · {floor.vehicleType === 'car' ? 'Ô tô' : 'Xe máy'} · {floor.totalSlots} chỗ</p></div><Button size="sm" variant="outline" className="shrink-0" onClick={() => onEditFloor(floor)}>Sửa</Button></CardContent></Card>)}</CardContent></Card>) : <Card className="border-dashed"><CardContent className="p-5 text-center text-sm text-muted-foreground">Chưa có tầng.</CardContent></Card>}</CollapsibleContent></Collapsible></CardContent></Card>
+type FloorGroup = {
+  floorNumber: number
+  sections: ManagerFloorSummary[]
+  totalSlots: number
+}
+function groupFloors(floors: ManagerFloorSummary[]) {
+  const map = new Map<number, FloorGroup>()
+  floors.forEach((floor) => {
+    const group = map.get(floor.floorNumber) ?? {
+      floorNumber: floor.floorNumber,
+      sections: [],
+      totalSlots: 0,
+    }
+    group.sections.push(floor)
+    group.totalSlots += floor.totalSlots
+    map.set(floor.floorNumber, group)
+  })
+  return [...map.values()].sort((a, b) => a.floorNumber - b.floorNumber)
 }
 
+export function AdminBuildingCard({
+  building,
+  onEdit,
+  onEditFloor,
+}: {
+  building: ManagerBuildingSummary
+  onEdit: (building: ManagerBuildingSummary) => void
+  onEditFloor: (floor: ManagerFloorSummary) => void
+}) {
+  const [open, setOpen] = useState(false)
+  const groups = useMemo(() => groupFloors(building.floors), [building.floors])
+  return (
+    <Card className="border-violet-500/15 bg-gradient-to-br from-card via-card to-violet-500/5 transition-shadow hover:shadow-md">
+      <CardHeader className="flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+        <div className="flex min-w-0 items-start gap-3">
+          <span className="flex size-11 shrink-0 items-center justify-center rounded-lg bg-violet-500/10 text-violet-700 dark:text-violet-300">
+            <Building2 className="size-5" />
+          </span>
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2">
+              <CardTitle className="break-words">{building.name}</CardTitle>
+              <AdminStatusBadge
+                status={building.isActive ? 'active' : 'inactive'}
+              />
+            </div>
+            <p className="mt-1 break-words text-xs text-muted-foreground">
+              {building.address}
+            </p>
+            {building.description && (
+              <p className="mt-2 break-words text-sm text-muted-foreground">
+                {building.description}
+              </p>
+            )}
+          </div>
+        </div>
+        <div className="flex shrink-0 flex-wrap items-center gap-2">
+          <Badge variant="secondary">{building.floorCount} tầng</Badge>
+          <Badge variant="secondary">{building.floors.length} khu</Badge>
+          <Badge variant="secondary">{building.totalSlots} chỗ</Badge>
+          <Button variant="outline" onClick={() => onEdit(building)}>
+            Chỉnh sửa
+          </Button>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <Collapsible open={open} onOpenChange={setOpen}>
+          <CollapsibleTrigger asChild>
+            <Button
+              variant="outline"
+              className="h-auto min-h-10 w-full justify-between whitespace-normal text-left"
+            >
+              {open ? 'Ẩn danh sách tầng' : 'Xem danh sách tầng'}
+              <ChevronDown
+                className={`size-4 shrink-0 transition-transform ${open ? 'rotate-180' : ''}`}
+              />
+            </Button>
+          </CollapsibleTrigger>
+          <CollapsibleContent className="mt-3 grid gap-3">
+            {groups.length ? (
+              groups.map((group) => (
+                <Card key={group.floorNumber} className="shadow-none">
+                  <CardHeader className="flex-row items-center justify-between gap-3 py-4">
+                    <div className="min-w-0">
+                      <CardTitle className="text-base">
+                        Tầng {group.floorNumber}
+                      </CardTitle>
+                      <p className="break-words text-xs text-muted-foreground">
+                        {group.sections.length} khu · {group.totalSlots} chỗ
+                      </p>
+                    </div>
+                    <Badge
+                      variant="outline"
+                      className="shrink-0 whitespace-normal text-center"
+                    >
+                      Khu{' '}
+                      {group.sections
+                        .map((f) => getFloorSection(f.section))
+                        .join(', ')}
+                    </Badge>
+                  </CardHeader>
+                  <CardContent className="grid gap-2 md:grid-cols-2">
+                    {group.sections.map((floor) => (
+                      <Card key={floor.id} className="shadow-none">
+                        <CardContent className="flex items-center justify-between gap-3 p-3">
+                          <div className="min-w-0">
+                            <p className="break-words font-medium">
+                              Khu {getFloorSection(floor.section)}
+                            </p>
+                            <p className="break-words text-xs text-muted-foreground">
+                              {floor.floorType === 'resident'
+                                ? 'Cư dân'
+                                : 'Khách'}{' '}
+                              ·{' '}
+                              {floor.vehicleType === 'car' ? 'Ô tô' : 'Xe máy'}{' '}
+                              · {floor.totalSlots} chỗ
+                            </p>
+                          </div>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="shrink-0"
+                            onClick={() => onEditFloor(floor)}
+                          >
+                            Sửa
+                          </Button>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </CardContent>
+                </Card>
+              ))
+            ) : (
+              <Card className="border-dashed">
+                <CardContent className="p-5 text-center text-sm text-muted-foreground">
+                  Chưa có tầng.
+                </CardContent>
+              </Card>
+            )}
+          </CollapsibleContent>
+        </Collapsible>
+      </CardContent>
+    </Card>
+  )
+}

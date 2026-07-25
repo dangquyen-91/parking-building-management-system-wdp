@@ -1,7 +1,17 @@
 ﻿import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { AdminPageShell, AdminStatCard, AdminStatusBadge, formatAdminCurrency } from '../../components/admin'
-import { adminApi, type AdminBooking, type AdminDashboardReport, type AdminOccupancyReport } from '../../services/adminApi'
+import {
+  AdminPageShell,
+  AdminStatCard,
+  AdminStatusBadge,
+  formatAdminCurrency,
+} from '../../components/admin'
+import {
+  adminApi,
+  type AdminBooking,
+  type AdminDashboardReport,
+  type AdminOccupancyReport,
+} from '../../services/adminApi'
 import { formatFloorLabel } from '../../utils/floorLabel'
 import type { GateSession } from '../../services/staffGateApi'
 import { ArrowRight, RefreshCw } from 'lucide-react'
@@ -24,10 +34,26 @@ function vehicleLabel(value: 'car' | 'motorcycle') {
 }
 
 const adminLinks = [
-  { to: '/admin/users', label: 'Người dùng', detail: 'Tài khoản, vai trò và trạng thái' },
-  { to: '/admin/buildings', label: 'Hạ tầng', detail: 'Tòa nhà, tầng, ô đỗ và hàng xe' },
-  { to: '/admin/bookings', label: 'Booking', detail: 'Theo dõi đặt chỗ vãng lai' },
-  { to: '/admin/reports', label: 'Báo cáo', detail: 'Doanh thu, công suất và lưu lượng' },
+  {
+    to: '/admin/users',
+    label: 'Người dùng',
+    detail: 'Tài khoản, vai trò và trạng thái',
+  },
+  {
+    to: '/admin/buildings',
+    label: 'Hạ tầng',
+    detail: 'Tòa nhà, tầng, ô đỗ và hàng xe',
+  },
+  {
+    to: '/admin/bookings',
+    label: 'Booking',
+    detail: 'Theo dõi đặt chỗ vãng lai',
+  },
+  {
+    to: '/admin/reports',
+    label: 'Báo cáo',
+    detail: 'Doanh thu, công suất và lưu lượng',
+  },
 ]
 
 const quickLinkStyles = [
@@ -115,7 +141,8 @@ export function DashboardPage() {
         slots: slots.total ?? slots.slots?.length ?? 0,
         rows: rows.total ?? rows.rows?.length ?? 0,
         bookings: bookingsData.total ?? bookingsData.bookings?.length ?? 0,
-        subscriptions: subscriptions.total ?? subscriptions.subscriptions?.length ?? 0,
+        subscriptions:
+          subscriptions.total ?? subscriptions.subscriptions?.length ?? 0,
         plans: plans.plans?.length ?? 0,
       })
       setReport(dashboardReport)
@@ -124,7 +151,11 @@ export function DashboardPage() {
       setBookings(paidBookings.bookings ?? [])
       setSnapshotTime(Date.now())
     } catch (loadError) {
-      setError(loadError instanceof Error ? loadError.message : 'Không thể tải dữ liệu admin.')
+      setError(
+        loadError instanceof Error
+          ? loadError.message
+          : 'Không thể tải dữ liệu admin.',
+      )
     } finally {
       setIsLoading(false)
     }
@@ -136,7 +167,13 @@ export function DashboardPage() {
   }, [loadAdminData])
 
   const alerts = useMemo(() => {
-    const result: Array<{ id: string; title: string; detail: string; to: string; tone: 'pending' | 'maintenance' | 'occupied' | 'warning' }> = []
+    const result: Array<{
+      id: string
+      title: string
+      detail: string
+      to: string
+      tone: 'pending' | 'maintenance' | 'occupied' | 'warning'
+    }> = []
 
     ;(occupancy?.floors ?? []).forEach((floor) => {
       const location = `${floor.building?.name ?? 'Tòa nhà'} / ${formatFloorLabel(floor)}`
@@ -163,7 +200,9 @@ export function DashboardPage() {
     })
 
     const longStayCount = sessions.filter(
-      (session) => snapshotTime - new Date(session.entryTime).getTime() >= 24 * 60 * 60 * 1000,
+      (session) =>
+        snapshotTime - new Date(session.entryTime).getTime() >=
+        24 * 60 * 60 * 1000,
     ).length
 
     if (longStayCount > 0) {
@@ -189,7 +228,11 @@ export function DashboardPage() {
     return result
   }, [occupancy, report, sessions, snapshotTime])
 
-  const availableSlots = Math.max(0, (occupancy?.overall.totalCapacity ?? 0) - (occupancy?.overall.occupied ?? 0))
+  const availableSlots = Math.max(
+    0,
+    (occupancy?.overall.totalCapacity ?? 0) -
+      (occupancy?.overall.occupied ?? 0),
+  )
 
   return (
     <AdminPageShell
@@ -209,9 +252,17 @@ export function DashboardPage() {
       }
     >
       {error && (
-        <Alert variant="destructive" className="mb-5 flex items-center justify-between">
+        <Alert
+          variant="destructive"
+          className="mb-5 flex items-center justify-between"
+        >
           <AlertDescription>{error}</AlertDescription>
-          <Button type="button" variant="link" className="h-auto p-0" onClick={() => void loadAdminData()}>
+          <Button
+            type="button"
+            variant="link"
+            className="h-auto p-0"
+            onClick={() => void loadAdminData()}
+          >
             Thử lại
           </Button>
         </Alert>
@@ -220,19 +271,27 @@ export function DashboardPage() {
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <AdminStatCard
           label="Doanh thu hôm nay"
-          value={isLoading ? '-' : formatAdminCurrency(report?.revenueToday.total ?? 0)}
+          value={
+            isLoading
+              ? '-'
+              : formatAdminCurrency(report?.revenueToday.total ?? 0)
+          }
           detail={`Booking ${formatAdminCurrency(report?.revenueToday.booking ?? 0)}`}
           tone="amber"
         />
         <AdminStatCard
           label="Xe đang trong bãi"
-          value={isLoading ? '-' : report?.activity.activeSessions ?? 0}
+          value={isLoading ? '-' : (report?.activity.activeSessions ?? 0)}
           detail={`${availableSlots} vị trí còn trống`}
           tone="sky"
         />
         <AdminStatCard
           label="Hoạt động hôm nay"
-          value={isLoading ? '-' : `${report?.activity.checkinsToday ?? 0}/${report?.activity.checkoutsToday ?? 0}`}
+          value={
+            isLoading
+              ? '-'
+              : `${report?.activity.checkinsToday ?? 0}/${report?.activity.checkoutsToday ?? 0}`
+          }
           detail="Lượt xe vào / lượt xe ra"
           tone="emerald"
         />
@@ -248,21 +307,31 @@ export function DashboardPage() {
         {adminLinks.map((item, index) => {
           const styles = quickLinkStyles[index]
           return (
-          <Card key={item.to} className={`overflow-hidden bg-gradient-to-br ${styles.glow} via-card to-card transition-shadow hover:shadow-md`}><Link
-            to={item.to}
-            className="group block p-4"
-          >
-            <div className="relative flex items-center gap-3">
-              <span className={`flex size-11 shrink-0 items-center justify-center rounded-2xl text-sm font-black shadow-lg ${styles.icon}`}>
-                {String(index + 1).padStart(2, '0')}
-              </span>
-              <span className="min-w-0 flex-1">
-                <span className="block text-sm font-bold text-foreground">{item.label}</span>
-                <span className="mt-1 block line-clamp-1 text-xs text-muted-foreground">{item.detail}</span>
-              </span>
-              <ArrowRight className={`size-4 transition-transform group-hover:translate-x-1 ${styles.arrow}`} />
-            </div>
-          </Link></Card>
+            <Card
+              key={item.to}
+              className={`overflow-hidden bg-gradient-to-br ${styles.glow} via-card to-card transition-shadow hover:shadow-md`}
+            >
+              <Link to={item.to} className="group block p-4">
+                <div className="relative flex items-center gap-3">
+                  <span
+                    className={`flex size-11 shrink-0 items-center justify-center rounded-2xl text-sm font-black shadow-lg ${styles.icon}`}
+                  >
+                    {String(index + 1).padStart(2, '0')}
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-sm font-bold text-foreground">
+                      {item.label}
+                    </span>
+                    <span className="mt-1 block line-clamp-1 text-xs text-muted-foreground">
+                      {item.detail}
+                    </span>
+                  </span>
+                  <ArrowRight
+                    className={`size-4 transition-transform group-hover:translate-x-1 ${styles.arrow}`}
+                  />
+                </div>
+              </Link>
+            </Card>
           )
         })}
       </section>
@@ -272,37 +341,59 @@ export function DashboardPage() {
           <span className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-sky-500 via-cyan-400 to-emerald-400" />
           <div className="mb-4 flex items-start justify-between gap-3">
             <div>
-              <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Công suất</p>
-              <h2 className="mt-1 text-base font-semibold text-foreground">Tình trạng từng tầng</h2>
+              <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+                Công suất
+              </p>
+              <h2 className="mt-1 text-base font-semibold text-foreground">
+                Tình trạng từng tầng
+              </h2>
             </div>
-            <Link to="/admin/slots" className="text-xs font-semibold text-muted-foreground hover:text-foreground">
+            <Link
+              to="/admin/slots"
+              className="text-xs font-semibold text-muted-foreground hover:text-foreground"
+            >
               Quản lý chỗ đỗ
             </Link>
           </div>
 
           {(occupancy?.floors.length ?? 0) === 0 ? (
-            <p className="py-8 text-center text-sm text-muted-foreground">Chưa có dữ liệu tầng đỗ xe.</p>
+            <p className="py-8 text-center text-sm text-muted-foreground">
+              Chưa có dữ liệu tầng đỗ xe.
+            </p>
           ) : (
             <div className="grid gap-3 md:grid-cols-2">
               {(occupancy?.floors ?? []).slice(0, 6).map((floor) => (
-                <Card key={floor.floorId} className="shadow-none"><CardContent className="p-4">
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <p className="font-semibold text-foreground">
-                        {floor.building?.name ?? 'Chưa xác định'} / {formatFloorLabel(floor)}
-                      </p>
-                      <p className="mt-1 text-xs text-muted-foreground">{vehicleLabel(floor.vehicleType)}</p>
+                <Card key={floor.floorId} className="shadow-none">
+                  <CardContent className="p-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="font-semibold text-foreground">
+                          {floor.building?.name ?? 'Chưa xác định'} /{' '}
+                          {formatFloorLabel(floor)}
+                        </p>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          {vehicleLabel(floor.vehicleType)}
+                        </p>
+                      </div>
+                      <AdminStatusBadge
+                        status={
+                          floor.utilizationPercent >= 90
+                            ? 'occupied'
+                            : 'available'
+                        }
+                        label={`${floor.utilizationPercent}%`}
+                      />
                     </div>
-                    <AdminStatusBadge
-                      status={floor.utilizationPercent >= 90 ? 'occupied' : 'available'}
-                      label={`${floor.utilizationPercent}%`}
+                    <Progress
+                      value={Math.min(100, floor.utilizationPercent)}
+                      className="mt-4 h-2"
                     />
-                  </div>
-                  <Progress value={Math.min(100, floor.utilizationPercent)} className="mt-4 h-2" />
-                  <p className="mt-2 text-xs text-muted-foreground">
-                    Đang đỗ {floor.occupied} · Còn trống {floor.empty} · Bảo trì {floor.maintenance ?? 0}
-                  </p>
-                </CardContent></Card>
+                    <p className="mt-2 text-xs text-muted-foreground">
+                      Đang đỗ {floor.occupied} · Còn trống {floor.empty} · Bảo
+                      trì {floor.maintenance ?? 0}
+                    </p>
+                  </CardContent>
+                </Card>
               ))}
             </div>
           )}
@@ -311,24 +402,38 @@ export function DashboardPage() {
         <Card className="relative overflow-hidden p-4 md:p-5">
           <span className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-amber-400 via-orange-500 to-rose-500" />
           <div className="mb-4">
-            <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Cần chú ý</p>
-            <h2 className="mt-1 text-base font-semibold text-foreground">Cảnh báo hệ thống</h2>
+            <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+              Cần chú ý
+            </p>
+            <h2 className="mt-1 text-base font-semibold text-foreground">
+              Cảnh báo hệ thống
+            </h2>
           </div>
 
           {alerts.length === 0 ? (
-            <Alert><AlertDescription>Chưa phát hiện vấn đề cần xử lý.</AlertDescription></Alert>
+            <Alert>
+              <AlertDescription>
+                Chưa phát hiện vấn đề cần xử lý.
+              </AlertDescription>
+            </Alert>
           ) : (
             <div className="space-y-2">
               {alerts.slice(0, 6).map((alert) => (
-                <Card key={alert.id} className="shadow-none"><Link to={alert.to} className="block p-3">
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <p className="text-sm font-semibold text-foreground">{alert.title}</p>
-                      <p className="mt-1 text-xs text-muted-foreground">{alert.detail}</p>
+                <Card key={alert.id} className="shadow-none">
+                  <Link to={alert.to} className="block p-3">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="text-sm font-semibold text-foreground">
+                          {alert.title}
+                        </p>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          {alert.detail}
+                        </p>
+                      </div>
+                      <AdminStatusBadge status={alert.tone} label="Kiểm tra" />
                     </div>
-                    <AdminStatusBadge status={alert.tone} label="Kiểm tra" />
-                  </div>
-                </Link></Card>
+                  </Link>
+                </Card>
               ))}
             </div>
           )}
@@ -340,28 +445,42 @@ export function DashboardPage() {
           <span className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-emerald-500 to-cyan-400" />
           <div className="mb-4 flex items-start justify-between gap-3">
             <div>
-              <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Hoạt động cổng</p>
-              <h2 className="mt-1 text-base font-semibold text-foreground">Xe vừa vào bãi</h2>
+              <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+                Hoạt động cổng
+              </p>
+              <h2 className="mt-1 text-base font-semibold text-foreground">
+                Xe vừa vào bãi
+              </h2>
             </div>
-            <Link to="/admin/gate-logs" className="text-xs font-semibold text-muted-foreground hover:text-foreground">
+            <Link
+              to="/admin/gate-logs"
+              className="text-xs font-semibold text-muted-foreground hover:text-foreground"
+            >
               Xem tất cả
             </Link>
           </div>
 
           {sessions.length === 0 ? (
-            <p className="py-8 text-center text-sm text-muted-foreground">Hiện không có xe trong bãi.</p>
+            <p className="py-8 text-center text-sm text-muted-foreground">
+              Hiện không có xe trong bãi.
+            </p>
           ) : (
             <div className="space-y-2">
               {sessions.map((session) => (
-                <Card key={session._id} className="shadow-none"><CardContent className="flex items-center justify-between gap-3 p-3">
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-semibold text-foreground">{session.licensePlate}</p>
-                    <p className="mt-1 text-xs text-muted-foreground">
-                      {vehicleLabel(session.vehicleType)} · Vào {formatDateTime(session.entryTime)}
-                    </p>
-                  </div>
-                  <AdminStatusBadge status="active" label="Trong bãi" />
-                </CardContent></Card>
+                <Card key={session._id} className="shadow-none">
+                  <CardContent className="flex items-center justify-between gap-3 p-3">
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-semibold text-foreground">
+                        {session.licensePlate}
+                      </p>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        {vehicleLabel(session.vehicleType)} · Vào{' '}
+                        {formatDateTime(session.entryTime)}
+                      </p>
+                    </div>
+                    <AdminStatusBadge status="active" label="Trong bãi" />
+                  </CardContent>
+                </Card>
               ))}
             </div>
           )}
@@ -371,26 +490,42 @@ export function DashboardPage() {
           <span className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-violet-500 to-fuchsia-500" />
           <div className="mb-4 flex items-start justify-between gap-3">
             <div>
-              <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Booking sắp đến</p>
-              <h2 className="mt-1 text-base font-semibold text-foreground">Đã thanh toán, chưa sử dụng</h2>
+              <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+                Booking sắp đến
+              </p>
+              <h2 className="mt-1 text-base font-semibold text-foreground">
+                Đã thanh toán, chưa sử dụng
+              </h2>
             </div>
-            <Link to="/admin/bookings" className="text-xs font-semibold text-muted-foreground hover:text-foreground">
+            <Link
+              to="/admin/bookings"
+              className="text-xs font-semibold text-muted-foreground hover:text-foreground"
+            >
               Quản lý booking
             </Link>
           </div>
 
           {bookings.length === 0 ? (
-            <p className="py-8 text-center text-sm text-muted-foreground">Không có booking đang chờ sử dụng.</p>
+            <p className="py-8 text-center text-sm text-muted-foreground">
+              Không có booking đang chờ sử dụng.
+            </p>
           ) : (
             <div className="space-y-2">
               {bookings.map((booking) => (
-                <Card key={booking._id} className="shadow-none"><CardContent className="flex items-center justify-between gap-3 p-3">
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-semibold text-foreground">{booking.licensePlate}</p>
-                    <p className="mt-1 text-xs text-muted-foreground">Dự kiến đến {formatDateTime(booking.expectedArrivalTime)}</p>
-                  </div>
-                  <AdminStatusBadge status="paid" label="Đã thanh toán" />
-                </CardContent></Card>
+                <Card key={booking._id} className="shadow-none">
+                  <CardContent className="flex items-center justify-between gap-3 p-3">
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-semibold text-foreground">
+                        {booking.licensePlate}
+                      </p>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        Dự kiến đến{' '}
+                        {formatDateTime(booking.expectedArrivalTime)}
+                      </p>
+                    </div>
+                    <AdminStatusBadge status="paid" label="Đã thanh toán" />
+                  </CardContent>
+                </Card>
               ))}
             </div>
           )}
@@ -400,18 +535,41 @@ export function DashboardPage() {
       <Card className="relative mt-5 overflow-hidden p-4 md:p-5">
         <span className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-violet-500 via-sky-500 to-emerald-500" />
         <div className="mb-4">
-          <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Phạm vi quản trị</p>
-          <h2 className="mt-1 text-base font-semibold text-foreground">Tài nguyên hệ thống</h2>
+          <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+            Phạm vi quản trị
+          </p>
+          <h2 className="mt-1 text-base font-semibold text-foreground">
+            Tài nguyên hệ thống
+          </h2>
         </div>
 
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-          <AdminStatCard label="Chỗ đỗ ô tô" value={summary.slots} detail={`${summary.rows} hàng xe máy đang cấu hình`} tone="sky" />
-          <AdminStatCard label="Booking" value={summary.bookings} detail={`${report?.activity.pendingBookings ?? 0} booking đang pending`} tone="amber" />
-          <AdminStatCard label="Gói cư dân" value={summary.subscriptions} detail={`${report?.activity.activeSubscriptions ?? 0} gói đang hoạt động`} tone="emerald" />
-          <AdminStatCard label="Gói giá" value={summary.plans} detail="Các plan có trong hệ thống" tone="violet" />
+          <AdminStatCard
+            label="Chỗ đỗ ô tô"
+            value={summary.slots}
+            detail={`${summary.rows} hàng xe máy đang cấu hình`}
+            tone="sky"
+          />
+          <AdminStatCard
+            label="Booking"
+            value={summary.bookings}
+            detail={`${report?.activity.pendingBookings ?? 0} booking đang pending`}
+            tone="amber"
+          />
+          <AdminStatCard
+            label="Gói cư dân"
+            value={summary.subscriptions}
+            detail={`${report?.activity.activeSubscriptions ?? 0} gói đang hoạt động`}
+            tone="emerald"
+          />
+          <AdminStatCard
+            label="Gói giá"
+            value={summary.plans}
+            detail="Các plan có trong hệ thống"
+            tone="violet"
+          />
         </div>
       </Card>
     </AdminPageShell>
   )
 }
-

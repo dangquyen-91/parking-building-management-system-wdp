@@ -15,7 +15,8 @@ export function AdminStaffPage() {
   const [staff, setStaff] = useState<AdminUser[]>([])
   const [sessions, setSessions] = useState<GateSession[]>([])
   const [query, setQuery] = useState('')
-  const [statusFilter, setStatusFilter] = useState<AdminStaffStatusFilter>('all')
+  const [statusFilter, setStatusFilter] =
+    useState<AdminStaffStatusFilter>('all')
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -25,13 +26,20 @@ export function AdminStaffPage() {
 
     try {
       const [staffResponse, sessionsResponse] = await Promise.all([
-        adminApi.getUsers({ role: 'staff', limit: 100, sort: 'fullName', order: 'asc' }),
+        adminApi.getUsers({
+          role: 'staff',
+          limit: 100,
+          sort: 'fullName',
+          order: 'asc',
+        }),
         adminApi.getSessions({ limit: 100 }),
       ])
       setStaff(staffResponse.users ?? [])
       setSessions(sessionsResponse.sessions ?? [])
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Không thể tải dữ liệu nhân viên.')
+      setError(
+        err instanceof Error ? err.message : 'Không thể tải dữ liệu nhân viên.',
+      )
     } finally {
       setIsLoading(false)
     }
@@ -53,7 +61,11 @@ export function AdminStaffPage() {
         user.phone?.toLowerCase().includes(normalizedQuery)
 
       if (!matchesQuery) return false
-      if (statusFilter !== 'all' && user.isActive !== (statusFilter === 'active')) return false
+      if (
+        statusFilter !== 'all' &&
+        user.isActive !== (statusFilter === 'active')
+      )
+        return false
       return true
     })
   }, [query, staff, statusFilter])
@@ -72,12 +84,24 @@ export function AdminStaffPage() {
         />
       }
     >
-      <AdminStaffStats staff={staff} sessions={sessions} isLoading={isLoading} />
+      <AdminStaffStats
+        staff={staff}
+        sessions={sessions}
+        isLoading={isLoading}
+      />
 
       {error && (
-        <Alert variant="destructive" className="mb-5 flex items-center justify-between gap-4">
+        <Alert
+          variant="destructive"
+          className="mb-5 flex items-center justify-between gap-4"
+        >
           <AlertDescription>{error}</AlertDescription>
-          <Button type="button" variant="link" className="h-auto p-0" onClick={() => void loadStaffData()}>
+          <Button
+            type="button"
+            variant="link"
+            className="h-auto p-0"
+            onClick={() => void loadStaffData()}
+          >
             Thử lại
           </Button>
         </Alert>
@@ -85,12 +109,16 @@ export function AdminStaffPage() {
 
       <Alert className="mb-5">
         <AlertDescription>
-          Admin có thể theo dõi nhân viên tại đây. Việc chỉnh vai trò, khóa hoặc mở tài khoản nằm ở trang Người dùng.
+          Admin có thể theo dõi nhân viên tại đây. Việc chỉnh vai trò, khóa hoặc
+          mở tài khoản nằm ở trang Người dùng.
         </AlertDescription>
       </Alert>
 
-      <AdminStaffList staff={filteredStaff} sessions={sessions} isLoading={isLoading} />
+      <AdminStaffList
+        staff={filteredStaff}
+        sessions={sessions}
+        isLoading={isLoading}
+      />
     </AdminPageShell>
   )
 }
-

@@ -18,7 +18,8 @@ export function AdminSubscriptionsPage() {
   const [activePlates, setActivePlates] = useState<Set<string>>(new Set())
   const [query, setQuery] = useState('')
   const [status, setStatus] = useState<AdminSubscriptionStatusFilter>('all')
-  const [vehicleType, setVehicleType] = useState<AdminSubscriptionVehicleFilter>('all')
+  const [vehicleType, setVehicleType] =
+    useState<AdminSubscriptionVehicleFilter>('all')
   const [snapshotTime, setSnapshotTime] = useState(0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -33,10 +34,18 @@ export function AdminSubscriptionsPage() {
         adminApi.getSessions({ page: 1, limit: 100 }),
       ])
       setSubscriptions(subscriptionData.subscriptions ?? [])
-      setActivePlates(new Set((sessionData.sessions ?? []).map((session) => session.licensePlate)))
+      setActivePlates(
+        new Set(
+          (sessionData.sessions ?? []).map((session) => session.licensePlate),
+        ),
+      )
       setSnapshotTime(Date.now())
     } catch (loadError) {
-      setError(loadError instanceof Error ? loadError.message : 'Không thể tải danh sách người dùng gói.')
+      setError(
+        loadError instanceof Error
+          ? loadError.message
+          : 'Không thể tải danh sách người dùng gói.',
+      )
     } finally {
       setLoading(false)
     }
@@ -51,15 +60,35 @@ export function AdminSubscriptionsPage() {
     const normalizedQuery = query.trim().toLocaleLowerCase('vi-VN')
 
     return subscriptions.filter((subscription) => {
-      if (vehicleType !== 'all' && subscription.vehicleType !== vehicleType) return false
-      if (status === 'expiring' && !isSubscriptionExpiringSoon(subscription, snapshotTime)) return false
-      if (status !== 'all' && status !== 'expiring' && subscription.status !== status) return false
+      if (vehicleType !== 'all' && subscription.vehicleType !== vehicleType)
+        return false
+      if (
+        status === 'expiring' &&
+        !isSubscriptionExpiringSoon(subscription, snapshotTime)
+      )
+        return false
+      if (
+        status !== 'all' &&
+        status !== 'expiring' &&
+        subscription.status !== status
+      )
+        return false
       if (!normalizedQuery) return true
 
-      const owner = subscription.userId && typeof subscription.userId !== 'string' ? subscription.userId : null
-      return [subscription.licensePlate, owner?.fullName, owner?.email, owner?.phone]
+      const owner =
+        subscription.userId && typeof subscription.userId !== 'string'
+          ? subscription.userId
+          : null
+      return [
+        subscription.licensePlate,
+        owner?.fullName,
+        owner?.email,
+        owner?.phone,
+      ]
         .filter(Boolean)
-        .some((value) => value?.toLocaleLowerCase('vi-VN').includes(normalizedQuery))
+        .some((value) =>
+          value?.toLocaleLowerCase('vi-VN').includes(normalizedQuery),
+        )
     })
   }, [query, snapshotTime, status, subscriptions, vehicleType])
 
@@ -85,20 +114,31 @@ export function AdminSubscriptionsPage() {
         snapshotTime={snapshotTime}
       />
 
-      <Card className="mb-5"><CardContent className="p-4">
-        <AdminSubscriptionFilters
-          query={query}
-          status={status}
-          vehicleType={vehicleType}
-          onQueryChange={setQuery}
-          onStatusChange={setStatus}
-          onVehicleTypeChange={setVehicleType}
-        />
-      </CardContent></Card>
+      <Card className="mb-5">
+        <CardContent className="p-4">
+          <AdminSubscriptionFilters
+            query={query}
+            status={status}
+            vehicleType={vehicleType}
+            onQueryChange={setQuery}
+            onStatusChange={setStatus}
+            onVehicleTypeChange={setVehicleType}
+          />
+        </CardContent>
+      </Card>
 
       {error && (
-        <Alert variant="destructive" className="mb-5 flex items-center justify-between"><AlertDescription>{error}</AlertDescription>
-          <Button type="button" variant="link" className="h-auto p-0" onClick={() => void loadSubscriptions()}>
+        <Alert
+          variant="destructive"
+          className="mb-5 flex items-center justify-between"
+        >
+          <AlertDescription>{error}</AlertDescription>
+          <Button
+            type="button"
+            variant="link"
+            className="h-auto p-0"
+            onClick={() => void loadSubscriptions()}
+          >
             Thử lại
           </Button>
         </Alert>
@@ -113,4 +153,3 @@ export function AdminSubscriptionsPage() {
     </AdminPageShell>
   )
 }
-

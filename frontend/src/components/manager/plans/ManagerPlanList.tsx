@@ -1,7 +1,10 @@
 import { Button } from '@/components/ui/button'
 import { TableCell, TableRow } from '@/components/ui/table'
 import type { ManagerPlan } from '../../../services/managerPlansApi'
-import { formatSubscriptionCurrency, VEHICLE_LABELS } from '../../../utils/subscriptionUi'
+import {
+  formatSubscriptionCurrency,
+  VEHICLE_LABELS,
+} from '../../../utils/subscriptionUi'
 import { ManagerStatusBadge } from '../common/ManagerStatusBadge'
 import { ManagerTableShell } from '../common/ManagerTableShell'
 
@@ -62,14 +65,19 @@ export function ManagerPlanList({
           <TableRow key={plan._id}>
             <TableCell className="px-4 py-4">
               <p className="font-bold text-foreground">{plan.name}</p>
-              <p className="mt-1 truncate text-xs text-muted-foreground" title={plan.description || plan.code}>
+              <p
+                className="mt-1 truncate text-xs text-muted-foreground"
+                title={plan.description || plan.code}
+              >
                 {plan.code} · {plan.description || 'Chưa có mô tả'}
               </p>
             </TableCell>
             <TableCell className="px-4 py-4 font-medium text-foreground">
               {VEHICLE_LABELS[plan.vehicleType]}
             </TableCell>
-            <TableCell className="px-4 py-4 text-foreground">{plan.durationDays} ngày</TableCell>
+            <TableCell className="px-4 py-4 text-foreground">
+              {plan.durationDays} ngày
+            </TableCell>
             <TableCell className="px-4 py-4 font-bold text-foreground">
               {formatSubscriptionCurrency(plan.price)}
             </TableCell>
@@ -81,7 +89,13 @@ export function ManagerPlanList({
             </TableCell>
             <TableCell className="px-4 py-4">
               <div className="flex justify-end gap-2">
-                <Button type="button" size="sm" variant="outline" disabled={isBusy} onClick={() => onEdit(plan)}>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  disabled={isBusy}
+                  onClick={() => onEdit(plan)}
+                >
                   Chỉnh sửa
                 </Button>
                 <Button
@@ -91,7 +105,11 @@ export function ManagerPlanList({
                   disabled={isBusy}
                   onClick={() => onToggle(plan)}
                 >
-                  {updatingId === plan._id ? 'Đang cập nhật...' : plan.isActive ? 'Tạm dừng' : 'Mở lại'}
+                  {updatingId === plan._id
+                    ? 'Đang cập nhật...'
+                    : plan.isActive
+                      ? 'Tạm dừng'
+                      : 'Mở lại'}
                 </Button>
                 <Button
                   type="button"
