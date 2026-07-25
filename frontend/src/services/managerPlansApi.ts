@@ -10,13 +10,29 @@ type ApiEnvelope<T> = {
 
 export type ManagerPlan = {
   _id: string
-  code: string
+  code: ManagerPlanCode
   name: string
   vehicleType: 'motorcycle' | 'car'
   durationDays: number
   price: number
   description?: string
   isActive: boolean
+}
+
+export type ManagerPlanCode =
+  | 'MOTO_MONTHLY'
+  | 'MOTO_QUARTERLY'
+  | 'CAR_MONTHLY'
+  | 'CAR_QUARTERLY'
+
+export type ManagerPlanCreatePayload = {
+  code: ManagerPlanCode
+  name: string
+  vehicleType: ManagerPlan['vehicleType']
+  durationDays: number
+  price: number
+  description?: string
+  isActive?: boolean
 }
 
 export type ManagerPlanUpdatePayload = {
@@ -50,10 +66,33 @@ managerPlansHttp.interceptors.request.use((config) => {
 
 function getApiError(error: unknown) {
   if (error instanceof AxiosError) {
-    return new Error(error.response?.data?.message ?? error.message, { cause: error })
+    const message = error.response?.data?.message ?? error.message
+    return new Error(translatePlanApiMessage(message), { cause: error })
   }
 
   return error
+}
+
+function translatePlanApiMessage(message: string) {
+  const inUseMatch = message.match(
+    /Cannot delete plan:\s*(\d+)\s+pending\/active subscription\(s\) still use it/i,
+  )
+
+  if (inUseMatch) {
+    const subscriptionCount = Number(inUseMatch[1])
+    return `Không thể xóa gói vì đang có ${subscriptionCount} lượt đăng ký chờ thanh toán hoặc đang hiệu lực. Hãy tạm dừng gói thay vì xóa.`
+  }
+
+  const duplicateCodeMatch = message.match(/Plan code\s+(.+)\s+already exists/i)
+  if (duplicateCodeMatch) {
+    return `Mã gói ${duplicateCodeMatch[1]} đã tồn tại.`
+  }
+
+  if (/Plan not found/i.test(message)) {
+    return 'Không tìm thấy gói gửi xe.'
+  }
+
+  return message
 }
 
 export const managerPlansApi = {
@@ -66,10 +105,27 @@ export const managerPlansApi = {
     }
   },
 
+  async createPlan(payload: ManagerPlanCreatePayload) {
+    try {
+      const response = await managerPlansHttp.post<ApiEnvelope<{ plan: ManagerPlan }>>('/plans', payload)
+      return response.data.data
+    } catch (error) {
+      throw getApiError(error)
+    }
+  },
+
   async updatePlan(id: string, payload: ManagerPlanUpdatePayload) {
     try {
       const response = await managerPlansHttp.patch<ApiEnvelope<{ plan: ManagerPlan }>>(`/plans/${id}`, payload)
       return response.data.data
+    } catch (error) {
+      throw getApiError(error)
+    }
+  },
+
+  async deletePlan(id: string) {
+    try {
+      await managerPlansHttp.delete<ApiEnvelope<null>>(`/plans/${id}`)
     } catch (error) {
       throw getApiError(error)
     }

@@ -18,6 +18,7 @@ export {
   type ManagerPlanVehicleFilter,
 } from './plans/ManagerPlanFilters'
 export { ManagerPlanFormModal } from './plans/ManagerPlanFormModal'
+export { ManagerPlanDeleteDialog } from './plans/ManagerPlanDeleteDialog'
 export { ManagerPlanList } from './plans/ManagerPlanList'
 export { ManagerPlanStats } from './plans/ManagerPlanStats'
 
@@ -28,6 +29,7 @@ export {
   type ManagerGateVehicleFilter,
 } from './gate-logs/ManagerGateLogFilters'
 export { ManagerGateLogList } from './gate-logs/ManagerGateLogList'
+export { ManagerGateLogDetailsDialog } from './gate-logs/ManagerGateLogDetailsDialog'
 export { ManagerGateLogStats } from './gate-logs/ManagerGateLogStats'
 
 export {
@@ -49,6 +51,7 @@ export {
   type ManagerBookingStatusFilter,
 } from './bookings/ManagerBookingFilters'
 export { ManagerBookingList } from './bookings/ManagerBookingList'
+export { ManagerBookingDetailsDialog } from './bookings/ManagerBookingDetailsDialog'
 export { ManagerBookingStats } from './bookings/ManagerBookingStats'
 
 export {
@@ -56,14 +59,17 @@ export {
   type ManagerStaffStatusFilter,
 } from './staff/ManagerStaffFilters'
 export { ManagerStaffList } from './staff/ManagerStaffList'
+export { ManagerStaffDetailsDialog } from './staff/ManagerStaffDetailsDialog'
 export { ManagerStaffStats } from './staff/ManagerStaffStats'
 
 export {
   ManagerSubscriptionFilters,
+  type ManagerSubscriptionParkingFilter,
   type ManagerSubscriptionStatusFilter,
   type ManagerSubscriptionVehicleFilter,
 } from './subscriptions/ManagerSubscriptionFilters'
 export { ManagerSubscriptionList } from './subscriptions/ManagerSubscriptionList'
+export { ManagerSubscriptionDetailsDialog } from './subscriptions/ManagerSubscriptionDetailsDialog'
 export { ManagerSubscriptionStats } from './subscriptions/ManagerSubscriptionStats'
 
 export { ManagerOccupancyTable } from './reports/ManagerOccupancyTable'

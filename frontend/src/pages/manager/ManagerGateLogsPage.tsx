@@ -1,5 +1,5 @@
 ﻿import { Button } from '@/components/ui/button'
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   ManagerGateLogFilters,
   ManagerGateLogList,
@@ -26,13 +26,37 @@ export function ManagerGateLogsPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  async function loadGateLogs() {
+  const loadGateLogs = useCallback(async () => {
     setIsLoading(true)
     setError(null)
 
     try {
+      const sessionsRequest =
+        statusFilter === 'all'
+          ? Promise.all([
+              managerGateLogsApi.getActiveSessions({ status: 'active', limit: 100 }),
+              managerGateLogsApi.getActiveSessions({ status: 'completed', limit: 100 }),
+              managerGateLogsApi.getActiveSessions({ status: 'cancelled', limit: 100 }),
+            ]).then((responses) => {
+              const uniqueSessions = new Map<string, GateSession>()
+
+              responses.forEach((response) => {
+                response.sessions.forEach((session) => uniqueSessions.set(session._id, session))
+              })
+
+              const mergedSessions = Array.from(uniqueSessions.values()).sort(
+                (a, b) => new Date(b.entryTime).getTime() - new Date(a.entryTime).getTime(),
+              )
+
+              return {
+                sessions: mergedSessions,
+                total: responses.reduce((sum, response) => sum + response.total, 0),
+              }
+            })
+          : managerGateLogsApi.getActiveSessions({ status: statusFilter, limit: 100 })
+
       const [sessionsResponse, dashboardResponse] = await Promise.all([
-        managerGateLogsApi.getActiveSessions({ status: statusFilter, limit: 100 }),
+        sessionsRequest,
         managerGateLogsApi.getDashboard(),
       ])
       setSessions(sessionsResponse.sessions ?? [])
@@ -42,12 +66,12 @@ export function ManagerGateLogsPage() {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [statusFilter])
 
   useEffect(() => {
     const timeoutId = window.setTimeout(() => void loadGateLogs(), 0)
     return () => window.clearTimeout(timeoutId)
-  }, [statusFilter])
+  }, [loadGateLogs])
 
   const filteredSessions = useMemo(() => {
     const normalizedQuery = normalizePlateSearch(query)
