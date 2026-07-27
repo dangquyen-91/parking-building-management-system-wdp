@@ -3,6 +3,7 @@ export type BookingStatus = "pending" | "paid" | "used" | "expired" | "cancelled
 export type Booking = {
   _id: string;
   email: string;
+  phone?: string | null;
   licensePlate: string;
   vehicleType: "car";
   expectedArrivalTime: string;
@@ -31,6 +32,7 @@ export type BookingPayment = {
 
 export type CreateBookingPayload = {
   email: string;
+  phone: string;
   licensePlate: string;
   expectedArrivalTime: string;
   expectedExitTime: string;

@@ -4,6 +4,7 @@ import { Pressable, Text, TextInput, View, useThemeColors } from "@/tw";
 
 type BookingField =
   | "email"
+  | "phone"
   | "licensePlate"
   | "expectedArrivalTime"
   | "expectedExitTime";
@@ -23,8 +24,10 @@ type BookingFormCardProps = {
   licensePlate: string;
   onChangeEmail: (value: string) => void;
   onChangeLicensePlate: (value: string) => void;
+  onChangePhone: (value: string) => void;
   onOpenDurationPicker: () => void;
   onOpenPicker: (field: PickerField) => void;
+  phone: string;
   selectedDurationHours: number | null;
 };
 
@@ -36,8 +39,10 @@ export function BookingFormCard({
   licensePlate,
   onChangeEmail,
   onChangeLicensePlate,
+  onChangePhone,
   onOpenDurationPicker,
   onOpenPicker,
+  phone,
   selectedDurationHours,
 }: BookingFormCardProps) {
   const { placeholder } = useThemeColors();
@@ -58,6 +63,22 @@ export function BookingFormCard({
         />
         {errors.email ? (
           <Text className="font-sans text-sm text-red-400">{errors.email}</Text>
+        ) : null}
+      </View>
+
+      <View className="gap-2">
+        <Label>Số điện thoại</Label>
+        <TextInput
+          keyboardType="phone-pad"
+          onChangeText={onChangePhone}
+          placeholder="0901234567"
+          placeholderTextColor={placeholder}
+          style={inputStyle}
+          value={phone}
+          className="rounded-[14px] border border-border-theme bg-input px-4 py-3.5 font-sans text-base text-fg"
+        />
+        {errors.phone ? (
+          <Text className="font-sans text-sm text-red-400">{errors.phone}</Text>
         ) : null}
       </View>
 

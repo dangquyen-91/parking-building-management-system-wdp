@@ -29,6 +29,13 @@ export const saveAuthSession = async (session: AuthSession) => {
   ]);
 };
 
+export const fetchCurrentUser = async () => {
+  const { user } = await apiRequest<{ user: User }>("/users/me");
+  await saveStoredUser(user);
+
+  return user;
+};
+
 export const getCurrentUser = async () => {
   const token = await getAccessToken();
 
@@ -36,10 +43,7 @@ export const getCurrentUser = async () => {
     return null;
   }
 
-  const { user } = await apiRequest<{ user: User }>("/users/me");
-  await saveStoredUser(user);
-
-  return user;
+  return fetchCurrentUser();
 };
 
 export const login = async (payload: LoginPayload) => {
