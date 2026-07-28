@@ -39,10 +39,10 @@ export function BookingTopNav() {
   return (
     <>
       <SkipLink />
-      <header className="sticky top-0 z-40 border-b border-white/50 bg-white/75 px-4 shadow-sm backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/75 md:px-8 lg:px-10">
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4">
-          <BrandLink className="flex items-center gap-2 text-sm font-medium text-fg hover:text-fg" />
-          <nav className="flex items-center gap-2" aria-label="User navigation">
+      <header className="fixed left-0 right-0 top-4 z-50 px-4 md:px-12 lg:px-16">
+        <div className="liquid-glass nav-glass mx-auto flex h-14 max-w-7xl items-center justify-between gap-3 rounded-full px-4 md:px-6">
+          <BrandLink className="flex shrink-0 items-center gap-2 text-sm font-medium text-fg hover:text-fg" />
+          <nav className="flex min-w-0 shrink-0 items-center gap-2" aria-label="User navigation">
             <Link
               to="/"
               className="hidden rounded-lg px-3 py-2 text-xs text-muted transition-colors hover:bg-ghost hover:text-fg sm:inline-flex"
@@ -55,7 +55,6 @@ export function BookingTopNav() {
                 user={authUser}
                 logoutStatus={logoutStatus}
                 onLogout={handleLogout}
-                buttonClassName="rounded-lg"
               />
             ) : (
               <Link

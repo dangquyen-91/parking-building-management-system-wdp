@@ -14,6 +14,28 @@ export function MyBookingsPage() {
   const [bookings, setBookings] = useState<Booking[]>([])
   const [isLoading, setIsLoading] = useState(Boolean(token))
   const [error, setError] = useState<string | null>(null)
+  const [message, setMessage] = useState<string | null>(null)
+  const [cancellingId, setCancellingId] = useState<string | null>(null)
+
+  async function handleCancel(booking: Booking) {
+    if (!window.confirm(`Hủy booking đang chờ thanh toán của biển số ${booking.licensePlate}?`)) return
+
+    setError(null)
+    setMessage(null)
+    setCancellingId(booking._id)
+
+    try {
+      const result = await bookingApi.cancelBooking(booking._id)
+      setBookings((current) => current.map((item) => (
+        item._id === result.booking._id ? result.booking : item
+      )))
+      setMessage('Đã hủy booking thành công.')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Không thể hủy booking.')
+    } finally {
+      setCancellingId(null)
+    }
+  }
 
   useEffect(() => {
     if (!token) return
@@ -53,12 +75,17 @@ export function MyBookingsPage() {
       <div className="pointer-events-none absolute -right-28 top-1/3 h-96 w-96 rounded-full bg-sky-300/10 blur-3xl" />
       <BookingTopNav />
 
-      <main id="main" tabIndex={-1} className="relative z-10 mx-auto max-w-7xl p-4 md:p-8 lg:p-10">
+      <main id="main" tabIndex={-1} className="relative z-10 mx-auto max-w-7xl px-4 pb-8 pt-24 md:px-8 md:pb-10 lg:px-10">
         <MyBookingsHeader paid={stats.paid} pending={stats.pending} total={stats.total} />
 
         {error && (
           <div className="mb-5 rounded-lg border border-rose-500/50 bg-rose-500/10 p-4 text-sm text-rose-700 dark:text-rose-100">
             {error}
+          </div>
+        )}
+        {message && (
+          <div className="mb-5 rounded-lg border border-emerald-500/50 bg-emerald-500/10 p-4 text-sm text-emerald-700 dark:text-emerald-100">
+            {message}
           </div>
         )}
 
@@ -80,7 +107,7 @@ export function MyBookingsPage() {
         ) : bookings.length === 0 ? (
           <BookingEmptyState title="Chưa có đặt chỗ" description="Tạo một đơn đặt chỗ ô tô trả trước, đơn sẽ xuất hiện tại đây sau khi hệ thống lưu vào tài khoản của bạn." link="/booking" action="Tạo đặt chỗ" />
         ) : (
-          <MyBookingList bookings={bookings} />
+          <MyBookingList bookings={bookings} cancellingId={cancellingId} onCancel={handleCancel} />
         )}
       </main>
     </div>

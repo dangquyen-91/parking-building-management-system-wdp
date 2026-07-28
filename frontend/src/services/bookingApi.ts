@@ -25,6 +25,7 @@ export type Booking = {
   userId?: string | null
   sessionId?: string | null
   usedAt?: string | null
+  qrToken?: string | null
   createdAt?: string
   updatedAt?: string
 }
@@ -101,6 +102,17 @@ export const bookingApi = {
     try {
       const response = await bookingHttp.get<ApiEnvelope<{ bookings: Booking[] }>>('/bookings/me', { params })
 
+      return response.data.data
+    } catch (error) {
+      throw getApiError(error)
+    }
+  },
+
+  async cancelBooking(id: string) {
+    try {
+      const response = await bookingHttp.patch<ApiEnvelope<{ booking: Booking }>>(
+        `/bookings/${id}/cancel`,
+      )
       return response.data.data
     } catch (error) {
       throw getApiError(error)
