@@ -58,15 +58,15 @@ export function MyBookingList({ bookings, cancellingId, onCancel }: Props) {
             </div>
 
             {(booking.status === 'paid' || booking.status === 'pending') && (
-              <div className="mt-4 flex flex-col gap-4 border-t border-slate-200 pt-4 dark:border-white/10 sm:flex-row sm:items-end sm:justify-between">
+              <div className="mt-4 flex flex-col gap-4 border-t border-slate-200 pt-4 dark:border-white/10">
                 {booking.status === 'paid' && booking.qrToken ? (
-                  <div className="flex items-center gap-4">
+                  <div className="mx-auto flex flex-col items-center gap-2 text-center">
                     <BookingCredentialQr booking={booking} />
                     <p className="max-w-xs text-xs leading-5 text-subtle">Xuất trình mã này tại cổng khi vào và ra bãi.</p>
                   </div>
                 ) : <span />}
                 {booking.status === 'pending' && (
-                  <button type="button" onClick={() => onCancel(booking)} disabled={cancellingId === booking._id} className="inline-flex h-10 items-center justify-center rounded-xl border border-rose-300 bg-rose-50 px-4 text-sm font-bold text-rose-700 transition hover:bg-rose-100 disabled:cursor-wait disabled:opacity-60 dark:border-rose-500/50 dark:bg-rose-500/10 dark:text-rose-200">
+                  <button type="button" onClick={() => onCancel(booking)} disabled={cancellingId === booking._id} className="ml-auto inline-flex h-10 items-center justify-center rounded-xl border border-rose-300 bg-rose-50 px-4 text-sm font-bold text-rose-700 transition hover:bg-rose-100 disabled:cursor-wait disabled:opacity-60 dark:border-rose-500/50 dark:bg-rose-500/10 dark:text-rose-200">
                     {cancellingId === booking._id ? 'Đang hủy...' : 'Hủy booking'}
                   </button>
                 )}
