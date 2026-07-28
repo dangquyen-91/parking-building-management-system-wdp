@@ -78,7 +78,7 @@ export function BookingPage() {
       <div className="pointer-events-none absolute right-[-7rem] top-56 h-96 w-96 rounded-full bg-sky-300/10 blur-3xl" />
       <BookingTopNav />
 
-      <main id="main" tabIndex={-1} className="relative z-10 mx-auto max-w-7xl p-4 md:p-8 lg:p-10">
+      <main id="main" tabIndex={-1} className="relative z-10 mx-auto max-w-7xl px-4 pb-8 pt-24 md:px-8 md:pb-10 lg:px-10">
         <BookingHero durationHours={durationHours} estimatedFee={estimatedFee} />
 
         {error && <BookingErrorBanner error={error} />}

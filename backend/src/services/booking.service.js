@@ -209,7 +209,21 @@ export const lookup = async ({ email, licensePlate }) => {
 export const getMyBookings = async (userId, { status } = {}) => {
   const filter = { userId };
   if (status) filter.status = status;
-  return Booking.find(filter).populate(BOOKING_POPULATE).sort({ createdAt: -1 });
+  const bookings = await Booking.find(filter)
+    .select('+qrToken')
+    .populate(BOOKING_POPULATE)
+    .sort({ createdAt: -1 });
+
+  await Promise.all(
+    bookings.map(async (booking) => {
+      if (booking.status === 'paid' && !booking.qrToken) {
+        booking.qrToken = signBookingQRToken(booking._id, booking.licensePlate);
+        await booking.save();
+      }
+    })
+  );
+
+  return bookings;
 };
 
 export const getById = async (id) => {
