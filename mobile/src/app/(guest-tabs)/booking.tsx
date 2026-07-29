@@ -52,9 +52,10 @@ const withTimePart = (source: Date, nextTime: Date) => {
   return updated;
 };
 
+const getDefaultArrivalTime = () => new Date(Date.now() + HOUR_MS);
+
 export default function BookingScreen() {
   const { btnPrimaryFg } = useThemeColors();
-  const now = useMemo(() => new Date(), []);
   const [guestEmail, setGuestEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [licensePlate, setLicensePlate] = useState("");
@@ -199,7 +200,7 @@ export default function BookingScreen() {
       case "arrivalDate":
       case "arrivalTime":
       default:
-        return arrivalTime ?? new Date(now.getTime() + HOUR_MS);
+        return arrivalTime ?? getDefaultArrivalTime();
     }
   })();
 
@@ -214,14 +215,18 @@ export default function BookingScreen() {
     }
   })();
 
-  const handlePickerChange = (_event: DateTimePickerChangeEvent, selectedDate: Date) => {
+  const handlePickerChange = (_event: DateTimePickerChangeEvent, selectedDate?: Date) => {
+    if (!selectedDate) {
+      return;
+    }
+
     if (pickerField === "arrivalDate") {
-      const baseArrival = arrivalTime ?? new Date(now.getTime() + HOUR_MS);
+      const baseArrival = arrivalTime ?? getDefaultArrivalTime();
       const nextArrival = withDatePart(baseArrival, selectedDate);
       setArrivalTime(nextArrival);
       setErrors((current) => ({ ...current, expectedArrivalTime: undefined }));
     } else if (pickerField === "arrivalTime") {
-      const baseArrival = arrivalTime ?? new Date(now.getTime() + HOUR_MS);
+      const baseArrival = arrivalTime ?? getDefaultArrivalTime();
       const nextArrival = withTimePart(baseArrival, selectedDate);
       setArrivalTime(nextArrival);
       setErrors((current) => ({ ...current, expectedArrivalTime: undefined }));
@@ -340,6 +345,7 @@ export default function BookingScreen() {
         contentContainerClassName="gap-4 px-5 pb-[120px]"
         refreshControl={
           <AppRefreshControl
+            enabled={!pickerField}
             onRefresh={handleRefreshForm}
             refreshing={isRefreshing}
           />
