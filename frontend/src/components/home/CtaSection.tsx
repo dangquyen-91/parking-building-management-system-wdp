@@ -12,7 +12,7 @@ export function CtaSection() {
   const reduceMotion = useReducedMotion()
 
   return (
-    <section id="demo" className="relative overflow-hidden border-t border-violet-200/60 bg-white px-6 py-20 dark:border-violet-900/35 dark:bg-gradient-to-br dark:from-violet-950/35 dark:via-sky-950/25 dark:to-emerald-950/25 md:px-12 lg:px-16 lg:py-28">
+    <section id="demo" className="relative overflow-hidden border-t border-violet-200/60 bg-white px-6 py-20 dark:border-violet-900/35 dark:bg-linear-to-br dark:from-violet-950/35 dark:via-sky-950/25 dark:to-emerald-950/25 md:px-12 lg:px-16 lg:py-28">
       <div className="pointer-events-none absolute left-1/2 top-1/2 size-[34rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-transparent blur-3xl dark:bg-sky-500/10" aria-hidden="true" />
       <div className="relative mx-auto max-w-7xl">
         <motion.div
@@ -24,7 +24,7 @@ export function CtaSection() {
           <Card className="overflow-hidden border-white/70 bg-card/75 shadow-2xl shadow-violet-500/15 backdrop-blur-xl dark:border-violet-800/40">
             <CardContent className="px-8 py-12 text-center md:px-14 md:py-16">
               <Badge variant="secondary" className="mb-4">Triển khai // Bản mẫu</Badge>
-              <h2 className="mx-auto max-w-2xl text-3xl font-bold uppercase leading-tight text-slate-950 dark:bg-gradient-to-r dark:from-violet-200 dark:via-sky-200 dark:to-emerald-200 dark:bg-clip-text dark:text-transparent md:text-4xl lg:text-5xl">
+              <h2 className="mx-auto max-w-2xl text-3xl font-bold uppercase leading-tight text-slate-950 dark:bg-linear-to-r dark:from-violet-200 dark:via-sky-200 dark:to-emerald-200 dark:bg-clip-text dark:text-transparent md:text-4xl lg:text-5xl">
                 Xem tòa nhà của bạn trên Parking Simulator
               </h2>
               <p className="mx-auto mt-4 max-w-xl text-sm text-slate-700 dark:text-muted-foreground md:text-base">

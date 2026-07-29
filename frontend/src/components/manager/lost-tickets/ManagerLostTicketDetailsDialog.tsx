@@ -37,7 +37,7 @@ export function ManagerLostTicketDetailsDialog({ incident, trigger }: ManagerLos
     <Dialog>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
       <DialogContent className="max-h-[90vh] overflow-y-auto p-0 sm:max-w-2xl">
-        <DialogHeader className="border-b border-border bg-gradient-to-br from-amber-500/10 via-transparent to-sky-500/10 p-6 pr-12">
+        <DialogHeader className="border-b border-border bg-linear-to-br from-amber-500/10 via-transparent to-sky-500/10 p-6 pr-12">
           <div className="flex flex-wrap items-center gap-3">
             <span className="inline-flex items-center gap-2 rounded-full border border-amber-400/40 bg-amber-500/10 px-3 py-1 text-xs font-bold text-amber-700 dark:text-amber-200">
               <span className="h-2 w-2 rounded-full bg-amber-500" />
@@ -83,7 +83,7 @@ function DetailItem({ label, value, wide = false }: { label: string; value: stri
   return (
     <div className={['rounded-2xl border border-border bg-card p-4', wide ? 'sm:col-span-2' : ''].join(' ')}>
       <p className="text-[10px] font-black uppercase tracking-[0.14em] text-muted-foreground">{label}</p>
-      <p className="mt-2 break-words font-semibold text-foreground">{value}</p>
+      <p className="mt-2 wrap-break-word font-semibold text-foreground">{value}</p>
     </div>
   )
 }

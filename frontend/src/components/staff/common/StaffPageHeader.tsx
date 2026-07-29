@@ -26,7 +26,7 @@ export function StaffPageHeader({
   tone = 'sky',
 }: StaffPageHeaderProps) {
   return (
-    <Card className={cn('relative mb-6 overflow-hidden bg-gradient-to-br shadow-sm', toneClasses[tone])}>
+    <Card className={cn('relative mb-6 overflow-hidden bg-linear-to-br shadow-sm', toneClasses[tone])}>
       <div className="pointer-events-none absolute -right-16 -top-24 size-64 rounded-full bg-white/35 blur-3xl dark:bg-white/5" />
       <CardContent className="relative p-5 md:p-7">
         <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">

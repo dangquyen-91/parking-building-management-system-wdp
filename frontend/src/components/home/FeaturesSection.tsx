@@ -66,7 +66,7 @@ export function FeaturesSection() {
             variants={reduceMotion ? undefined : scaleIn}
             className={feature.size}
           >
-            <Card className={`relative h-full min-h-56 rounded-2xl bg-gradient-to-br via-card to-card shadow-lg shadow-transparent ring-1 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl ${CARD_TONES[index]}`}>
+            <Card className={`relative h-full min-h-56 rounded-2xl bg-linear-to-br via-card to-card shadow-lg shadow-transparent ring-1 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl ${CARD_TONES[index]}`}>
               <span className="absolute right-5 top-5 size-16 rounded-full bg-current opacity-[0.04] blur-xl" aria-hidden="true" />
               <CardHeader>
                 <Badge className="w-fit" variant="secondary">{feature.tag}</Badge>

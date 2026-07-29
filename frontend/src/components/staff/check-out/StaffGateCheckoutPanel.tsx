@@ -57,7 +57,7 @@ export function StaffGateCheckoutPanel({
   return (
     <>
       <Card className="overflow-hidden rounded-2xl border-emerald-500/20 bg-background shadow-xl shadow-slate-950/5">
-        <CardHeader className="border-b border-white/15 bg-gradient-to-r from-emerald-700 via-emerald-600 to-teal-500 p-5 text-white md:p-6">
+        <CardHeader className="border-b border-white/15 bg-linear-to-r from-emerald-700 via-emerald-600 to-teal-500 p-5 text-white md:p-6">
           <div className="flex items-start gap-4">
             <span className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-white/15 shadow-inner ring-1 ring-white/25">
               <LogOut className="size-6" />
@@ -71,7 +71,7 @@ export function StaffGateCheckoutPanel({
             </div>
           </div>
         </CardHeader>
-        <CardContent className="grid gap-5 bg-gradient-to-b from-emerald-500/[0.025] to-transparent p-5 md:p-6">
+        <CardContent className="grid gap-5 bg-linear-to-b from-emerald-500/2.5 to-transparent p-5 md:p-6">
           <ProcessSection number="1" icon={<Search className="size-4" />} title="Tìm phương tiện" description="Quét camera hoặc nhập biển số xe đang gửi.">
             <StaffGateCheckoutLookup query={query} onQueryChange={onQueryChange} />
           </ProcessSection>

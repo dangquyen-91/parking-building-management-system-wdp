@@ -51,7 +51,7 @@ export function CheckInStepHeader({
 
 export function StepIntro({ title, description }: { title: string; description: string }) {
   return (
-    <Card size="sm" className="border-sky-500/15 bg-gradient-to-r from-sky-500/10 to-transparent shadow-none">
+    <Card size="sm" className="border-sky-500/15 bg-linear-to-r from-sky-500/10 to-transparent shadow-none">
       <CardHeader className="border-l-4 border-sky-500 py-1">
         <CardTitle className="text-base font-bold">{title}</CardTitle>
         <CardDescription className="leading-5">{description}</CardDescription>

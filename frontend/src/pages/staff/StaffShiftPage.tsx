@@ -94,7 +94,7 @@ export function StaffShiftPage() {
     : 'Nhân viên hiện tại'
 
   return (
-    <div className="mx-auto max-w-[1500px] p-4 md:p-8 lg:p-10">
+    <div className="mx-auto max-w-375 p-4 md:p-8 lg:p-10">
       <StaffPageHeader
         eyebrow="Bàn giao ca trực"
         title="Tổng kết ca"

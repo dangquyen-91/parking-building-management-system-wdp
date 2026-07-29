@@ -42,7 +42,7 @@ export function ManagerPlanDeleteDialog({
         aria-labelledby="delete-plan-dialog-title"
         className="relative z-50 w-full max-w-md overflow-hidden rounded-3xl border border-border bg-background shadow-2xl"
       >
-        <div className="border-b border-border bg-gradient-to-r from-rose-500/15 via-transparent to-transparent p-6">
+        <div className="border-b border-border bg-linear-to-r from-rose-500/15 via-transparent to-transparent p-6">
           <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-rose-600 dark:text-rose-300">
             Xác nhận xóa
           </p>

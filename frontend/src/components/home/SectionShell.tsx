@@ -23,7 +23,7 @@ export function SectionShell({
   tone = 'base',
 }: SectionShellProps) {
   const surface = tone === 'alt'
-    ? 'bg-white dark:bg-gradient-to-br dark:from-violet-950/60 dark:via-sky-950/50 dark:to-emerald-950/45'
+    ? 'bg-white dark:bg-linear-to-br dark:from-violet-950/60 dark:via-sky-950/50 dark:to-emerald-950/45'
     : 'bg-white dark:bg-background/58'
 
   return (
@@ -34,7 +34,7 @@ export function SectionShell({
         <Badge variant="secondary" className="mb-3 border border-violet-500/15 bg-violet-500/10 text-violet-700 dark:text-violet-200">
           {eyebrow}
         </Badge>
-        <h2 className="max-w-3xl text-3xl font-bold leading-tight text-slate-950 dark:bg-gradient-to-r dark:from-violet-200 dark:via-sky-200 dark:to-emerald-200 dark:bg-clip-text dark:text-transparent md:text-4xl lg:text-5xl">
+        <h2 className="max-w-3xl text-3xl font-bold leading-tight text-slate-950 dark:bg-linear-to-r dark:from-violet-200 dark:via-sky-200 dark:to-emerald-200 dark:bg-clip-text dark:text-transparent md:text-4xl lg:text-5xl">
           {title}
         </h2>
         {description && (

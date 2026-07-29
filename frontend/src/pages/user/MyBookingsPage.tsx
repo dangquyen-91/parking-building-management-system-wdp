@@ -92,7 +92,7 @@ export function MyBookingsPage() {
         <div className="mb-5 flex justify-end">
           <Link
             to="/booking"
-            className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-sky-500 px-5 text-sm font-bold text-white shadow-lg shadow-violet-500/20 transition hover:-translate-y-0.5"
+            className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-linear-to-r from-violet-600 to-sky-500 px-5 text-sm font-bold text-white shadow-lg shadow-violet-500/20 transition hover:-translate-y-0.5"
           >
             <span className="text-lg">+</span> Đặt chỗ mới
           </Link>

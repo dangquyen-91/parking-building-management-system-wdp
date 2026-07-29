@@ -75,8 +75,8 @@ export function BookingPage() {
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-[linear-gradient(145deg,#fafafa_0%,#f5f3ff_52%,#f0f9ff_100%)] text-fg dark:bg-[linear-gradient(145deg,#0f1117_0%,#131122_52%,#0b1720_100%)]">
-      <div className="pointer-events-none absolute left-[-8rem] top-24 h-80 w-80 rounded-full bg-violet-300/10 blur-3xl" />
-      <div className="pointer-events-none absolute right-[-7rem] top-56 h-96 w-96 rounded-full bg-sky-300/10 blur-3xl" />
+      <div className="pointer-events-none absolute -left-32 top-24 h-80 w-80 rounded-full bg-violet-300/10 blur-3xl" />
+      <div className="pointer-events-none absolute -right-28 top-56 h-96 w-96 rounded-full bg-sky-300/10 blur-3xl" />
       <BookingTopNav />
 
       <main id="main" tabIndex={-1} className="relative z-10 mx-auto max-w-7xl px-4 pb-8 pt-24 md:px-8 md:pb-10 lg:px-10">

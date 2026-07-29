@@ -47,7 +47,7 @@ export function AdminBuildingCard({
   const [open, setOpen] = useState(false)
   const groups = useMemo(() => groupFloors(building.floors), [building.floors])
   return (
-    <Card className="border-violet-500/15 bg-gradient-to-br from-card via-card to-violet-500/5 transition-shadow hover:shadow-md">
+    <Card className="border-violet-500/15 bg-linear-to-br from-card via-card to-violet-500/5 transition-shadow hover:shadow-md">
       <CardHeader className="flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div className="flex min-w-0 items-start gap-3">
           <span className="flex size-11 shrink-0 items-center justify-center rounded-lg bg-violet-500/10 text-violet-700 dark:text-violet-300">
@@ -55,16 +55,16 @@ export function AdminBuildingCard({
           </span>
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
-              <CardTitle className="break-words">{building.name}</CardTitle>
+              <CardTitle className="wrap-break-word">{building.name}</CardTitle>
               <AdminStatusBadge
                 status={building.isActive ? 'active' : 'inactive'}
               />
             </div>
-            <p className="mt-1 break-words text-xs text-muted-foreground">
+            <p className="mt-1 wrap-break-word text-xs text-muted-foreground">
               {building.address}
             </p>
             {building.description && (
-              <p className="mt-2 break-words text-sm text-muted-foreground">
+              <p className="mt-2 wrap-break-word text-sm text-muted-foreground">
                 {building.description}
               </p>
             )}
@@ -101,7 +101,7 @@ export function AdminBuildingCard({
                       <CardTitle className="text-base">
                         Tầng {group.floorNumber}
                       </CardTitle>
-                      <p className="break-words text-xs text-muted-foreground">
+                      <p className="wrap-break-word text-xs text-muted-foreground">
                         {group.sections.length} khu · {group.totalSlots} chỗ
                       </p>
                     </div>
@@ -120,10 +120,10 @@ export function AdminBuildingCard({
                       <Card key={floor.id} className="shadow-none">
                         <CardContent className="flex items-center justify-between gap-3 p-3">
                           <div className="min-w-0">
-                            <p className="break-words font-medium">
+                            <p className="wrap-break-word font-medium">
                               Khu {getFloorSection(floor.section)}
                             </p>
-                            <p className="break-words text-xs text-muted-foreground">
+                            <p className="wrap-break-word text-xs text-muted-foreground">
                               {floor.floorType === 'resident'
                                 ? 'Cư dân'
                                 : 'Khách'}{' '}

@@ -90,7 +90,7 @@ export function ManagerRowGridSection({
 
               <div className="mt-3">
                 <div className="h-2 overflow-hidden rounded-full bg-card">
-                  <div className="h-full rounded-full bg-gradient-to-r from-primary to-cyan-400" style={{ width: `${percent}%` }} />
+                  <div className="h-full rounded-full bg-linear-to-r from-primary to-cyan-400" style={{ width: `${percent}%` }} />
                 </div>
                 <p className="mt-2 text-[11px] font-semibold text-muted-foreground">{ROW_STATUS_DETAILS[row.status]}</p>
               </div>

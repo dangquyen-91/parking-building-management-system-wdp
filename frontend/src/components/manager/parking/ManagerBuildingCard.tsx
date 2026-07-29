@@ -63,7 +63,7 @@ export function ManagerBuildingCard({ building, onEdit, onEditFloor }: ManagerBu
   return (
     <article className="group overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg">
       <div className="relative p-5">
-        <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-cyan-400 via-primary to-emerald-400" />
+        <div className="absolute inset-x-0 top-0 h-1 bg-linear-to-r from-cyan-400 via-primary to-emerald-400" />
         <div className="absolute right-4 top-4 size-20 rounded-full bg-cyan-400/10 blur-2xl" />
 
         <div className="relative flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">

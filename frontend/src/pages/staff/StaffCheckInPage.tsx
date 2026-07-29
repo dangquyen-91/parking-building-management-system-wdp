@@ -15,7 +15,7 @@ export function StaffCheckInPage() {
   const gate = useStaffGateController()
 
   return (
-    <div className="mx-auto max-w-[1500px] p-4 md:p-8 lg:p-10">
+    <div className="mx-auto max-w-375 p-4 md:p-8 lg:p-10">
       <StaffPageHeader
         eyebrow="Cổng đang hoạt động"
         title="Tiếp nhận xe vào"

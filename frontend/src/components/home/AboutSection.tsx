@@ -57,8 +57,8 @@ export function AboutSection() {
             custom={index * 0.08}
             variants={reduceMotion ? undefined : fadeUp}
           >
-            <Card className={`relative h-full rounded-2xl bg-gradient-to-br shadow-lg shadow-transparent ring-1 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl ${CARD_TONES[index]}`}>
-              <span className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-violet-500 via-sky-500 to-emerald-500" aria-hidden="true" />
+            <Card className={`relative h-full rounded-2xl bg-linear-to-br shadow-lg shadow-transparent ring-1 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl ${CARD_TONES[index]}`}>
+              <span className="absolute inset-x-0 top-0 h-1 bg-linear-to-r from-violet-500 via-sky-500 to-emerald-500" aria-hidden="true" />
               <CardHeader>
                 <Badge className="w-fit" variant="secondary">{item.number}</Badge>
                 <CardTitle>{item.value}</CardTitle>

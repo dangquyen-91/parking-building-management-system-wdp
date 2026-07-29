@@ -148,7 +148,7 @@ export function StaffLostTicketPage() {
   }
 
   return (
-    <div className="mx-auto max-w-[1500px] p-4 md:p-8 lg:p-10">
+    <div className="mx-auto max-w-375 p-4 md:p-8 lg:p-10">
       <StaffPageHeader
         eyebrow="Ngoại lệ cổng xe"
         title="Tra cứu mất vé"
@@ -161,7 +161,7 @@ export function StaffLostTicketPage() {
         </Alert>
       )}
 
-      <Card className="border-amber-500/20 bg-gradient-to-br from-background via-background to-amber-500/5">
+      <Card className="border-amber-500/20 bg-linear-to-br from-background via-background to-amber-500/5">
         <CardHeader>
           <CardDescription>Mất vé / mất QR</CardDescription>
           <CardTitle>Tìm xe và xử lý ngoại lệ</CardTitle>

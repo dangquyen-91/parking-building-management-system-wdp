@@ -60,7 +60,7 @@ export function OperationListShell({
           <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
             {eyebrow}
           </p>
-          <CardTitle className="mt-1 break-words text-lg">{title}</CardTitle>
+          <CardTitle className="mt-1 wrap-break-word text-lg">{title}</CardTitle>
         </div>
         <Badge variant="secondary" className="shrink-0">
           {count}
@@ -86,12 +86,12 @@ export function OperationInfoCell({
     <div className="flex min-h-20 min-w-0 flex-col justify-center rounded-xl bg-background/55 p-3">
       <p className="text-xs text-muted-foreground">{label}</p>
       <p
-        className={`mt-1 break-words text-foreground ${strong ? 'font-black' : 'font-semibold'}`}
+        className={`mt-1 wrap-break-word text-foreground ${strong ? 'font-black' : 'font-semibold'}`}
       >
         {value}
       </p>
       {detail && (
-        <p className="mt-1 break-words text-xs text-muted-foreground">
+        <p className="mt-1 wrap-break-word text-xs text-muted-foreground">
           {detail}
         </p>
       )}
@@ -114,12 +114,12 @@ export function OperationValue({
     <div className="min-w-0">
       <dt className="text-xs text-muted-foreground">{label}</dt>
       <dd
-        className={`mt-1 break-words text-foreground ${strong ? 'text-lg font-semibold' : 'font-medium'}`}
+        className={`mt-1 wrap-break-word text-foreground ${strong ? 'text-lg font-semibold' : 'font-medium'}`}
       >
         {value}
       </dd>
       {detail && (
-        <p className="mt-1 break-words text-xs text-muted-foreground">
+        <p className="mt-1 wrap-break-word text-xs text-muted-foreground">
           {detail}
         </p>
       )}

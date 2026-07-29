@@ -75,7 +75,7 @@ export function ProfileVehiclesSection({ vehicles, isLoading, onUserChange }: Pr
 
   return (
     <section className="liquid-glass-card mt-6 overflow-hidden rounded-lg">
-      <div className="border-b border-theme bg-gradient-to-r from-sky-500/10 via-cyan-500/5 to-transparent p-5 md:p-7">
+      <div className="border-b border-theme bg-linear-to-r from-sky-500/10 via-cyan-500/5 to-transparent p-5 md:p-7">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="border-l-4 border-sky-500 pl-4">
             <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-sky-700 dark:text-sky-200">
@@ -142,7 +142,7 @@ export function ProfileVehiclesSection({ vehicles, isLoading, onUserChange }: Pr
           <button
             type="submit"
             disabled={hasReachedLimit || isAdding || !licensePlate.trim()}
-            className="mt-4 inline-flex h-11 w-full items-center justify-center rounded-lg bg-gradient-to-r from-sky-600 to-cyan-600 px-5 text-sm font-bold text-white shadow-lg shadow-sky-500/20 transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+            className="mt-4 inline-flex h-11 w-full items-center justify-center rounded-lg bg-linear-to-r from-sky-600 to-cyan-600 px-5 text-sm font-bold text-white shadow-lg shadow-sky-500/20 transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {isAdding ? 'Đang thêm...' : hasReachedLimit ? 'Đã đạt giới hạn 5 xe' : 'Thêm phương tiện'}
           </button>

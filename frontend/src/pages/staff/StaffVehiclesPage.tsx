@@ -33,7 +33,7 @@ export function StaffVehiclesPage() {
   }
 
   return (
-    <div className="mx-auto max-w-[1500px] p-4 md:p-8 lg:p-10">
+    <div className="mx-auto max-w-375 p-4 md:p-8 lg:p-10">
       <StaffPageHeader
         eyebrow="Theo dõi thời gian thực"
         title="Xe đang gửi trong bãi"
