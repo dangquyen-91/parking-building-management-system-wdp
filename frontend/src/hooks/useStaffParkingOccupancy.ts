@@ -90,9 +90,16 @@ export function useStaffParkingOccupancy() {
     // car checks in. A booking isn't pinned to one floor (capacity is checked in
     // aggregate across all visitor car floors — see booking.service.js), so
     // spread the count currently "in window" proportionally by floor size.
+    const activePlates = new Set(
+      sessions.filter((s) => s.status === 'active').map((s) => s.licensePlate?.toUpperCase()),
+    )
     const now = Date.now()
     const reservedNow = bookings.filter((booking) => {
       if (booking.status !== 'paid') return false
+      // Plate is already parked under its own session (e.g. walked in too early
+      // to claim the booking) — it's already counted via walkInCarByFloor, so
+      // counting the untouched booking too would double it.
+      if (activePlates.has(booking.licensePlate?.toUpperCase())) return false
       const arrival = new Date(booking.expectedArrivalTime).getTime()
       const exit = new Date(booking.expectedExitTime).getTime()
       return arrival <= now && exit > now
