@@ -6,6 +6,7 @@ export { BookingPolicyNotice } from './create/BookingPolicyNotice'
 export { BookingSummary } from './create/BookingSummary'
 
 export { BookingEmptyState } from './history/BookingEmptyState'
+export { BookingCancelDialog } from './history/BookingCancelDialog'
 export { MyBookingList } from './history/MyBookingList'
 export { MyBookingsHeader } from './history/MyBookingsHeader'
 

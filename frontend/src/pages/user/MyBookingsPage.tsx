@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
+  BookingCancelDialog,
   BookingEmptyState,
   BookingTopNav,
   MyBookingList,
@@ -16,22 +17,33 @@ export function MyBookingsPage() {
   const [error, setError] = useState<string | null>(null)
   const [message, setMessage] = useState<string | null>(null)
   const [cancellingId, setCancellingId] = useState<string | null>(null)
+  const [bookingToCancel, setBookingToCancel] = useState<Booking | null>(null)
+  const [cancelError, setCancelError] = useState<string | null>(null)
 
-  async function handleCancel(booking: Booking) {
-    if (!window.confirm(`Hủy booking đang chờ thanh toán của biển số ${booking.licensePlate}?`)) return
-
+  function handleCancel(booking: Booking) {
     setError(null)
     setMessage(null)
-    setCancellingId(booking._id)
+    setCancelError(null)
+    setBookingToCancel(booking)
+  }
+
+  async function confirmCancel() {
+    if (!bookingToCancel) return
+
+    setCancelError(null)
+    setCancellingId(bookingToCancel._id)
 
     try {
-      const result = await bookingApi.cancelBooking(booking._id)
+      const result = await bookingApi.cancelBooking(bookingToCancel._id)
       setBookings((current) => current.map((item) => (
         item._id === result.booking._id ? result.booking : item
       )))
       setMessage('Đã hủy booking thành công.')
+      setBookingToCancel(null)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Không thể hủy booking.')
+      setCancelError(
+        err instanceof Error ? err.message : 'Không thể hủy booking.',
+      )
     } finally {
       setCancellingId(null)
     }
@@ -109,6 +121,17 @@ export function MyBookingsPage() {
         ) : (
           <MyBookingList bookings={bookings} cancellingId={cancellingId} onCancel={handleCancel} />
         )}
+
+        <BookingCancelDialog
+          booking={bookingToCancel}
+          isCancelling={cancellingId === bookingToCancel?._id}
+          error={cancelError}
+          onClose={() => {
+            setBookingToCancel(null)
+            setCancelError(null)
+          }}
+          onConfirm={() => void confirmCancel()}
+        />
       </main>
     </div>
   )

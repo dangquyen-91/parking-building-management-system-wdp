@@ -10,6 +10,7 @@
 } from 'recharts'
 import type { AdminPeakHoursReport } from '../../../services/adminApi'
 import {
+  AdminChartEmpty,
   AdminChartShell,
   reportAxisStyle,
   reportColors,
@@ -29,11 +30,16 @@ export function AdminPeakHoursChart({
     <AdminChartShell
       eyebrow="Vận hành"
       title="Giờ xe vào cao điểm"
-      description={`Cao nhất lúc ${String(peakHour.hour).padStart(2, '0')}:00 với ${peakHour.count} lượt.`}
-      tone="amber"
+      description={`Cao nhất lúc ${String(peakHour.hour).padStart(2, '0')}:00 với ${peakHour.count} lượt trong ${report.days ?? 0} ngày.`}
     >
-      <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={rows}>
+      {rows.length === 0 ? (
+        <AdminChartEmpty />
+      ) : (
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart
+            data={rows}
+            margin={{ top: 8, right: 4, left: 0, bottom: 0 }}
+          >
           <CartesianGrid
             stroke="var(--border)"
             strokeDasharray="3 3"
@@ -55,9 +61,12 @@ export function AdminPeakHoursChart({
           />
           <Tooltip
             contentStyle={reportTooltipStyle}
+            labelStyle={{ color: 'var(--fg)', fontWeight: 600 }}
             formatter={(value) => `${Number(value)} lượt`}
           />
-          <Legend wrapperStyle={{ fontSize: 11 }} />
+          <Legend
+            wrapperStyle={{ color: 'var(--fg-muted)', fontSize: 11 }}
+          />
           <Bar
             dataKey="motorcycle"
             name="Xe máy"
@@ -70,8 +79,9 @@ export function AdminPeakHoursChart({
             stackId="v"
             fill={reportColors.tertiary}
           />
-        </BarChart>
-      </ResponsiveContainer>
+          </BarChart>
+        </ResponsiveContainer>
+      )}
     </AdminChartShell>
   )
 }
