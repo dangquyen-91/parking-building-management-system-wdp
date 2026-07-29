@@ -244,7 +244,7 @@ export function useStaffGateController() {
 
       if (result.subscription?.vehicleType) {
         setVehicleType(result.subscription.vehicleType)
-      } else if (result.booking) {
+      } else if (result.booking || result.earlyBooking) {
         setVehicleType('car')
       }
 

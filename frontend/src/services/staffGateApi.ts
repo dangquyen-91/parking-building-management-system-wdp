@@ -64,6 +64,10 @@ export type GateBooking = {
   status: 'paid'
 }
 
+export type GateEarlyBooking = GateBooking & {
+  eligibleFrom: string
+}
+
 export type GateSession = {
   _id: string
   slotId: GateSlot | string | null
@@ -106,6 +110,7 @@ export type GateLookupResult = {
     }
   } | null
   booking: GateBooking | null
+  earlyBooking: GateEarlyBooking | null
   hint: {
     lastVisit: {
       vehicleType: GateVehicleType
