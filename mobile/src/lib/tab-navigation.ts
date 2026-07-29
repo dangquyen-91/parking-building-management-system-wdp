@@ -8,7 +8,8 @@ export const getFloatingTabScreenOptions = ({
   fg: string;
   tabBar: string;
   tabInactive: string;
-}) => ({
+}) => {
+  return {
   headerShown: false,
   tabBarActiveTintColor: fg,
   tabBarInactiveTintColor: tabInactive,
@@ -17,10 +18,11 @@ export const getFloatingTabScreenOptions = ({
     borderColor: borderStrong,
     borderWidth: 1,
     borderRadius: 18,
-    bottom: 15,
+    bottom: 16,
     elevation: 0,
-    height: 68,
+    height: 72,
     left: 12,
+    paddingBottom: 8,
     paddingTop: 8,
     position: "absolute" as const,
     right: 12,
@@ -36,4 +38,5 @@ export const getFloatingTabScreenOptions = ({
     fontSize: 12,
     fontWeight: "700" as const,
   },
-});
+  };
+};
