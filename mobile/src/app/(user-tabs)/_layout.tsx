@@ -1,5 +1,6 @@
 import { Redirect, Tabs } from "expo-router";
 import { ActivityIndicator } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Ionicons from "react-native-vector-icons/Ionicons";
 
 import { useCurrentUserQuery } from "@/hooks/useAuth";
@@ -10,6 +11,7 @@ import { Text, View, useThemeColors } from "@/tw";
 const UserTabsLayout = () => {
   const { data: currentUser, isError, isLoading } = useCurrentUserQuery();
   const { borderStrong, fg, tabBar, tabInactive } = useThemeColors();
+  const insets = useSafeAreaInsets();
 
   if (isLoading) {
     return (
@@ -31,7 +33,15 @@ const UserTabsLayout = () => {
   }
 
   return (
-    <Tabs screenOptions={getFloatingTabScreenOptions({ borderStrong, fg, tabBar, tabInactive })}>
+    <Tabs
+      screenOptions={getFloatingTabScreenOptions({
+        borderStrong,
+        bottomInset: insets.bottom,
+        fg,
+        tabBar,
+        tabInactive,
+      })}
+    >
       <Tabs.Screen
         name="home"
         options={{
@@ -53,7 +63,10 @@ const UserTabsLayout = () => {
       <Tabs.Screen
         name="booking"
         options={{
-          href: null,
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons name={focused ? "calendar" : "calendar-outline"} color={color} size={24} />
+          ),
+          tabBarLabel: "Đặt chỗ",
           title: "Đặt chỗ",
         }}
       />

@@ -1,5 +1,6 @@
 import { Redirect, Tabs } from "expo-router";
 import { ActivityIndicator } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Ionicons from "react-native-vector-icons/Ionicons";
 
 import { useCurrentUserQuery } from "@/hooks/useAuth";
@@ -10,6 +11,7 @@ import { Text, View, useThemeColors } from "@/tw";
 const StaffTabsLayout = () => {
   const { data: currentUser, isError, isLoading } = useCurrentUserQuery();
   const { borderStrong, fg, tabBar, tabInactive } = useThemeColors();
+  const insets = useSafeAreaInsets();
 
   if (isLoading) {
     return (
@@ -35,7 +37,15 @@ const StaffTabsLayout = () => {
   }
 
   return (
-    <Tabs screenOptions={getFloatingTabScreenOptions({ borderStrong, fg, tabBar, tabInactive })}>
+    <Tabs
+      screenOptions={getFloatingTabScreenOptions({
+        borderStrong,
+        bottomInset: insets.bottom,
+        fg,
+        tabBar,
+        tabInactive,
+      })}
+    >
       <Tabs.Screen
         name="staff-home"
         options={{

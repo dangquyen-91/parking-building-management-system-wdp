@@ -34,6 +34,7 @@ export const bookingSchema = z.object({
   userId: z.string().nullable().optional(),
   sessionId: z.string().nullable().optional(),
   usedAt: z.string().nullable().optional(),
+  qrToken: z.string().nullable().optional(),
   createdAt: z.string().min(1),
   updatedAt: z.string().min(1),
 });

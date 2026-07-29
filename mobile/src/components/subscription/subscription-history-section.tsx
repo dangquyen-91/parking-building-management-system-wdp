@@ -24,6 +24,8 @@ const getSubscriptionTone = (status: Subscription["status"]) => {
 type SubscriptionHistorySectionProps = {
   cancelPending: boolean;
   confirmPending: boolean;
+  emptyDescription?: string;
+  emptyTitle?: string;
   isFetching: boolean;
   onCancel: (subscriptionId: string) => void;
   onConfirm: (subscriptionId: string) => void;
@@ -34,6 +36,8 @@ type SubscriptionHistorySectionProps = {
 export function SubscriptionHistorySection({
   cancelPending,
   confirmPending,
+  emptyDescription = "Hãy mua một gói cư dân ở phía trên, gói sẽ xuất hiện tại đây sau khi được tạo.",
+  emptyTitle = "Chưa có gói gửi xe nào",
   isFetching,
   onCancel,
   onConfirm,
@@ -130,10 +134,10 @@ export function SubscriptionHistorySection({
       {!isFetching && subscriptions.length === 0 ? (
         <GlassCard className="gap-1">
           <Text className="font-sans text-base font-extrabold text-fg">
-            Chưa có gói gửi xe nào
+            {emptyTitle}
           </Text>
           <Text className="font-sans text-sm text-subtle">
-            Hãy mua một gói cư dân ở phía trên, gói sẽ xuất hiện tại đây sau khi được tạo.
+            {emptyDescription}
           </Text>
         </GlassCard>
       ) : null}
