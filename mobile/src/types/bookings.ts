@@ -15,6 +15,7 @@ export type Booking = {
   userId?: string | null;
   sessionId?: string | null;
   usedAt?: string | null;
+  qrToken?: string | null;
   createdAt: string;
   updatedAt: string;
 };

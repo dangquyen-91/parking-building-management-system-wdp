@@ -12,7 +12,7 @@ type StaffGateSessionActivityProps = {
 
 export function StaffGateSessionActivity({ sessions }: StaffGateSessionActivityProps) {
   return (
-    <Card className="overflow-hidden rounded-2xl border-indigo-500/15 bg-gradient-to-br from-background to-indigo-500/5 shadow-lg shadow-slate-950/5">
+    <Card className="overflow-hidden rounded-2xl border-indigo-500/15 bg-linear-to-br from-background to-indigo-500/5 shadow-lg shadow-slate-950/5">
       <CardHeader className="border-b bg-indigo-500/5 pb-4">
         <CardDescription className="flex items-center gap-2 font-semibold uppercase tracking-[0.14em]"><Activity className="size-4" /> Hoạt động gần đây</CardDescription>
         <div className="flex items-end justify-between gap-3">

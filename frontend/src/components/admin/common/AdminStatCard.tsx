@@ -50,12 +50,12 @@ export function AdminStatCard({
 
   return (
     <Card
-      className={`group relative min-h-36 overflow-hidden border-current/15 bg-gradient-to-br ${toneStyles.glow} via-card to-card transition-all hover:-translate-y-0.5 hover:shadow-md`}
+      className={`group relative min-h-36 overflow-hidden border-current/15 bg-linear-to-br ${toneStyles.glow} via-card to-card transition-all hover:-translate-y-0.5 hover:shadow-md`}
     >
       <span className={`absolute inset-y-0 left-0 w-1 ${toneStyles.bar}`} />
       <CardContent className="p-5">
         <div className="flex items-start justify-between gap-3">
-          <p className="min-w-0 break-words text-xs font-medium text-muted-foreground">
+          <p className="min-w-0 wrap-break-word text-xs font-medium text-muted-foreground">
             {label}
           </p>
           <span
@@ -64,7 +64,7 @@ export function AdminStatCard({
             <Icon className="size-4" />
           </span>
         </div>
-        <p className="mt-3 break-words text-2xl font-bold tracking-tight leading-tight text-foreground md:text-[1.7rem]">
+        <p className="mt-3 wrap-break-word text-2xl font-bold tracking-tight leading-tight text-foreground md:text-[1.7rem]">
           {value}
         </p>
         <p className="mt-1 line-clamp-2 text-xs leading-5 text-muted-foreground">

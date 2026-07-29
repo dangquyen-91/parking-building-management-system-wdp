@@ -124,7 +124,7 @@ function linkClassName({ isActive }: { isActive: boolean }) {
   return [
     'group flex items-center gap-3 rounded-2xl border px-3 py-3 text-sm transition-all duration-200',
     isActive
-      ? 'border-emerald-400/40 bg-gradient-to-r from-sky-600 to-emerald-500 text-white shadow-lg shadow-sky-500/20'
+      ? 'border-emerald-400/40 bg-linear-to-r from-sky-600 to-emerald-500 text-white shadow-lg shadow-sky-500/20'
       : 'border-transparent text-muted-foreground hover:border-emerald-500/20 hover:bg-white/80 hover:text-foreground dark:hover:bg-white/10',
   ].join(' ')
 }
@@ -153,7 +153,7 @@ export const ManagerSidebar = forwardRef<HTMLElement, ManagerSidebarProps>(funct
           : 'max-lg:-translate-x-full max-lg:invisible max-lg:pointer-events-none',
       ].join(' ')}
     >
-      <div className="border-b border-emerald-200/60 bg-gradient-to-br from-sky-500/10 via-background to-emerald-500/10 p-5 dark:border-emerald-900/50">
+      <div className="border-b border-emerald-200/60 bg-linear-to-br from-sky-500/10 via-background to-emerald-500/10 p-5 dark:border-emerald-900/50">
         <div className="flex items-center justify-between gap-3">
         <NavLink
           to="/manager"
@@ -161,7 +161,7 @@ export const ManagerSidebar = forwardRef<HTMLElement, ManagerSidebarProps>(funct
           aria-label="Khu quản lý bãi xe"
           onClick={onNavigate}
         >
-          <span className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-500 to-emerald-500 text-white shadow-lg shadow-sky-500/20">
+          <span className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-linear-to-br from-sky-500 to-emerald-500 text-white shadow-lg shadow-sky-500/20">
             <LogoIcon size={22} />
           </span>
           <span className="min-w-0 leading-tight">

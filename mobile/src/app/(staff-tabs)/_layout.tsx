@@ -16,7 +16,7 @@ const StaffTabsLayout = () => {
       <View className="flex-1 items-center justify-center bg-page px-6">
         <ActivityIndicator />
         <Text className="mt-3 text-center font-sans text-sm font-bold text-subtle">
-          Dang kiem tra quyen nhan vien...
+          Đang kiểm tra quyền nhân viên...
         </Text>
       </View>
     );
@@ -35,7 +35,14 @@ const StaffTabsLayout = () => {
   }
 
   return (
-    <Tabs screenOptions={getFloatingTabScreenOptions({ borderStrong, fg, tabBar, tabInactive })}>
+    <Tabs
+      screenOptions={getFloatingTabScreenOptions({
+        borderStrong,
+        fg,
+        tabBar,
+        tabInactive,
+      })}
+    >
       <Tabs.Screen
         name="staff-home"
         options={{

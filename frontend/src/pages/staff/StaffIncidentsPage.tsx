@@ -87,7 +87,7 @@ export function StaffIncidentsPage() {
   }
 
   return (
-    <div className="mx-auto max-w-[1500px] p-4 md:p-8 lg:p-10">
+    <div className="mx-auto max-w-375 p-4 md:p-8 lg:p-10">
       <StaffPageHeader
         eyebrow="Sự cố & khiếu nại"
         title="Khiếu nại đậu sai chỗ"

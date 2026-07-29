@@ -20,7 +20,7 @@ function vehicleLabel(value: 'car' | 'motorcycle') {
 
 export function ManagerOverviewCapacity({ floors }: { floors: ManagerOccupancyFloor[] }) {
   return (
-    <section className="rounded-[1.25rem] border border-sky-500/20 bg-gradient-to-br from-card via-card to-sky-500/5 p-4 shadow-sm md:p-5">
+    <section className="rounded-[1.25rem] border border-sky-500/20 bg-linear-to-br from-card via-card to-sky-500/5 p-4 shadow-sm md:p-5">
       <div className="mb-4 flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="text-[10px] font-black uppercase tracking-[0.18em] text-muted-foreground">Công suất</p>
@@ -39,7 +39,7 @@ export function ManagerOverviewCapacity({ floors }: { floors: ManagerOccupancyFl
             <article key={floor.floorId} className="rounded-2xl border border-border bg-background/60 p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:bg-muted hover:shadow-lg">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="break-words font-bold leading-snug text-foreground">
+                  <p className="wrap-break-word font-bold leading-snug text-foreground">
                     {floor.building?.name ?? 'Chưa xác định'} · Tầng {floor.floorNumber} · Khu {getFloorSection(floor.section)}
                   </p>
                   <p className="mt-1 text-xs text-muted-foreground">{vehicleLabel(floor.vehicleType)}</p>
@@ -51,7 +51,7 @@ export function ManagerOverviewCapacity({ floors }: { floors: ManagerOccupancyFl
               </div>
               <div className="mt-4 h-2.5 overflow-hidden rounded-full bg-card">
                 <div
-                  className="h-full rounded-full bg-gradient-to-r from-sky-500 to-emerald-500"
+                  className="h-full rounded-full bg-linear-to-r from-sky-500 to-emerald-500"
                   style={{ width: `${Math.min(100, floor.utilizationPercent)}%` }}
                 />
               </div>
@@ -68,7 +68,7 @@ export function ManagerOverviewCapacity({ floors }: { floors: ManagerOccupancyFl
 
 export function ManagerOverviewActivity({ sessions }: { sessions: GateSession[] }) {
   return (
-    <section className="rounded-[1.25rem] border border-emerald-500/20 bg-gradient-to-br from-card via-card to-emerald-500/5 p-4 shadow-sm md:p-5">
+    <section className="rounded-[1.25rem] border border-emerald-500/20 bg-linear-to-br from-card via-card to-emerald-500/5 p-4 shadow-sm md:p-5">
       <div className="mb-4 flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="text-[10px] font-black uppercase tracking-[0.18em] text-muted-foreground">Hoạt động cổng</p>
@@ -86,7 +86,7 @@ export function ManagerOverviewActivity({ sessions }: { sessions: GateSession[] 
           {sessions.slice(0, 5).map((session) => (
             <article key={session._id} className="flex items-center justify-between gap-3 rounded-2xl border border-border bg-background/60 p-3 transition-all hover:-translate-y-0.5 hover:bg-muted">
               <div className="min-w-0">
-                <p className="break-words text-sm font-bold text-foreground">{session.licensePlate}</p>
+                <p className="wrap-break-word text-sm font-bold text-foreground">{session.licensePlate}</p>
                 <p className="mt-1 text-xs text-muted-foreground">
                   {vehicleLabel(session.vehicleType)} · Vào {formatDateTime(session.entryTime)}
                 </p>
@@ -102,7 +102,7 @@ export function ManagerOverviewActivity({ sessions }: { sessions: GateSession[] 
 
 export function ManagerOverviewBookings({ bookings }: { bookings: ManagerBooking[] }) {
   return (
-    <section className="rounded-[1.25rem] border border-violet-500/20 bg-gradient-to-br from-card via-card to-violet-500/5 p-4 shadow-sm md:p-5">
+    <section className="rounded-[1.25rem] border border-violet-500/20 bg-linear-to-br from-card via-card to-violet-500/5 p-4 shadow-sm md:p-5">
       <div className="mb-4 flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="text-[10px] font-black uppercase tracking-[0.18em] text-muted-foreground">Booking sắp đến</p>
@@ -120,7 +120,7 @@ export function ManagerOverviewBookings({ bookings }: { bookings: ManagerBooking
           {bookings.slice(0, 5).map((booking) => (
             <article key={booking._id} className="flex items-center justify-between gap-3 rounded-2xl border border-border bg-background/60 p-3 transition-all hover:-translate-y-0.5 hover:bg-muted">
               <div className="min-w-0">
-                <p className="break-words text-sm font-bold text-foreground">{booking.licensePlate}</p>
+                <p className="wrap-break-word text-sm font-bold text-foreground">{booking.licensePlate}</p>
                 <p className="mt-1 text-xs text-muted-foreground">Dự kiến đến {formatDateTime(booking.expectedArrivalTime)}</p>
               </div>
               <ManagerStatusBadge status="confirmed" label="Đã thanh toán" />
@@ -142,7 +142,7 @@ export type ManagerOverviewAlert = {
 
 export function ManagerOverviewAlerts({ alerts }: { alerts: ManagerOverviewAlert[] }) {
   return (
-    <section className="rounded-[1.25rem] border border-amber-500/20 bg-gradient-to-br from-card via-card to-amber-500/5 p-4 shadow-sm md:p-5">
+    <section className="rounded-[1.25rem] border border-amber-500/20 bg-linear-to-br from-card via-card to-amber-500/5 p-4 shadow-sm md:p-5">
       <div className="mb-4">
         <p className="text-[10px] font-black uppercase tracking-[0.18em] text-muted-foreground">Cần chú ý</p>
         <h2 className="mt-1 text-xl font-black text-foreground">Cảnh báo vận hành</h2>
@@ -159,7 +159,7 @@ export function ManagerOverviewAlerts({ alerts }: { alerts: ManagerOverviewAlert
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   <p className="text-sm font-bold text-foreground">{alert.title}</p>
-                  <p className="mt-1 break-words text-xs text-muted-foreground">{alert.detail}</p>
+                  <p className="mt-1 wrap-break-word text-xs text-muted-foreground">{alert.detail}</p>
                 </div>
                 <ManagerStatusBadge status={alert.tone} label="Kiểm tra" />
               </div>
@@ -218,12 +218,12 @@ export function ManagerOverviewQuickLinks() {
   return (
     <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
       {QUICK_LINKS.map((item) => (
-        <Link key={item.to} to={item.to} className="group relative overflow-hidden rounded-2xl border border-sky-500/15 bg-gradient-to-br from-card via-card to-sky-500/5 p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:bg-muted hover:shadow-lg">
+        <Link key={item.to} to={item.to} className="group relative overflow-hidden rounded-2xl border border-sky-500/15 bg-linear-to-br from-card via-card to-sky-500/5 p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:bg-muted hover:shadow-lg">
           <span className="absolute right-4 top-4 flex size-10 items-center justify-center rounded-2xl border border-sky-500/20 bg-sky-500/10 text-sky-700 shadow-sm transition-transform group-hover:scale-110 dark:text-sky-200">
             <QuickLinkIcon to={item.to} />
           </span>
           <p className="relative pr-12 text-sm font-black text-foreground">{item.label}</p>
-          <p className="mt-1 break-words pr-10 text-xs text-muted-foreground">{item.detail}</p>
+          <p className="mt-1 wrap-break-word pr-10 text-xs text-muted-foreground">{item.detail}</p>
         </Link>
       ))}
     </section>

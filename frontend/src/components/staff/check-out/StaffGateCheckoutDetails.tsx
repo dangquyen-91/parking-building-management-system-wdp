@@ -45,11 +45,11 @@ export function StaffGateCheckoutDetails({
 
   return (
     <Card className="border-emerald-500/15 shadow-none">
-      <CardHeader className="border-b bg-gradient-to-r from-emerald-500/10 to-transparent pb-4">
+      <CardHeader className="border-b bg-linear-to-r from-emerald-500/10 to-transparent pb-4">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <CardDescription className="font-semibold uppercase tracking-[0.14em]">Biển số xe</CardDescription>
-            <CardTitle className="mt-1 text-3xl font-black tracking-[0.1em]">{session.licensePlate}</CardTitle>
+            <CardTitle className="mt-1 text-3xl font-black tracking-widest">{session.licensePlate}</CardTitle>
           </div>
           <Badge variant="secondary">Đang gửi</Badge>
         </div>

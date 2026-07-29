@@ -15,7 +15,7 @@ export function BookingPaymentPanel({ payment }: BookingPaymentPanelProps) {
       </p>
 
       <div className="mt-8">
-        <div className="flex flex-col justify-between gap-5 rounded-2xl border border-violet-200 bg-gradient-to-br from-violet-50 to-sky-50 p-5 dark:border-violet-700/40 dark:from-violet-500/10 dark:to-sky-500/10">
+        <div className="flex flex-col justify-between gap-5 rounded-2xl border border-violet-200 bg-linear-to-br from-violet-50 to-sky-50 p-5 dark:border-violet-700/40 dark:from-violet-500/10 dark:to-sky-500/10">
           <dl className="grid gap-3 text-sm sm:grid-cols-2">
             <div>
               <dt className="text-subtle">Mã đơn</dt>
@@ -43,7 +43,7 @@ export function BookingPaymentPanel({ payment }: BookingPaymentPanelProps) {
             href={payment.checkoutUrl}
             target="_blank"
             rel="noreferrer"
-            className="inline-flex h-12 items-center justify-center rounded-xl bg-gradient-to-r from-violet-600 to-sky-500 px-4 text-sm font-bold text-white shadow-lg shadow-violet-500/20 transition-transform hover:-translate-y-0.5"
+            className="inline-flex h-12 items-center justify-center rounded-xl bg-linear-to-r from-violet-600 to-sky-500 px-4 text-sm font-bold text-white shadow-lg shadow-violet-500/20 transition-transform hover:-translate-y-0.5"
           >
             Mở trang thanh toán PayOS
           </a>

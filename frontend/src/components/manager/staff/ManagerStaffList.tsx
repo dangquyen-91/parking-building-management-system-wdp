@@ -61,7 +61,7 @@ export function ManagerStaffList({
           <TableRow key={user._id}>
             <TableCell className="px-4 py-4">
               <div className="flex items-center gap-3">
-                <span className="grid size-9 shrink-0 place-items-center rounded-xl border border-border bg-gradient-to-br from-sky-500/20 to-emerald-500/20 text-xs font-black">
+                <span className="grid size-9 shrink-0 place-items-center rounded-xl border border-border bg-linear-to-br from-sky-500/20 to-emerald-500/20 text-xs font-black">
                   {(user.fullName || user.email).slice(0, 2).toUpperCase()}
                 </span>
                 <div className="min-w-0">

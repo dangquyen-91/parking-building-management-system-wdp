@@ -43,7 +43,7 @@ export function StaffGateCheckInTicket({ session, qrValue, onClose }: StaffGateC
   return (
     <Dialog open onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-h-[calc(100vh-2rem)] gap-0 overflow-y-auto rounded-3xl p-0 shadow-2xl sm:max-w-3xl">
-        <DialogHeader className="relative overflow-hidden border-b border-emerald-500/20 bg-gradient-to-br from-emerald-500/20 via-background to-sky-500/10 p-6 pr-14 text-left md:p-8 md:pr-16">
+        <DialogHeader className="relative overflow-hidden border-b border-emerald-500/20 bg-linear-to-br from-emerald-500/20 via-background to-sky-500/10 p-6 pr-14 text-left md:p-8 md:pr-16">
           <div className="pointer-events-none absolute -right-10 -top-16 size-44 rounded-full bg-emerald-400/20 blur-3xl" />
           <div className="relative flex items-start gap-4">
             <span className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-emerald-600 text-white shadow-lg shadow-emerald-500/25">
@@ -63,7 +63,7 @@ export function StaffGateCheckInTicket({ session, qrValue, onClose }: StaffGateC
 
         <div className="grid gap-6 p-6 md:grid-cols-[18rem_minmax(0,1fr)] md:p-8">
           <div className="grid content-start gap-3">
-            <div className="relative flex aspect-square items-center justify-center overflow-hidden rounded-2xl border bg-white p-4 shadow-sm ring-4 ring-slate-950/[0.025]">
+            <div className="relative flex aspect-square items-center justify-center overflow-hidden rounded-2xl border bg-white p-4 shadow-sm ring-4 ring-slate-950/2.5">
               <span className="absolute left-3 top-3 size-5 rounded-tl-lg border-l-2 border-t-2 border-emerald-500" />
               <span className="absolute right-3 top-3 size-5 rounded-tr-lg border-r-2 border-t-2 border-emerald-500" />
               <span className="absolute bottom-3 left-3 size-5 rounded-bl-lg border-b-2 border-l-2 border-emerald-500" />
@@ -80,9 +80,9 @@ export function StaffGateCheckInTicket({ session, qrValue, onClose }: StaffGateC
           </div>
 
           <div className="min-w-0">
-            <div className="rounded-2xl border border-sky-500/20 bg-gradient-to-br from-sky-500/10 to-transparent p-5">
+            <div className="rounded-2xl border border-sky-500/20 bg-linear-to-br from-sky-500/10 to-transparent p-5">
               <p className="text-xs font-bold uppercase tracking-[0.16em] text-sky-700 dark:text-sky-300">Biển số xe</p>
-              <p className="mt-2 break-words text-3xl font-black tracking-[0.1em] sm:text-4xl">{session.licensePlate}</p>
+              <p className="mt-2 wrap-break-word text-3xl font-black tracking-widest sm:text-4xl">{session.licensePlate}</p>
               <span className="mt-4 inline-flex items-center gap-2 rounded-full border border-emerald-500/25 bg-emerald-500/10 px-3 py-1.5 text-xs font-semibold text-emerald-700 dark:text-emerald-300">
                 <Check className="size-3.5" /> Đã ghi nhận vào bãi
               </span>

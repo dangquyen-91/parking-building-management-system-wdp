@@ -151,8 +151,8 @@ export function ProfilePage() {
 
       <main id="main" tabIndex={-1} className="mx-auto max-w-6xl px-4 pb-8 pt-24 md:px-8 md:pb-10 lg:px-10">
         <div className="mb-6 overflow-hidden rounded-lg border border-emerald-500/20 bg-badge shadow-xl shadow-emerald-950/5">
-          <div className="grid gap-5 bg-gradient-to-br from-emerald-500/15 via-sky-500/10 to-violet-500/10 p-5 md:grid-cols-[auto_1fr_auto] md:items-center md:p-7">
-            <div className="flex size-20 items-center justify-center rounded-full bg-gradient-to-br from-emerald-400 via-sky-500 to-violet-500 text-2xl font-black text-white shadow-lg shadow-sky-500/20">
+          <div className="grid gap-5 bg-linear-to-br from-emerald-500/15 via-sky-500/10 to-violet-500/10 p-5 md:grid-cols-[auto_1fr_auto] md:items-center md:p-7">
+            <div className="flex size-20 items-center justify-center rounded-full bg-linear-to-br from-emerald-400 via-sky-500 to-violet-500 text-2xl font-black text-white shadow-lg shadow-sky-500/20">
               {initials}
             </div>
             <div className="min-w-0">
@@ -236,7 +236,7 @@ export function ProfilePage() {
                 <button
                   type="submit"
                   disabled={isSaving}
-                  className="inline-flex h-11 items-center justify-center rounded-lg bg-gradient-to-r from-emerald-600 to-sky-600 px-5 text-sm font-bold text-white shadow-lg shadow-emerald-500/20 transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="inline-flex h-11 items-center justify-center rounded-lg bg-linear-to-r from-emerald-600 to-sky-600 px-5 text-sm font-bold text-white shadow-lg shadow-emerald-500/20 transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {isSaving ? 'Đang lưu...' : 'Lưu thay đổi'}
                 </button>

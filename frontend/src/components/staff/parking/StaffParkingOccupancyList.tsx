@@ -247,11 +247,11 @@ function BuildingOccupancyCard({ building }: { building: BuildingGroup }) {
 
   return (
     <Card className="gap-0 overflow-hidden border-sky-200/70 py-0 shadow-lg shadow-slate-950/5 dark:border-sky-900/60">
-      <CardHeader className="relative overflow-hidden border-b bg-gradient-to-r from-sky-100/90 via-background to-emerald-100/70 p-5 dark:from-sky-950/40 dark:to-emerald-950/30 md:p-6">
+      <CardHeader className="relative overflow-hidden border-b bg-linear-to-r from-sky-100/90 via-background to-emerald-100/70 p-5 dark:from-sky-950/40 dark:to-emerald-950/30 md:p-6">
         <div className="pointer-events-none absolute -right-12 -top-20 size-52 rounded-full bg-cyan-400/15 blur-3xl" />
         <div className="relative flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
           <div className="flex items-center gap-4">
-            <span className="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-500 to-cyan-600 text-white shadow-lg shadow-sky-500/25">
+            <span className="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-linear-to-br from-sky-500 to-cyan-600 text-white shadow-lg shadow-sky-500/25">
               <Building2 className="size-6" />
             </span>
             <div>
@@ -509,7 +509,7 @@ function ResidentSlotDetails({
                   {statusUi.label}
                 </Badge>
               </div>
-              <p className="mt-2 min-h-8 break-words text-xs leading-5 text-muted-foreground">
+              <p className="mt-2 min-h-8 wrap-break-word text-xs leading-5 text-muted-foreground">
                 {slot.licensePlate ?? 'Chưa có xe trong ô'}
               </p>
             </div>

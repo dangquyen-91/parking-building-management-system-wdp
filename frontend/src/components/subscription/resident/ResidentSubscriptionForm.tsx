@@ -39,7 +39,7 @@ export function ResidentSubscriptionForm({
 
   return (
     <section className="liquid-glass-card !overflow-visible rounded-2xl">
-      <div className="border-b border-theme bg-gradient-to-r from-sky-500/15 via-transparent to-transparent p-5 md:p-6">
+      <div className="border-b border-theme bg-linear-to-r from-sky-500/15 via-transparent to-transparent p-5 md:p-6">
         <div className="flex items-center gap-3">
           <span className="flex size-11 items-center justify-center rounded-xl bg-sky-500 text-sm font-black text-white shadow-lg shadow-sky-500/20">
             1

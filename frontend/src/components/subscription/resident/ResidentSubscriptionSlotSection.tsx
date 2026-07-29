@@ -24,7 +24,7 @@ export function ResidentSubscriptionSlotSection({
   if (vehicleType === 'motorcycle') {
     return (
       <section className="liquid-glass-card overflow-hidden rounded-2xl">
-        <div className="flex items-center gap-3 border-b border-theme bg-gradient-to-r from-amber-500/15 via-transparent to-transparent p-5 md:p-6">
+        <div className="flex items-center gap-3 border-b border-theme bg-linear-to-r from-amber-500/15 via-transparent to-transparent p-5 md:p-6">
           <span className="flex size-11 items-center justify-center rounded-xl bg-amber-500 text-sm font-black text-white shadow-lg shadow-amber-500/20">
             {stepNumber}
           </span>
@@ -65,7 +65,7 @@ export function ResidentSubscriptionSlotSection({
 
   return (
     <section className="liquid-glass-card overflow-hidden rounded-2xl">
-      <div className="flex flex-col gap-3 border-b border-theme bg-gradient-to-r from-amber-500/15 via-transparent to-transparent p-5 md:flex-row md:items-start md:justify-between md:p-6">
+      <div className="flex flex-col gap-3 border-b border-theme bg-linear-to-r from-amber-500/15 via-transparent to-transparent p-5 md:flex-row md:items-start md:justify-between md:p-6">
         <div className="flex items-center gap-3">
           <span className="flex size-11 items-center justify-center rounded-xl bg-amber-500 text-sm font-black text-white shadow-lg shadow-amber-500/20">
             {stepNumber}

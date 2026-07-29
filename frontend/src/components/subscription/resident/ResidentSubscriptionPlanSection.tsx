@@ -16,7 +16,7 @@ export function ResidentSubscriptionPlanSection({
 }: ResidentSubscriptionPlanSectionProps) {
   return (
     <section className="liquid-glass-card overflow-hidden rounded-2xl">
-      <div className="flex items-center gap-3 border-b border-theme bg-gradient-to-r from-violet-500/15 via-transparent to-transparent p-5 md:p-6">
+      <div className="flex items-center gap-3 border-b border-theme bg-linear-to-r from-violet-500/15 via-transparent to-transparent p-5 md:p-6">
         <span className="flex size-11 items-center justify-center rounded-xl bg-violet-500 text-sm font-black text-white shadow-lg shadow-violet-500/20">
           2
         </span>

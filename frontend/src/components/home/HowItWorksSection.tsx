@@ -55,8 +55,8 @@ export function HowItWorksSection() {
             custom={index * 0.12}
             variants={reduceMotion ? undefined : fadeUp}
           >
-            <Card className={`relative h-full min-h-60 rounded-2xl bg-gradient-to-br via-card to-card shadow-lg shadow-transparent ring-1 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl ${STEP_TONES[index]}`}>
-              <div className="absolute bottom-0 left-0 top-0 w-1 bg-gradient-to-b from-violet-500 via-sky-500 to-emerald-500" aria-hidden="true" />
+            <Card className={`relative h-full min-h-60 rounded-2xl bg-linear-to-br via-card to-card shadow-lg shadow-transparent ring-1 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl ${STEP_TONES[index]}`}>
+              <div className="absolute bottom-0 left-0 top-0 w-1 bg-linear-to-b from-violet-500 via-sky-500 to-emerald-500" aria-hidden="true" />
               <CardHeader>
                 <Badge className="w-fit" variant="secondary">{item.step}</Badge>
                 <CardTitle>{item.title}</CardTitle>

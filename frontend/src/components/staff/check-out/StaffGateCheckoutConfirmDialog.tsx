@@ -44,9 +44,9 @@ export function StaffGateCheckoutConfirmDialog({
       <DialogContent className="gap-0 overflow-hidden rounded-3xl p-0 shadow-2xl sm:max-w-2xl">
         <DialogHeader className={cn(
           'relative overflow-hidden border-b p-6 pr-14 text-left md:p-8 md:pr-16',
-          tone === 'amber' && 'border-amber-500/20 bg-gradient-to-br from-amber-500/20 via-background to-orange-500/10',
-          tone === 'sky' && 'border-sky-500/20 bg-gradient-to-br from-sky-500/20 via-background to-cyan-500/10',
-          tone === 'emerald' && 'border-emerald-500/20 bg-gradient-to-br from-emerald-500/20 via-background to-teal-500/10',
+          tone === 'amber' && 'border-amber-500/20 bg-linear-to-br from-amber-500/20 via-background to-orange-500/10',
+          tone === 'sky' && 'border-sky-500/20 bg-linear-to-br from-sky-500/20 via-background to-cyan-500/10',
+          tone === 'emerald' && 'border-emerald-500/20 bg-linear-to-br from-emerald-500/20 via-background to-teal-500/10',
         )}>
           <div className="flex items-start gap-4">
             <span className={cn(
@@ -75,11 +75,11 @@ export function StaffGateCheckoutConfirmDialog({
         </DialogHeader>
 
         <div className="grid gap-4 p-6 md:grid-cols-2 md:p-8">
-          <div className="rounded-2xl border border-sky-500/20 bg-gradient-to-br from-sky-500/10 to-transparent p-5">
+          <div className="rounded-2xl border border-sky-500/20 bg-linear-to-br from-sky-500/10 to-transparent p-5">
             <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.14em] text-sky-700 dark:text-sky-300">
               <CarFront className="size-4" /> Biển số xe
             </p>
-            <p className="mt-3 break-words text-3xl font-black tracking-[0.1em]">{session.licensePlate}</p>
+            <p className="mt-3 wrap-break-word text-3xl font-black tracking-widest">{session.licensePlate}</p>
           </div>
 
           <div className={cn(

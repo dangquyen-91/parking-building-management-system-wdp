@@ -20,7 +20,7 @@ export function StaffGateCheckoutLookup({
           value={query}
           onChange={(event) => onQueryChange(event.target.value)}
           placeholder="VD: 61K-424.94"
-          className="h-14 rounded-xl border-2 bg-background text-lg font-bold uppercase tracking-[0.1em] focus-visible:border-emerald-500"
+          className="h-14 rounded-xl border-2 bg-background text-lg font-bold uppercase tracking-widest focus-visible:border-emerald-500"
         />
       </StaffGateField>
     </>

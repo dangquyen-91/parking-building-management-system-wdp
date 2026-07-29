@@ -69,6 +69,10 @@ export function ProfileScreen({
     router.push("/subscription/history");
   };
 
+  const handleOpenMyBookings = () => {
+    router.push("/booking/history");
+  };
+
   const handleOpenProfileDetails = () => {
     if (!currentUser?._id) {
       return;
@@ -248,6 +252,21 @@ export function ProfileScreen({
                 onPress={handleOpenMySubscription}
               />
             ) : null}
+
+            <Pressable
+              className="flex-row items-center justify-between rounded-[28px] border border-border-strong bg-badge px-5 py-4"
+              onPress={handleOpenMyBookings}
+            >
+              <View className="gap-1">
+                <Text className="font-sans text-xs font-bold uppercase text-faint">
+                  Đơn đặt chỗ
+                </Text>
+                <Text className="font-sans text-base font-extrabold text-fg">
+                  Các đơn đặt chỗ của tôi
+                </Text>
+              </View>
+              <Ionicons name="chevron-forward" color={iconPrimary} size={20} />
+            </Pressable>
 
             <ThemeToggle />
 

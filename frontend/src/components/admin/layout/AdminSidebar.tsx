@@ -118,13 +118,13 @@ export const AdminSidebar = forwardRef<HTMLElement, AdminSidebarProps>(
           isOpen ? 'max-lg:translate-x-0' : 'max-lg:-translate-x-full',
         )}
       >
-        <div className="bg-gradient-to-br from-violet-500/10 via-card to-sky-500/10 p-5 pb-4">
+        <div className="bg-linear-to-br from-violet-500/10 via-card to-sky-500/10 p-5 pb-4">
           <NavLink
             to="/admin"
             className="flex items-center gap-3"
             onClick={onNavigate}
           >
-            <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-violet-600 to-sky-500 text-white shadow-lg shadow-violet-500/20">
+            <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-linear-to-br from-violet-600 to-sky-500 text-white shadow-lg shadow-violet-500/20">
               <LogoIcon size={20} />
             </span>
             <span className="min-w-0 flex-1">
@@ -165,7 +165,7 @@ export const AdminSidebar = forwardRef<HTMLElement, AdminSidebarProps>(
                 cn(
                   'group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-all',
                   isActive
-                    ? 'bg-gradient-to-r from-violet-600 to-sky-500 text-white shadow-md shadow-violet-500/20'
+                    ? 'bg-linear-to-r from-violet-600 to-sky-500 text-white shadow-md shadow-violet-500/20'
                     : 'text-muted-foreground hover:bg-white/80 hover:text-foreground hover:shadow-sm dark:hover:bg-white/10',
                 )
               }

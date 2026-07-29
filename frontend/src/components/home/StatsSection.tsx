@@ -81,7 +81,7 @@ export function StatsSection() {
             custom={index * 0.08}
             variants={reduceMotion ? undefined : fadeUp}
           >
-            <Card className={`h-full rounded-2xl bg-gradient-to-br via-card to-card text-center shadow-lg shadow-transparent ring-1 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl ${STAT_TONES[index]}`}>
+            <Card className={`h-full rounded-2xl bg-linear-to-br via-card to-card text-center shadow-lg shadow-transparent ring-1 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl ${STAT_TONES[index]}`}>
               <CardHeader>
                 <CardTitle className="text-3xl font-bold md:text-4xl">
                   <AnimatedNumber value={stat.value} suffix={stat.suffix} inView={inView} />

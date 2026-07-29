@@ -109,7 +109,7 @@ export function ResidentPlansSection() {
                 custom={index * 0.1}
                 variants={reduceMotion ? undefined : scaleIn}
               >
-                <Card className="h-full rounded-2xl bg-gradient-to-br from-violet-500/30 via-card to-sky-500/22 shadow-lg shadow-transparent ring-1 ring-violet-500/45 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-violet-500/30 hover:ring-violet-600/70">
+                <Card className="h-full rounded-2xl bg-linear-to-br from-violet-500/30 via-card to-sky-500/22 shadow-lg shadow-transparent ring-1 ring-violet-500/45 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-violet-500/30 hover:ring-violet-600/70">
                   <CardHeader>
                     <div className="flex flex-wrap items-center justify-between gap-3">
                       <Badge variant="secondary">{VEHICLE_LABELS[plan.vehicleType]}</Badge>

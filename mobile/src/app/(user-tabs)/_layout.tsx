@@ -31,7 +31,14 @@ const UserTabsLayout = () => {
   }
 
   return (
-    <Tabs screenOptions={getFloatingTabScreenOptions({ borderStrong, fg, tabBar, tabInactive })}>
+    <Tabs
+      screenOptions={getFloatingTabScreenOptions({
+        borderStrong,
+        fg,
+        tabBar,
+        tabInactive,
+      })}
+    >
       <Tabs.Screen
         name="home"
         options={{
@@ -53,7 +60,10 @@ const UserTabsLayout = () => {
       <Tabs.Screen
         name="booking"
         options={{
-          href: null,
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons name={focused ? "calendar" : "calendar-outline"} color={color} size={24} />
+          ),
+          tabBarLabel: "Đặt chỗ",
           title: "Đặt chỗ",
         }}
       />

@@ -383,7 +383,7 @@ export const getById = async (id) => {
 export const lookup = async (licensePlate) => {
   const normalizedPlate = licensePlate.toUpperCase().replace(/\s/g, '');
 
-  const [activeSession, activeSub, lastSession, availableCar, motoAgg, paidBooking] = await Promise.all([
+  const [activeSession, activeSub, lastSession, availableCar, motoAgg, paidBooking, upcomingPaidBooking] = await Promise.all([
     ParkingSession.findOne({ licensePlate: normalizedPlate, status: 'active' }).populate(SESSION_POPULATE),
     Subscription.findOne({ licensePlate: normalizedPlate, status: 'active' })
       .populate('planId', 'code name vehicleType durationDays price')
@@ -411,6 +411,12 @@ export const lookup = async (licensePlate) => {
       { $group: { _id: null, available: { $sum: { $subtract: ['$capacity', '$occupiedCount'] } } } },
     ]),
     bookingService.findPaidBookingForCheckIn(normalizedPlate),
+    Booking.findOne({
+      licensePlate: normalizedPlate,
+      status: 'paid',
+      expectedArrivalTime: { $gt: new Date(Date.now() + 30 * 60 * 1000) },
+      expectedExitTime: { $gt: new Date() },
+    }).sort({ expectedArrivalTime: 1 }),
   ]);
 
   const availableMotorcycle = motoAgg[0]?.available || 0;
@@ -452,6 +458,19 @@ export const lookup = async (licensePlate) => {
           durationHours: paidBooking.durationHours,
           amount: paidBooking.amount,
           status: paidBooking.status,
+        }
+      : null,
+    // Informational only: this booking remains untouched while this visit is
+    // handled as a normal walk-in because the customer arrived too early.
+    earlyBooking: !paidBooking && upcomingPaidBooking
+      ? {
+          _id: upcomingPaidBooking._id,
+          expectedArrivalTime: upcomingPaidBooking.expectedArrivalTime,
+          expectedExitTime: upcomingPaidBooking.expectedExitTime,
+          durationHours: upcomingPaidBooking.durationHours,
+          amount: upcomingPaidBooking.amount,
+          status: upcomingPaidBooking.status,
+          eligibleFrom: new Date(upcomingPaidBooking.expectedArrivalTime.getTime() - 30 * 60 * 1000),
         }
       : null,
   };

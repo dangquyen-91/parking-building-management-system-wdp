@@ -85,7 +85,7 @@ export function AdminUserRoleDialog({
         {trigger}
       </DialogTrigger>
       <DialogContent className="p-0 sm:max-w-lg">
-        <DialogHeader className="border-b border-border bg-gradient-to-br from-violet-500/10 via-transparent to-sky-500/10 p-6 pr-12">
+        <DialogHeader className="border-b border-border bg-linear-to-br from-violet-500/10 via-transparent to-sky-500/10 p-6 pr-12">
           <p className="text-xs font-black uppercase tracking-[0.16em] text-violet-600 dark:text-violet-300">
             Phân quyền tài khoản
           </p>

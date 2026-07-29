@@ -43,13 +43,6 @@ export function BookingTopNav() {
         <div className="liquid-glass nav-glass mx-auto flex h-14 max-w-7xl items-center justify-between gap-3 rounded-full px-4 md:px-6">
           <BrandLink className="flex shrink-0 items-center gap-2 text-sm font-medium text-fg hover:text-fg" />
           <nav className="flex min-w-0 shrink-0 items-center gap-2" aria-label="User navigation">
-            <Link
-              to="/"
-              className="hidden rounded-lg px-3 py-2 text-xs text-muted transition-colors hover:bg-ghost hover:text-fg sm:inline-flex"
-            >
-              Trang chủ
-            </Link>
-
             {authUser ? (
               <UserMenu
                 user={authUser}
@@ -65,12 +58,6 @@ export function BookingTopNav() {
               </Link>
             )}
 
-            <Link
-              to="/my-bookings"
-              className="hidden rounded-lg px-3 py-2 text-xs text-muted transition-colors hover:bg-ghost hover:text-fg sm:inline-flex"
-            >
-              Đặt chỗ của tôi
-            </Link>
             <ThemeToggle />
           </nav>
         </div>
