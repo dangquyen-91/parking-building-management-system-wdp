@@ -1,4 +1,4 @@
-﻿import {
+import {
   Bar,
   BarChart,
   CartesianGrid,
@@ -8,7 +8,7 @@
   XAxis,
   YAxis,
 } from 'recharts'
-import type { AdminRevenueReport } from '../../../services/adminApi'
+import type { AdminRevenueByVehicleReport } from '../../../services/adminApi'
 import { formatAdminCurrency } from '../adminData'
 import {
   AdminChartEmpty,
@@ -20,26 +20,29 @@ import {
   shortAdminDate,
 } from './reportChartConfig'
 
-export function AdminRevenueChart({ report }: { report: AdminRevenueReport }) {
-  const sourceRows = Array.isArray(report.periods)
-    ? report.periods.map((row) => ({ ...row, date: row.period }))
-    : Array.isArray(report.daily)
-      ? report.daily
-      : []
-  const rows = sourceRows.slice(-14).map((row) => ({
-    ...row,
+export function AdminRevenueByVehicleChart({
+  report,
+}: {
+  report: AdminRevenueByVehicleReport
+}) {
+  const rows = (report.periods ?? []).slice(-14).map((row) => ({
     label:
       report.groupBy === 'week' || report.groupBy === 'month'
-        ? row.date
-        : shortAdminDate(row.date),
+        ? row.period
+        : shortAdminDate(row.period),
+    motorcycle: row.motorcycle?.total ?? 0,
+    car: row.car?.total ?? 0,
   }))
+
   return (
     <AdminChartShell
-      eyebrow="Doanh thu"
-      title="Doanh thu theo ngày"
-      description="Hiển thị tối đa 14 ngày gần nhất và từng nguồn doanh thu."
+      eyebrow="Phân loại"
+      title="Doanh thu xe máy và ô tô"
+      description="So sánh doanh thu theo loại xe trong khoảng ngày đã chọn."
     >
-      {rows.length ? (
+      {rows.length === 0 ? (
+        <AdminChartEmpty />
+      ) : (
         <ResponsiveContainer width="100%" height="100%">
           <BarChart
             data={rows}
@@ -72,34 +75,19 @@ export function AdminRevenueChart({ report }: { report: AdminRevenueReport }) {
               wrapperStyle={{ color: 'var(--fg-muted)', fontSize: 11 }}
             />
             <Bar
-              dataKey="subscription"
-              name="Gói gửi xe"
-              stackId="r"
+              dataKey="motorcycle"
+              name="Xe máy"
               fill={reportColors.primary}
+              radius={[4, 4, 0, 0]}
             />
             <Bar
-              dataKey="booking"
-              name="Booking"
-              stackId="r"
+              dataKey="car"
+              name="Ô tô"
               fill={reportColors.secondary}
-            />
-            <Bar
-              dataKey="sessionTransfer"
-              name="Chuyển khoản"
-              stackId="r"
-              fill={reportColors.tertiary}
-            />
-            <Bar
-              dataKey="sessionCash"
-              name="Tiền mặt"
-              stackId="r"
-              fill={reportColors.quaternary}
               radius={[4, 4, 0, 0]}
             />
           </BarChart>
         </ResponsiveContainer>
-      ) : (
-        <AdminChartEmpty />
       )}
     </AdminChartShell>
   )

@@ -42,7 +42,9 @@ export {
   AdminOccupancyTable,
   AdminPeakHoursChart,
   AdminReportFilters,
+  AdminReportHeader,
   AdminRevenueChart,
+  AdminRevenueByVehicleChart,
   AdminSessionChart,
 } from './reports'
 export {
