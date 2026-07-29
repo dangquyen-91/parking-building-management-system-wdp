@@ -327,12 +327,18 @@ export const confirm = async ({ id, userId, email, licensePlate }) => {
   return Booking.findById(id).populate(BOOKING_POPULATE);
 };
 
+// Customers may only claim their booking within 30 minutes of expectedArrivalTime.
+// Earlier than that, the plate checks in as a plain walk-in and the booking sits
+// untouched until it either gets claimed in-window or auto-expires (booking.job.js).
+const EARLY_CHECKIN_GRACE_MS = 30 * 60 * 1000;
+
 export const findPaidBookingForCheckIn = async (licensePlate) => {
   const normalizedPlate = licensePlate.toUpperCase().replace(/\s/g, '');
   const now = new Date();
   return Booking.findOne({
     licensePlate: normalizedPlate,
     status: 'paid',
+    expectedArrivalTime: { $lte: new Date(now.getTime() + EARLY_CHECKIN_GRACE_MS) },
     expectedExitTime: { $gt: now },
   }).sort({ expectedArrivalTime: 1 });
 };
