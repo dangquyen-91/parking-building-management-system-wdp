@@ -29,11 +29,19 @@ const statusLabels: Record<AdminStatus, string> = {
   full: 'Đã đầy',
 }
 
-export function AdminStatusBadge({ status, label = statusLabels[status] }: AdminStatusBadgeProps) {
+export function AdminStatusBadge({
+  status,
+  label = statusLabels[status],
+}: AdminStatusBadgeProps) {
   return (
-    <Badge variant="outline" className={['min-w-20 justify-center rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide', adminStatusTone[status]].join(' ')}>
+    <Badge
+      variant="outline"
+      className={[
+        'min-w-20 justify-center rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide',
+        adminStatusTone[status],
+      ].join(' ')}
+    >
       {label}
     </Badge>
   )
 }
-

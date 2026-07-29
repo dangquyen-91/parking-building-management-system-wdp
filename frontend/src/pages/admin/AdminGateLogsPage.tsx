@@ -16,8 +16,10 @@ export function AdminGateLogsPage() {
   const [sessions, setSessions] = useState<GateSession[]>([])
   const [dashboard, setDashboard] = useState<AdminDashboardReport | null>(null)
   const [query, setQuery] = useState('')
-  const [vehicleFilter, setVehicleFilter] = useState<AdminGateVehicleFilter>('all')
-  const [customerFilter, setCustomerFilter] = useState<AdminGateCustomerFilter>('all')
+  const [vehicleFilter, setVehicleFilter] =
+    useState<AdminGateVehicleFilter>('all')
+  const [customerFilter, setCustomerFilter] =
+    useState<AdminGateCustomerFilter>('all')
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -33,7 +35,11 @@ export function AdminGateLogsPage() {
       setSessions(sessionsResponse.sessions ?? [])
       setDashboard(dashboardResponse)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Không thể tải dữ liệu hoạt động cổng.')
+      setError(
+        err instanceof Error
+          ? err.message
+          : 'Không thể tải dữ liệu hoạt động cổng.',
+      )
     } finally {
       setIsLoading(false)
     }
@@ -48,9 +54,12 @@ export function AdminGateLogsPage() {
     const normalizedQuery = query.trim().toUpperCase().replace(/\s/g, '')
 
     return sessions.filter((session) => {
-      if (normalizedQuery && !session.licensePlate.includes(normalizedQuery)) return false
-      if (vehicleFilter !== 'all' && session.vehicleType !== vehicleFilter) return false
-      if (customerFilter !== 'all' && session.customerType !== customerFilter) return false
+      if (normalizedQuery && !session.licensePlate.includes(normalizedQuery))
+        return false
+      if (vehicleFilter !== 'all' && session.vehicleType !== vehicleFilter)
+        return false
+      if (customerFilter !== 'all' && session.customerType !== customerFilter)
+        return false
       return true
     })
   }, [customerFilter, query, sessions, vehicleFilter])
@@ -74,17 +83,30 @@ export function AdminGateLogsPage() {
       <AdminGateLogStats dashboard={dashboard} isLoading={isLoading} />
 
       {error && (
-        <Alert variant="destructive" className="mb-5 flex items-center justify-between"><AlertDescription>{error}</AlertDescription>
-          <Button type="button" variant="link" className="h-auto p-0" onClick={() => void loadGateLogs()}>
+        <Alert
+          variant="destructive"
+          className="mb-5 flex items-center justify-between"
+        >
+          <AlertDescription>{error}</AlertDescription>
+          <Button
+            type="button"
+            variant="link"
+            className="h-auto p-0"
+            onClick={() => void loadGateLogs()}
+          >
             Thử lại
           </Button>
         </Alert>
       )}
 
-      <Alert className="mb-5"><AlertDescription>Danh sách chi tiết hiện hiển thị các xe đang trong bãi. Số lượt xe ra hôm nay được tổng hợp từ báo cáo hệ thống.</AlertDescription></Alert>
+      <Alert className="mb-5">
+        <AlertDescription>
+          Danh sách chi tiết hiện hiển thị các xe đang trong bãi. Số lượt xe ra
+          hôm nay được tổng hợp từ báo cáo hệ thống.
+        </AlertDescription>
+      </Alert>
 
       <AdminGateLogList sessions={filteredSessions} isLoading={isLoading} />
     </AdminPageShell>
   )
 }
-

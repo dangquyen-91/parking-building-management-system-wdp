@@ -5,7 +5,7 @@ import type { GateCustomerType, GateSessionStatus, GateVehicleType } from '../..
 
 export type ManagerGateVehicleFilter = 'all' | GateVehicleType
 export type ManagerGateCustomerFilter = 'all' | GateCustomerType
-export type ManagerGateStatusFilter = Extract<GateSessionStatus, 'active' | 'completed'>
+export type ManagerGateStatusFilter = 'all' | Extract<GateSessionStatus, 'active' | 'completed'>
 
 type ManagerGateLogFiltersProps = {
   query: string
@@ -47,6 +47,7 @@ export function ManagerGateLogFilters({
           value={statusFilter}
           onChange={(event) => onStatusFilterChange(event.target.value as ManagerGateStatusFilter)}
         >
+          <option value="all">Tất cả</option>
           <option value="active">Trong bãi</option>
           <option value="completed">Đã ra</option>
         </NativeSelect>

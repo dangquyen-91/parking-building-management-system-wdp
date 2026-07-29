@@ -5,6 +5,7 @@ import {
   ManagerSubscriptionFilters,
   ManagerSubscriptionList,
   ManagerSubscriptionStats,
+  type ManagerSubscriptionParkingFilter,
   type ManagerSubscriptionStatusFilter,
   type ManagerSubscriptionVehicleFilter,
 } from '../../components/manager'
@@ -21,6 +22,8 @@ export function ManagerSubscriptionsPage() {
   const [query, setQuery] = useState('')
   const [status, setStatus] = useState<ManagerSubscriptionStatusFilter>('all')
   const [vehicleType, setVehicleType] = useState<ManagerSubscriptionVehicleFilter>('all')
+  const [planId, setPlanId] = useState('all')
+  const [parkingStatus, setParkingStatus] = useState<ManagerSubscriptionParkingFilter>('all')
   const [snapshotTime, setSnapshotTime] = useState(0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -53,17 +56,60 @@ export function ManagerSubscriptionsPage() {
     const normalizedQuery = query.trim().toLocaleLowerCase('vi-VN')
 
     return subscriptions.filter((subscription) => {
+      const owner = subscription.userId && typeof subscription.userId !== 'string' ? subscription.userId : null
+      const plan = subscription.planId && typeof subscription.planId !== 'string' ? subscription.planId : null
+      const slot = subscription.slotId && typeof subscription.slotId !== 'string' ? subscription.slotId : null
+      const isInParkingLot = activePlates.has(subscription.licensePlate)
+
       if (vehicleType !== 'all' && subscription.vehicleType !== vehicleType) return false
       if (status === 'expiring' && !isSubscriptionExpiringSoon(subscription, snapshotTime)) return false
       if (status !== 'all' && status !== 'expiring' && subscription.status !== status) return false
+      if (planId !== 'all' && plan?._id !== planId) return false
+      if (parkingStatus === 'inside' && !isInParkingLot) return false
+      if (parkingStatus === 'outside' && isInParkingLot) return false
       if (!normalizedQuery) return true
 
-      const owner = subscription.userId && typeof subscription.userId !== 'string' ? subscription.userId : null
-      return [subscription.licensePlate, owner?.fullName, owner?.email, owner?.phone]
+      return [
+        subscription.licensePlate,
+        owner?.fullName,
+        owner?.email,
+        owner?.phone,
+        plan?.name,
+        plan?.code,
+        slot?.slotCode,
+      ]
         .filter(Boolean)
         .some((value) => value?.toLocaleLowerCase('vi-VN').includes(normalizedQuery))
     })
-  }, [query, snapshotTime, status, subscriptions, vehicleType])
+  }, [activePlates, parkingStatus, planId, query, snapshotTime, status, subscriptions, vehicleType])
+
+  const planOptions = useMemo(() => {
+    const options = new Map<string, string>()
+
+    subscriptions.forEach((subscription) => {
+      const plan = subscription.planId && typeof subscription.planId !== 'string' ? subscription.planId : null
+      if (plan?._id) options.set(plan._id, plan.name || plan.code || 'Gói không tên')
+    })
+
+    return Array.from(options, ([id, label]) => ({ id, label })).sort((a, b) =>
+      a.label.localeCompare(b.label, 'vi-VN'),
+    )
+  }, [subscriptions])
+
+  const hasActiveFilters =
+    Boolean(query.trim()) ||
+    status !== 'all' ||
+    vehicleType !== 'all' ||
+    planId !== 'all' ||
+    parkingStatus !== 'all'
+
+  function resetFilters() {
+    setQuery('')
+    setStatus('all')
+    setVehicleType('all')
+    setPlanId('all')
+    setParkingStatus('all')
+  }
 
   return (
     <div className="relative mx-auto max-w-[118rem] p-4 md:p-8 lg:p-10">
@@ -90,9 +136,16 @@ export function ManagerSubscriptionsPage() {
           query={query}
           status={status}
           vehicleType={vehicleType}
+          planId={planId}
+          parkingStatus={parkingStatus}
+          planOptions={planOptions}
+          hasActiveFilters={hasActiveFilters}
           onQueryChange={setQuery}
           onStatusChange={setStatus}
           onVehicleTypeChange={setVehicleType}
+          onPlanIdChange={setPlanId}
+          onParkingStatusChange={setParkingStatus}
+          onReset={resetFilters}
         />
       </section>
 

@@ -97,5 +97,3 @@ export function ManagerParkingSpaceList({
     </section>
   )
 }
-
-

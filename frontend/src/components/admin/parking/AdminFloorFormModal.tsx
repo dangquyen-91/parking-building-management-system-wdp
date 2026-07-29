@@ -1,7 +1,11 @@
 ﻿import { useEffect, useState, type FormEvent } from 'react'
 import type { ManagerBuildingSummary } from '../../../hooks/useManagerBuildings'
 import type { FloorPayload } from '../../../services/managerBuildingsApi'
-import { AdminField, AdminModal, AdminModalActions } from '../common/AdminFormPrimitives'
+import {
+  AdminField,
+  AdminModal,
+  AdminModalActions,
+} from '../common/AdminFormPrimitives'
 import { Input } from '../../ui/input'
 import { NativeSelect, NativeSelectOption } from '../../ui/native-select'
 import { Textarea } from '../../ui/textarea'
@@ -33,8 +37,10 @@ export function AdminFloorFormModal({
   const [buildingId, setBuildingId] = useState(defaultBuilding)
   const [floorNumber, setFloorNumber] = useState('')
   const [section, setSection] = useState('A')
-  const [vehicleType, setVehicleType] = useState<FloorPayload['vehicleType']>('motorcycle')
-  const [floorType, setFloorType] = useState<FloorPayload['floorType']>('resident')
+  const [vehicleType, setVehicleType] =
+    useState<FloorPayload['vehicleType']>('motorcycle')
+  const [floorType, setFloorType] =
+    useState<FloorPayload['floorType']>('resident')
   const [totalSlots, setTotalSlots] = useState('')
   const [description, setDescription] = useState('')
 
@@ -52,7 +58,12 @@ export function AdminFloorFormModal({
 
   if (!open) return null
 
-  const valid = Boolean(buildingId && Number(floorNumber) > 0 && section.trim() && Number(totalSlots) > 0)
+  const valid = Boolean(
+    buildingId &&
+      Number(floorNumber) > 0 &&
+      section.trim() &&
+      Number(totalSlots) > 0,
+  )
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -71,40 +82,91 @@ export function AdminFloorFormModal({
   }
 
   return (
-    <AdminModal title={mode === 'create' ? 'Tạo tầng' : 'Chỉnh sửa tầng'} eyebrow="Admin // Tầng" error={error} onClose={onClose}>
+    <AdminModal
+      title={mode === 'create' ? 'Tạo tầng' : 'Chỉnh sửa tầng'}
+      eyebrow="Admin // Tầng"
+      error={error}
+      onClose={onClose}
+    >
       <form className="grid gap-4" onSubmit={handleSubmit}>
         <AdminField label="Tòa nhà">
-          <NativeSelect value={buildingId} disabled={mode === 'edit'} onChange={(event) => setBuildingId(event.target.value)}>
+          <NativeSelect
+            value={buildingId}
+            disabled={mode === 'edit'}
+            onChange={(event) => setBuildingId(event.target.value)}
+          >
             {buildings.map((item) => (
-              <NativeSelectOption key={item.id} value={item.id}>{item.name}</NativeSelectOption>
+              <NativeSelectOption key={item.id} value={item.id}>
+                {item.name}
+              </NativeSelectOption>
             ))}
           </NativeSelect>
         </AdminField>
 
         <div className="grid gap-3 sm:grid-cols-2">
           <AdminField label="Số tầng">
-            <Input type="number" min="1" value={floorNumber} onChange={(event) => setFloorNumber(event.target.value)} />
+            <Input
+              type="number"
+              min="1"
+              value={floorNumber}
+              onChange={(event) => setFloorNumber(event.target.value)}
+            />
           </AdminField>
           <AdminField label="Khu">
-            <Input value={section} maxLength={10} placeholder="A" onChange={(event) => setSection(event.target.value.toUpperCase())} />
+            <Input
+              value={section}
+              maxLength={10}
+              placeholder="A"
+              onChange={(event) => setSection(event.target.value.toUpperCase())}
+            />
           </AdminField>
           <AdminField label="Tổng chỗ đỗ">
-            <Input type="number" min="1" value={totalSlots} onChange={(event) => setTotalSlots(event.target.value)} />
+            <Input
+              type="number"
+              min="1"
+              value={totalSlots}
+              onChange={(event) => setTotalSlots(event.target.value)}
+            />
           </AdminField>
           <AdminField label="Loại xe">
-            <NativeSelect value={vehicleType} onChange={(event) => setVehicleType(event.target.value as FloorPayload['vehicleType'])}><NativeSelectOption value="motorcycle">Xe máy</NativeSelectOption><NativeSelectOption value="car">Ô tô</NativeSelectOption></NativeSelect>
+            <NativeSelect
+              value={vehicleType}
+              onChange={(event) =>
+                setVehicleType(
+                  event.target.value as FloorPayload['vehicleType'],
+                )
+              }
+            >
+              <NativeSelectOption value="motorcycle">Xe máy</NativeSelectOption>
+              <NativeSelectOption value="car">Ô tô</NativeSelectOption>
+            </NativeSelect>
           </AdminField>
           <AdminField label="Loại tầng">
-            <NativeSelect value={floorType} onChange={(event) => setFloorType(event.target.value as FloorPayload['floorType'])}><NativeSelectOption value="resident">Cư dân</NativeSelectOption><NativeSelectOption value="visitor">Khách</NativeSelectOption></NativeSelect>
+            <NativeSelect
+              value={floorType}
+              onChange={(event) =>
+                setFloorType(event.target.value as FloorPayload['floorType'])
+              }
+            >
+              <NativeSelectOption value="resident">Cư dân</NativeSelectOption>
+              <NativeSelectOption value="visitor">Khách</NativeSelectOption>
+            </NativeSelect>
           </AdminField>
         </div>
 
         <AdminField label="Mô tả">
-          <Textarea className="min-h-20" value={description} onChange={(event) => setDescription(event.target.value)} />
+          <Textarea
+            className="min-h-20"
+            value={description}
+            onChange={(event) => setDescription(event.target.value)}
+          />
         </AdminField>
-        <AdminModalActions disabled={!valid || isSubmitting} loading={isSubmitting} onClose={onClose} />
+        <AdminModalActions
+          disabled={!valid || isSubmitting}
+          loading={isSubmitting}
+          onClose={onClose}
+        />
       </form>
     </AdminModal>
   )
 }
-

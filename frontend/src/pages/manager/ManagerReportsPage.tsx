@@ -176,8 +176,11 @@ export function ManagerReportsPage() {
         </div>
       )}
 
-      <div className="mt-5 grid gap-5 xl:grid-cols-[1fr_1.3fr]">
+      <div className="mt-5">
         {peakHours && <ManagerPeakHoursChart report={peakHours} />}
+      </div>
+
+      <div className="mt-5">
         {occupancy && <ManagerOccupancyTable report={occupancy} />}
       </div>
     </div>

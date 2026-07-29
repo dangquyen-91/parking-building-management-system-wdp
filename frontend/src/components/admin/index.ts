@@ -3,6 +3,7 @@ export { AdminStatCard } from './common/AdminStatCard'
 export { AdminStatusBadge } from './common/AdminStatusBadge'
 export { AdminTableShell } from './common/AdminTableShell'
 export { AdminSidebar } from './layout/AdminSidebar'
+export { AdminUserRoleDialog } from './users/AdminUserRoleDialog'
 export {
   AdminBookingFilters,
   AdminBookingList,
@@ -64,4 +65,3 @@ export {
   formatAdminCurrency,
   getRoleCount,
 } from './adminData'
-

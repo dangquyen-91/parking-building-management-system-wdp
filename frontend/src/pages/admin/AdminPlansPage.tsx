@@ -8,13 +8,18 @@ import {
   type AdminPlanStatusFilter,
   type AdminPlanVehicleFilter,
 } from '../../components/admin'
-import { managerPlansApi, type ManagerPlan, type ManagerPlanUpdatePayload } from '../../services/managerPlansApi'
+import {
+  managerPlansApi,
+  type ManagerPlan,
+  type ManagerPlanUpdatePayload,
+} from '../../services/managerPlansApi'
 import { Button } from '../../components/ui/button'
 import { Alert, AlertDescription } from '../../components/ui/alert'
 
 export function AdminPlansPage() {
   const [plans, setPlans] = useState<ManagerPlan[]>([])
-  const [vehicleFilter, setVehicleFilter] = useState<AdminPlanVehicleFilter>('all')
+  const [vehicleFilter, setVehicleFilter] =
+    useState<AdminPlanVehicleFilter>('all')
   const [statusFilter, setStatusFilter] = useState<AdminPlanStatusFilter>('all')
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -30,7 +35,9 @@ export function AdminPlansPage() {
       const data = await managerPlansApi.getPlans()
       setPlans(data.plans ?? [])
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Không thể tải danh sách gói.')
+      setError(
+        err instanceof Error ? err.message : 'Không thể tải danh sách gói.',
+      )
     } finally {
       setIsLoading(false)
     }
@@ -44,8 +51,13 @@ export function AdminPlansPage() {
   const filteredPlans = useMemo(
     () =>
       plans.filter((plan) => {
-        if (vehicleFilter !== 'all' && plan.vehicleType !== vehicleFilter) return false
-        if (statusFilter !== 'all' && plan.isActive !== (statusFilter === 'active')) return false
+        if (vehicleFilter !== 'all' && plan.vehicleType !== vehicleFilter)
+          return false
+        if (
+          statusFilter !== 'all' &&
+          plan.isActive !== (statusFilter === 'active')
+        )
+          return false
         return true
       }),
     [plans, statusFilter, vehicleFilter],
@@ -57,10 +69,14 @@ export function AdminPlansPage() {
     setSubmitError(null)
     try {
       const data = await managerPlansApi.updatePlan(editingPlan._id, payload)
-      setPlans((current) => current.map((plan) => (plan._id === data.plan._id ? data.plan : plan)))
+      setPlans((current) =>
+        current.map((plan) => (plan._id === data.plan._id ? data.plan : plan)),
+      )
       setEditingPlan(null)
     } catch (err) {
-      setSubmitError(err instanceof Error ? err.message : 'Không thể cập nhật gói.')
+      setSubmitError(
+        err instanceof Error ? err.message : 'Không thể cập nhật gói.',
+      )
     } finally {
       setIsSubmitting(false)
     }
@@ -70,10 +86,18 @@ export function AdminPlansPage() {
     setUpdatingId(plan._id)
     setError(null)
     try {
-      const data = await managerPlansApi.updatePlan(plan._id, { isActive: !plan.isActive })
-      setPlans((current) => current.map((item) => (item._id === data.plan._id ? data.plan : item)))
+      const data = await managerPlansApi.updatePlan(plan._id, {
+        isActive: !plan.isActive,
+      })
+      setPlans((current) =>
+        current.map((item) => (item._id === data.plan._id ? data.plan : item)),
+      )
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Không thể cập nhật trạng thái gói.')
+      setError(
+        err instanceof Error
+          ? err.message
+          : 'Không thể cập nhật trạng thái gói.',
+      )
     } finally {
       setUpdatingId(null)
     }
@@ -96,8 +120,17 @@ export function AdminPlansPage() {
       <AdminPlanStats plans={plans} isLoading={isLoading} />
 
       {error && (
-        <Alert variant="destructive" className="mb-5 flex items-center justify-between"><AlertDescription>{error}</AlertDescription>
-          <Button type="button" variant="link" className="h-auto p-0" onClick={() => void loadPlans()}>
+        <Alert
+          variant="destructive"
+          className="mb-5 flex items-center justify-between"
+        >
+          <AlertDescription>{error}</AlertDescription>
+          <Button
+            type="button"
+            variant="link"
+            className="h-auto p-0"
+            onClick={() => void loadPlans()}
+          >
             Thử lại
           </Button>
         </Alert>
@@ -124,4 +157,3 @@ export function AdminPlansPage() {
     </AdminPageShell>
   )
 }
-

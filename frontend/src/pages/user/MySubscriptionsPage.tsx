@@ -40,7 +40,7 @@ export function MySubscriptionsPage() {
 
     try {
       const response = await userSubscriptionApi.getMySubscriptions()
-      setSubscriptions(response.subscriptions ?? [])
+      setSubscriptions((response.subscriptions ?? []).filter((item) => item.status !== 'cancelled'))
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Không tải được danh sách gói cư dân.')
     } finally {
@@ -71,7 +71,7 @@ export function MySubscriptionsPage() {
 
     try {
       const result = await userSubscriptionApi.cancelSubscription(subscription._id)
-      setSubscriptions((current) => current.map((item) => (item._id === result.subscription._id ? result.subscription : item)))
+      setSubscriptions((current) => current.filter((item) => item._id !== result.subscription._id))
       setMessage('Đã hủy đơn chờ thanh toán.')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Không thể hủy đơn.')
