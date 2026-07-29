@@ -69,3 +69,50 @@ export function computeBookingBreakdown(arrival: Date, durationHours: number): B
 export function computeBookingAmount(arrival: Date, durationHours: number) {
   return computeBookingBreakdown(arrival, durationHours).total
 }
+
+// Maps raw backend AppError messages (English, from booking.service.js) to
+// friendly Vietnamese copy so the booking form never shows a raw API error.
+const BOOKING_ERROR_PATTERNS: Array<{ test: RegExp; message: string }> = [
+  {
+    test: /already has a booking overlapping this time range/i,
+    message:
+      'Biển số này đã có một đặt chỗ khác trùng khung giờ bạn chọn. Vui lòng chọn khung giờ khác hoặc kiểm tra lại đặt chỗ hiện có của bạn.',
+  },
+  {
+    test: /currently has an active parking session/i,
+    message: 'Xe với biển số này đang đỗ trong bãi. Vui lòng đợi xe ra khỏi bãi rồi mới đặt chỗ.',
+  },
+  {
+    test: /expectedArrivalTime must be in the future/i,
+    message: 'Giờ đến dự kiến phải ở trong tương lai.',
+  },
+  {
+    test: /can only be made up to 24 hours in advance/i,
+    message: 'Chỉ có thể đặt chỗ trước tối đa 24 giờ.',
+  },
+  {
+    test: /expectedExitTime must be after expectedArrivalTime/i,
+    message: 'Giờ ra dự kiến phải sau giờ đến dự kiến.',
+  },
+  {
+    test: /duration must be at least/i,
+    message: 'Thời lượng đặt chỗ phải ít nhất 1 giờ.',
+  },
+  {
+    test: /duration cannot exceed/i,
+    message: 'Thời lượng đặt chỗ không được vượt quá 24 giờ.',
+  },
+  {
+    test: /No availability in the requested time window/i,
+    message: 'Bãi xe đã hết chỗ trong khung giờ bạn chọn. Vui lòng chọn khung giờ khác.',
+  },
+  {
+    test: /No visitor car floor configured/i,
+    message: 'Hệ thống chưa cấu hình khu đỗ xe cho khách vãng lai. Vui lòng liên hệ quản trị viên.',
+  },
+]
+
+export function translateBookingError(rawMessage: string): string {
+  const matched = BOOKING_ERROR_PATTERNS.find((pattern) => pattern.test.test(rawMessage))
+  return matched?.message ?? 'Không thể tạo đặt chỗ. Vui lòng kiểm tra lại thông tin và thử lại.'
+}
