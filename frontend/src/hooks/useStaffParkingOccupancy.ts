@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { managerBuildingsApi, type Floor } from '../services/managerBuildingsApi'
+import { managerBookingsApi, type ManagerBooking } from '../services/managerBookingsApi'
 import { staffGateApi, type GateRow, type GateSession, type GateSlot, type GateVehicleType } from '../services/staffGateApi'
 
 export type StaffParkingOccupancyItem = {
@@ -11,6 +12,7 @@ export type StaffParkingOccupancyItem = {
   floorType?: Floor['floorType']
   total: number
   occupied: number
+  reserved: number
   available: number
   utilizationPercent: number
   slotDetails: Array<{
@@ -33,6 +35,7 @@ export function useStaffParkingOccupancy() {
   const [rows, setRows] = useState<GateRow[]>([])
   const [slots, setSlots] = useState<GateSlot[]>([])
   const [sessions, setSessions] = useState<GateSession[]>([])
+  const [bookings, setBookings] = useState<ManagerBooking[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const isMountedRef = useRef(true)
@@ -83,6 +86,32 @@ export function useStaffParkingOccupancy() {
       walkInCarByFloor.set(floorId, (walkInCarByFloor.get(floorId) ?? 0) + 1)
     })
 
+    // Paid bookings hold a spot from the moment they're paid, not just once the
+    // car checks in. A booking isn't pinned to one floor (capacity is checked in
+    // aggregate across all visitor car floors — see booking.service.js), so
+    // spread the count currently "in window" proportionally by floor size.
+    const activePlates = new Set(
+      sessions.filter((s) => s.status === 'active').map((s) => s.licensePlate?.toUpperCase()),
+    )
+    const now = Date.now()
+    const reservedNow = bookings.filter((booking) => {
+      if (booking.status !== 'paid') return false
+      // Plate is already parked under its own session (e.g. walked in too early
+      // to claim the booking) — it's already counted via walkInCarByFloor, so
+      // counting the untouched booking too would double it.
+      if (activePlates.has(booking.licensePlate?.toUpperCase())) return false
+      const arrival = new Date(booking.expectedArrivalTime).getTime()
+      const exit = new Date(booking.expectedExitTime).getTime()
+      return arrival <= now && exit > now
+    }).length
+    const visitorCarFloors = floors.filter(
+      (floor) => floor.vehicleType === 'car' && floor.floorType === 'visitor',
+    )
+    const reservedByFloor = distributeProportionally(
+      reservedNow,
+      visitorCarFloors.map((floor) => ({ id: floor._id, weight: floor.totalSlots || 1 })),
+    )
+
     return floors
       .map((floor) => {
         const building = typeof floor.buildingId === 'string' ? undefined : floor.buildingId
@@ -92,10 +121,11 @@ export function useStaffParkingOccupancy() {
           floor.vehicleType === 'motorcycle'
             ? rowStats?.total || floor.totalSlots || 0
             : slotStats?.total || floor.totalSlots || 0
+        const reserved = reservedByFloor.get(floor._id) ?? 0
         const occupied =
           floor.vehicleType === 'motorcycle'
             ? rowStats?.occupied ?? 0
-            : (slotStats?.occupied ?? 0) + (walkInCarByFloor.get(floor._id) ?? 0)
+            : (slotStats?.occupied ?? 0) + (walkInCarByFloor.get(floor._id) ?? 0) + reserved
         const available = Math.max(0, total - occupied)
 
         return {
@@ -107,6 +137,7 @@ export function useStaffParkingOccupancy() {
           floorType: floor.floorType,
           total,
           occupied,
+          reserved,
           available,
           utilizationPercent: total > 0 ? Math.round((occupied / total) * 100) : 0,
           slotDetails:
@@ -141,12 +172,13 @@ export function useStaffParkingOccupancy() {
         || (a.section || '').localeCompare(b.section || '')
         || a.vehicleType.localeCompare(b.vehicleType),
       )
-  }, [floors, rows, slots, sessions])
+  }, [floors, rows, slots, sessions, bookings])
 
   const totals = useMemo(
     () => ({
       total: occupancyItems.reduce((sum, item) => sum + item.total, 0),
       occupied: occupancyItems.reduce((sum, item) => sum + item.occupied, 0),
+      reserved: occupancyItems.reduce((sum, item) => sum + item.reserved, 0),
       available: occupancyItems.reduce((sum, item) => sum + item.available, 0),
     }),
     [occupancyItems],
@@ -157,11 +189,12 @@ export function useStaffParkingOccupancy() {
     setError(null)
 
     try {
-      const [floorResponse, rowResponse, slotResponse, sessionResponse] = await Promise.all([
+      const [floorResponse, rowResponse, slotResponse, sessionResponse, bookingResponse] = await Promise.all([
         managerBuildingsApi.getFloors({ limit: 300, sort: 'floorNumber', order: 'asc' }),
         staffGateApi.getRows({ limit: 500 }),
         staffGateApi.getSlots({ limit: 500 }),
         staffGateApi.getActiveSessions({ limit: 500 }),
+        managerBookingsApi.getBookings({ status: 'paid', limit: 500 }),
       ])
 
       if (!isMountedRef.current) return
@@ -169,6 +202,7 @@ export function useStaffParkingOccupancy() {
       setRows(rowResponse.rows ?? [])
       setSlots(slotResponse.slots ?? [])
       setSessions(sessionResponse.sessions ?? [])
+      setBookings(bookingResponse.bookings ?? [])
     } catch (err) {
       if (!isMountedRef.current) return
       setError(err instanceof Error ? err.message : 'Không tải được dữ liệu sức chứa bãi xe.')
@@ -193,4 +227,34 @@ export function useStaffParkingOccupancy() {
 
 function getRefId(ref: string | { _id?: string } | null | undefined) {
   return typeof ref === 'string' ? ref : ref?._id
+}
+
+// Largest-remainder rounding so the per-floor counts always sum back to `total`.
+function distributeProportionally(
+  total: number,
+  weights: Array<{ id: string; weight: number }>,
+): Map<string, number> {
+  const result = new Map<string, number>()
+  const totalWeight = weights.reduce((sum, w) => sum + w.weight, 0)
+  if (total <= 0 || totalWeight <= 0) return result
+
+  const shares = weights.map((w) => {
+    const exact = (w.weight / totalWeight) * total
+    const base = Math.floor(exact)
+    return { id: w.id, base, remainder: exact - base }
+  })
+
+  let remaining = total - shares.reduce((sum, s) => sum + s.base, 0)
+  shares
+    .slice()
+    .sort((a, b) => b.remainder - a.remainder)
+    .forEach((s) => {
+      if (remaining > 0) {
+        s.base += 1
+        remaining -= 1
+      }
+    })
+
+  shares.forEach((s) => result.set(s.id, s.base))
+  return result
 }
