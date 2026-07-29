@@ -414,6 +414,12 @@ function SectionCard({ item }: { item: StaffParkingOccupancyItem }) {
           />
         </div>
 
+        {item.reserved > 0 ? (
+          <p className="mt-2 text-xs font-medium text-muted-foreground">
+            Trong đó {item.reserved} chỗ đã đặt trước (đã thanh toán), khách chưa vào bãi
+          </p>
+        ) : null}
+
         <div className="mt-4">
           <div className="mb-2 flex items-center justify-between text-xs font-semibold">
             <span className="text-muted-foreground">Mức sử dụng</span>

@@ -216,6 +216,8 @@ export const checkIn = async ({ slotId, rowId, licensePlate, vehicleType, staffI
     if (!visitorFloors.length) throw new AppError('No visitor car floor configured', 500);
 
     let chosenFloor = null;
+    let leastLoadedFloor = null;
+    let leastLoadedUsed = Infinity;
     for (const floor of visitorFloors) {
       if (!floor.buildingId?.isActive) continue;
       const used = await ParkingSession.countDocuments({
@@ -227,7 +229,15 @@ export const checkIn = async ({ slotId, rowId, licensePlate, vehicleType, staffI
         chosenFloor = floor;
         break;
       }
+      if (used < leastLoadedUsed) {
+        leastLoadedUsed = used;
+        leastLoadedFloor = floor;
+      }
     }
+    // A paid booking already reserved capacity at creation time (see
+    // booking.service.js overlap check), so honor it even if the live count on
+    // every visitor floor looks full — walk-ins are what filled the seat it paid for.
+    if (!chosenFloor && paidBooking) chosenFloor = leastLoadedFloor;
     if (!chosenFloor)
       throw new AppError('No visitor car capacity available. Parking lot is full.', 409);
 
