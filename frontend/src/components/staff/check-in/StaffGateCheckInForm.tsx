@@ -70,10 +70,13 @@ export function StaffGateCheckInForm({
   const [step, setStep] = useState<CheckInStep>(1)
   const [walkInQrDataUrl, setWalkInQrDataUrl] = useState('')
   const isVehicleTypeLocked =
-    lookupMatchesPlate && Boolean(lookupResult?.subscription?.vehicleType || lookupResult?.booking)
+    lookupMatchesPlate && Boolean(
+      lookupResult?.subscription?.vehicleType || lookupResult?.booking || lookupResult?.earlyBooking,
+    )
   const isResident = lookupMatchesPlate && lookupResult?.customerType === 'resident'
   const isWalkIn = lookupMatchesPlate && lookupResult?.customerType === 'walk_in'
   const hasBooking = lookupMatchesPlate && Boolean(lookupResult?.booking)
+  const hasEarlyBooking = lookupMatchesPlate && Boolean(lookupResult?.earlyBooking)
   // Residents and booking customers scan an existing QR (subscription / email);
   // only plain walk-ins need a freshly issued gate ticket.
   const useScanQr = isResident || hasBooking
@@ -195,7 +198,11 @@ export function StaffGateCheckInForm({
                     <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Biển số xe</p>
                     <p className="mt-1 text-3xl font-black tracking-widest">{lookupResult.licensePlate}</p>
                     <p className="mt-2 text-muted-foreground">
-                      {lookupResult.booking ? 'Khách đặt trước' : formatCustomerType(lookupResult.customerType)}
+                      {lookupResult.booking
+                        ? 'Khách đặt trước'
+                        : lookupResult.earlyBooking
+                          ? 'Khách đến sớm — check-in vãng lai'
+                          : formatCustomerType(lookupResult.customerType)}
                       {lookupResult.subscription?.owner?.fullName ? ` / ${lookupResult.subscription.owner.fullName}` : ''}
                     </p>
                   </div>
@@ -213,6 +220,28 @@ export function StaffGateCheckInForm({
                   <CardDescription>
                     Đã trả trước {lookupResult.booking.durationHours} giờ. Vé QR cổng vào vẫn được xác minh để đối chiếu khi xe ra.
                   </CardDescription>
+                </CardHeader>
+              </Card>
+            )}
+
+            {hasEarlyBooking && lookupResult.earlyBooking && (
+              <Card size="sm" className="border-amber-500/30 bg-amber-500/10">
+                <CardHeader>
+                  <CardTitle>Khách đến sớm</CardTitle>
+                  <CardDescription>
+                    Chưa đến thời gian sử dụng booking. Lần vào này sẽ được ghi nhận là khách
+                    vãng lai; booking đã thanh toán vẫn được giữ nguyên.
+                  </CardDescription>
+                  <p className="text-sm font-medium text-amber-800 dark:text-amber-300">
+                    Có thể check-in theo booking từ{' '}
+                    {new Intl.DateTimeFormat('vi-VN', {
+                      hour: '2-digit',
+                      minute: '2-digit',
+                      day: '2-digit',
+                      month: '2-digit',
+                      year: 'numeric',
+                    }).format(new Date(lookupResult.earlyBooking.eligibleFrom))}
+                  </p>
                 </CardHeader>
               </Card>
             )}
@@ -259,7 +288,9 @@ export function StaffGateCheckInForm({
                   ? 'Cư dân đưa QR gói đã mua để đối chiếu với biển số camera.'
                   : hasBooking
                     ? 'Khách đặt chỗ đưa QR trong email xác nhận để đối chiếu với biển số camera.'
-                    : 'Khách vãng lai chỉ cần cấp vé QR, không cần quét lại ngay lúc xe vào.'
+                    : hasEarlyBooking
+                      ? 'Khách đến sớm được cấp vé QR vãng lai cho lần vào này; không quét QR booking.'
+                      : 'Khách vãng lai chỉ cần cấp vé QR, không cần quét lại ngay lúc xe vào.'
               }
             />
 
@@ -271,7 +302,13 @@ export function StaffGateCheckInForm({
                     <h3 className="mt-1 text-base font-bold">
                       <span className="inline-flex items-center gap-2">
                         {useScanQr ? <ShieldCheck className="size-4 text-emerald-600" /> : <Ticket className="size-4 text-sky-600" />}
-                        {isResident ? 'Quét QR gói cư dân' : hasBooking ? 'Quét QR đặt chỗ (email)' : 'Cấp vé QR vãng lai'}
+                        {isResident
+                          ? 'Quét QR gói cư dân'
+                          : hasBooking
+                            ? 'Quét QR đặt chỗ (email)'
+                            : hasEarlyBooking
+                              ? 'Cấp vé QR vãng lai cho khách đến sớm'
+                              : 'Cấp vé QR vãng lai'}
                       </span>
                     </h3>
                     <p className="mt-1 text-xs text-muted-foreground">
