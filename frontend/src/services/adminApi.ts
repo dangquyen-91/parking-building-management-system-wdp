@@ -121,36 +121,37 @@ export type AdminOccupancyReport = {
   }>
 }
 
+export type AdminRevenueSummary = {
+  subscription: number
+  booking: number
+  sessionTransfer: number
+  sessionCash: number
+  total: number
+  transactions: number
+}
+
 export type AdminRevenueReport = {
   from: string
   to: string
   groupBy?: 'day' | 'week' | 'month'
+  totals: AdminRevenueSummary
+  periods: Array<AdminRevenueSummary & { period: string }>
+  /** Compatibility with older report API responses. */
+  daily?: Array<AdminRevenueSummary & { date: string }>
+}
+
+export type AdminRevenueByVehicleReport = {
+  from: string
+  to: string
+  groupBy?: 'day' | 'week' | 'month'
   totals: {
-    subscription: number
-    booking: number
-    sessionTransfer: number
-    sessionCash: number
-    total: number
-    transactions: number
+    motorcycle: AdminRevenueSummary
+    car: AdminRevenueSummary
   }
   periods: Array<{
     period: string
-    subscription: number
-    booking: number
-    sessionTransfer: number
-    sessionCash: number
-    total: number
-    transactions: number
-  }>
-  /** Compatibility with older report API responses. */
-  daily?: Array<{
-    date: string
-    subscription: number
-    booking: number
-    sessionTransfer: number
-    sessionCash: number
-    total: number
-    transactions: number
+    motorcycle: AdminRevenueSummary
+    car: AdminRevenueSummary
   }>
 }
 
@@ -160,7 +161,15 @@ export type AdminSessionStatsReport = {
   totalSessions: number
   byVehicleType: Partial<Record<VehicleType, number>>
   byCustomerType: Partial<Record<'resident' | 'walk_in', number>>
-  daily: Array<{ date: string; count: number }>
+  daily: Array<{
+    date: string
+    count?: number
+    total?: number
+    motorcycle?: number
+    car?: number
+    completed?: number
+    totalFee?: number
+  }>
 }
 
 export type AdminPeakHoursReport = {
@@ -265,6 +274,13 @@ export const adminApi = {
 
   getRevenueReport(params?: { from?: string; to?: string }) {
     return getData<AdminRevenueReport>('/reports/revenue', params)
+  },
+
+  getRevenueByVehicleReport(params?: { from?: string; to?: string }) {
+    return getData<AdminRevenueByVehicleReport>(
+      '/reports/revenue/by-vehicle',
+      params,
+    )
   },
 
   getSessionStatsReport(params?: { from?: string; to?: string }) {

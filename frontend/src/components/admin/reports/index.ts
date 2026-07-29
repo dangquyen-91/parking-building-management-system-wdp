@@ -1,5 +1,7 @@
 ﻿export { AdminOccupancyTable } from './AdminOccupancyTable'
 export { AdminPeakHoursChart } from './AdminPeakHoursChart'
 export { AdminReportFilters } from './AdminReportFilters'
+export { AdminReportHeader } from './AdminReportHeader'
 export { AdminRevenueChart } from './AdminRevenueChart'
+export { AdminRevenueByVehicleChart } from './AdminRevenueByVehicleChart'
 export { AdminSessionChart } from './AdminSessionChart'
