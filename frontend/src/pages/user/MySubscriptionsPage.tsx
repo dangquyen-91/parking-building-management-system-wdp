@@ -108,7 +108,7 @@ export function MySubscriptionsPage() {
 
       <main id="main" tabIndex={-1} className="mx-auto max-w-7xl px-4 pb-8 pt-24 md:px-8 md:pb-10 lg:px-10">
         <div className="mb-6 overflow-hidden rounded-2xl border border-theme bg-badge">
-          <div className="bg-gradient-to-r from-emerald-500/15 via-transparent to-sky-500/10 p-5 md:p-7">
+          <div className="bg-linear-to-r from-emerald-500/15 via-transparent to-sky-500/10 p-5 md:p-7">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div>
               <div className="mb-3 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-subtle">
@@ -147,7 +147,7 @@ export function MySubscriptionsPage() {
           id="wrong-slot-report"
           className="mb-6 scroll-mt-24 overflow-hidden rounded-2xl border border-rose-500/25 bg-badge shadow-sm"
         >
-          <div className="grid gap-5 bg-gradient-to-r from-rose-500/12 via-transparent to-amber-500/10 p-5 md:grid-cols-[minmax(0,1fr)_auto] md:items-center md:p-6">
+          <div className="grid gap-5 bg-linear-to-r from-rose-500/12 via-transparent to-amber-500/10 p-5 md:grid-cols-[minmax(0,1fr)_auto] md:items-center md:p-6">
             <div>
               <p className="text-[10px] font-black uppercase tracking-[0.18em] text-rose-600 dark:text-rose-300">
                 Hỗ trợ tại bãi
@@ -264,7 +264,7 @@ function StatBox({ label, value, tone }: StatBoxProps) {
   return (
     <div className="bg-page p-4 text-center">
       <p className={`text-3xl font-black ${statTone[tone]}`}>{value}</p>
-      <p className="mt-1 text-[11px] font-semibold uppercase tracking-[0.1em] text-subtle">{label}</p>
+      <p className="mt-1 text-[11px] font-semibold uppercase tracking-widest text-subtle">{label}</p>
     </div>
   )
 }
@@ -283,7 +283,7 @@ function SubscriptionCard({ subscription, onCancel }: SubscriptionCardProps) {
 
   return (
     <article className="liquid-glass-card overflow-hidden rounded-2xl">
-      <div className="flex items-start justify-between gap-3 border-b border-theme bg-gradient-to-r from-sky-500/10 to-transparent p-5">
+      <div className="flex items-start justify-between gap-3 border-b border-theme bg-linear-to-r from-sky-500/10 to-transparent p-5">
         <div>
           <p className="text-2xl font-black tracking-[0.08em] text-fg">{subscription.licensePlate}</p>
           <p className="mt-1 text-xs font-medium text-muted">{VEHICLE_LABELS[subscription.vehicleType]}</p>
@@ -374,7 +374,7 @@ function WrongSlotComplaintDialog({
         className="w-full max-w-lg overflow-hidden rounded-2xl border border-theme bg-page shadow-2xl"
         onClick={(event) => event.stopPropagation()}
       >
-        <div className="border-b border-theme bg-gradient-to-r from-rose-500/20 to-transparent p-5">
+        <div className="border-b border-theme bg-linear-to-r from-rose-500/20 to-transparent p-5">
           <p className="text-[10px] font-black uppercase tracking-[0.18em] text-rose-600 dark:text-rose-300">
             Khiếu nại chỗ đỗ
           </p>

@@ -234,7 +234,7 @@ export function ManagerSlotsPage() {
       {slotPendingDelete && (
         <div className="fixed inset-0 z-50 grid place-items-center bg-black/45 p-4 backdrop-blur-sm">
           <div className="w-full max-w-md overflow-hidden rounded-3xl border border-border bg-background shadow-2xl">
-            <div className="border-b border-border bg-gradient-to-r from-rose-500/15 via-transparent to-transparent p-6">
+            <div className="border-b border-border bg-linear-to-r from-rose-500/15 via-transparent to-transparent p-6">
               <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-rose-600 dark:text-rose-300">
                 Xác nhận xóa
               </p>

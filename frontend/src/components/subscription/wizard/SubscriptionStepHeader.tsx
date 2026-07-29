@@ -41,7 +41,7 @@ export function SubscriptionStepHeader({
 
   return (
     <div className="mb-6 overflow-hidden rounded-2xl border border-theme bg-badge">
-      <div className="bg-gradient-to-r from-sky-500/15 via-transparent to-emerald-500/10 p-5 md:p-7">
+      <div className="bg-linear-to-r from-sky-500/15 via-transparent to-emerald-500/10 p-5 md:p-7">
         <div className="mb-3 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-subtle">
           <span className="size-2 rounded-full bg-emerald-500 shadow-[0_0_12px_rgba(34,197,94,0.8)]" />
           Đăng ký trực tuyến

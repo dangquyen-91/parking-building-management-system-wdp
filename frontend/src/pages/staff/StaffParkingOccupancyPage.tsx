@@ -81,7 +81,7 @@ export function StaffParkingOccupancyPage() {
   }
 
   return (
-    <div className="mx-auto max-w-[1500px] p-4 md:p-8 lg:p-10">
+    <div className="mx-auto max-w-375 p-4 md:p-8 lg:p-10">
       <StaffPageHeader
         eyebrow="Sức chứa bãi xe"
         title="Điều phối sức chứa"
@@ -153,7 +153,7 @@ function SummaryCard({
   icon: ReactNode
 }) {
   return (
-    <Card className={`relative overflow-hidden bg-gradient-to-br shadow-sm ${SUMMARY_TONES[tone]}`}>
+    <Card className={`relative overflow-hidden bg-linear-to-br shadow-sm ${SUMMARY_TONES[tone]}`}>
       <div className="pointer-events-none absolute -right-8 -top-10 size-28 rounded-full bg-current/5" />
       <CardHeader className="relative flex-row items-center justify-between gap-4">
         <div>
@@ -207,7 +207,7 @@ function OccupancyFilters({
   onClear,
 }: OccupancyFiltersProps) {
   return (
-    <Card className="mb-6 gap-0 overflow-hidden border-sky-500/15 bg-gradient-to-r from-card via-card to-sky-500/5 py-0 shadow-sm">
+    <Card className="mb-6 gap-0 overflow-hidden border-sky-500/15 bg-linear-to-r from-card via-card to-sky-500/5 py-0 shadow-sm">
       <CardContent className="grid gap-3 p-4 md:grid-cols-2 xl:grid-cols-[repeat(6,minmax(0,1fr))_auto]">
         <FilterSelect label="Tòa nhà" value={buildingFilter} onChange={onBuildingFilterChange}>
           <option value="all">Tất cả tòa nhà</option>

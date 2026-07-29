@@ -185,7 +185,7 @@ export function StaffGateCameraScanner({ gate, onUsePlate }: StaffGateCameraScan
         </span>
       </div>
 
-      <div className="relative flex min-h-72 items-center justify-center overflow-hidden bg-gradient-to-br from-zinc-800 via-zinc-950 to-black">
+      <div className="relative flex min-h-72 items-center justify-center overflow-hidden bg-linear-to-br from-zinc-800 via-zinc-950 to-black">
         {cameraOpen && (
           <Webcam
             ref={webcamRef}

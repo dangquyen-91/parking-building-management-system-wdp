@@ -41,7 +41,7 @@ export function MyBookingList({ bookings, cancellingId, onCancel }: Props) {
 
       <div className="space-y-3 pt-3">
         {bookings.map((booking) => (
-          <article key={booking._id} className="relative overflow-hidden rounded-2xl border border-slate-100 bg-gradient-to-r from-white to-slate-50 px-5 py-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:border-white/10 dark:from-white/5 dark:to-white/[0.02]">
+          <article key={booking._id} className="relative overflow-hidden rounded-2xl border border-slate-100 bg-linear-to-r from-white to-slate-50 px-5 py-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:border-white/10 dark:from-white/5 dark:to-white/2">
             <span className={`absolute inset-y-0 left-0 w-1.5 ${STATUS_STRIPES[booking.status]}`} />
             <div className="grid gap-4 lg:grid-cols-[1.1fr_1fr_1.1fr_0.8fr_0.8fr] lg:items-center">
               <p className="text-sm font-semibold text-fg">{booking.phone}</p>

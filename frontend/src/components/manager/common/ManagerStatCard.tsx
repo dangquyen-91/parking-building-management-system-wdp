@@ -56,14 +56,14 @@ export function ManagerStatCard({ label, value, detail, tone = 'sky' }: ManagerS
   const toneStyles = toneClass[tone]
 
   return (
-    <Card className={`relative min-h-36 overflow-hidden border-current/15 bg-gradient-to-br ${toneStyles.glow} via-card to-card shadow-sm transition-shadow hover:shadow-md`}>
+    <Card className={`relative min-h-36 overflow-hidden border-current/15 bg-linear-to-br ${toneStyles.glow} via-card to-card shadow-sm transition-shadow hover:shadow-md`}>
       <span className={`absolute inset-y-0 left-0 w-1 ${toneStyles.bar}`} />
       <CardContent className="p-5">
         <div className={cn('absolute right-4 top-4 flex size-10 items-center justify-center rounded-lg border', toneStyles.iconBg, toneStyles.text)}>
           <ManagerStatIcon tone={tone} />
         </div>
         <p className="min-w-0 pr-12 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">{label}</p>
-        <p className="mt-4 break-words pr-10 text-2xl font-semibold tracking-tight leading-tight text-foreground md:text-3xl">{value}</p>
+        <p className="mt-4 wrap-break-word pr-10 text-2xl font-semibold tracking-tight leading-tight text-foreground md:text-3xl">{value}</p>
         <p className="mt-2 line-clamp-2 text-xs leading-5 text-muted-foreground">{detail}</p>
       </CardContent>
     </Card>

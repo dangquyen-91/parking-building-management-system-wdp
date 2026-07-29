@@ -133,7 +133,7 @@ export function StaffGateCheckInForm({
 
   return (
     <Card className="overflow-hidden rounded-2xl border-sky-500/20 bg-background shadow-xl shadow-slate-950/5">
-      <CardHeader className="border-b border-white/15 bg-gradient-to-r from-sky-700 via-sky-600 to-cyan-500 p-5 text-white md:p-6">
+      <CardHeader className="border-b border-white/15 bg-linear-to-r from-sky-700 via-sky-600 to-cyan-500 p-5 text-white md:p-6">
         <div className="flex items-start gap-4">
           <span className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-white/15 shadow-inner ring-1 ring-white/25">
             <LogIn className="size-6" />
@@ -150,7 +150,7 @@ export function StaffGateCheckInForm({
 
       <CheckInStepHeader step={step} canOpenStep={canOpenStep} onStepChange={setStep} />
 
-      <CardContent className="grid gap-6 bg-gradient-to-b from-sky-500/[0.025] to-transparent p-5 md:p-6">
+      <CardContent className="grid gap-6 bg-linear-to-b from-sky-500/2.5 to-transparent p-5 md:p-6">
         {step === 1 && (
           <>
             <StepIntro
@@ -193,7 +193,7 @@ export function StaffGateCheckInForm({
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                   <div>
                     <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Biển số xe</p>
-                    <p className="mt-1 text-3xl font-black tracking-[0.1em]">{lookupResult.licensePlate}</p>
+                    <p className="mt-1 text-3xl font-black tracking-widest">{lookupResult.licensePlate}</p>
                     <p className="mt-2 text-muted-foreground">
                       {lookupResult.booking ? 'Khách đặt trước' : formatCustomerType(lookupResult.customerType)}
                       {lookupResult.subscription?.owner?.fullName ? ` / ${lookupResult.subscription.owner.fullName}` : ''}
@@ -263,7 +263,7 @@ export function StaffGateCheckInForm({
               }
             />
 
-            <Card size="sm" className="border-emerald-500/20 bg-gradient-to-br from-emerald-500/5 to-transparent shadow-sm">
+            <Card size="sm" className="border-emerald-500/20 bg-linear-to-br from-emerald-500/5 to-transparent shadow-sm">
               <CardContent className="grid gap-4 p-4">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                   <div>

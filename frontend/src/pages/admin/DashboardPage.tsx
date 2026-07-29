@@ -309,7 +309,7 @@ export function DashboardPage() {
           return (
             <Card
               key={item.to}
-              className={`overflow-hidden bg-gradient-to-br ${styles.glow} via-card to-card transition-shadow hover:shadow-md`}
+              className={`overflow-hidden bg-linear-to-br ${styles.glow} via-card to-card transition-shadow hover:shadow-md`}
             >
               <Link to={item.to} className="group block p-4">
                 <div className="relative flex items-center gap-3">
@@ -338,7 +338,7 @@ export function DashboardPage() {
 
       <div className="mt-5 grid gap-5 xl:grid-cols-[1.4fr_1fr]">
         <Card className="relative overflow-hidden p-4 md:p-5">
-          <span className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-sky-500 via-cyan-400 to-emerald-400" />
+          <span className="absolute inset-x-0 top-0 h-1 bg-linear-to-r from-sky-500 via-cyan-400 to-emerald-400" />
           <div className="mb-4 flex items-start justify-between gap-3">
             <div>
               <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
@@ -400,7 +400,7 @@ export function DashboardPage() {
         </Card>
 
         <Card className="relative overflow-hidden p-4 md:p-5">
-          <span className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-amber-400 via-orange-500 to-rose-500" />
+          <span className="absolute inset-x-0 top-0 h-1 bg-linear-to-r from-amber-400 via-orange-500 to-rose-500" />
           <div className="mb-4">
             <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
               Cần chú ý
@@ -442,7 +442,7 @@ export function DashboardPage() {
 
       <div className="mt-5 grid gap-5 xl:grid-cols-2">
         <Card className="relative overflow-hidden p-4 md:p-5">
-          <span className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-emerald-500 to-cyan-400" />
+          <span className="absolute inset-x-0 top-0 h-1 bg-linear-to-r from-emerald-500 to-cyan-400" />
           <div className="mb-4 flex items-start justify-between gap-3">
             <div>
               <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
@@ -487,7 +487,7 @@ export function DashboardPage() {
         </Card>
 
         <Card className="relative overflow-hidden p-4 md:p-5">
-          <span className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-violet-500 to-fuchsia-500" />
+          <span className="absolute inset-x-0 top-0 h-1 bg-linear-to-r from-violet-500 to-fuchsia-500" />
           <div className="mb-4 flex items-start justify-between gap-3">
             <div>
               <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
@@ -533,7 +533,7 @@ export function DashboardPage() {
       </div>
 
       <Card className="relative mt-5 overflow-hidden p-4 md:p-5">
-        <span className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-violet-500 via-sky-500 to-emerald-500" />
+        <span className="absolute inset-x-0 top-0 h-1 bg-linear-to-r from-violet-500 via-sky-500 to-emerald-500" />
         <div className="mb-4">
           <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
             Phạm vi quản trị

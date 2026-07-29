@@ -36,7 +36,7 @@ export function ManagerOccupancyTable({ report }: { report: ManagerOccupancyRepo
 
   return (
     <section className="bg-card text-card-foreground ring-1 ring-border overflow-hidden rounded-3xl">
-      <div className="border-b border-border bg-gradient-to-r from-sky-500/15 via-emerald-500/10 to-transparent p-5">
+      <div className="border-b border-border bg-linear-to-r from-sky-500/15 via-emerald-500/10 to-transparent p-5">
         <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div>
             <p className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.18em] text-muted-foreground">
@@ -53,7 +53,7 @@ export function ManagerOccupancyTable({ report }: { report: ManagerOccupancyRepo
               <span className="text-foreground">{overallUsage}%</span>
             </div>
             <div className="mt-2 h-2 overflow-hidden rounded-full bg-card">
-              <div className="h-full rounded-full bg-gradient-to-r from-sky-500 via-cyan-400 to-emerald-400" style={{ width: `${overallUsage}%` }} />
+              <div className="h-full rounded-full bg-linear-to-r from-sky-500 via-cyan-400 to-emerald-400" style={{ width: `${overallUsage}%` }} />
             </div>
             <p className="mt-2 text-xs text-muted-foreground">
               <span className="font-black text-foreground">{report.overall.occupied}</span>/{report.overall.totalCapacity} vị trí đang dùng
@@ -94,7 +94,7 @@ function BuildingOccupancyGroup({ group }: { group: BuildingGroup }) {
           </div>
         </div>
         <div className="mt-4 h-2 overflow-hidden rounded-full bg-card">
-          <div className="h-full rounded-full bg-gradient-to-r from-sky-500 to-emerald-400" style={{ width: `${usage}%` }} />
+          <div className="h-full rounded-full bg-linear-to-r from-sky-500 to-emerald-400" style={{ width: `${usage}%` }} />
         </div>
       </div>
 
@@ -194,7 +194,7 @@ function OccupancyRow({ floor }: { floor: ManagerOccupancyFloor }) {
             <span>{usage}%</span>
           </div>
           <div className="mt-2 h-2 overflow-hidden rounded-full bg-card">
-            <div className="h-full rounded-full bg-gradient-to-r from-sky-500 to-emerald-400" style={{ width: `${usage}%` }} />
+            <div className="h-full rounded-full bg-linear-to-r from-sky-500 to-emerald-400" style={{ width: `${usage}%` }} />
           </div>
         </div>
       </TableCell>

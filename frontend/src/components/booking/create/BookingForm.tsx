@@ -51,7 +51,7 @@ export function BookingForm({
       onSubmit={onSubmit}
     >
       <div className="mb-6 flex items-center gap-4">
-        <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-violet-600 to-sky-500 text-xl font-black text-white shadow-lg shadow-violet-500/25">
+        <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-linear-to-br from-violet-600 to-sky-500 text-xl font-black text-white shadow-lg shadow-violet-500/25">
           P
         </div>
         <div>
@@ -151,7 +151,7 @@ export function BookingForm({
       <button
         type="submit"
         disabled={!canSubmit || isSubmitting}
-        className="mt-6 h-12 w-full rounded-xl bg-gradient-to-r from-violet-600 via-purple-600 to-sky-500 px-4 text-sm font-bold text-white shadow-lg shadow-violet-500/25 transition hover:-translate-y-0.5 hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-50"
+        className="mt-6 h-12 w-full rounded-xl bg-linear-to-r from-violet-600 via-purple-600 to-sky-500 px-4 text-sm font-bold text-white shadow-lg shadow-violet-500/25 transition hover:-translate-y-0.5 hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-50"
       >
         {isSubmitting ? 'Đang tạo đặt chỗ...' : 'Tạo đặt chỗ và thanh toán'}
       </button>
