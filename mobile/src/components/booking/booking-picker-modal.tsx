@@ -1,16 +1,18 @@
+import { useEffect, useRef } from "react";
 import DateTimePicker, {
+  DateTimePickerAndroid,
   type DateTimePickerChangeEvent,
 } from "@react-native-community/datetimepicker";
-import { Modal } from "react-native";
+import { Modal, Platform } from "react-native";
 
-import { Pressable, Text, View } from "@/tw";
+import { View } from "@/tw";
 
 type PickerField = "arrivalDate" | "arrivalTime" | null;
 
 type BookingPickerModalProps = {
   minimumDate?: Date;
   mode: "date" | "time";
-  onChange: (_event: DateTimePickerChangeEvent, selectedDate: Date) => void;
+  onChange: (_event: DateTimePickerChangeEvent, selectedDate?: Date) => void;
   onDismiss: () => void;
   pickerField: PickerField;
   value: Date;
@@ -24,6 +26,40 @@ export function BookingPickerModal({
   pickerField,
   value,
 }: BookingPickerModalProps) {
+  const onChangeRef = useRef(onChange);
+  const onDismissRef = useRef(onDismiss);
+
+  useEffect(() => {
+    onChangeRef.current = onChange;
+    onDismissRef.current = onDismiss;
+  }, [onChange, onDismiss]);
+
+  useEffect(() => {
+    if (Platform.OS !== "android" || !pickerField) {
+      return;
+    }
+
+    DateTimePickerAndroid.open({
+      display: "spinner",
+      is24Hour: true,
+      minuteInterval: 15,
+      minimumDate,
+      mode,
+      onDismiss: () => {
+        onDismissRef.current();
+      },
+      onValueChange: (event, selectedDate) => {
+        onChangeRef.current(event, selectedDate);
+        onDismissRef.current();
+      },
+      value,
+    });
+  }, [minimumDate, mode, pickerField, value]);
+
+  if (Platform.OS === "android") {
+    return null;
+  }
+
   return (
     <Modal
       animationType="slide"
