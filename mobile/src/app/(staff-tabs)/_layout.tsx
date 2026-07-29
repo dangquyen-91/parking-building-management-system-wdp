@@ -1,6 +1,5 @@
 import { Redirect, Tabs } from "expo-router";
 import { ActivityIndicator } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Ionicons from "react-native-vector-icons/Ionicons";
 
 import { useCurrentUserQuery } from "@/hooks/useAuth";
@@ -11,14 +10,13 @@ import { Text, View, useThemeColors } from "@/tw";
 const StaffTabsLayout = () => {
   const { data: currentUser, isError, isLoading } = useCurrentUserQuery();
   const { borderStrong, fg, tabBar, tabInactive } = useThemeColors();
-  const insets = useSafeAreaInsets();
 
   if (isLoading) {
     return (
       <View className="flex-1 items-center justify-center bg-page px-6">
         <ActivityIndicator />
         <Text className="mt-3 text-center font-sans text-sm font-bold text-subtle">
-          Dang kiem tra quyen nhan vien...
+          Đang kiểm tra quyền nhân viên...
         </Text>
       </View>
     );
@@ -40,7 +38,6 @@ const StaffTabsLayout = () => {
     <Tabs
       screenOptions={getFloatingTabScreenOptions({
         borderStrong,
-        bottomInset: insets.bottom,
         fg,
         tabBar,
         tabInactive,

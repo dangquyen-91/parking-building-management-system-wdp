@@ -1,18 +1,14 @@
 export const getFloatingTabScreenOptions = ({
   borderStrong,
-  bottomInset = 0,
   fg,
   tabBar,
   tabInactive,
 }: {
   borderStrong: string;
-  bottomInset?: number;
   fg: string;
   tabBar: string;
   tabInactive: string;
 }) => {
-  const safeBottom = Math.max(bottomInset, 8);
-
   return {
   headerShown: false,
   tabBarActiveTintColor: fg,
@@ -22,11 +18,11 @@ export const getFloatingTabScreenOptions = ({
     borderColor: borderStrong,
     borderWidth: 1,
     borderRadius: 18,
-    bottom: safeBottom + 8,
+    bottom: 16,
     elevation: 0,
-    height: 64 + safeBottom,
+    height: 72,
     left: 12,
-    paddingBottom: safeBottom,
+    paddingBottom: 8,
     paddingTop: 8,
     position: "absolute" as const,
     right: 12,
